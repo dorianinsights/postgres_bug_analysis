@@ -15,11 +15,11 @@ WITH roots AS (
 threads AS (
   SELECT
     bug_number,
-    COUNT(*) AS n_thread_messages,
+    COUNT(*) AS thread_message_cnt,
     MAX(sent_dt) AS last_message_dt
   FROM {{ ref('int_bug_messages') }}
   WHERE bug_number IS NOT null
-  GROUP BY bug_number
+  GROUP BY ALL
 )
 
 SELECT
@@ -27,7 +27,7 @@ SELECT
   roots.reported_dt,
   roots.root_message_id,
   roots.subject,
-  threads.n_thread_messages,
+  threads.thread_message_cnt,
   threads.last_message_dt
 FROM roots
 INNER JOIN threads ON roots.bug_number = threads.bug_number

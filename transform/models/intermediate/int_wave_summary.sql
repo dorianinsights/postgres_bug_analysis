@@ -4,18 +4,18 @@
 WITH fix_counts AS (
   SELECT
     wave_dt,
-    COUNT(*) AS distinct_fixes,
+    COUNT(*) AS distinct_fix_cnt,
     COUNT(*) FILTER (
       WHERE category IN ('Security (CVE)', 'Security hardening (no CVE)')
-    ) AS security_fixes
+    ) AS security_fix_cnt
   FROM {{ ref('int_fix_reps') }}
-  GROUP BY wave_dt
+  GROUP BY ALL
 ),
 
 cve_counts AS (
   SELECT
     wave_dt,
-    COUNT(DISTINCT cve) AS distinct_cves
+    COUNT(DISTINCT cve) AS distinct_cve_cnt
   FROM (
     SELECT
       wave_dt,
@@ -24,18 +24,18 @@ cve_counts AS (
     WHERE cves IS NOT null
   )
   WHERE cve != ''
-  GROUP BY wave_dt
+  GROUP BY ALL
 )
 
 SELECT
   waves.wave_dt,
   waves.versions,
-  waves.n_releases,
-  COALESCE(fix.distinct_fixes, 0) AS distinct_fixes,
-  COALESCE(cve.distinct_cves, 0) AS distinct_cves,
-  COALESCE(fix.security_fixes, 0) AS security_fixes,
-  waves.out_of_band::INTEGER AS out_of_band,
-  waves.partial_window::INTEGER AS partial_window
+  waves.release_cnt,
+  COALESCE(fix.distinct_fix_cnt, 0) AS distinct_fix_cnt,
+  COALESCE(cve.distinct_cve_cnt, 0) AS distinct_cve_cnt,
+  COALESCE(fix.security_fix_cnt, 0) AS security_fix_cnt,
+  waves.is_out_of_band,
+  waves.is_partial_window
 FROM {{ ref('int_waves') }} AS waves
 LEFT JOIN fix_counts AS fix ON waves.wave_dt = fix.wave_dt
 LEFT JOIN cve_counts AS cve ON waves.wave_dt = cve.wave_dt

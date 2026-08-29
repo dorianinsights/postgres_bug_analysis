@@ -1,5 +1,3 @@
-{{ config(materialized='external', location='../data/derived/wave_contributors.csv', format='csv') }}
-
 -- Contributor credits parsed from each representative item's trailing
 -- "(Name, Name)" list. A candidate list is rejected wholesale when any part
 -- looks like prose rather than a name (over 40 chars, or contains a digit).
@@ -39,10 +37,10 @@ credits AS (
   SELECT
     wave_dt,
     contributor,
-    COUNT(*) AS credits  -- noqa: RF04 (column name is the CSV contract)
+    COUNT(*) AS credit_cnt
   FROM unnested
   WHERE contributor != ''
-  GROUP BY wave_dt, contributor
+  GROUP BY ALL
 ),
 
 first_seen AS (
@@ -50,20 +48,19 @@ first_seen AS (
     contributor,
     MIN(wave_dt) AS first_seen_wave_dt
   FROM credits
-  GROUP BY contributor
+  GROUP BY ALL
 )
 
 SELECT
   crd.wave_dt,
   crd.contributor,
-  crd.credits,
+  crd.credit_cnt,
   fst.first_seen_wave_dt,
   (
     fst.first_seen_wave_dt = crd.wave_dt
     AND crd.wave_dt != (SELECT MIN(wvs.wave_dt) FROM {{ ref('int_waves') }} AS wvs)
-  )::INTEGER AS is_first_wave,
-  waves.out_of_band::INTEGER AS out_of_band
+  ) AS is_first_wave,
+  waves.is_out_of_band
 FROM credits AS crd
 INNER JOIN first_seen AS fst ON crd.contributor = fst.contributor
 INNER JOIN {{ ref('int_waves') }} AS waves ON crd.wave_dt = waves.wave_dt
-ORDER BY crd.wave_dt, crd.contributor

@@ -29,7 +29,7 @@ link_flags AS (
   FROM {{ ref('int_bug_reports') }} AS rpt
   LEFT JOIN msg_links AS msg ON rpt.bug_number = msg.bug_number
   LEFT JOIN ref_links AS rfl ON rpt.bug_number = rfl.bug_number
-  GROUP BY rpt.bug_number
+  GROUP BY ALL
 ),
 
 all_links AS (
@@ -44,15 +44,15 @@ commit_dates AS (
     MIN((gcm.commit_ts AT TIME ZONE 'utc')::DATE) AS first_commit_dt
   FROM all_links AS lnk
   INNER JOIN {{ ref('stg_git_commits') }} AS gcm ON lnk.commit_hash = gcm.commit_hash
-  GROUP BY lnk.bug_number
+  GROUP BY ALL
 )
 
 SELECT
   rpt.bug_number,
   rpt.reported_dt,
   rpt.subject,
-  rpt.n_thread_messages,
-  (cdt.bug_number IS NOT null)::INTEGER AS acted_upon,
+  rpt.thread_message_cnt,
+  cdt.bug_number IS NOT null AS is_acted_upon,
   CASE
     WHEN flg.has_discussion_link AND flg.has_bug_ref_link THEN 'both'
     WHEN flg.has_discussion_link THEN 'discussion_link'

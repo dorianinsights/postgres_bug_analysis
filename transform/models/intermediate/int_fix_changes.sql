@@ -10,7 +10,7 @@
 -- is 9 chars (pinned by a test on stg_item_commits — if git ever abbreviates
 -- longer, that test fails and this join key must follow). Annotated commits
 -- on pre-corpus branches (REL9_x era) legitimately match nothing;
--- n_matched_commits < n_annotated_commits records the coverage.
+-- matched_commit_cnt < annotated_commit_cnt records the coverage.
 WITH fix_hashes AS (
   SELECT DISTINCT
     grp.group_ord,
@@ -43,12 +43,12 @@ matched AS (
 coverage AS (
   SELECT
     fhs.group_ord,
-    COUNT(DISTINCT fhs.abbrev_hash) AS n_annotated_commits,
-    COUNT(DISTINCT mat.abbrev_hash) AS n_matched_commits
+    COUNT(DISTINCT fhs.abbrev_hash) AS annotated_commit_cnt,
+    COUNT(DISTINCT mat.abbrev_hash) AS matched_commit_cnt
   FROM fix_hashes AS fhs
   LEFT JOIN matched AS mat
     ON fhs.group_ord = mat.group_ord AND fhs.abbrev_hash = mat.abbrev_hash
-  GROUP BY fhs.group_ord
+  GROUP BY ALL
 ),
 
 rep_commit AS (
@@ -70,7 +70,7 @@ file_rules AS (
   FROM {{ ref('stg_commit_files') }} AS cfl
   INNER JOIN {{ ref('subsystem_rules') }} AS rules
     ON REGEXP_MATCHES(cfl.file_path, rules.pattern)
-  GROUP BY cfl.commit_hash, cfl.file_path
+  GROUP BY ALL
 ),
 
 file_subsystems AS (
@@ -100,13 +100,13 @@ rep_files AS (
 profile AS (
   SELECT
     group_ord,
-    COUNT(*) AS n_files,
-    SUM(COALESCE(lines_added, 0)) AS lines_added,
-    SUM(COALESCE(lines_deleted, 0)) AS lines_deleted,
-    MAX(subsystem = 'tests') AS touches_tests,
-    MIN(subsystem = 'docs') AS docs_only
+    COUNT(*) AS file_cnt,
+    SUM(COALESCE(lines_added, 0))::BIGINT AS lines_added_sum,
+    SUM(COALESCE(lines_deleted, 0))::BIGINT AS lines_deleted_sum,
+    MAX(subsystem = 'tests') AS has_test_changes,
+    MIN(subsystem = 'docs') AS is_docs_only
   FROM rep_files
-  GROUP BY group_ord
+  GROUP BY ALL
 ),
 
 -- Fix-level subsystem = weighted vote over the representative commit's
@@ -120,14 +120,14 @@ dominant AS (
     SELECT
       group_ord,
       subsystem,
-      COUNT(*) AS n_files,
-      SUM(COALESCE(lines_added, 0) + COALESCE(lines_deleted, 0)) AS n_lines
+      COUNT(*) AS file_cnt,
+      SUM(COALESCE(lines_added, 0) + COALESCE(lines_deleted, 0)) AS line_sum
     FROM rep_files
-    GROUP BY group_ord, subsystem
+    GROUP BY ALL
   ) AS votes
   QUALIFY ROW_NUMBER() OVER (
     PARTITION BY group_ord
-    ORDER BY (subsystem IN ('tests', 'docs')) ASC, n_files DESC, n_lines DESC, subsystem ASC
+    ORDER BY (subsystem IN ('tests', 'docs')) ASC, file_cnt DESC, line_sum DESC, subsystem ASC
   ) = 1
 )
 
@@ -137,13 +137,13 @@ SELECT
   reps.version,
   reps.item_index,
   reps.category,
-  cov.n_annotated_commits,
-  cov.n_matched_commits,
-  prf.n_files,
-  prf.lines_added,
-  prf.lines_deleted,
-  prf.touches_tests,
-  prf.docs_only,
+  cov.annotated_commit_cnt,
+  cov.matched_commit_cnt,
+  prf.file_cnt,
+  prf.lines_added_sum,
+  prf.lines_deleted_sum,
+  prf.has_test_changes,
+  prf.is_docs_only,
   dom.dominant_subsystem
 FROM {{ ref('int_fix_reps') }} AS reps
 LEFT JOIN coverage AS cov ON reps.item_ord = cov.group_ord

@@ -59,4 +59,4 @@ SELECT
   item_ord,
   MIN(peer_ord) AS group_ord
 FROM reachable
-GROUP BY item_ord
+GROUP BY ALL

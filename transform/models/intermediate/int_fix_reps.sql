@@ -20,7 +20,7 @@ first_matches AS (
   FROM reps
   INNER JOIN {{ ref('category_rules') }} AS rules
     ON REGEXP_MATCHES(reps.full_text, rules.pattern, 'i')
-  GROUP BY reps.item_ord
+  GROUP BY ALL
 )
 
 SELECT

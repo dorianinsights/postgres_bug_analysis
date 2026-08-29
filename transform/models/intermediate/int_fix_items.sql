@@ -16,7 +16,7 @@ WITH item_hashes AS (
     item_index,
     ARRAY_TO_STRING(LIST_SORT(LIST(DISTINCT commit_hash)), ',') AS hash_set
   FROM {{ ref('stg_item_commits') }}
-  GROUP BY version, item_index
+  GROUP BY ALL
 )
 
 SELECT

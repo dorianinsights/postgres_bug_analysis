@@ -9,7 +9,7 @@ models:
     tests:
       - dbt_utils.expression_is_true:
           arguments:
-            expression: security_fixes <= distinct_fixes
+            expression: security_fix_cnt <= distinct_fix_cnt
     columns:
       - name: wave_dt
         tests:
@@ -21,39 +21,33 @@ models:
                 max_value: current_date
       - name: versions
         tests: [not_null]
-      - name: n_releases
+      - name: release_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: distinct_fixes
+      - name: distinct_fix_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: distinct_cves
+      - name: distinct_cve_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 0
-      - name: security_fixes
+      - name: security_fix_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 0
-      - name: out_of_band
+      - name: is_out_of_band
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]
-      - name: partial_window
+      - name: is_partial_window
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]

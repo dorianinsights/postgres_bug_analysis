@@ -1,5 +1,3 @@
-{{ config(materialized='external', location='../data/derived/git_cycle_pace.csv', format='csv') }}
-
 -- Distinct stable-branch fixes in each recent cycle's first N days, where
 -- N = the open cycle's age — the like-for-like pace comparison for the open
 -- cycle. Cycle boundaries are the wrap moments of SCHEDULED waves only (the
@@ -12,7 +10,7 @@
 WITH sched_waves AS (
   SELECT wave_dt
   FROM {{ ref('int_wave_summary') }}
-  WHERE out_of_band = 0
+  WHERE NOT is_out_of_band
   ORDER BY wave_dt DESC
   LIMIT 3  -- n_cycles: the open cycle plus two closed comparators
 ),
@@ -24,7 +22,7 @@ wraps AS (
   FROM sched_waves AS swv
   INNER JOIN {{ ref('stg_git_tags') }} AS tag
     ON (tag.tag_ts AT TIME ZONE 'utc')::DATE BETWEEN swv.wave_dt - 7 AND swv.wave_dt
-  GROUP BY swv.wave_dt
+  GROUP BY ALL
 ),
 
 today AS (
@@ -49,7 +47,7 @@ bounded AS (
   SELECT
     cyc.cycle_start_dt,
     cyc.next_wrap,
-    (cyc.next_wrap IS null)::INTEGER AS is_open_cycle,
+    cyc.next_wrap IS null AS is_open_cycle,
     age.window_days,
     LEAST(cyc.cycle_start_dt + age.window_days, COALESCE(cyc.next_wrap, tdy.utc_today)) AS early_end,
     COALESCE(cyc.next_wrap, tdy.utc_today) AS full_end
@@ -71,14 +69,15 @@ SELECT
   bnd.window_days,
   COUNT(DISTINCT fix.fix_key) FILTER (
     WHERE fix.commit_dt > bnd.cycle_start_dt AND fix.commit_dt <= bnd.early_end
-  ) AS distinct_fixes_early,
+  ) AS early_distinct_fix_cnt,
   CASE
     WHEN bnd.next_wrap IS null THEN null
     ELSE COUNT(DISTINCT fix.fix_key) FILTER (
       WHERE fix.commit_dt > bnd.cycle_start_dt AND fix.commit_dt <= bnd.next_wrap
     )
-  END AS distinct_fixes_full
+  END AS full_distinct_fix_cnt
 FROM bounded AS bnd
 CROSS JOIN fix_commits AS fix
+-- explicit: early_end is referenced in an aggregate FILTER, which GROUP BY
+-- ALL does not cover
 GROUP BY bnd.cycle_start_dt, bnd.next_wrap, bnd.is_open_cycle, bnd.window_days, bnd.early_end
-ORDER BY bnd.cycle_start_dt

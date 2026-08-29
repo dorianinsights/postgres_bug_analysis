@@ -4,7 +4,7 @@ models:
   - name: wave_categories
     description: >
       Tidy (wave, category) fix counts -> ../data/derived/wave_categories.csv.
-      Only categories present in a wave are written, so fixes >= 1.
+      Only categories present in a wave are written, so fix_cnt >= 1.
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -31,15 +31,12 @@ models:
               arguments:
                 min_value: 0
                 max_value: 9
-      - name: fixes
+      - name: fix_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: out_of_band
+      - name: is_out_of_band
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]

@@ -11,39 +11,39 @@ queries:
       Distinct fix commits across all stable branches per quarter (subjects
       deduplicated across branches; release plumbing excluded). The current
       quarter is partial.
-    source: ../data/derived/git_commits_enriched.csv
+    source: warehouse
     sql: |
       SELECT
-        DATE_TRUNC('quarter', CAST(commit_dt AS DATE)) AS quarter,
+        DATE_TRUNC('quarter', commit_dt) AS quarter,
         'distinct fixes' AS series,
-        COUNT(DISTINCT LOWER(TRIM(subject))) AS distinct_fixes
+        COUNT(DISTINCT LOWER(TRIM(subject))) AS distinct_fix_cnt
       FROM git_commits_enriched
-      WHERE branch != 'master' AND is_plumbing = 0
+      WHERE branch != 'master' AND NOT is_plumbing
       GROUP BY quarter
       ORDER BY quarter
 
   quarter_pad:
     description: Invisible x-domain padding points for the quarterly bar chart.
-    source: ../data/derived/git_commits_enriched.csv
+    source: warehouse
     sql: |
-      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_dt AS DATE))) - INTERVAL 45 DAY AS quarter, 'distinct fixes' AS series, 0 AS pad_zero
+      SELECT MIN(DATE_TRUNC('quarter', commit_dt)) - INTERVAL 45 DAY AS quarter, 'distinct fixes' AS series, 0 AS pad_zero
       FROM git_commits_enriched
       UNION ALL
-      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_dt AS DATE))) + INTERVAL 45 DAY, 'distinct fixes', 0
+      SELECT MAX(DATE_TRUNC('quarter', commit_dt)) + INTERVAL 45 DAY, 'distinct fixes', 0
       FROM git_commits_enriched
 
   quarterly_by_branch:
     description: >
       Fix commits per stable branch per quarter (each branch counts its own
       backpatches; plumbing excluded).
-    source: ../data/derived/git_commits_enriched.csv
+    source: warehouse
     sql: |
       SELECT
-        DATE_TRUNC('quarter', CAST(commit_dt AS DATE)) AS quarter,
+        DATE_TRUNC('quarter', commit_dt) AS quarter,
         branch,
         COUNT(*) AS fix_commits
       FROM git_commits_enriched
-      WHERE branch != 'master' AND is_plumbing = 0
+      WHERE branch != 'master' AND NOT is_plumbing
       GROUP BY quarter, branch
       ORDER BY quarter, branch
 
@@ -51,10 +51,10 @@ queries:
     description: >
       Distinct commits whose message credits an AI tool (Claude, ChatGPT,
       Copilot, ...), per quarter, across stable branches and master.
-    source: ../data/derived/git_commits_enriched.csv
+    source: warehouse
     sql: |
       SELECT
-        DATE_TRUNC('quarter', CAST(commit_dt AS DATE)) AS quarter,
+        DATE_TRUNC('quarter', commit_dt) AS quarter,
         'AI-credited commits' AS series,
         COUNT(DISTINCT LOWER(TRIM(subject))) AS ai_credited_commits
       FROM git_commits_enriched
@@ -64,17 +64,17 @@ queries:
 
   ai_pad:
     description: Invisible x-domain padding points for the AI-credited bar chart.
-    source: ../data/derived/git_commits_enriched.csv
+    source: warehouse
     sql: |
-      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_dt AS DATE))) - INTERVAL 45 DAY AS quarter, 'AI-credited commits' AS series, 0 AS pad_zero
+      SELECT MIN(DATE_TRUNC('quarter', commit_dt)) - INTERVAL 45 DAY AS quarter, 'AI-credited commits' AS series, 0 AS pad_zero
       FROM git_commits_enriched WHERE ai_credit IS NOT NULL
       UNION ALL
-      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_dt AS DATE))) + INTERVAL 45 DAY, 'AI-credited commits', 0
+      SELECT MAX(DATE_TRUNC('quarter', commit_dt)) + INTERVAL 45 DAY, 'AI-credited commits', 0
       FROM git_commits_enriched WHERE ai_credit IS NOT NULL
 
   ai_credit_lines:
     description: The AI-credited fix commits with their credit lines, newest first.
-    source: ../data/derived/git_commits_enriched.csv
+    source: warehouse
     sql: |
       SELECT
         MIN(commit_dt) AS commit_dt,
@@ -90,14 +90,14 @@ queries:
       Like-for-like release-cycle pace: distinct stable-branch fixes committed
       in the first N days after each scheduled wrap, where N is the age of the
       currently open cycle, next to each closed cycle's full total.
-    source: ../data/derived/git_cycle_pace.csv
+    source: warehouse
     sql: |
-      SELECT CAST(cycle_start_dt AS VARCHAR) AS cycle, 'first ' || window_days || ' days' AS pace_window, distinct_fixes_early AS fixes
+      SELECT CAST(cycle_start_dt AS VARCHAR) AS cycle, 'first ' || window_days || ' days' AS pace_window, early_distinct_fix_cnt AS fixes
       FROM git_cycle_pace
       UNION ALL
-      SELECT CAST(cycle_start_dt AS VARCHAR) AS cycle, 'full cycle' AS pace_window, distinct_fixes_full AS fixes
+      SELECT CAST(cycle_start_dt AS VARCHAR) AS cycle, 'full cycle' AS pace_window, full_distinct_fix_cnt AS fixes
       FROM git_cycle_pace
-      WHERE is_open_cycle = 0
+      WHERE NOT is_open_cycle
       ORDER BY cycle, pace_window
 
 charts:
@@ -107,7 +107,7 @@ charts:
     title: "Distinct backpatched fixes per quarter"
     subtitle: "Across REL_15..18_STABLE, deduplicated by commit subject; current quarter partial"
     x: quarter
-    y: distinct_fixes
+    y: distinct_fix_cnt
     color: series
     height: 380
     layers:

@@ -7,22 +7,19 @@ models:
       bug-number mention), earliest linked commit day, report-to-fix
       latency. Grain = bug_number. Recent reports are right-censored.
     tests:
-      # acted_upon and the commit date must agree.
+      # is_acted_upon and the commit date must agree.
       - dbt_utils.expression_is_true:
           arguments:
-            expression: (acted_upon = 1) = (first_commit_dt IS NOT NULL)
+            expression: is_acted_upon = (first_commit_dt IS NOT NULL)
       - dbt_utils.expression_is_true:
           arguments:
-            expression: (acted_upon = 1) = (linked_via IS NOT NULL)
+            expression: is_acted_upon = (linked_via IS NOT NULL)
     columns:
       - name: bug_number
         tests: [unique, not_null]
-      - name: acted_upon
+      - name: is_acted_upon
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]
       - name: linked_via
         tests:
           - accepted_values:

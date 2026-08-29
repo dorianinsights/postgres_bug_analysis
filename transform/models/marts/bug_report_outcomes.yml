@@ -11,9 +11,6 @@ models:
         tests: [unique, not_null]
       - name: reported_dt
         tests: [not_null]
-      - name: acted_upon
+      - name: is_acted_upon
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]

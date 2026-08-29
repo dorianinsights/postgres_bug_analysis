@@ -2,5 +2,5 @@
 -- wrap-date derivation broke.
 SELECT COUNT(*) AS open_cycles
 FROM {{ ref('git_cycle_pace') }}
-WHERE is_open_cycle = 1
+WHERE is_open_cycle
 HAVING COUNT(*) != 1

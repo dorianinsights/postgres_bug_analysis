@@ -16,7 +16,7 @@ models:
             expression: (low IS NULL) = (high IS NULL)
       - dbt_utils.expression_is_true:
           arguments:
-            expression: low IS NULL OR (low <= distinct_fixes AND distinct_fixes <= high)
+            expression: low IS NULL OR (low <= distinct_fix_cnt AND distinct_fix_cnt <= high)
     columns:
       - name: scenario
         tests:
@@ -34,7 +34,7 @@ models:
                 values: [0, 1, 2, 3]
       - name: projected_dt
         tests: [not_null]
-      - name: distinct_fixes
+      - name: distinct_fix_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:

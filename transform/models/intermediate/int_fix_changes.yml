@@ -11,10 +11,10 @@ models:
     tests:
       - dbt_utils.expression_is_true:
           arguments:
-            expression: n_matched_commits <= n_annotated_commits
+            expression: matched_commit_cnt <= annotated_commit_cnt
       - dbt_utils.expression_is_true:
           arguments:
-            expression: n_matched_commits = 0 OR dominant_subsystem IS NOT NULL
+            expression: matched_commit_cnt = 0 OR dominant_subsystem IS NOT NULL
     columns:
       - name: item_ord
         tests:

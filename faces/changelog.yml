@@ -17,9 +17,9 @@ description: >
 queries:
   latest_wave:
     description: The most recent release wave's headline numbers.
-    source: ../data/derived/wave_summary.csv
+    source: warehouse
     sql: |
-      SELECT wave_dt, versions, distinct_fixes, security_fixes, distinct_cves
+      SELECT wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt
       FROM wave_summary
       ORDER BY wave_dt DESC
       LIMIT 1
@@ -42,61 +42,61 @@ queries:
     description: >
       Distinct fixes per full-quarter wave by category (backpatched
       duplicates collapsed across branches; out-of-band waves excluded).
-    source: ../data/derived/wave_categories.csv
+    source: warehouse
     sql: |
-      SELECT CAST(wave_dt AS DATE) AS wave_dt, category, category_order, fixes
+      SELECT wave_dt, category, category_order, fix_cnt
       FROM wave_categories
-      WHERE out_of_band = 0
+      WHERE NOT is_out_of_band
       ORDER BY wave_dt, category_order
 
   wave_pad:
     description: Invisible x-domain padding points for the scheduled-wave bar charts.
-    source: ../data/derived/wave_categories.csv
+    source: warehouse
     sql: |
-      SELECT MIN(CAST(wave_dt AS DATE)) - 45 AS wave_dt, 'Other functionality' AS category, 0 AS pad_zero
-      FROM wave_categories WHERE out_of_band = 0
+      SELECT MIN(wave_dt) - 45 AS wave_dt, 'Other functionality' AS category, 0 AS pad_zero
+      FROM wave_categories WHERE NOT is_out_of_band
       UNION ALL
-      SELECT MAX(CAST(wave_dt AS DATE)) + 45, 'Other functionality', 0
-      FROM wave_categories WHERE out_of_band = 0
+      SELECT MAX(wave_dt) + 45, 'Other functionality', 0
+      FROM wave_categories WHERE NOT is_out_of_band
 
   oob_categories:
     description: The out-of-band emergency waves' fixes by category.
-    source: ../data/derived/wave_categories.csv
+    source: warehouse
     sql: |
-      SELECT CAST(wave_dt AS DATE) AS wave_dt, category, category_order, fixes
+      SELECT wave_dt, category, category_order, fix_cnt
       FROM wave_categories
-      WHERE out_of_band = 1
+      WHERE is_out_of_band
       ORDER BY wave_dt, category_order
 
   oob_pad:
     description: Invisible x-domain padding points for the out-of-band bar chart.
-    source: ../data/derived/wave_categories.csv
+    source: warehouse
     sql: |
-      SELECT MIN(CAST(wave_dt AS DATE)) - 45 AS wave_dt, 'Crash & corruption' AS category, 0 AS pad_zero
-      FROM wave_categories WHERE out_of_band = 1
+      SELECT MIN(wave_dt) - 45 AS wave_dt, 'Crash & corruption' AS category, 0 AS pad_zero
+      FROM wave_categories WHERE is_out_of_band
       UNION ALL
-      SELECT MAX(CAST(wave_dt AS DATE)) + 45, 'Crash & corruption', 0
-      FROM wave_categories WHERE out_of_band = 1
+      SELECT MAX(wave_dt) + 45, 'Crash & corruption', 0
+      FROM wave_categories WHERE is_out_of_band
 
   security_pad:
     description: Invisible x-domain padding points for the security bar chart.
-    source: ../data/derived/wave_categories.csv
+    source: warehouse
     sql: |
-      SELECT MIN(CAST(wave_dt AS DATE)) - 45 AS wave_dt, 'Security (CVE)' AS category, 0 AS pad_zero
-      FROM wave_categories WHERE out_of_band = 0
+      SELECT MIN(wave_dt) - 45 AS wave_dt, 'Security (CVE)' AS category, 0 AS pad_zero
+      FROM wave_categories WHERE NOT is_out_of_band
       UNION ALL
-      SELECT MAX(CAST(wave_dt AS DATE)) + 45, 'Security (CVE)', 0
-      FROM wave_categories WHERE out_of_band = 0
+      SELECT MAX(wave_dt) + 45, 'Security (CVE)', 0
+      FROM wave_categories WHERE NOT is_out_of_band
 
   security_by_wave:
     description: >
       Security fixes per scheduled wave, split into CVE-tagged and
       uncredited hardening.
-    source: ../data/derived/wave_categories.csv
+    source: warehouse
     sql: |
-      SELECT CAST(wave_dt AS DATE) AS wave_dt, category, category_order, fixes
+      SELECT wave_dt, category, category_order, fix_cnt
       FROM wave_categories
-      WHERE out_of_band = 0
+      WHERE NOT is_out_of_band
         AND category IN ('Security (CVE)', 'Security hardening (no CVE)')
       ORDER BY wave_dt, category_order
 
@@ -104,26 +104,26 @@ queries:
     description: >
       Distinct credited contributors per scheduled wave, split into names
       appearing for the first time in this corpus vs returning names.
-    source: ../data/derived/wave_contributors.csv
+    source: warehouse
     sql: |
       SELECT
-        CAST(wc.wave_dt AS DATE) AS wave_dt,
+        wc.wave_dt,
         CASE WHEN wc.is_first_wave = 1 THEN 'first-time' ELSE 'returning' END AS cohort,
         COUNT(DISTINCT wc.contributor) AS contributors
       FROM wave_contributors AS wc
-      WHERE wc.out_of_band = 0
+      WHERE NOT wc.is_out_of_band
       GROUP BY wave_dt, cohort
       ORDER BY wave_dt, cohort DESC
 
   contrib_pad:
     description: Invisible x-domain padding points for the contributors bar chart.
-    source: ../data/derived/wave_categories.csv
+    source: warehouse
     sql: |
-      SELECT MIN(CAST(wave_dt AS DATE)) - 45 AS wave_dt, 'returning' AS cohort, 0 AS pad_zero
-      FROM wave_categories WHERE out_of_band = 0
+      SELECT MIN(wave_dt) - 45 AS wave_dt, 'returning' AS cohort, 0 AS pad_zero
+      FROM wave_categories WHERE NOT is_out_of_band
       UNION ALL
-      SELECT MAX(CAST(wave_dt AS DATE)) + 45, 'returning', 0
-      FROM wave_categories WHERE out_of_band = 0
+      SELECT MAX(wave_dt) + 45, 'returning', 0
+      FROM wave_categories WHERE NOT is_out_of_band
 
   wave_trend:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]
@@ -131,20 +131,20 @@ queries:
       Least-squares trendlines over full-quarter wave totals (the partial
       first wave excluded): one fit over all waves, one excluding the latest
       wave as a sensitivity check.
-    source: ../data/derived/wave_summary.csv
+    source: warehouse
     sql: |
       WITH fullq AS (
-        SELECT CAST(wave_dt AS DATE) AS wave_dt,
+        SELECT wave_dt,
                ROW_NUMBER() OVER (ORDER BY wave_dt) - 1 AS slot,
-               distinct_fixes
+               distinct_fix_cnt
         FROM wave_summary
-        WHERE out_of_band = 0 AND partial_window = 0
+        WHERE NOT is_out_of_band AND NOT is_partial_window
       ),
       fit_all AS (
-        SELECT REGR_SLOPE(distinct_fixes, slot) AS b, REGR_INTERCEPT(distinct_fixes, slot) AS a FROM fullq
+        SELECT REGR_SLOPE(distinct_fix_cnt, slot) AS b, REGR_INTERCEPT(distinct_fix_cnt, slot) AS a FROM fullq
       ),
       fit_ex AS (
-        SELECT REGR_SLOPE(distinct_fixes, slot) AS b, REGR_INTERCEPT(distinct_fixes, slot) AS a
+        SELECT REGR_SLOPE(distinct_fix_cnt, slot) AS b, REGR_INTERCEPT(distinct_fix_cnt, slot) AS a
         FROM fullq WHERE slot < (SELECT MAX(slot) FROM fullq)
       )
       SELECT fullq.wave_dt,
@@ -156,20 +156,20 @@ queries:
   security_trend:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]
     description: Same two trendlines fitted to the security-fix totals per wave.
-    source: ../data/derived/wave_summary.csv
+    source: warehouse
     sql: |
       WITH fullq AS (
-        SELECT CAST(wave_dt AS DATE) AS wave_dt,
+        SELECT wave_dt,
                ROW_NUMBER() OVER (ORDER BY wave_dt) - 1 AS slot,
-               security_fixes
+               security_fix_cnt
         FROM wave_summary
-        WHERE out_of_band = 0 AND partial_window = 0
+        WHERE NOT is_out_of_band AND NOT is_partial_window
       ),
       fit_all AS (
-        SELECT REGR_SLOPE(security_fixes, slot) AS b, REGR_INTERCEPT(security_fixes, slot) AS a FROM fullq
+        SELECT REGR_SLOPE(security_fix_cnt, slot) AS b, REGR_INTERCEPT(security_fix_cnt, slot) AS a FROM fullq
       ),
       fit_ex AS (
-        SELECT REGR_SLOPE(security_fixes, slot) AS b, REGR_INTERCEPT(security_fixes, slot) AS a
+        SELECT REGR_SLOPE(security_fix_cnt, slot) AS b, REGR_INTERCEPT(security_fix_cnt, slot) AS a
         FROM fullq WHERE slot < (SELECT MAX(slot) FROM fullq)
       )
       SELECT fullq.wave_dt,
@@ -204,27 +204,27 @@ queries:
 
   wave_totals:
     description: Distinct fixes per full-quarter wave (the projection base series).
-    source: ../data/derived/wave_summary.csv
+    source: warehouse
     sql: |
-      SELECT wave_dt, distinct_fixes
+      SELECT wave_dt, distinct_fix_cnt
       FROM wave_summary
-      WHERE out_of_band = 0
+      WHERE NOT is_out_of_band
       ORDER BY wave_dt
 
   projections:
     description: Next-wave scenario projections derived from the wave series.
-    source: ../data/derived/projections.csv
+    source: warehouse
     sql: |
-      SELECT projected_dt, scenario, distinct_fixes, assumption
+      SELECT projected_dt, scenario, distinct_fix_cnt, assumption
       FROM projections
       ORDER BY scenario_order
 
   wave_table:
     description: All waves with headline numbers, newest first.
-    source: ../data/derived/wave_summary.csv
+    source: warehouse
     sql: |
-      SELECT wave_dt, versions, distinct_fixes, security_fixes, distinct_cves,
-             CASE WHEN out_of_band = 1 THEN 'yes' ELSE '' END AS out_of_band
+      SELECT wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt,
+             CASE WHEN is_out_of_band THEN 'yes' ELSE '' END AS is_out_of_band
       FROM wave_summary
       ORDER BY wave_dt DESC
 
@@ -232,19 +232,19 @@ charts:
   kpi_fixes:
     type: kpi
     query: latest_wave
-    value: distinct_fixes
+    value: distinct_fix_cnt
     label: "Distinct fixes, latest wave"
 
   kpi_security:
     type: kpi
     query: latest_wave
-    value: security_fixes
+    value: security_fix_cnt
     label: "Security fixes, latest wave"
 
   kpi_cves:
     type: kpi
     query: latest_wave
-    value: distinct_cves
+    value: distinct_cve_cnt
     label: "CVEs closed, latest wave"
 
   fixes_by_branch:
@@ -277,7 +277,7 @@ charts:
     title: "Category mix per full-quarter wave"
     subtitle: "Distinct fixes; backpatched duplicates collapsed across branches"
     x: wave_dt
-    y: fixes
+    y: fix_cnt
     color: category
     style: { stack: zero }
     height: 380
@@ -307,7 +307,7 @@ charts:
     title: "Same data as shares of each wave"
     subtitle: "100% stacked"
     x: wave_dt
-    y: fixes
+    y: fix_cnt
     color: category
     style:
       stack: normalize
@@ -329,7 +329,7 @@ charts:
     title: "The out-of-band emergency waves"
     subtitle: "Re-releases shipped one or two weeks after a scheduled wave"
     x: wave_dt
-    y: fixes
+    y: fix_cnt
     color: category
     style: { stack: zero }
     height: 340
@@ -347,7 +347,7 @@ charts:
     title: "The security hockey stick"
     subtitle: "CVE-tagged fixes plus uncredited hardening, per scheduled wave"
     x: wave_dt
-    y: fixes
+    y: fix_cnt
     color: category
     style: { stack: zero }
     height: 340
@@ -395,14 +395,14 @@ charts:
     title: "Next-wave projection scenarios"
     subtitle: "Historical distinct fixes per full-quarter wave, with four scenarios for the next wave"
     x: wave_dt
-    y: distinct_fixes
+    y: distinct_fix_cnt
     y_label: "distinct fixes"
     height: 380
     layers:
       - type: scatter
         query: projections
         x: projected_dt
-        y: distinct_fixes
+        y: distinct_fix_cnt
         color: scenario
         label: "Scenario"
       - type: line

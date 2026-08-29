@@ -16,23 +16,23 @@ description: >
 queries:
   monthly_reports:
     description: BUG #NNNNN reports opened per month.
-    source: ../data/derived/bug_reports_monthly.csv
+    source: warehouse
     sql: |
       SELECT
-        CAST(report_month_dt AS DATE) AS report_month,
+        report_month_dt AS report_month,
         'bug reports' AS series,
-        n_reports
+        report_cnt
       FROM bug_reports_monthly
       ORDER BY report_month
 
   monthly_trend:
     description: Six-month centered moving average of report volume.
-    source: ../data/derived/bug_reports_monthly.csv
+    source: warehouse
     sql: |
       SELECT
-        CAST(report_month_dt AS DATE) AS report_month,
+        report_month_dt AS report_month,
         '6-month average' AS series,
-        AVG(n_reports) OVER (
+        AVG(report_cnt) OVER (
           ORDER BY report_month_dt ROWS BETWEEN 3 PRECEDING AND 2 FOLLOWING
         ) AS avg_reports
       FROM bug_reports_monthly
@@ -42,27 +42,27 @@ queries:
     description: >
       Share of each month's reports later linked to a fix commit. The
       trailing months sag because their fixes haven't landed yet.
-    source: ../data/derived/bug_reports_monthly.csv
+    source: warehouse
     sql: |
       SELECT
-        CAST(report_month_dt AS DATE) AS report_month,
+        report_month_dt AS report_month,
         'acted upon (%)' AS series,
-        CAST(pct_acted_upon AS DOUBLE) AS pct_acted_upon
+        acted_upon_pct AS acted_upon_pct
       FROM bug_reports_monthly
       ORDER BY report_month
 
   yearly_outcomes:
     description: Reports vs acted-upon reports per calendar year.
-    source: ../data/derived/bug_report_outcomes.csv
+    source: warehouse
     sql: |
       SELECT
-        CAST(YEAR(CAST(reported_dt AS DATE)) AS VARCHAR) AS report_year,
+        CAST(YEAR(reported_dt) AS VARCHAR) AS report_year,
         outcome,
         COUNT(*) AS reports
       FROM (
         SELECT
           reported_dt,
-          CASE WHEN acted_upon = 1 THEN 'linked to a fix commit' ELSE 'no linked commit' END AS outcome
+          CASE WHEN is_acted_upon THEN 'linked to a fix commit' ELSE 'no linked commit' END AS outcome
         FROM bug_report_outcomes
       ) AS bro
       GROUP BY report_year, outcome
@@ -72,7 +72,7 @@ queries:
     description: >
       Report-to-first-commit latency for acted-upon reports (numbered
       labels keep the buckets in order).
-    source: ../data/derived/bug_report_outcomes.csv
+    source: warehouse
     sql: |
       SELECT
         CASE
@@ -85,20 +85,20 @@ queries:
         'acted-upon reports' AS series,
         COUNT(*) AS reports
       FROM bug_report_outcomes
-      WHERE acted_upon = 1
+      WHERE is_acted_upon
       GROUP BY latency_bucket
       ORDER BY latency_bucket
 
   yearly_latency:
     description: Median days from report to first linked commit, per year.
-    source: ../data/derived/bug_report_outcomes.csv
+    source: warehouse
     sql: |
       SELECT
-        CAST(YEAR(CAST(reported_dt AS DATE)) AS VARCHAR) AS report_year,
+        CAST(YEAR(reported_dt) AS VARCHAR) AS report_year,
         'median days to commit' AS series,
         MEDIAN(days_to_commit) AS median_days
       FROM bug_report_outcomes
-      WHERE acted_upon = 1
+      WHERE is_acted_upon
       GROUP BY report_year
       ORDER BY report_year
 
@@ -106,16 +106,16 @@ queries:
     description: >
       How much discussion a report draws, split by outcome — acted-upon
       reports have longer threads.
-    source: ../data/derived/bug_report_outcomes.csv
+    source: warehouse
     sql: |
       SELECT
         CASE
-          WHEN n_thread_messages = 1 THEN '1: no replies'
-          WHEN n_thread_messages <= 3 THEN '2: 2-3 messages'
-          WHEN n_thread_messages <= 10 THEN '3: 4-10 messages'
+          WHEN thread_message_cnt = 1 THEN '1: no replies'
+          WHEN thread_message_cnt <= 3 THEN '2: 2-3 messages'
+          WHEN thread_message_cnt <= 10 THEN '3: 4-10 messages'
           ELSE '4: 11+ messages'
         END AS thread_bucket,
-        CASE WHEN acted_upon = 1 THEN 'linked to a fix commit' ELSE 'no linked commit' END AS outcome,
+        CASE WHEN is_acted_upon THEN 'linked to a fix commit' ELSE 'no linked commit' END AS outcome,
         COUNT(*) AS reports
       FROM bug_report_outcomes
       GROUP BY thread_bucket, outcome
@@ -123,16 +123,16 @@ queries:
 
   most_discussed:
     description: The 15 most-discussed bug reports in the corpus.
-    source: ../data/derived/bug_report_outcomes.csv
+    source: warehouse
     sql: |
       SELECT
-        CAST(reported_dt AS DATE) AS reported,
-        n_thread_messages AS messages,
-        CASE WHEN acted_upon = 1 THEN 'fixed' ELSE '-' END AS outcome,
+        reported_dt AS reported,
+        thread_message_cnt AS messages,
+        CASE WHEN is_acted_upon THEN 'fixed' ELSE '-' END AS outcome,
         days_to_commit AS days_to_fix,
         SUBSTR(subject, 1, 90) AS subject
       FROM bug_report_outcomes
-      ORDER BY n_thread_messages DESC, bug_number
+      ORDER BY thread_message_cnt DESC, bug_number
       LIMIT 15
 
 charts:
@@ -142,7 +142,7 @@ charts:
     title: "Bug reports per month"
     subtitle: "One BUG #NNNNN form submission per report, pgsql-bugs since Oct 2021"
     x: report_month
-    y: n_reports
+    y: report_cnt
     color: series
     height: 380
     layers:
@@ -158,7 +158,7 @@ charts:
     title: "Reports acted upon, by month"
     subtitle: "Lower bound (exact commit links only); trailing months right-censored"
     x: report_month
-    y: pct_acted_upon
+    y: acted_upon_pct
     color: series
     height: 340
 

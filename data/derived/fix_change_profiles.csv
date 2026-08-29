@@ -1,1129 +1,1129 @@
-wave_dt,version,item_index,category,dominant_subsystem,n_annotated_commits,n_matched_commits,n_files,lines_added,lines_deleted,touches_tests,docs_only
-2022-11-10,15.1,0,Crash & corruption,core_server,2,2,1,12,6,0,0
-2022-11-10,15.1,1,Crash & corruption,core_server,7,2,3,98,28,1,0
-2022-11-10,15.1,2,Other functionality,core_server,7,2,1,12,0,0,0
-2022-11-10,15.1,3,Other functionality,core_server,3,2,4,208,1,1,0
-2022-11-10,15.1,4,Extensions & contrib,extensions_contrib,2,2,3,29,0,0,0
-2022-11-10,15.1,5,Other functionality,core_server,9,3,2,40,10,1,0
-2022-11-10,15.1,6,Wrong results & planner,core_server,2,2,3,18,4,1,0
-2022-11-10,15.1,7,Replication & recovery,core_server,7,2,1,8,5,0,0
-2022-11-10,15.1,8,Crash & corruption,extensions_contrib,12,3,4,78,0,0,0
-2022-11-10,15.1,9,Replication & recovery,replication_recovery,13,3,1,2,0,0,0
-2022-11-10,15.1,10,Crash & corruption,replication_recovery,4,2,1,17,3,0,0
-2022-11-10,15.1,11,Crash & corruption,core_server,7,2,1,15,5,0,0
-2022-11-10,15.1,12,Replication & recovery,core_server,2,2,4,33,21,1,0
-2022-11-10,15.1,13,Crash & corruption,planner,5,2,1,18,0,0,0
-2022-11-10,15.1,14,Crash & corruption,core_server,7,2,1,44,12,0,0
-2022-11-10,15.1,15,Client tools,client_tools,3,2,3,70,7,1,0
-2022-11-10,15.1,16,Client tools,client_tools,2,2,1,1,1,0,0
-2022-11-10,15.1,17,Replication & recovery,core_server,7,2,2,34,20,0,0
-2022-11-10,15.1,18,Client tools,client_tools,2,2,2,13,6,0,0
-2022-11-10,15.1,19,Client tools,core_server,2,2,4,37,3,0,0
-2022-11-10,15.1,20,Crash & corruption,extensions_contrib,7,2,1,14,2,0,0
-2022-11-10,15.1,21,Build & platform,build_platform,6,2,4,113,0,0,0
-2022-11-10,15.1,22,Build & platform,core_server,7,2,1,44,23,0,0
-2022-11-10,15.1,23,Build & platform,core_server,12,2,2,5,5,0,0
-2022-11-10,15.1,24,Build & platform,core_server,5,2,1,7,7,0,0
-2023-02-09,15.2,0,Security (CVE),client_tools,5,2,1,2,0,0,0
-2023-02-09,15.2,1,Other functionality,core_server,8,4,4,50,17,1,0
-2023-02-09,15.2,2,Other functionality,core_server,2,2,3,37,2,1,0
-2023-02-09,15.2,3,Other functionality,core_server,2,2,3,5,5,1,0
-2023-02-09,15.2,4,Other functionality,core_server,2,2,1,2,1,0,0
-2023-02-09,15.2,5,Other functionality,core_server,2,2,1,1,1,0,0
-2023-02-09,15.2,6,Other functionality,core_server,3,2,3,129,73,1,0
-2023-02-09,15.2,7,Other functionality,core_server,6,4,5,22,29,0,0
-2023-02-09,15.2,8,Client tools,core_server,6,2,4,81,45,1,0
-2023-02-09,15.2,9,Other functionality,core_server,6,2,3,104,55,1,0
-2023-02-09,15.2,10,Other functionality,core_server,5,2,3,46,2,1,0
-2023-02-09,15.2,11,Other functionality,core_server,3,2,5,90,18,1,0
-2023-02-09,15.2,12,Crash & corruption,core_server,6,2,1,3,2,0,0
-2023-02-09,15.2,13,Replication & recovery,core_server,6,2,1,1,1,0,0
-2023-02-09,15.2,14,Replication & recovery,replication_recovery,6,2,1,7,2,0,0
-2023-02-09,15.2,15,Replication & recovery,replication_recovery,4,2,2,21,15,0,0
-2023-02-09,15.2,16,Replication & recovery,core_server,2,2,2,22,29,0,0
-2023-02-09,15.2,17,Other functionality,core_server,6,2,5,45,16,0,0
-2023-02-09,15.2,18,Crash & corruption,core_server,6,2,1,7,0,0,0
-2023-02-09,15.2,19,Wrong results & planner,planner,2,2,2,12,0,0,0
-2023-02-09,15.2,20,Other functionality,core_server,2,2,2,32,0,0,0
-2023-02-09,15.2,21,Other functionality,planner,6,2,1,12,0,0,0
-2023-02-09,15.2,22,Wrong results & planner,planner,6,4,5,63,3,1,0
-2023-02-09,15.2,23,Other functionality,planner,6,2,1,14,2,0,0
-2023-02-09,15.2,24,Wrong results & planner,core_server,6,2,1,40,5,0,0
-2023-02-09,15.2,25,Crash & corruption,core_server,2,2,1,7,0,0,0
-2023-02-09,15.2,26,Other functionality,core_server,3,2,3,20,17,1,0
-2023-02-09,15.2,27,Crash & corruption,core_server,3,2,1,1,1,0,0
-2023-02-09,15.2,28,Other functionality,core_server,6,2,4,60,21,0,0
-2023-02-09,15.2,29,Crash & corruption,core_server,5,2,2,4,0,0,0
-2023-02-09,15.2,30,Crash & corruption,replication_recovery,3,2,2,7,10,1,0
-2023-02-09,15.2,31,Crash & corruption,replication_recovery,6,2,3,32,13,1,0
-2023-02-09,15.2,32,Replication & recovery,core_server,6,2,3,110,30,0,0
-2023-02-09,15.2,33,Replication & recovery,replication_recovery,4,2,2,10,0,0,0
-2023-02-09,15.2,34,Crash & corruption,replication_recovery,3,2,1,4,0,0,0
-2023-02-09,15.2,35,Replication & recovery,replication_recovery,5,1,1,7,0,0,0
-2023-02-09,15.2,36,Replication & recovery,replication_recovery,2,2,1,2,0,0,0
-2023-02-09,15.2,37,Replication & recovery,replication_recovery,2,2,4,42,6,1,0
-2023-02-09,15.2,38,Crash & corruption,core_server,6,2,2,9,6,0,0
-2023-02-09,15.2,39,Replication & recovery,core_server,6,2,1,4,2,0,0
-2023-02-09,15.2,40,Other functionality,core_server,3,2,1,46,27,0,0
-2023-02-09,15.2,41,Other functionality,core_server,6,2,1,3,2,0,0
-2023-02-09,15.2,42,Build & platform,core_server,6,2,1,14,10,0,0
-2023-02-09,15.2,43,Crash & corruption,core_server,3,2,1,5,1,0,0
-2023-02-09,15.2,44,Crash & corruption,planner,5,2,3,39,15,1,0
-2023-02-09,15.2,45,Other functionality,core_server,6,2,1,3,3,0,0
-2023-02-09,15.2,46,Crash & corruption,core_server,2,2,1,1,0,0,0
-2023-02-09,15.2,47,Client tools,client_tools,2,2,1,7,2,0,0
-2023-02-09,15.2,48,Client tools,client_tools,3,2,4,94,26,1,0
-2023-02-09,15.2,49,Other functionality,client_tools,6,2,1,3,2,0,0
-2023-02-09,15.2,50,Extensions & contrib,extensions_contrib,2,2,4,32,2,0,0
-2023-02-09,15.2,51,Crash & corruption,extensions_contrib,6,2,4,33,7,0,0
-2023-02-09,15.2,52,Extensions & contrib,core_server,4,1,1,10,0,0,0
-2023-02-09,15.2,53,Extensions & contrib,extensions_contrib,6,2,1,2,0,0,0
-2023-02-09,15.2,54,Extensions & contrib,build_platform,6,2,1,3,0,0,0
-2023-02-09,15.2,55,Build & platform,core_server,6,2,2,37,0,0,0
-2023-02-09,15.2,56,Replication & recovery,core_server,5,1,2,4,0,0,0
-2023-05-11,15.3,0,Security (CVE),extensions_contrib,12,4,1,0,1,0,0
-2023-05-11,15.3,1,Security (CVE),planner,6,2,3,54,0,1,0
-2023-05-11,15.3,2,Crash & corruption,core_server,2,2,3,47,1,1,0
-2023-05-11,15.3,3,Crash & corruption,core_server,2,2,1,4,3,0,0
-2023-05-11,15.3,4,Crash & corruption,core_server,6,2,6,192,22,1,0
-2023-05-11,15.3,5,Wrong results & planner,planner,4,4,3,45,3,1,0
-2023-05-11,15.3,6,Other functionality,core_server,4,4,3,34,4,1,0
-2023-05-11,15.3,7,Crash & corruption,core_server,4,4,8,636,174,1,0
-2023-05-11,15.3,8,Build & platform,core_server,2,2,3,262,0,1,0
-2023-05-11,15.3,9,Other functionality,core_server,2,2,6,76,12,1,0
-2023-05-11,15.3,10,Other functionality,core_server,6,2,3,67,10,1,0
-2023-05-11,15.3,11,Other functionality,core_server,5,2,3,23,10,1,0
-2023-05-11,15.3,12,Other functionality,core_server,6,2,4,77,3,1,0
-2023-05-11,15.3,13,Crash & corruption,core_server,6,2,1,12,4,0,0
-2023-05-11,15.3,14,Security hardening (no CVE),core_server,6,2,3,16,2,1,0
-2023-05-11,15.3,15,Security hardening (no CVE),core_server,6,2,3,14,5,1,0
-2023-05-11,15.3,16,Build & platform,core_server,2,2,8,16,42,0,0
-2023-05-11,15.3,17,Crash & corruption,core_server,2,2,3,9,1,1,0
-2023-05-11,15.3,18,Extensions & contrib,core_server,2,2,3,37,38,1,0
-2023-05-11,15.3,19,Crash & corruption,core_server,6,2,4,78,59,1,0
-2023-05-11,15.3,20,Crash & corruption,core_server,5,2,1,73,12,0,0
-2023-05-11,15.3,21,Crash & corruption,core_server,6,2,3,10,2,1,0
-2023-05-11,15.3,22,Crash & corruption,core_server,6,2,1,3,0,0,0
-2023-05-11,15.3,23,Wrong results & planner,planner,6,2,4,22,10,0,0
-2023-05-11,15.3,24,Other functionality,planner,3,2,1,3,25,0,0
-2023-05-11,15.3,25,Crash & corruption,planner,2,2,3,161,84,1,0
-2023-05-11,15.3,26,Other functionality,core_server,6,2,1,10,1,0,0
-2023-05-11,15.3,27,Crash & corruption,core_server,6,2,2,11,8,0,0
-2023-05-11,15.3,28,Crash & corruption,core_server,5,2,3,21,2,1,0
-2023-05-11,15.3,29,Wrong results & planner,core_server,6,2,3,288,31,1,0
-2023-05-11,15.3,30,Crash & corruption,core_server,6,2,3,74,33,0,0
-2023-05-11,15.3,31,Other functionality,core_server,5,2,8,280,207,1,0
-2023-05-11,15.3,32,Crash & corruption,core_server,3,2,1,8,1,0,0
-2023-05-11,15.3,33,Other functionality,extensions_contrib,3,2,3,48,2,0,0
-2023-05-11,15.3,34,Other functionality,core_server,3,2,1,13,5,0,0
-2023-05-11,15.3,35,Other functionality,core_server,6,2,1,1,1,0,0
-2023-05-11,15.3,36,Crash & corruption,core_server,6,2,4,77,13,1,0
-2023-05-11,15.3,37,Crash & corruption,core_server,6,2,5,332,134,1,0
-2023-05-11,15.3,38,Crash & corruption,core_server,6,2,4,65,7,1,0
-2023-05-11,15.3,39,Crash & corruption,core_server,6,2,3,60,4,1,0
-2023-05-11,15.3,40,Build & platform,core_server,6,2,3,130,84,1,0
-2023-05-11,15.3,41,Crash & corruption,core_server,11,4,1,31,18,0,0
-2023-05-11,15.3,42,Replication & recovery,replication_recovery,6,2,1,22,4,0,0
-2023-05-11,15.3,43,Other functionality,core_server,4,2,1,3,2,0,0
-2023-05-11,15.3,44,Other functionality,core_server,3,2,1,7,0,0,0
-2023-05-11,15.3,45,Crash & corruption,core_server,3,2,3,15,2,1,0
-2023-05-11,15.3,46,Crash & corruption,core_server,6,2,1,13,4,0,0
-2023-05-11,15.3,47,Replication & recovery,core_server,11,4,2,16,5,1,0
-2023-05-11,15.3,48,Other functionality,core_server,4,2,1,1,1,0,0
-2023-05-11,15.3,49,Other functionality,replication_recovery,3,2,1,2,0,0,0
-2023-05-11,15.3,50,Replication & recovery,replication_recovery,4,2,1,1,1,0,0
-2023-05-11,15.3,51,Replication & recovery,core_server,2,2,3,51,6,0,0
-2023-05-11,15.3,52,Client tools,build_platform,6,2,15,148,11,1,0
-2023-05-11,15.3,53,Crash & corruption,core_server,18,6,1,0,5,0,0
-2023-05-11,15.3,54,Other functionality,core_server,2,2,1,3,3,0,0
-2023-05-11,15.3,55,Other functionality,core_server,6,2,3,14,0,0,0
-2023-05-11,15.3,56,Wrong results & planner,core_server,6,2,1,33,20,0,0
-2023-05-11,15.3,57,Crash & corruption,core_server,2,2,3,31,3,1,0
-2023-05-11,15.3,58,Crash & corruption,replication_recovery,6,2,2,22,2,0,0
-2023-05-11,15.3,59,Crash & corruption,core_server,6,2,1,10,3,0,0
-2023-05-11,15.3,60,Crash & corruption,replication_recovery,6,2,1,4,0,0,0
-2023-05-11,15.3,61,Crash & corruption,extensions_contrib,5,2,2,65,30,0,0
-2023-05-11,15.3,62,Crash & corruption,extensions_contrib,6,2,3,119,23,0,0
-2023-05-11,15.3,63,Crash & corruption,extensions_contrib,12,4,3,212,121,0,0
-2023-05-11,15.3,64,Crash & corruption,extensions_contrib,6,2,1,36,18,0,0
-2023-05-11,15.3,65,Client tools,client_tools,5,2,1,14,9,0,0
-2023-05-11,15.3,66,Crash & corruption,client_tools,7,2,5,310,127,0,0
-2023-05-11,15.3,67,Crash & corruption,client_tools,6,2,8,288,52,0,0
-2023-05-11,15.3,68,Client tools,core_server,6,4,8,166,22,0,0
-2023-05-11,15.3,69,Client tools,client_tools,3,2,2,127,51,0,0
-2023-05-11,15.3,70,Extensions & contrib,extensions_contrib,6,4,1,1,2,0,0
-2023-05-11,15.3,71,Crash & corruption,extensions_contrib,3,2,2,48,13,0,0
-2023-05-11,15.3,72,Extensions & contrib,extensions_contrib,2,2,1,5,0,0,0
-2023-05-11,15.3,73,Crash & corruption,extensions_contrib,6,2,3,29,1,0,0
-2023-05-11,15.3,74,Crash & corruption,extensions_contrib,4,2,4,27,4,0,0
-2023-05-11,15.3,75,Extensions & contrib,extensions_contrib,3,2,5,62,56,0,0
-2023-05-11,15.3,76,Crash & corruption,extensions_contrib,6,2,3,25,10,0,0
-2023-05-11,15.3,77,Extensions & contrib,extensions_contrib,2,2,1,18,4,0,0
-2023-05-11,15.3,78,Extensions & contrib,extensions_contrib,2,2,1,53,5,0,0
-2023-05-11,15.3,79,Build & platform,build_platform,6,2,3,3,3,0,0
-2023-05-11,15.3,80,Build & platform,docs,6,2,4,70,36,0,1
-2023-05-11,15.3,81,Build & platform,other,6,2,1,1,1,0,0
-2023-08-10,15.4,0,Security (CVE),core_server,7,2,7,79,15,1,0
-2023-08-10,15.4,1,Security (CVE),core_server,3,2,4,152,50,1,0
-2023-08-10,15.4,2,Other functionality,core_server,10,2,5,134,8,1,0
-2023-08-10,15.4,3,Crash & corruption,client_tools,7,2,20,421,28,1,0
-2023-08-10,15.4,4,Crash & corruption,core_server,7,2,3,85,7,1,0
-2023-08-10,15.4,5,Other functionality,core_server,5,1,3,58,2,1,0
-2023-08-10,15.4,6,Other functionality,core_server,7,2,3,117,4,1,0
-2023-08-10,15.4,7,Other functionality,core_server,7,2,3,79,7,1,0
-2023-08-10,15.4,8,Other functionality,core_server,1,1,3,76,0,1,0
-2023-08-10,15.4,9,Wrong results & planner,planner,5,1,4,36,8,1,0
-2023-08-10,15.4,10,Wrong results & planner,planner,4,2,1,17,0,0,0
-2023-08-10,15.4,11,Wrong results & planner,planner,7,2,5,78,2,0,0
-2023-08-10,15.4,12,Other functionality,core_server,5,1,3,52,1,1,0
-2023-08-10,15.4,13,Crash & corruption,core_server,21,6,2,10,3,0,0
-2023-08-10,15.4,14,Other functionality,core_server,2,1,7,240,41,1,0
-2023-08-10,15.4,15,Other functionality,planner,4,1,3,60,1,1,0
-2023-08-10,15.4,16,Crash & corruption,core_server,5,1,3,31,12,1,0
-2023-08-10,15.4,17,Crash & corruption,core_server,9,3,1,32,1,0,0
-2023-08-10,15.4,18,Crash & corruption,core_server,5,2,1,0,7,0,0
-2023-08-10,15.4,19,Other functionality,core_server,3,1,3,31,4,1,0
-2023-08-10,15.4,20,Crash & corruption,core_server,5,1,1,15,0,0,0
-2023-08-10,15.4,21,Other functionality,core_server,7,2,1,26,48,0,0
-2023-08-10,15.4,22,Other functionality,core_server,1,1,1,1,0,0,0
-2023-08-10,15.4,23,Build & platform,core_server,7,2,1,2,0,0,0
-2023-08-10,15.4,24,Crash & corruption,core_server,5,2,1,3,1,0,0
-2023-08-10,15.4,25,Replication & recovery,core_server,3,2,2,26,6,1,0
-2023-08-10,15.4,26,Other functionality,core_server,7,2,1,43,22,0,0
-2023-08-10,15.4,27,Crash & corruption,core_server,10,2,1,16,7,0,0
-2023-08-10,15.4,28,Crash & corruption,core_server,7,2,1,4,0,0,0
-2023-08-10,15.4,29,Crash & corruption,replication_recovery,14,4,1,5,5,0,0
-2023-08-10,15.4,30,Crash & corruption,core_server,7,2,1,3,0,0,0
-2023-08-10,15.4,31,Crash & corruption,core_server,7,2,1,2,0,0,0
-2023-08-10,15.4,32,Replication & recovery,replication_recovery,3,2,1,4,8,0,0
-2023-08-10,15.4,33,Crash & corruption,core_server,6,2,1,2,1,0,0
-2023-08-10,15.4,34,Crash & corruption,core_server,5,1,3,22,1,1,0
-2023-08-10,15.4,35,Crash & corruption,core_server,1,1,6,118,4,1,0
-2023-08-10,15.4,36,Extensions & contrib,extensions_contrib,5,1,3,15,7,0,0
-2023-08-10,15.4,37,Extensions & contrib,extensions_contrib,5,1,5,69,5,0,0
-2023-08-10,15.4,38,Crash & corruption,extensions_contrib,5,1,3,12,4,0,0
-2023-08-10,15.4,39,Extensions & contrib,extensions_contrib,7,2,1,0,3,0,0
-2023-08-10,15.4,40,Crash & corruption,extensions_contrib,2,1,6,178,31,0,0
-2023-08-10,15.4,41,Client tools,client_tools,1,1,2,26,19,0,0
-2023-08-10,15.4,42,Client tools,client_tools,2,1,4,89,1,0,0
-2023-08-10,15.4,43,Client tools,client_tools,1,1,1,4,4,0,0
-2023-08-10,15.4,44,Crash & corruption,client_tools,1,1,2,28,18,0,0
-2023-08-10,15.4,45,Other functionality,core_server,7,2,1,1,0,0,0
-2023-08-10,15.4,46,Other functionality,build_platform,1,1,1,4,5,0,0
-2023-11-09,15.5,0,Security (CVE),core_server,7,3,3,33,12,1,0
-2023-11-09,15.5,1,Security (CVE),core_server,7,3,5,110,24,1,0
-2023-11-09,15.5,2,Security (CVE),core_server,14,6,3,40,2,1,0
-2023-11-09,15.5,3,Wrong results & planner,extensions_contrib,6,3,3,226,80,0,0
-2023-11-09,15.5,4,Wrong results & planner,core_server,5,3,5,16,6,1,0
-2023-11-09,15.5,5,Other functionality,core_server,4,3,3,44,1,1,0
-2023-11-09,15.5,6,Other functionality,core_server,8,6,3,96,6,1,0
-2023-11-09,15.5,7,Other functionality,core_server,4,3,3,54,29,1,0
-2023-11-09,15.5,8,Crash & corruption,core_server,14,6,3,69,27,1,0
-2023-11-09,15.5,9,Other functionality,core_server,3,3,10,237,38,1,0
-2023-11-09,15.5,10,Other functionality,planner,8,7,1,2,1,0,0
-2023-11-09,15.5,11,Other functionality,core_server,7,3,3,19,1,0,0
-2023-11-09,15.5,12,Crash & corruption,core_server,4,3,1,22,3,0,0
-2023-11-09,15.5,13,Crash & corruption,core_server,7,3,1,17,9,0,0
-2023-11-09,15.5,14,Crash & corruption,core_server,7,3,2,17,0,0,0
-2023-11-09,15.5,15,Other functionality,extensions_contrib,6,3,1,4,4,0,0
-2023-11-09,15.5,16,Extensions & contrib,core_server,7,3,4,74,9,0,0
-2023-11-09,15.5,17,Other functionality,core_server,2,2,3,83,2,1,0
-2023-11-09,15.5,18,Other functionality,core_server,7,3,1,2,0,0,0
-2023-11-09,15.5,19,Other functionality,core_server,7,3,1,2,2,0,0
-2023-11-09,15.5,20,Other functionality,core_server,6,2,1,2,2,0,0
-2023-11-09,15.5,21,Crash & corruption,core_server,5,3,1,8,4,0,0
-2023-11-09,15.5,22,Other functionality,core_server,4,3,1,6,0,0,0
-2023-11-09,15.5,23,Crash & corruption,core_server,7,3,2,23,3,0,0
-2023-11-09,15.5,24,Other functionality,core_server,7,3,3,44,0,1,0
-2023-11-09,15.5,25,Crash & corruption,core_server,11,3,5,62,1,0,0
-2023-11-09,15.5,26,Other functionality,core_server,6,3,1,30,0,0,0
-2023-11-09,15.5,27,Other functionality,core_server,7,3,1,9,0,0,0
-2023-11-09,15.5,28,Other functionality,core_server,6,3,1,2,1,0,0
-2023-11-09,15.5,29,Other functionality,core_server,5,3,1,19,2,0,0
-2023-11-09,15.5,30,Replication & recovery,core_server,4,3,1,1,0,0,0
-2023-11-09,15.5,31,Replication & recovery,core_server,3,3,1,14,2,0,0
-2023-11-09,15.5,32,Other functionality,extensions_contrib,7,3,3,106,2,0,0
-2023-11-09,15.5,33,Crash & corruption,core_server,3,3,1,17,8,0,0
-2023-11-09,15.5,34,Crash & corruption,core_server,7,3,4,119,20,1,0
-2023-11-09,15.5,35,Other functionality,planner,4,3,1,2,2,0,0
-2023-11-09,15.5,36,Crash & corruption,core_server,7,3,2,28,21,0,0
-2023-11-09,15.5,37,Crash & corruption,replication_recovery,5,1,1,16,4,0,0
-2023-11-09,15.5,38,Replication & recovery,replication_recovery,6,3,1,8,39,0,0
-2023-11-09,15.5,39,Replication & recovery,replication_recovery,12,6,2,24,0,1,0
-2023-11-09,15.5,40,Crash & corruption,core_server,2,2,2,74,57,0,0
-2023-11-09,15.5,41,Other functionality,core_server,4,2,1,1,1,0,0
-2023-11-09,15.5,42,Other functionality,core_server,4,2,1,11,8,0,0
-2023-11-09,15.5,43,Other functionality,core_server,6,2,5,108,49,0,0
-2023-11-09,15.5,44,Replication & recovery,core_server,7,2,2,90,1,0,0
-2023-11-09,15.5,45,Other functionality,tests,12,4,3,0,157,1,0
-2023-11-09,15.5,46,Build & platform,core_server,4,3,1,6,4,0,0
-2023-11-09,15.5,47,Crash & corruption,replication_recovery,7,3,1,26,30,0,0
-2023-11-09,15.5,48,Crash & corruption,extensions_contrib,7,3,4,37,3,0,0
-2023-11-09,15.5,49,Crash & corruption,client_tools,4,4,1,1,1,0,0
-2023-11-09,15.5,50,Client tools,client_tools,7,3,2,27,7,0,0
-2023-11-09,15.5,51,Client tools,client_tools,10,4,1,50,1,0,0
-2023-11-09,15.5,52,Replication & recovery,replication_recovery,6,2,1,2,1,0,0
-2023-11-09,15.5,53,Client tools,client_tools,6,3,2,49,7,0,0
-2023-11-09,15.5,54,Crash & corruption,extensions_contrib,7,3,4,163,4,0,0
-2023-11-09,15.5,55,Extensions & contrib,extensions_contrib,7,3,3,17,9,0,0
-2023-11-09,15.5,56,Build & platform,core_server,20,9,2,37,0,0,0
-2023-11-09,15.5,57,Build & platform,other,14,6,1,17,9,0,0
-2023-11-09,15.5,58,Extensions & contrib,extensions_contrib,5,3,1,3,1,0,0
-2023-11-09,15.5,59,Other functionality,core_server,7,3,2,1,2,0,0
-2023-11-09,16.1,15,Other functionality,extensions_contrib,2,2,4,90,9,0,0
-2023-11-09,16.1,21,Replication & recovery,core_server,2,2,4,44,2,1,0
-2023-11-09,16.1,22,Other functionality,core_server,2,2,3,85,0,1,0
-2023-11-09,16.1,23,Extensions & contrib,core_server,2,2,3,40,1,1,0
-2023-11-09,16.1,30,Other functionality,planner,2,2,1,17,1,0,0
-2023-11-09,16.1,35,Other functionality,extensions_contrib,2,2,3,47,1,0,0
-2023-11-09,16.1,36,Other functionality,core_server,2,2,1,1,1,0,0
-2023-11-09,16.1,47,Replication & recovery,client_tools,2,2,2,43,30,0,0
-2023-11-09,16.1,51,Client tools,client_tools,2,2,2,30,11,0,0
-2023-11-09,16.1,52,Client tools,client_tools,2,2,1,24,1,0,0
-2024-02-08,15.6,0,Security (CVE),core_server,12,6,3,38,2,1,0
-2024-02-08,15.6,1,Crash & corruption,core_server,7,3,6,234,94,0,0
-2024-02-08,15.6,2,Performance,core_server,4,1,5,42,27,0,0
-2024-02-08,15.6,3,Crash & corruption,planner,5,2,3,390,0,1,0
-2024-02-08,15.6,4,Wrong results & planner,planner,6,3,3,46,2,1,0
-2024-02-08,15.6,5,Other functionality,core_server,3,3,3,41,0,1,0
-2024-02-08,15.6,6,Other functionality,core_server,3,3,3,97,0,1,0
-2024-02-08,15.6,7,Crash & corruption,core_server,3,3,3,167,8,1,0
-2024-02-08,15.6,8,Other functionality,core_server,4,3,1,23,5,0,0
-2024-02-08,15.6,9,Other functionality,core_server,12,6,1,1,0,0,0
-2024-02-08,15.6,10,Crash & corruption,core_server,6,3,4,64,20,1,0
-2024-02-08,15.6,11,Crash & corruption,core_server,4,3,1,1,2,0,0
-2024-02-08,15.6,12,Other functionality,core_server,6,3,3,30,0,1,0
-2024-02-08,15.6,13,Other functionality,core_server,6,3,4,132,30,1,0
-2024-02-08,15.6,14,Other functionality,core_server,6,3,1,15,8,0,0
-2024-02-08,15.6,15,Other functionality,core_server,6,3,10,141,56,1,0
-2024-02-08,15.6,16,Crash & corruption,core_server,12,6,1,95,95,0,0
-2024-02-08,15.6,17,Other functionality,core_server,6,3,3,8,1,1,0
-2024-02-08,15.6,18,Wrong results & planner,core_server,6,3,3,29,4,1,0
-2024-02-08,15.6,19,Wrong results & planner,core_server,6,3,3,80,44,1,0
-2024-02-08,15.6,20,Other functionality,core_server,3,3,1,3,0,0,0
-2024-02-08,15.6,21,Other functionality,core_server,6,3,1,8,1,0,0
-2024-02-08,15.6,22,Other functionality,core_server,6,3,1,4,1,0,0
-2024-02-08,15.6,23,Other functionality,core_server,8,6,1,18,1,0,0
-2024-02-08,15.6,24,Crash & corruption,core_server,6,3,7,418,20,1,0
-2024-02-08,15.6,25,Other functionality,core_server,6,3,1,5,1,0,0
-2024-02-08,15.6,26,Other functionality,core_server,6,3,3,77,11,1,0
-2024-02-08,15.6,27,Other functionality,core_server,6,3,9,54,55,1,0
-2024-02-08,15.6,28,Other functionality,core_server,2,2,1,1,1,0,0
-2024-02-08,15.6,29,Crash & corruption,core_server,6,6,2,9,0,0,0
-2024-02-08,15.6,30,Replication & recovery,replication_recovery,3,3,1,34,0,0,0
-2024-02-08,15.6,31,Replication & recovery,replication_recovery,6,3,1,1,0,0,0
-2024-02-08,15.6,32,Replication & recovery,replication_recovery,3,3,1,37,9,0,0
-2024-02-08,15.6,33,Crash & corruption,replication_recovery,6,3,1,15,5,0,0
-2024-02-08,15.6,34,Replication & recovery,replication_recovery,3,3,2,55,2,1,0
-2024-02-08,15.6,35,Replication & recovery,replication_recovery,3,3,2,34,11,1,0
-2024-02-08,15.6,36,Replication & recovery,extensions_contrib,2,1,3,65,4,0,0
-2024-02-08,15.6,37,Client tools,core_server,6,3,1,5,7,0,0
-2024-02-08,15.6,38,Crash & corruption,build_platform,6,3,8,11,27,1,0
-2024-02-08,15.6,39,Extensions & contrib,core_server,6,3,4,45,14,0,0
-2024-02-08,15.6,40,Other functionality,extensions_contrib,3,2,3,50,29,0,0
-2024-02-08,15.6,41,Other functionality,core_server,6,3,1,4,0,0,0
-2024-02-08,15.6,42,Other functionality,extensions_contrib,4,3,5,122,11,0,0
-2024-02-08,15.6,43,Client tools,client_tools,8,6,1,3,1,0,0
-2024-02-08,15.6,44,Client tools,client_tools,4,3,1,8,0,0,0
-2024-02-08,15.6,45,Crash & corruption,client_tools,6,3,1,42,22,0,0
-2024-02-08,15.6,46,Client tools,client_tools,6,3,3,56,60,0,0
-2024-02-08,15.6,47,Client tools,tests,12,6,1,1,1,1,0
-2024-02-08,15.6,48,Client tools,client_tools,6,3,3,32,6,0,0
-2024-02-08,15.6,49,Client tools,client_tools,4,3,2,41,2,0,0
-2024-02-08,15.6,50,Crash & corruption,extensions_contrib,6,3,4,27,22,0,0
-2024-02-08,15.6,51,Extensions & contrib,extensions_contrib,6,3,3,14,2,0,0
-2024-02-08,15.6,52,Extensions & contrib,extensions_contrib,6,3,3,11,7,0,0
-2024-02-08,15.6,53,Client tools,tests,12,6,1,1,1,1,0
-2024-02-08,15.6,54,Other functionality,core_server,3,3,3,69,69,0,0
-2024-02-08,15.6,55,Build & platform,core_server,6,3,2,12,4,0,0
-2024-02-08,15.6,56,Build & platform,replication_recovery,5,3,1,4,2,0,0
-2024-02-08,15.6,57,Build & platform,extensions_contrib,8,5,1,1,1,0,0
-2024-02-08,15.6,58,Build & platform,core_server,6,3,1,4,1,0,0
-2024-02-08,16.2,5,Other functionality,planner,2,2,1,1,1,0,0
-2024-02-08,16.2,6,Other functionality,planner,2,2,3,51,6,1,0
-2024-02-08,16.2,11,Crash & corruption,core_server,2,2,1,2,2,0,0
-2024-02-08,16.2,12,Replication & recovery,core_server,2,2,3,39,3,1,0
-2024-02-08,16.2,17,Other functionality,core_server,2,2,3,9,13,1,0
-2024-02-08,16.2,24,Other functionality,core_server,2,2,1,11,0,0,0
-2024-02-08,16.2,32,Other functionality,core_server,2,2,9,54,55,1,0
-2024-02-08,16.2,38,Replication & recovery,replication_recovery,2,2,1,47,8,0,0
-2024-02-08,16.2,43,Replication & recovery,tests,4,4,1,81,70,1,0
-2024-02-08,16.2,48,Crash & corruption,replication_recovery,2,2,1,5,0,0,0
-2024-02-08,16.2,55,Client tools,client_tools,2,2,2,9,17,0,0
-2024-02-08,16.2,58,Client tools,client_tools,2,2,1,1,1,0,0
-2024-05-09,15.7,0,Security (CVE),core_server,4,3,7,81,17,1,0
-2024-05-09,15.7,1,Other functionality,core_server,6,3,5,227,11,1,0
-2024-05-09,15.7,2,Other functionality,core_server,3,3,3,27,1,1,0
-2024-05-09,15.7,3,Other functionality,core_server,3,3,5,106,8,1,0
-2024-05-09,15.7,4,Wrong results & planner,core_server,6,3,3,187,2,1,0
-2024-05-09,15.7,5,Other functionality,core_server,6,3,3,24,22,1,0
-2024-05-09,15.7,6,Other functionality,core_server,3,3,3,100,1,1,0
-2024-05-09,15.7,7,Replication & recovery,core_server,7,6,1,16,0,0,0
-2024-05-09,15.7,8,Other functionality,client_tools,3,3,3,14,4,0,0
-2024-05-09,15.7,9,Other functionality,core_server,6,3,2,8,6,1,0
-2024-05-09,15.7,10,Other functionality,core_server,3,3,3,79,9,1,0
-2024-05-09,15.7,11,Crash & corruption,core_server,6,3,3,60,1,0,0
-2024-05-09,15.7,12,Crash & corruption,core_server,6,3,1,16,12,0,0
-2024-05-09,15.7,13,Other functionality,core_server,3,3,1,11,13,0,0
-2024-05-09,15.7,14,Crash & corruption,core_server,4,1,1,6,0,0,0
-2024-05-09,15.7,15,Wrong results & planner,planner,6,3,2,34,7,0,0
-2024-05-09,15.7,16,Other functionality,core_server,2,2,4,67,24,1,0
-2024-05-09,15.7,17,Other functionality,core_server,6,3,1,4,4,0,0
-2024-05-09,15.7,18,Crash & corruption,planner,6,3,1,7,2,0,0
-2024-05-09,15.7,19,Other functionality,core_server,4,3,3,63,6,1,0
-2024-05-09,15.7,20,Other functionality,planner,6,3,2,2,2,0,0
-2024-05-09,15.7,21,Crash & corruption,core_server,12,6,7,41,13,1,0
-2024-05-09,15.7,22,Crash & corruption,core_server,6,3,6,36,4,1,0
-2024-05-09,15.7,23,Other functionality,core_server,7,4,1,0,3,0,0
-2024-05-09,15.7,24,Wrong results & planner,core_server,4,3,5,97,19,1,0
-2024-05-09,15.7,25,Wrong results & planner,core_server,6,3,3,22,4,1,0
-2024-05-09,15.7,26,Crash & corruption,core_server,6,3,1,33,35,0,0
-2024-05-09,15.7,27,Other functionality,core_server,6,3,1,19,11,0,0
-2024-05-09,15.7,28,Crash & corruption,core_server,4,3,4,112,20,1,0
-2024-05-09,15.7,29,Other functionality,core_server,5,2,1,38,32,0,0
-2024-05-09,15.7,30,Crash & corruption,core_server,3,2,2,25,24,0,0
-2024-05-09,15.7,31,Crash & corruption,core_server,6,3,2,15,8,0,0
-2024-05-09,15.7,32,Crash & corruption,core_server,6,3,5,141,9,1,0
-2024-05-09,15.7,33,Crash & corruption,replication_recovery,3,3,2,22,4,0,0
-2024-05-09,15.7,34,Crash & corruption,core_server,6,3,1,1,1,0,0
-2024-05-09,15.7,35,Other functionality,core_server,6,3,1,1,5,0,0
-2024-05-09,15.7,36,Build & platform,client_tools,6,3,2,36,6,0,0
-2024-05-09,15.7,37,Client tools,client_tools,12,6,2,52,26,0,0
-2024-05-09,15.7,38,Crash & corruption,client_tools,16,7,12,289,80,0,0
-2024-05-09,15.7,39,Client tools,client_tools,6,3,1,18,19,0,0
-2024-05-09,15.7,40,Client tools,client_tools,6,3,9,70,2,0,0
-2024-05-09,15.7,41,Client tools,client_tools,3,3,1,2,0,0,0
-2024-05-09,15.7,42,Client tools,client_tools,9,3,1,10,7,0,0
-2024-05-09,15.7,43,Replication & recovery,replication_recovery,3,3,9,47,4,0,0
-2024-05-09,15.7,44,Other functionality,extensions_contrib,6,3,7,76,36,1,0
-2024-05-09,15.7,45,Extensions & contrib,extensions_contrib,12,6,3,55,5,0,0
-2024-05-09,15.7,46,Extensions & contrib,core_server,6,5,2,2,2,0,0
-2024-05-09,15.7,47,Extensions & contrib,extensions_contrib,6,3,3,114,36,0,0
-2024-05-09,15.7,48,Extensions & contrib,extensions_contrib,6,3,1,5,3,0,0
-2024-05-09,15.7,49,Extensions & contrib,extensions_contrib,5,2,2,12,9,0,0
-2024-05-09,15.7,50,Build & platform,core_server,6,3,1,5,2,0,0
-2024-05-09,15.7,51,Other functionality,core_server,6,3,1,31,4,0,0
-2024-05-09,16.3,12,Other functionality,core_server,2,2,1,0,4,0,0
-2024-05-09,16.3,16,Other functionality,planner,2,2,1,15,4,0,0
-2024-05-09,16.3,22,Performance,core_server,2,2,2,124,25,0,0
-2024-05-09,16.3,35,Crash & corruption,replication_recovery,2,2,1,33,6,0,0
-2024-05-09,16.3,40,Crash & corruption,build_platform,2,2,5,61,0,0,0
-2024-05-09,16.3,45,Client tools,client_tools,2,2,2,21,2,0,0
-2024-08-08,15.8,0,Security (CVE),core_server,7,3,15,255,1,1,0
-2024-08-08,15.8,1,Crash & corruption,core_server,5,3,2,29,8,0,0
-2024-08-08,15.8,2,Other functionality,core_server,7,3,3,24,1,1,0
-2024-08-08,15.8,3,Other functionality,tests,14,6,2,4,2,1,0
-2024-08-08,15.8,4,Wrong results & planner,core_server,6,4,1,60,50,0,0
-2024-08-08,15.8,5,Other functionality,core_server,5,3,3,82,1,1,0
-2024-08-08,15.8,6,Crash & corruption,tests,10,4,2,26,0,1,0
-2024-08-08,15.8,7,Other functionality,extensions_contrib,5,2,4,130,14,0,0
-2024-08-08,15.8,8,Wrong results & planner,core_server,7,3,3,124,80,1,0
-2024-08-08,15.8,9,Wrong results & planner,core_server,7,3,3,157,13,1,0
-2024-08-08,15.8,10,Other functionality,core_server,4,3,3,18,2,1,0
-2024-08-08,15.8,11,Replication & recovery,core_server,5,2,3,56,13,1,0
-2024-08-08,15.8,12,Other functionality,core_server,5,2,3,19,13,1,0
-2024-08-08,15.8,13,Security (CVE),core_server,7,3,3,14,1,1,0
-2024-08-08,15.8,14,Other functionality,core_server,5,2,3,64,3,0,0
-2024-08-08,15.8,15,Other functionality,core_server,7,3,3,25,14,1,0
-2024-08-08,15.8,16,Build & platform,core_server,7,3,3,102,20,1,0
-2024-08-08,15.8,17,Other functionality,core_server,2,2,1,7,0,0,0
-2024-08-08,15.8,18,Other functionality,core_server,5,2,3,32,5,1,0
-2024-08-08,15.8,19,Client tools,core_server,5,2,3,27,6,1,0
-2024-08-08,15.8,20,Other functionality,planner,5,2,3,27,1,1,0
-2024-08-08,15.8,21,Other functionality,core_server,5,2,1,47,13,0,0
-2024-08-08,15.8,22,Other functionality,core_server,3,2,3,86,73,1,0
-2024-08-08,15.8,23,Other functionality,planner,5,2,5,107,29,1,0
-2024-08-08,15.8,24,Crash & corruption,core_server,5,2,1,17,1,0,0
-2024-08-08,15.8,25,Other functionality,tests,10,6,4,0,68,1,0
-2024-08-08,15.8,26,Replication & recovery,core_server,5,2,7,85,17,1,0
-2024-08-08,15.8,27,Crash & corruption,extensions_contrib,7,3,7,122,10,0,0
-2024-08-08,15.8,28,Replication & recovery,core_server,2,2,2,14,2,0,0
-2024-08-08,15.8,29,Replication & recovery,replication_recovery,2,2,1,10,0,0,0
-2024-08-08,15.8,30,Crash & corruption,core_server,6,2,2,17,1,0,0
-2024-08-08,15.8,31,Other functionality,core_server,2,2,1,8,0,0,0
-2024-08-08,15.8,32,Crash & corruption,replication_recovery,3,2,2,11,0,0,0
-2024-08-08,15.8,33,Build & platform,core_server,7,3,1,32,0,0,0
-2024-08-08,15.8,34,Security hardening (no CVE),core_server,4,2,1,3,2,0,0
-2024-08-08,15.8,35,Build & platform,core_server,19,8,1,3,3,0,0
-2024-08-08,15.8,36,Other functionality,extensions_contrib,5,2,3,138,56,0,0
-2024-08-08,15.8,37,Extensions & contrib,build_platform,11,1,2,0,2,0,0
-2024-08-08,15.8,38,Extensions & contrib,extensions_contrib,5,2,3,42,16,0,0
-2024-08-08,15.8,39,Crash & corruption,extensions_contrib,5,2,5,80,3,0,0
-2024-08-08,15.8,40,Crash & corruption,extensions_contrib,5,2,3,28,2,0,0
-2024-08-08,15.8,41,Client tools,client_tools,7,3,2,11,9,0,0
-2024-08-08,15.8,42,Crash & corruption,client_tools,2,2,1,2,2,0,0
-2024-08-08,15.8,43,Client tools,client_tools,5,2,1,4,1,0,0
-2024-08-08,15.8,44,Extensions & contrib,extensions_contrib,4,3,3,85,5,0,0
-2024-08-08,15.8,45,Extensions & contrib,extensions_contrib,4,2,3,40,0,0,0
-2024-08-08,15.8,46,Build & platform,core_server,7,3,2,95,9,0,0
-2024-08-08,15.8,47,Crash & corruption,planner,3,2,1,1,1,0,0
-2024-08-08,15.8,48,Crash & corruption,core_server,5,2,3,27,5,0,0
-2024-08-08,16.4,1,Wrong results & planner,core_server,3,2,4,100,20,1,0
-2024-08-08,16.4,9,Other functionality,core_server,1,1,3,195,0,1,0
-2024-08-08,16.4,16,Other functionality,core_server,3,2,3,18,10,0,0
-2024-08-08,16.4,27,Other functionality,client_tools,1,1,5,14,6,1,0
-2024-08-08,16.4,41,Other functionality,client_tools,1,1,5,23,3,1,0
-2024-08-08,16.4,48,Extensions & contrib,extensions_contrib,3,2,3,68,0,0,0
-2024-11-14,15.9,0,Security (CVE),core_server,7,4,5,226,6,1,0
-2024-11-14,15.9,1,Security (CVE),client_tools,7,4,3,22,35,0,0
-2024-11-14,15.9,2,Security (CVE),core_server,14,8,1,18,1,0,0
-2024-11-14,15.9,3,Security (CVE),extensions_contrib,26,14,2,5,0,0,0
-2024-11-14,15.9,4,Other functionality,core_server,10,8,3,27,30,1,0
-2024-11-14,15.9,5,Crash & corruption,planner,8,6,1,11,2,0,0
-2024-11-14,15.9,6,Other functionality,core_server,11,5,3,51,0,1,0
-2024-11-14,15.9,7,Wrong results & planner,planner,14,8,3,324,2,1,0
-2024-11-14,15.9,8,Other functionality,planner,6,4,3,71,38,1,0
-2024-11-14,15.9,9,Build & platform,core_server,6,3,1,3,0,0,0
-2024-11-14,15.9,10,Crash & corruption,core_server,7,4,3,17,5,1,0
-2024-11-14,15.9,11,Other functionality,core_server,7,4,1,12,5,0,0
-2024-11-14,15.9,12,Crash & corruption,core_server,7,4,1,9,4,0,0
-2024-11-14,15.9,13,Crash & corruption,replication_recovery,7,4,1,8,1,0,0
-2024-11-14,15.9,14,Crash & corruption,core_server,7,4,1,8,0,0,0
-2024-11-14,15.9,15,Crash & corruption,core_server,49,28,1,2,4,0,0
-2024-11-14,15.9,16,Crash & corruption,core_server,6,3,3,67,0,0,0
-2024-11-14,15.9,17,Performance,replication_recovery,13,7,3,23,11,0,0
-2024-11-14,15.9,18,Other functionality,core_server,4,3,4,42,4,0,0
-2024-11-14,15.9,19,Crash & corruption,core_server,6,3,2,17,5,0,0
-2024-11-14,15.9,20,Crash & corruption,core_server,4,3,5,92,3,1,0
-2024-11-14,15.9,21,Other functionality,core_server,11,6,1,5,5,0,0
-2024-11-14,15.9,22,Other functionality,core_server,6,3,2,14,2,1,0
-2024-11-14,15.9,23,Other functionality,core_server,7,4,1,3,0,0,0
-2024-11-14,15.9,24,Other functionality,client_tools,3,3,4,74,62,1,0
-2024-11-14,15.9,25,Replication & recovery,extensions_contrib,10,8,4,45,44,0,0
-2024-11-14,15.9,26,Replication & recovery,replication_recovery,7,4,1,11,6,0,0
-2024-11-14,15.9,27,Other functionality,core_server,6,3,1,1,2,0,0
-2024-11-14,15.9,28,Other functionality,core_server,12,6,1,3,1,0,0
-2024-11-14,15.9,29,Other functionality,core_server,6,3,5,85,19,1,0
-2024-11-14,15.9,30,Other functionality,extensions_contrib,7,4,3,47,4,0,0
-2024-11-14,15.9,31,Other functionality,extensions_contrib,4,3,2,16,12,0,0
-2024-11-14,15.9,32,Client tools,core_server,4,3,1,1,4,0,0
-2024-11-14,15.9,33,Client tools,client_tools,7,4,1,4,4,0,0
-2024-11-14,15.9,34,Other functionality,client_tools,5,3,1,21,2,0,0
-2024-11-14,15.9,35,Security hardening (no CVE),client_tools,7,4,5,109,48,0,0
-2024-11-14,15.9,36,Client tools,core_server,3,3,7,112,41,1,0
-2024-11-14,15.9,37,Replication & recovery,replication_recovery,6,3,1,2,4,0,0
-2024-11-14,15.9,38,Replication & recovery,core_server,19,4,1,27,1,0,0
-2024-11-14,15.9,39,Client tools,client_tools,20,12,1,2,1,0,0
-2024-11-14,15.9,40,Extensions & contrib,extensions_contrib,12,6,2,5,3,0,0
-2024-11-14,15.9,41,Crash & corruption,core_server,7,4,11,985,2,0,0
-2024-11-14,15.9,42,Crash & corruption,core_server,7,4,6,10,10,0,0
-2024-11-14,15.9,43,Build & platform,build_platform,6,3,1,4,1,0,0
-2024-11-14,15.9,44,Build & platform,core_server,1,1,1,4,2,0,0
-2024-11-14,16.5,9,Performance,planner,2,2,4,107,15,1,0
-2024-11-14,16.5,12,Crash & corruption,core_server,3,3,5,92,11,1,0
-2024-11-14,16.5,13,Build & platform,core_server,2,2,5,32,3,1,0
-2024-11-14,16.5,15,Build & platform,client_tools,3,3,2,93,17,0,0
-2024-11-14,16.5,24,Other functionality,core_server,2,2,5,84,23,1,0
-2024-11-14,16.5,26,Other functionality,core_server,2,2,3,217,100,1,0
-2024-11-14,16.5,30,Wrong results & planner,core_server,2,2,1,1,1,0,0
-2024-11-14,16.5,34,Replication & recovery,core_server,2,2,4,66,1,1,0
-2024-11-14,16.5,44,Crash & corruption,client_tools,2,2,5,59,27,1,0
-2024-11-14,16.5,45,Client tools,client_tools,3,3,2,16,5,0,0
-2024-11-14,17.1,5,Crash & corruption,core_server,1,1,1,2,2,0,0
-2024-11-14,17.1,7,Wrong results & planner,planner,2,2,4,62,3,1,0
-2024-11-14,17.1,8,Crash & corruption,core_server,2,2,2,7,1,0,0
-2024-11-14,17.1,9,Wrong results & planner,planner,4,4,3,89,0,1,0
-2024-11-14,17.1,11,Wrong results & planner,core_server,2,2,3,21,8,0,0
-2024-11-14,17.1,13,Other functionality,core_server,2,2,3,26,4,1,0
-2024-11-14,17.1,16,Crash & corruption,core_server,2,2,1,19,9,0,0
-2024-11-14,17.1,17,Other functionality,extensions_contrib,2,2,7,105,51,1,0
-2024-11-14,17.1,18,Other functionality,core_server,2,2,3,28,2,1,0
-2024-11-14,17.1,32,Client tools,client_tools,2,2,1,1,1,0,0
-2024-11-14,17.1,34,Replication & recovery,replication_recovery,2,2,3,24,14,0,0
-2024-11-14,17.1,35,Other functionality,client_tools,2,2,3,75,0,0,0
-2024-11-14,17.1,36,Other functionality,client_tools,2,2,1,9,4,0,0
-2024-11-21,15.10,0,Other functionality,core_server,4,3,1,3,3,0,0
-2024-11-21,15.10,1,Security (CVE),core_server,7,4,6,90,3,1,0
-2024-11-21,15.10,2,Replication & recovery,replication_recovery,6,4,1,3,1,0,0
-2024-11-21,15.10,3,Replication & recovery,replication_recovery,5,4,7,169,7,0,0
-2024-11-21,15.10,4,Crash & corruption,core_server,4,4,2,54,5,0,0
-2024-11-21,15.10,5,Extensions & contrib,extensions_contrib,6,4,1,2,0,0,0
-2024-11-21,15.10,6,Crash & corruption,extensions_contrib,6,4,3,16,2,0,0
-2024-11-21,15.10,7,Crash & corruption,core_server,5,4,6,79,1,1,0
-2025-02-13,15.11,0,Security (CVE),client_tools,37,24,1,14,5,0,0
-2025-02-13,15.11,1,Other functionality,core_server,6,4,11,80,92,1,0
-2025-02-13,15.11,2,Other functionality,core_server,4,4,3,34,18,1,0
-2025-02-13,15.11,3,Other functionality,core_server,6,4,1,2,2,0,0
-2025-02-13,15.11,4,Crash & corruption,core_server,6,4,6,252,83,1,0
-2025-02-13,15.11,5,Crash & corruption,core_server,8,6,5,77,93,0,0
-2025-02-13,15.11,6,Crash & corruption,core_server,16,10,6,89,33,0,0
-2025-02-13,15.11,7,Crash & corruption,core_server,6,4,1,20,7,0,0
-2025-02-13,15.11,8,Crash & corruption,replication_recovery,3,1,3,11,21,0,0
-2025-02-13,15.11,9,Other functionality,core_server,6,4,5,51,2,1,0
-2025-02-13,15.11,10,Other functionality,extensions_contrib,6,4,3,118,10,0,0
-2025-02-13,15.11,11,Other functionality,core_server,4,4,3,39,2,1,0
-2025-02-13,15.11,12,Other functionality,core_server,6,4,3,25,13,1,0
-2025-02-13,15.11,13,Other functionality,core_server,6,4,5,26,13,1,0
-2025-02-13,15.11,14,Other functionality,core_server,12,8,1,2,2,0,0
-2025-02-13,15.11,15,Other functionality,planner,6,4,1,12,12,0,0
-2025-02-13,15.11,16,Wrong results & planner,planner,6,4,3,56,0,1,0
-2025-02-13,15.11,17,Other functionality,core_server,6,4,1,4,2,0,0
-2025-02-13,15.11,18,Other functionality,core_server,6,4,1,1,1,0,0
-2025-02-13,15.11,19,Replication & recovery,replication_recovery,6,4,3,162,6,1,0
-2025-02-13,15.11,20,Crash & corruption,core_server,6,4,4,6,4,0,0
-2025-02-13,15.11,21,Client tools,core_server,12,8,2,102,0,0,0
-2025-02-13,15.11,22,Crash & corruption,replication_recovery,15,11,1,2,2,0,0
-2025-02-13,15.11,23,Crash & corruption,core_server,3,1,1,5,0,0,0
-2025-02-13,15.11,24,Replication & recovery,core_server,6,4,1,2,2,0,0
-2025-02-13,15.11,25,Other functionality,core_server,6,4,3,21,5,1,0
-2025-02-13,15.11,26,Build & platform,build_platform,6,4,2,112,0,0,0
-2025-02-13,15.11,27,Client tools,core_server,6,2,1,14,3,0,0
-2025-02-13,15.11,28,Crash & corruption,core_server,6,4,3,28,2,1,0
-2025-02-13,15.11,29,Crash & corruption,core_server,6,4,1,9,3,0,0
-2025-02-13,15.11,30,Crash & corruption,core_server,6,4,19,49,73,0,0
-2025-02-13,15.11,31,Crash & corruption,extensions_contrib,4,4,2,69,2,0,0
-2025-02-13,15.11,32,Other functionality,core_server,6,4,6,64,5,1,0
-2025-02-13,15.11,33,Wrong results & planner,core_server,5,4,6,92,78,0,0
-2025-02-13,15.11,34,Crash & corruption,extensions_contrib,6,4,4,49,64,0,0
-2025-02-13,15.11,35,Extensions & contrib,extensions_contrib,6,4,1,10,6,0,0
-2025-02-13,15.11,36,Client tools,client_tools,6,4,1,29,33,0,0
-2025-02-13,15.11,37,Client tools,client_tools,6,4,1,1,1,0,0
-2025-02-13,15.11,38,Crash & corruption,core_server,6,4,4,97,19,0,0
-2025-02-13,15.11,39,Client tools,core_server,6,4,3,19,2,0,0
-2025-02-13,15.11,40,Client tools,client_tools,6,4,2,59,7,0,0
-2025-02-13,15.11,41,Client tools,client_tools,12,8,1,20,10,0,0
-2025-02-13,15.11,42,Crash & corruption,client_tools,6,4,1,18,7,0,0
-2025-02-13,15.11,43,Crash & corruption,client_tools,6,4,2,27,17,0,0
-2025-02-13,15.11,44,Replication & recovery,replication_recovery,12,8,3,3,3,0,0
-2025-02-13,15.11,45,Build & platform,build_platform,6,4,3,58,4,0,0
-2025-02-13,15.11,46,Build & platform,build_platform,11,1,2,97,0,0,0
-2025-02-13,16.7,15,Wrong results & planner,planner,6,6,4,233,5,1,0
-2025-02-13,16.7,16,Crash & corruption,core_server,3,3,3,63,5,1,0
-2025-02-13,16.7,20,Other functionality,core_server,3,3,1,21,14,0,0
-2025-02-13,16.7,25,Crash & corruption,core_server,3,3,1,4,0,0,0
-2025-02-13,16.7,45,Crash & corruption,client_tools,3,3,1,2,1,0,0
-2025-02-13,16.7,47,Extensions & contrib,extensions_contrib,3,3,5,81,6,0,0
-2025-02-13,16.7,49,Build & platform,build_platform,2,2,1,28,5,0,0
-2025-02-13,16.7,50,Build & platform,build_platform,6,6,1,1,0,0,0
-2025-02-13,16.7,51,Build & platform,build_platform,1,1,1,4,1,0,0
-2025-02-13,16.7,52,Build & platform,client_tools,3,3,1,2,4,0,0
-2025-02-13,16.7,53,Extensions & contrib,extensions_contrib,3,3,1,1,1,0,0
-2025-02-13,17.3,1,Other functionality,core_server,2,2,1,9,0,0,0
-2025-02-13,17.3,3,Other functionality,core_server,2,2,2,3,2,0,0
-2025-02-13,17.3,4,Other functionality,core_server,2,2,1,6,2,0,0
-2025-02-13,17.3,14,Other functionality,tests,2,2,2,25,0,1,0
-2025-02-13,17.3,16,Other functionality,core_server,2,2,3,22,5,1,0
-2025-02-13,17.3,19,Other functionality,planner,2,2,1,22,2,0,0
-2025-02-13,17.3,24,Replication & recovery,core_server,2,2,4,44,24,0,0
-2025-02-13,17.3,27,Wrong results & planner,core_server,2,2,2,6,9,0,0
-2025-02-13,17.3,34,Crash & corruption,replication_recovery,2,2,1,17,27,0,0
-2025-02-13,17.3,37,Crash & corruption,core_server,2,2,2,9,15,0,0
-2025-02-13,17.3,43,Other functionality,core_server,2,2,1,10,36,0,0
-2025-02-13,17.3,46,Crash & corruption,core_server,2,2,1,11,8,0,0
-2025-02-13,17.3,47,Crash & corruption,core_server,1,1,1,10,0,0,0
-2025-02-13,17.3,53,Client tools,client_tools,2,2,1,1,1,0,0
-2025-02-13,17.3,62,Crash & corruption,extensions_contrib,2,2,3,40,0,0,0
-2025-02-13,17.3,63,Crash & corruption,extensions_contrib,2,2,3,84,24,0,0
-2025-02-20,15.12,0,Security (CVE),client_tools,18,12,1,7,5,0,0
-2025-02-20,16.8,1,Build & platform,build_platform,3,3,1,2,1,0,0
-2025-02-20,17.4,1,Crash & corruption,replication_recovery,2,2,1,13,12,0,0
-2025-05-08,15.13,0,Security (CVE),tests,12,8,1,82,80,1,0
-2025-05-08,15.13,1,Other functionality,core_server,6,4,4,107,73,1,0
-2025-05-08,15.13,2,Crash & corruption,core_server,5,4,1,11,0,0,0
-2025-05-08,15.13,3,Other functionality,core_server,12,6,4,140,5,1,0
-2025-05-08,15.13,4,Other functionality,core_server,4,4,4,34,2,1,0
-2025-05-08,15.13,5,Other functionality,planner,5,4,6,90,27,1,0
-2025-05-08,15.13,6,Other functionality,core_server,6,4,3,124,43,1,0
-2025-05-08,15.13,7,Other functionality,core_server,6,4,4,166,8,1,0
-2025-05-08,15.13,8,Other functionality,core_server,6,4,1,4,0,0,0
-2025-05-08,15.13,9,Other functionality,core_server,12,8,3,18,2,1,0
-2025-05-08,15.13,10,Other functionality,core_server,4,4,4,34,10,1,0
-2025-05-08,15.13,11,Other functionality,core_server,6,4,5,17,9,1,0
-2025-05-08,15.13,12,Other functionality,core_server,6,4,4,65,0,1,0
-2025-05-08,15.13,13,Wrong results & planner,planner,5,4,1,2,2,0,0
-2025-05-08,15.13,14,Other functionality,core_server,6,4,5,13,133,0,0
-2025-05-08,15.13,15,Performance,extensions_contrib,12,8,3,64,5,0,0
-2025-05-08,15.13,16,Crash & corruption,core_server,6,4,3,28,41,0,0
-2025-05-08,15.13,17,Other functionality,core_server,5,4,1,25,3,0,0
-2025-05-08,15.13,18,Crash & corruption,replication_recovery,6,4,3,104,22,0,0
-2025-05-08,15.13,19,Crash & corruption,core_server,6,4,1,7,3,0,0
-2025-05-08,15.13,20,Crash & corruption,core_server,6,4,61,4970,4578,0,0
-2025-05-08,15.13,21,Replication & recovery,extensions_contrib,6,4,3,71,12,0,0
-2025-05-08,15.13,22,Crash & corruption,extensions_contrib,12,8,4,2,2,0,0
-2025-05-08,15.13,23,Replication & recovery,core_server,12,8,1,2,2,0,0
-2025-05-08,15.13,24,Replication & recovery,replication_recovery,4,4,1,3,3,0,0
-2025-05-08,15.13,25,Crash & corruption,replication_recovery,2,1,1,5,1,0,0
-2025-05-08,15.13,26,Crash & corruption,core_server,4,4,1,0,3,0,0
-2025-05-08,15.13,27,Crash & corruption,core_server,6,4,1,12,5,0,0
-2025-05-08,15.13,28,Crash & corruption,core_server,5,4,1,24,0,0,0
-2025-05-08,15.13,29,Other functionality,extensions_contrib,6,4,3,30,5,0,0
-2025-05-08,15.13,30,Client tools,client_tools,6,4,1,20,6,0,0
-2025-05-08,15.13,31,Crash & corruption,client_tools,6,4,1,57,9,0,0
-2025-05-08,15.13,32,Crash & corruption,client_tools,11,10,1,9,6,0,0
-2025-05-08,15.13,33,Crash & corruption,core_server,7,3,3,144,17,0,0
-2025-05-08,15.13,34,Crash & corruption,extensions_contrib,6,4,1,27,18,0,0
-2025-05-08,15.13,35,Crash & corruption,extensions_contrib,6,4,1,8,0,0,0
-2025-05-08,15.13,36,Build & platform,build_platform,6,4,5,49,24,0,0
-2025-05-08,16.9,7,Other functionality,core_server,3,3,3,36,4,1,0
-2025-05-08,16.9,14,Wrong results & planner,tests,6,6,1,6,0,1,0
-2025-05-08,16.9,15,Other functionality,planner,3,3,4,115,16,1,0
-2025-05-08,16.9,21,Replication & recovery,replication_recovery,3,3,3,66,2,1,0
-2025-05-08,16.9,23,Crash & corruption,core_server,3,3,1,1,1,0,0
-2025-05-08,16.9,24,Crash & corruption,core_server,3,3,3,9,1,1,0
-2025-05-08,16.9,26,Crash & corruption,core_server,3,3,10,36,13,0,0
-2025-05-08,16.9,28,Replication & recovery,replication_recovery,3,3,3,34,2,1,0
-2025-05-08,16.9,29,Replication & recovery,replication_recovery,3,3,2,61,6,1,0
-2025-05-08,16.9,32,Replication & recovery,core_server,3,3,4,87,29,1,0
-2025-05-08,16.9,34,Replication & recovery,core_server,3,3,3,133,14,1,0
-2025-05-08,17.5,7,Other functionality,core_server,2,2,3,24,1,1,0
-2025-05-08,17.5,17,Wrong results & planner,planner,2,2,3,175,93,1,0
-2025-05-08,17.5,18,Other functionality,planner,2,2,2,16,1,0,0
-2025-05-08,17.5,20,Wrong results & planner,core_server,2,2,3,36,0,1,0
-2025-05-08,17.5,27,Other functionality,core_server,2,2,1,27,11,0,0
-2025-05-08,17.5,33,Crash & corruption,planner,2,2,3,64,9,1,0
-2025-05-08,17.5,39,Crash & corruption,replication_recovery,2,2,3,35,17,1,0
-2025-05-08,17.5,43,Other functionality,core_server,2,2,1,3,3,0,0
-2025-05-08,17.5,46,Crash & corruption,core_server,2,2,3,30,2,1,0
-2025-05-08,17.5,52,Client tools,client_tools,2,2,1,73,62,0,0
-2025-05-08,17.5,55,Extensions & contrib,extensions_contrib,2,2,3,79,8,0,0
-2025-05-08,17.5,56,Client tools,tests,2,2,1,1,1,1,0
-2025-05-08,17.5,58,Other functionality,core_server,3,3,1,2,2,0,0
-2025-05-08,17.5,59,Other functionality,core_server,2,2,1,3,23,0,0
-2025-08-14,15.14,0,Security (CVE),core_server,7,4,12,596,304,1,0
-2025-08-14,15.14,1,Security (CVE),client_tools,9,4,22,435,13,1,0
-2025-08-14,15.14,2,Security (CVE),client_tools,7,4,7,90,40,0,0
-2025-08-14,15.14,3,Performance,core_server,6,4,1,1,1,0,0
-2025-08-14,15.14,4,Other functionality,core_server,14,8,1,1,9,0,0
-2025-08-14,15.14,5,Crash & corruption,core_server,3,3,3,188,3,1,0
-2025-08-14,15.14,6,Other functionality,core_server,7,4,3,20,0,1,0
-2025-08-14,15.14,7,Other functionality,extensions_contrib,7,4,6,295,4,0,0
-2025-08-14,15.14,8,Other functionality,extensions_contrib,5,4,5,64,5,0,0
-2025-08-14,15.14,9,Crash & corruption,core_server,6,4,3,49,8,0,0
-2025-08-14,15.14,10,Crash & corruption,core_server,5,3,1,36,2,0,0
-2025-08-14,15.14,11,Other functionality,core_server,5,3,1,16,2,0,0
-2025-08-14,15.14,12,Other functionality,tests,10,6,2,8,3,1,0
-2025-08-14,15.14,13,Other functionality,tests,7,5,1,1,0,1,0
-2025-08-14,15.14,14,Crash & corruption,core_server,13,7,1,6,3,0,0
-2025-08-14,15.14,15,Crash & corruption,replication_recovery,7,4,1,15,5,0,0
-2025-08-14,15.14,16,Client tools,core_server,7,4,3,53,8,1,0
-2025-08-14,15.14,17,Other functionality,core_server,5,3,4,32,6,0,0
-2025-08-14,15.14,18,Replication & recovery,replication_recovery,5,4,3,46,2,0,0
-2025-08-14,15.14,19,Other functionality,core_server,5,3,1,20,14,0,0
-2025-08-14,15.14,20,Replication & recovery,replication_recovery,6,3,5,231,45,0,0
-2025-08-14,15.14,21,Crash & corruption,replication_recovery,5,3,3,60,9,0,0
-2025-08-14,15.14,22,Replication & recovery,replication_recovery,5,3,1,21,2,0,0
-2025-08-14,15.14,23,Replication & recovery,core_server,5,3,1,6,0,0,0
-2025-08-14,15.14,24,Crash & corruption,core_server,3,3,1,32,6,0,0
-2025-08-14,15.14,25,Crash & corruption,core_server,5,3,5,88,0,0,0
-2025-08-14,15.14,26,Crash & corruption,core_server,12,7,7,85,0,1,0
-2025-08-14,15.14,27,Crash & corruption,core_server,7,4,1,8,17,0,0
-2025-08-14,15.14,28,Crash & corruption,core_server,3,3,5,25,4,1,0
-2025-08-14,15.14,29,Other functionality,extensions_contrib,7,4,1,5,1,0,0
-2025-08-14,15.14,30,Crash & corruption,extensions_contrib,10,6,1,133,133,0,0
-2025-08-14,15.14,31,Client tools,client_tools,7,4,2,6,3,0,0
-2025-08-14,15.14,32,Other functionality,client_tools,5,3,2,96,35,0,0
-2025-08-14,15.14,33,Client tools,client_tools,5,3,3,33,7,0,0
-2025-08-14,15.14,34,Client tools,client_tools,7,4,1,6,1,0,0
-2025-08-14,15.14,35,Client tools,client_tools,6,4,1,22,8,0,0
-2025-08-14,15.14,36,Crash & corruption,client_tools,5,4,1,15,2,0,0
-2025-08-14,15.14,37,Client tools,client_tools,7,4,3,32,1,1,0
-2025-08-14,15.14,38,Client tools,client_tools,18,10,6,335,30,1,0
-2025-08-14,15.14,39,Client tools,client_tools,31,16,1,1,1,0,0
-2025-08-14,15.14,40,Crash & corruption,replication_recovery,7,4,2,8,2,1,0
-2025-08-14,15.14,41,Replication & recovery,core_server,3,3,1,2,0,0,0
-2025-08-14,15.14,42,Crash & corruption,extensions_contrib,5,3,1,38,38,0,0
-2025-08-14,15.14,43,Extensions & contrib,extensions_contrib,5,3,1,9,2,0,0
-2025-08-14,15.14,44,Extensions & contrib,extensions_contrib,5,3,3,40,1,0,0
-2025-08-14,15.14,45,Crash & corruption,extensions_contrib,5,3,1,35,27,0,0
-2025-08-14,15.14,46,Build & platform,build_platform,7,4,12,33,33,0,0
-2025-08-14,15.14,47,Build & platform,build_platform,7,4,3,60,57,0,0
-2025-08-14,15.14,48,Build & platform,core_server,7,4,2,19,2,0,0
-2025-08-14,15.14,49,Other functionality,core_server,11,7,1,9,3,0,0
-2025-08-14,15.14,50,Build & platform,build_platform,6,4,1,1,1,0,0
-2025-08-14,15.14,51,Build & platform,core_server,7,4,1,14,8,0,0
-2025-08-14,15.14,52,Build & platform,extensions_contrib,7,4,1,1,1,0,0
-2025-08-14,15.14,53,Build & platform,core_server,8,5,1,2,0,0,0
-2025-08-14,16.10,23,Replication & recovery,replication_recovery,2,2,2,42,13,0,0
-2025-08-14,16.10,24,Crash & corruption,replication_recovery,4,3,1,1,1,0,0
-2025-08-14,16.10,26,Replication & recovery,replication_recovery,2,2,1,9,1,0,0
-2025-08-14,16.10,28,Crash & corruption,core_server,6,5,1,13,8,0,0
-2025-08-14,16.10,55,Build & platform,build_platform,2,2,1,1,1,0,0
-2025-08-14,17.6,5,Crash & corruption,core_server,3,2,6,89,50,1,0
-2025-08-14,17.6,13,Other functionality,core_server,3,2,1,12,7,0,0
-2025-08-14,17.6,18,Other functionality,core_server,3,2,1,2,2,0,0
-2025-08-14,17.6,24,Replication & recovery,replication_recovery,3,2,1,4,4,0,0
-2025-08-14,17.6,33,Crash & corruption,core_server,1,1,1,1,1,0,0
-2025-08-14,17.6,40,Crash & corruption,client_tools,3,2,1,1,0,0,0
-2025-08-14,17.6,47,Replication & recovery,replication_recovery,3,2,1,10,1,0,0
-2025-08-14,17.6,48,Client tools,client_tools,3,2,4,160,49,0,0
-2025-08-14,17.6,51,Client tools,client_tools,3,2,2,18,9,0,0
-2025-08-14,17.6,52,Client tools,client_tools,1,1,1,8,3,0,0
-2025-08-14,17.6,54,Client tools,replication_recovery,3,2,5,14,77,0,0
-2025-08-14,17.6,59,Crash & corruption,extensions_contrib,1,1,5,35,0,0,0
-2025-11-13,15.15,0,Security (CVE),core_server,7,5,6,90,4,1,0
-2025-11-13,15.15,1,Security (CVE),client_tools,7,5,5,224,33,0,0
-2025-11-13,15.15,2,Other functionality,core_server,6,4,3,82,27,1,0
-2025-11-13,15.15,3,Wrong results & planner,core_server,6,4,3,75,1,1,0
-2025-11-13,15.15,4,Other functionality,planner,6,4,3,44,2,1,0
-2025-11-13,15.15,5,Crash & corruption,planner,4,4,1,3,4,0,0
-2025-11-13,15.15,6,Crash & corruption,core_server,7,5,1,0,1,0,0
-2025-11-13,15.15,7,Crash & corruption,extensions_contrib,6,4,3,97,0,0,0
-2025-11-13,15.15,8,Other functionality,core_server,6,4,1,2,2,0,0
-2025-11-13,15.15,9,Other functionality,core_server,14,10,1,2,1,0,0
-2025-11-13,15.15,10,Crash & corruption,core_server,7,5,1,5,5,0,0
-2025-11-13,15.15,11,Build & platform,core_server,7,5,1,1,1,0,0
-2025-11-13,15.15,12,Crash & corruption,core_server,5,5,3,116,7,1,0
-2025-11-13,15.15,13,Other functionality,core_server,11,8,3,37,1,1,0
-2025-11-13,15.15,14,Crash & corruption,extensions_contrib,7,5,6,117,7,0,0
-2025-11-13,15.15,15,Other functionality,core_server,6,5,3,17,76,1,0
-2025-11-13,15.15,16,Other functionality,core_server,7,5,5,86,40,1,0
-2025-11-13,15.15,17,Other functionality,core_server,7,5,5,59,0,1,0
-2025-11-13,15.15,18,Other functionality,core_server,7,5,3,25,0,1,0
-2025-11-13,15.15,19,Other functionality,core_server,8,8,3,244,86,1,0
-2025-11-13,15.15,20,Crash & corruption,core_server,6,4,2,33,43,0,0
-2025-11-13,15.15,21,Crash & corruption,core_server,5,5,1,1,0,0,0
-2025-11-13,15.15,22,Crash & corruption,core_server,4,4,2,38,1,0,0
-2025-11-13,15.15,23,Wrong results & planner,core_server,4,4,4,179,8,1,0
-2025-11-13,15.15,24,Replication & recovery,core_server,15,11,3,69,1,1,0
-2025-11-13,15.15,25,Crash & corruption,core_server,6,4,3,42,3,1,0
-2025-11-13,15.15,26,Replication & recovery,replication_recovery,7,5,1,33,17,0,0
-2025-11-13,15.15,27,Other functionality,replication_recovery,7,5,3,70,24,0,0
-2025-11-13,15.15,28,Replication & recovery,replication_recovery,7,5,1,7,0,0,0
-2025-11-13,15.15,29,Replication & recovery,replication_recovery,7,5,4,31,5,1,0
-2025-11-13,15.15,30,Replication & recovery,core_server,6,4,7,41,4,1,0
-2025-11-13,15.15,31,Crash & corruption,replication_recovery,5,5,1,24,5,0,0
-2025-11-13,15.15,32,Crash & corruption,replication_recovery,6,4,4,99,2,1,0
-2025-11-13,15.15,33,Crash & corruption,core_server,7,5,3,16,5,0,0
-2025-11-13,15.15,34,Build & platform,core_server,6,4,1,33,13,0,0
-2025-11-13,15.15,35,Build & platform,core_server,7,5,1,3,3,0,0
-2025-11-13,15.15,36,Other functionality,core_server,6,5,1,1,0,0,0
-2025-11-13,15.15,37,Crash & corruption,extensions_contrib,7,5,1,21,8,0,0
-2025-11-13,15.15,38,Client tools,client_tools,5,4,1,2,2,0,0
-2025-11-13,15.15,39,Client tools,client_tools,7,5,1,15,12,0,0
-2025-11-13,15.15,40,Replication & recovery,client_tools,6,4,2,13,6,0,0
-2025-11-13,15.15,41,Client tools,client_tools,19,13,1,2,1,0,0
-2025-11-13,15.15,42,Client tools,client_tools,6,4,1,1,1,0,0
-2025-11-13,15.15,43,Replication & recovery,client_tools,12,8,1,15,0,0,0
-2025-11-13,15.15,44,Client tools,client_tools,14,12,1,9,0,0,0
-2025-11-13,15.15,45,Crash & corruption,client_tools,7,5,2,25,0,0,0
-2025-11-13,15.15,46,Client tools,client_tools,7,5,1,3,3,0,0
-2025-11-13,15.15,47,Crash & corruption,client_tools,5,5,1,8,1,0,0
-2025-11-13,15.15,48,Extensions & contrib,core_server,8,6,1,4,0,0,0
-2025-11-13,15.15,49,Extensions & contrib,extensions_contrib,11,9,1,1,1,0,0
-2025-11-13,15.15,50,Crash & corruption,extensions_contrib,7,5,1,22,10,0,0
-2025-11-13,15.15,51,Build & platform,core_server,7,5,1,10,2,0,0
-2025-11-13,15.15,52,Build & platform,core_server,6,4,1,4,0,0,0
-2025-11-13,15.15,53,Build & platform,other,7,5,1,5,0,0,0
-2025-11-13,16.11,2,Wrong results & planner,planner,3,3,3,47,0,1,0
-2025-11-13,16.11,30,Replication & recovery,replication_recovery,4,4,3,16,10,0,0
-2025-11-13,16.11,34,Replication & recovery,replication_recovery,4,4,1,24,46,0,0
-2025-11-13,16.11,38,Crash & corruption,core_server,4,4,1,13,4,0,0
-2025-11-13,16.11,57,Build & platform,build_platform,6,6,1,10,1,0,0
-2025-11-13,17.7,2,Other functionality,core_server,6,6,2,5,5,1,0
-2025-11-13,17.7,20,Crash & corruption,core_server,3,3,1,2,0,0,0
-2025-11-13,17.7,24,Replication & recovery,replication_recovery,2,2,1,16,0,0,0
-2025-11-13,17.7,32,Replication & recovery,replication_recovery,3,3,3,41,43,1,0
-2025-11-13,17.7,48,Client tools,client_tools,3,3,3,14,3,1,0
-2025-11-13,17.7,57,Crash & corruption,client_tools,3,3,1,2,0,0,0
-2025-11-13,18.1,3,Other functionality,planner,3,3,3,143,26,1,0
-2025-11-13,18.1,4,Crash & corruption,planner,2,2,3,62,6,1,0
-2025-11-13,18.1,5,Crash & corruption,planner,2,2,3,49,7,1,0
-2025-11-13,18.1,6,Wrong results & planner,core_server,2,2,1,7,0,0,0
-2025-11-13,18.1,8,Build & platform,core_server,2,2,1,41,11,0,0
-2025-11-13,18.1,12,Crash & corruption,core_server,2,2,2,5,1,0,0
-2025-11-13,18.1,13,Other functionality,core_server,2,2,1,64,58,0,0
-2025-11-13,18.1,14,Client tools,planner,3,3,5,103,87,1,0
-2025-11-13,18.1,16,Crash & corruption,core_server,2,2,3,19,0,1,0
-2025-11-13,18.1,21,Other functionality,core_server,2,2,3,32,0,1,0
-2025-11-13,18.1,33,Build & platform,core_server,2,2,2,18,31,0,0
-2025-11-13,18.1,41,Client tools,client_tools,7,5,1,2,1,0,0
-2025-11-13,18.1,49,Crash & corruption,extensions_contrib,2,2,3,123,16,0,0
-2026-02-12,15.16,0,Security (CVE),core_server,6,5,8,82,3,1,0
-2026-02-12,15.16,1,Security (CVE),core_server,16,13,6,220,1,0,0
-2026-02-12,15.16,2,Security (CVE),extensions_contrib,6,5,8,599,3,0,0
-2026-02-12,15.16,3,Security (CVE),extensions_contrib,36,30,3,15,12,0,0
-2026-02-12,15.16,4,Other functionality,core_server,6,5,3,87,42,1,0
-2026-02-12,15.16,5,Other functionality,core_server,5,5,4,107,57,1,0
-2026-02-12,15.16,6,Other functionality,extensions_contrib,6,5,3,49,3,0,0
-2026-02-12,15.16,7,Other functionality,planner,6,5,3,44,0,1,0
-2026-02-12,15.16,8,Crash & corruption,core_server,6,5,1,5,1,0,0
-2026-02-12,15.16,9,Performance,core_server,18,15,1,1,0,0,0
-2026-02-12,15.16,10,Other functionality,core_server,6,5,1,21,13,0,0
-2026-02-12,15.16,11,Crash & corruption,core_server,6,5,5,236,16,1,0
-2026-02-12,15.16,12,Replication & recovery,core_server,12,9,13,362,126,1,0
-2026-02-12,15.16,13,Crash & corruption,core_server,6,5,2,15,2,0,0
-2026-02-12,15.16,14,Crash & corruption,replication_recovery,6,5,1,17,0,0,0
-2026-02-12,15.16,15,Other functionality,core_server,6,5,1,1,1,0,0
-2026-02-12,15.16,16,Crash & corruption,core_server,6,5,1,40,18,0,0
-2026-02-12,15.16,17,Crash & corruption,replication_recovery,6,5,1,7,0,0,0
-2026-02-12,15.16,18,Other functionality,replication_recovery,12,10,1,7,2,0,0
-2026-02-12,15.16,19,Performance,core_server,6,5,3,90,5,1,0
-2026-02-12,15.16,20,Crash & corruption,replication_recovery,6,5,1,10,0,0,0
-2026-02-12,15.16,21,Replication & recovery,core_server,6,5,2,11,2,0,0
-2026-02-12,15.16,22,Replication & recovery,replication_recovery,5,5,1,34,9,0,0
-2026-02-12,15.16,23,Crash & corruption,tests,12,11,1,8,2,1,0
-2026-02-12,15.16,24,Crash & corruption,replication_recovery,6,5,4,45,10,0,0
-2026-02-12,15.16,25,Replication & recovery,replication_recovery,6,5,3,39,35,1,0
-2026-02-12,15.16,26,Other functionality,core_server,6,5,2,13,1,0,0
-2026-02-12,15.16,27,Other functionality,core_server,6,5,1,3,2,0,0
-2026-02-12,15.16,28,Other functionality,replication_recovery,24,21,1,1,1,0,0
-2026-02-12,15.16,29,Build & platform,core_server,6,5,1,4,0,0,0
-2026-02-12,15.16,30,Build & platform,core_server,6,5,1,7,0,0,0
-2026-02-12,15.16,31,Other functionality,core_server,6,5,1,2,2,0,0
-2026-02-12,15.16,32,Client tools,client_tools,6,5,1,4,0,0,0
-2026-02-12,15.16,33,Client tools,client_tools,5,5,2,22,15,0,0
-2026-02-12,15.16,34,Extensions & contrib,extensions_contrib,9,8,2,5,2,0,0
-2026-02-12,15.16,35,Extensions & contrib,extensions_contrib,6,5,3,20,1,1,0
-2026-02-12,15.16,36,Extensions & contrib,extensions_contrib,6,5,4,16,2,1,0
-2026-02-12,15.16,37,Wrong results & planner,extensions_contrib,6,5,1,7,2,0,0
-2026-02-12,15.16,38,Extensions & contrib,extensions_contrib,6,5,3,37,18,0,0
-2026-02-12,16.12,7,Wrong results & planner,planner,4,4,1,4,7,0,0
-2026-02-12,16.12,27,Replication & recovery,replication_recovery,4,4,2,62,13,1,0
-2026-02-12,16.12,33,Other functionality,core_server,4,4,7,87,5,0,0
-2026-02-12,16.12,34,Build & platform,tests,12,12,1,2,2,1,0
-2026-02-12,16.12,35,Build & platform,build_platform,4,4,1,1,1,0,0
-2026-02-12,17.8,12,Crash & corruption,core_server,3,3,3,217,0,1,0
-2026-02-12,17.8,15,Other functionality,client_tools,3,3,3,116,0,0,0
-2026-02-12,17.8,23,Other functionality,core_server,3,3,1,78,43,0,0
-2026-02-12,17.8,31,Replication & recovery,replication_recovery,3,3,1,10,5,0,0
-2026-02-12,17.8,33,Other functionality,core_server,3,3,3,25,8,1,0
-2026-02-12,17.8,42,Crash & corruption,client_tools,3,3,3,32,15,0,0
-2026-02-12,17.8,43,Crash & corruption,client_tools,3,3,1,28,11,0,0
-2026-02-12,18.2,4,Security (CVE),extensions_contrib,4,4,2,185,91,0,0
-2026-02-12,18.2,5,Extensions & contrib,extensions_contrib,3,3,2,74,11,0,0
-2026-02-12,18.2,6,Other functionality,core_server,2,2,5,29,5,1,0
-2026-02-12,18.2,9,Wrong results & planner,core_server,2,2,5,56,11,1,0
-2026-02-12,18.2,11,Other functionality,core_server,2,2,4,41,11,1,0
-2026-02-12,18.2,12,Other functionality,core_server,2,2,3,28,7,1,0
-2026-02-12,18.2,14,Wrong results & planner,planner,2,2,5,190,9,1,0
-2026-02-12,18.2,15,Wrong results & planner,planner,2,2,4,175,3,1,0
-2026-02-12,18.2,16,Wrong results & planner,core_server,2,2,3,116,14,1,0
-2026-02-12,18.2,17,Other functionality,planner,2,2,5,256,9,1,0
-2026-02-12,18.2,18,Wrong results & planner,planner,2,2,1,45,70,0,0
-2026-02-12,18.2,21,Other functionality,core_server,2,2,1,22,5,0,0
-2026-02-12,18.2,24,Extensions & contrib,extensions_contrib,2,2,3,114,2,0,0
-2026-02-12,18.2,29,Crash & corruption,core_server,2,2,1,4,3,0,0
-2026-02-12,18.2,37,Other functionality,core_server,2,2,2,35,9,0,0
-2026-02-12,18.2,38,Other functionality,core_server,2,2,1,11,1,0,0
-2026-02-12,18.2,53,Build & platform,core_server,4,4,1,4,0,0,0
-2026-02-12,18.2,54,Build & platform,core_server,2,2,2,3,3,0,0
-2026-02-12,18.2,59,Client tools,client_tools,2,2,1,24,18,0,0
-2026-02-12,18.2,60,Client tools,client_tools,2,2,1,2,2,0,0
-2026-02-12,18.2,61,Wrong results & planner,client_tools,4,4,1,3,1,0,0
-2026-02-12,18.2,62,Client tools,client_tools,2,2,1,1,0,0,0
-2026-02-12,18.2,70,Extensions & contrib,extensions_contrib,2,2,1,1,1,0,0
-2026-02-12,18.2,73,Crash & corruption,extensions_contrib,2,2,3,38,3,0,0
-2026-02-26,15.17,0,Replication & recovery,replication_recovery,5,4,2,3,10,0,0
-2026-02-26,15.17,1,Security (CVE),core_server,18,15,1,2,2,0,0
-2026-02-26,15.17,2,Other functionality,core_server,6,5,1,16,4,0,0
-2026-02-26,15.17,3,Other functionality,extensions_contrib,6,5,3,26,17,0,0
-2026-02-26,15.17,4,Crash & corruption,extensions_contrib,6,5,1,2,1,0,0
-2026-02-26,16.13,2,Other functionality,planner,4,4,3,83,4,1,0
-2026-02-26,18.3,2,Security (CVE),extensions_contrib,2,2,1,1,1,0,0
-2026-02-26,18.3,3,Client tools,core_server,2,2,7,263,326,0,0
-2026-02-26,18.3,5,Other functionality,core_server,2,2,5,34,8,1,0
-2026-05-14,15.18,0,Security (CVE),core_server,10,8,3,107,2,1,0
-2026-05-14,15.18,1,Security (CVE),extensions_contrib,57,47,2,2,2,0,0
-2026-05-14,15.18,2,Security (CVE),core_server,6,5,3,39,3,1,0
-2026-05-14,15.18,3,Security (CVE),core_server,12,10,1,9,5,0,0
-2026-05-14,15.18,4,Security (CVE),core_server,6,5,3,39,0,1,0
-2026-05-14,15.18,5,Security (CVE),core_server,10,8,3,11,9,0,0
-2026-05-14,15.18,6,Security (CVE),client_tools,6,5,5,46,12,0,0
-2026-05-14,15.18,7,Security (CVE),core_server,6,5,5,57,0,0,0
-2026-05-14,15.18,8,Security (CVE),extensions_contrib,12,10,4,0,29,0,0
-2026-05-14,15.18,9,Security (CVE),extensions_contrib,6,5,3,35,2,0,0
-2026-05-14,15.18,10,Security (CVE),extensions_contrib,6,5,1,38,46,0,0
-2026-05-14,15.18,11,Wrong results & planner,planner,18,16,6,160,8,1,0
-2026-05-14,15.18,12,Other functionality,core_server,6,5,5,221,38,1,0
-2026-05-14,15.18,13,Other functionality,core_server,5,4,1,2,1,0,0
-2026-05-14,15.18,14,Other functionality,core_server,5,5,3,40,0,1,0
-2026-05-14,15.18,15,Other functionality,core_server,6,5,3,63,2,1,0
-2026-05-14,15.18,16,Other functionality,core_server,6,5,3,176,1,1,0
-2026-05-14,15.18,17,Other functionality,core_server,6,5,3,17,0,1,0
-2026-05-14,15.18,18,Other functionality,core_server,6,5,3,16,0,1,0
-2026-05-14,15.18,19,Other functionality,core_server,6,5,1,43,7,0,0
-2026-05-14,15.18,20,Crash & corruption,core_server,6,5,4,369,68,1,0
-2026-05-14,15.18,21,Security hardening (no CVE),core_server,6,5,1,43,18,0,0
-2026-05-14,15.18,22,Security hardening (no CVE),core_server,12,10,1,24,10,0,0
-2026-05-14,15.18,23,Other functionality,core_server,6,5,3,172,7,1,0
-2026-05-14,15.18,24,Other functionality,core_server,5,5,3,29,3,1,0
-2026-05-14,15.18,25,Security hardening (no CVE),core_server,6,5,1,19,8,0,0
-2026-05-14,15.18,26,Crash & corruption,core_server,6,5,1,17,3,0,0
-2026-05-14,15.18,27,Replication & recovery,replication_recovery,6,5,1,19,16,0,0
-2026-05-14,15.18,28,Replication & recovery,core_server,6,5,3,18,1,0,0
-2026-05-14,15.18,29,Security hardening (no CVE),core_server,6,5,5,96,0,1,0
-2026-05-14,15.18,30,Crash & corruption,planner,6,5,2,25,1,0,0
-2026-05-14,15.18,31,Other functionality,core_server,5,5,1,15,33,0,0
-2026-05-14,15.18,32,Crash & corruption,replication_recovery,5,4,2,68,19,0,0
-2026-05-14,15.18,33,Replication & recovery,replication_recovery,12,10,1,7,1,0,0
-2026-05-14,15.18,34,Replication & recovery,core_server,6,5,1,11,1,0,0
-2026-05-14,15.18,35,Crash & corruption,client_tools,6,5,10,312,12,0,0
-2026-05-14,15.18,36,Crash & corruption,client_tools,15,15,3,14,4,0,0
-2026-05-14,15.18,37,Client tools,client_tools,6,5,5,28,1,0,0
-2026-05-14,15.18,38,Replication & recovery,extensions_contrib,5,5,1,1,14,0,0
-2026-05-14,15.18,39,Extensions & contrib,extensions_contrib,7,6,3,60,64,0,0
-2026-05-14,15.18,40,Extensions & contrib,extensions_contrib,6,5,1,13,9,0,0
-2026-05-14,15.18,41,Crash & corruption,extensions_contrib,6,5,3,133,4,0,0
-2026-05-14,16.14,2,Security (CVE),core_server,4,4,2,43,30,1,0
-2026-05-14,16.14,13,Wrong results & planner,planner,7,7,1,2,0,0,0
-2026-05-14,16.14,26,Wrong results & planner,core_server,4,4,1,21,12,0,0
-2026-05-14,16.14,27,Other functionality,core_server,4,4,1,1,1,0,0
-2026-05-14,16.14,29,Other functionality,replication_recovery,4,4,1,9,0,0,0
-2026-05-14,16.14,36,Crash & corruption,core_server,4,4,1,5,0,0,0
-2026-05-14,16.14,43,Client tools,client_tools,4,4,1,30,19,0,0
-2026-05-14,17.10,2,Security (CVE),replication_recovery,3,3,1,8,3,0,0
-2026-05-14,17.10,31,Other functionality,core_server,3,3,3,33,0,1,0
-2026-05-14,17.10,33,Other functionality,core_server,3,3,1,55,6,0,0
-2026-05-14,17.10,34,Crash & corruption,core_server,3,3,4,42,4,0,0
-2026-05-14,17.10,35,Replication & recovery,core_server,3,3,1,16,5,0,0
-2026-05-14,17.10,36,Replication & recovery,core_server,8,8,5,115,44,0,0
-2026-05-14,17.10,37,Other functionality,replication_recovery,3,3,1,14,2,0,0
-2026-05-14,17.10,42,Other functionality,tests,6,6,2,55,0,1,0
-2026-05-14,18.4,5,Security (CVE),planner,2,2,5,248,5,1,0
-2026-05-14,18.4,16,Wrong results & planner,planner,2,2,8,320,97,1,0
-2026-05-14,18.4,17,Wrong results & planner,core_server,2,2,3,23,3,1,0
-2026-05-14,18.4,18,Other functionality,core_server,2,2,6,77,19,1,0
-2026-05-14,18.4,19,Other functionality,planner,2,2,3,92,0,1,0
-2026-05-14,18.4,21,Other functionality,core_server,2,2,1,4,2,0,0
-2026-05-14,18.4,26,Other functionality,core_server,2,2,1,3,3,0,0
-2026-05-14,18.4,28,Other functionality,core_server,2,2,3,92,0,1,0
-2026-05-14,18.4,29,Other functionality,core_server,2,2,4,91,8,1,0
-2026-05-14,18.4,48,Other functionality,core_server,2,2,1,1,1,0,0
-2026-05-14,18.4,50,Crash & corruption,core_server,2,2,1,4,1,0,0
-2026-05-14,18.4,54,Other functionality,core_server,2,2,1,2,2,0,0
-2026-05-14,18.4,56,Other functionality,core_server,2,2,3,38,17,1,0
-2026-05-14,18.4,63,Replication & recovery,client_tools,2,2,11,87,50,0,0
-2026-05-14,18.4,65,Client tools,client_tools,2,2,2,40,0,0,0
-2026-05-14,18.4,70,Extensions & contrib,extensions_contrib,2,2,3,134,6,0,0
-2026-08-13,15.19,0,Security (CVE),client_tools,11,8,5,113,113,0,0
-2026-08-13,15.19,1,Security (CVE),extensions_contrib,14,10,15,254,13,0,0
-2026-08-13,15.19,2,Security (CVE),client_tools,14,10,20,313,57,1,0
-2026-08-13,15.19,3,Security (CVE),core_server,7,5,1,2,2,0,0
-2026-08-13,15.19,4,Security (CVE),core_server,7,5,1,18,3,0,0
-2026-08-13,15.19,5,Security (CVE),core_server,7,5,1,12,11,0,0
-2026-08-13,15.19,6,Security (CVE),core_server,7,5,3,51,5,1,0
-2026-08-13,15.19,7,Security (CVE),planner,4,3,4,43,8,1,0
-2026-08-13,15.19,8,Security (CVE),core_server,7,5,1,2,1,0,0
-2026-08-13,15.19,9,Security (CVE),core_server,14,10,5,126,35,0,0
-2026-08-13,15.19,10,Security (CVE),core_server,14,10,6,109,13,0,0
-2026-08-13,15.19,11,Security (CVE),core_server,14,10,2,40,0,0,0
-2026-08-13,15.19,12,Security (CVE),core_server,7,5,7,129,42,1,0
-2026-08-13,15.19,13,Security (CVE),core_server,7,5,1,2,1,0,0
-2026-08-13,15.19,14,Security (CVE),core_server,21,15,22,318,9,1,0
-2026-08-13,15.19,15,Security (CVE),core_server,7,5,3,64,2,0,0
-2026-08-13,15.19,16,Security (CVE),core_server,4,3,1,7,2,0,0
-2026-08-13,15.19,17,Security (CVE),core_server,5,4,2,14,1,0,0
-2026-08-13,15.19,18,Security (CVE),client_tools,7,5,6,66,5,0,0
-2026-08-13,15.19,19,Security (CVE),client_tools,7,5,3,20,2,0,0
-2026-08-13,15.19,20,Security (CVE),client_tools,7,5,5,140,45,1,0
-2026-08-13,15.19,21,Security (CVE),extensions_contrib,7,5,2,14,3,0,0
-2026-08-13,15.19,22,Security (CVE),extensions_contrib,7,5,3,24,24,0,0
-2026-08-13,15.19,23,Security (CVE),extensions_contrib,7,5,4,37,5,0,0
-2026-08-13,15.19,24,Security (CVE),core_server,7,5,4,77,43,0,0
-2026-08-13,15.19,25,Security (CVE),extensions_contrib,3,2,1,16,28,0,0
-2026-08-13,15.19,26,Security (CVE),extensions_contrib,7,5,1,2,2,0,0
-2026-08-13,15.19,27,Security (CVE),extensions_contrib,5,4,3,138,261,1,0
-2026-08-13,15.19,28,Crash & corruption,replication_recovery,3,2,1,5,2,0,0
-2026-08-13,15.19,29,Crash & corruption,extensions_contrib,7,5,4,163,33,0,0
-2026-08-13,15.19,30,Wrong results & planner,core_server,7,5,3,68,8,1,0
-2026-08-13,15.19,31,Wrong results & planner,planner,7,5,1,41,33,0,0
-2026-08-13,15.19,32,Wrong results & planner,core_server,5,4,6,102,27,0,0
-2026-08-13,15.19,33,Wrong results & planner,core_server,6,5,3,361,9,1,0
-2026-08-13,15.19,34,Other functionality,core_server,7,5,3,71,10,1,0
-2026-08-13,15.19,35,Other functionality,core_server,7,5,3,19,20,1,0
-2026-08-13,15.19,36,Other functionality,core_server,7,5,7,110,2,1,0
-2026-08-13,15.19,37,Other functionality,core_server,8,6,3,150,17,1,0
-2026-08-13,15.19,38,Other functionality,core_server,5,4,3,99,1,1,0
-2026-08-13,15.19,39,Other functionality,core_server,5,4,1,1,3,0,0
-2026-08-13,15.19,40,Other functionality,core_server,5,4,1,1,1,0,0
-2026-08-13,15.19,41,Crash & corruption,core_server,7,5,3,23,1,1,0
-2026-08-13,15.19,42,Other functionality,core_server,5,4,1,30,57,0,0
-2026-08-13,15.19,43,Other functionality,tests,10,8,1,6,0,1,0
-2026-08-13,15.19,44,Other functionality,core_server,3,2,3,19,6,1,0
-2026-08-13,15.19,45,Other functionality,core_server,7,5,3,28,0,1,0
-2026-08-13,15.19,46,Crash & corruption,core_server,7,5,1,21,8,0,0
-2026-08-13,15.19,47,Security hardening (no CVE),core_server,7,5,1,17,1,0,0
-2026-08-13,15.19,48,Other functionality,core_server,7,5,1,7,0,0,0
-2026-08-13,15.19,49,Crash & corruption,core_server,7,5,3,124,54,1,0
-2026-08-13,15.19,50,Other functionality,core_server,5,4,1,35,14,0,0
-2026-08-13,15.19,51,Crash & corruption,core_server,10,8,5,379,5,1,0
-2026-08-13,15.19,52,Crash & corruption,core_server,7,5,1,14,5,0,0
-2026-08-13,15.19,53,Crash & corruption,core_server,4,4,1,10,3,0,0
-2026-08-13,15.19,54,Crash & corruption,core_server,10,8,1,19,11,0,0
-2026-08-13,15.19,55,Replication & recovery,replication_recovery,5,4,2,22,7,1,0
-2026-08-13,15.19,56,Replication & recovery,replication_recovery,5,4,1,19,4,0,0
-2026-08-13,15.19,57,Security hardening (no CVE),replication_recovery,5,4,7,159,73,0,0
-2026-08-13,15.19,58,Replication & recovery,extensions_contrib,7,5,4,108,4,1,0
-2026-08-13,15.19,59,Crash & corruption,core_server,6,5,6,66,27,1,0
-2026-08-13,15.19,60,Replication & recovery,replication_recovery,7,5,7,247,7,1,0
-2026-08-13,15.19,61,Crash & corruption,replication_recovery,5,4,1,27,25,0,0
-2026-08-13,15.19,62,Replication & recovery,replication_recovery,5,4,1,1,0,0,0
-2026-08-13,15.19,63,Replication & recovery,core_server,10,9,3,12,13,0,0
-2026-08-13,15.19,64,Crash & corruption,core_server,12,12,6,25,22,0,0
-2026-08-13,15.19,65,Other functionality,core_server,6,5,1,5,2,0,0
-2026-08-13,15.19,66,Crash & corruption,extensions_contrib,5,4,3,15,1,0,0
-2026-08-13,15.19,67,Crash & corruption,extensions_contrib,6,4,15,500,4,0,0
-2026-08-13,15.19,68,Client tools,client_tools,28,20,2,11,5,0,0
-2026-08-13,15.19,69,Client tools,client_tools,5,4,1,1,1,0,0
-2026-08-13,15.19,70,Client tools,client_tools,5,4,2,5,13,0,0
-2026-08-13,15.19,71,Client tools,client_tools,5,4,3,41,3,1,0
-2026-08-13,15.19,72,Client tools,client_tools,7,5,2,5,3,0,0
-2026-08-13,15.19,73,Client tools,client_tools,7,5,1,1,1,0,0
-2026-08-13,15.19,74,Crash & corruption,client_tools,4,4,1,11,12,0,0
-2026-08-13,15.19,75,Other functionality,replication_recovery,5,4,2,2,2,0,0
-2026-08-13,15.19,76,Extensions & contrib,extensions_contrib,5,4,1,1,1,0,0
-2026-08-13,15.19,77,Wrong results & planner,extensions_contrib,7,5,10,345,86,0,0
-2026-08-13,15.19,78,Crash & corruption,extensions_contrib,7,5,2,34,4,0,0
-2026-08-13,15.19,79,Crash & corruption,extensions_contrib,10,8,1,9,0,0,0
-2026-08-13,15.19,80,Extensions & contrib,extensions_contrib,5,4,1,3,0,0,0
-2026-08-13,15.19,81,Crash & corruption,extensions_contrib,5,4,5,63,9,0,0
-2026-08-13,15.19,82,Crash & corruption,extensions_contrib,5,4,1,3,3,0,0
-2026-08-13,15.19,83,Crash & corruption,extensions_contrib,7,5,3,28,3,0,0
-2026-08-13,15.19,84,Security (CVE),extensions_contrib,5,4,1,2,1,0,0
-2026-08-13,15.19,85,Extensions & contrib,extensions_contrib,5,4,3,55,3,0,0
-2026-08-13,15.19,86,Crash & corruption,extensions_contrib,5,4,4,31,4,0,0
-2026-08-13,15.19,87,Build & platform,build_platform,3,2,5,95,19,0,0
-2026-08-13,15.19,88,Build & platform,extensions_contrib,5,4,4,25,24,1,0
-2026-08-13,16.15,32,Wrong results & planner,planner,10,8,1,12,7,0,0
-2026-08-13,16.15,37,Other functionality,core_server,5,4,4,42,0,1,0
-2026-08-13,16.15,38,Other functionality,core_server,5,4,3,174,0,1,0
-2026-08-13,16.15,44,Replication & recovery,core_server,5,4,5,97,9,1,0
-2026-08-13,16.15,49,Crash & corruption,core_server,3,3,4,72,0,1,0
-2026-08-13,16.15,53,Security hardening (no CVE),core_server,7,6,3,34,4,1,0
-2026-08-13,16.15,56,Other functionality,core_server,5,4,1,1,1,0,0
-2026-08-13,16.15,62,Replication & recovery,replication_recovery,7,7,1,12,0,0,0
-2026-08-13,17.11,35,Other functionality,core_server,4,3,3,43,2,1,0
-2026-08-13,17.11,43,Security hardening (no CVE),core_server,4,3,3,70,14,0,0
-2026-08-13,17.11,49,Other functionality,core_server,6,5,5,73,38,1,0
-2026-08-13,17.11,51,Other functionality,core_server,4,3,5,64,1,1,0
-2026-08-13,17.11,56,Other functionality,core_server,4,3,1,2,2,0,0
-2026-08-13,17.11,57,Crash & corruption,core_server,2,2,1,0,2,0,0
-2026-08-13,17.11,61,Replication & recovery,core_server,2,2,1,15,5,0,0
-2026-08-13,17.11,67,Wrong results & planner,core_server,12,9,3,84,46,0,0
-2026-08-13,17.11,68,Replication & recovery,client_tools,8,6,3,306,14,0,0
-2026-08-13,17.11,76,Replication & recovery,core_server,2,2,3,136,2,1,0
-2026-08-13,17.11,77,Crash & corruption,replication_recovery,2,2,1,13,10,0,0
-2026-08-13,17.11,92,Crash & corruption,client_tools,2,2,1,3,0,0,0
-2026-08-13,17.11,93,Replication & recovery,replication_recovery,2,2,1,0,2,0,0
-2026-08-13,17.11,101,Crash & corruption,extensions_contrib,2,2,1,4,1,0,0
-2026-08-13,18.6,28,Other functionality,core_server,3,2,1,5,3,0,0
-2026-08-13,18.6,31,Crash & corruption,core_server,2,2,3,38,7,0,0
-2026-08-13,18.6,32,Other functionality,core_server,3,2,5,333,152,1,0
-2026-08-13,18.6,33,Performance,core_server,3,2,2,9,8,0,0
-2026-08-13,18.6,34,Other functionality,core_server,1,1,7,75,9,1,0
-2026-08-13,18.6,37,Crash & corruption,planner,4,3,3,92,5,1,0
-2026-08-13,18.6,39,Wrong results & planner,planner,3,2,12,1370,242,1,0
-2026-08-13,18.6,41,Wrong results & planner,core_server,1,1,1,8,0,0,0
-2026-08-13,18.6,44,Other functionality,core_server,1,1,3,13,0,1,0
-2026-08-13,18.6,49,Other functionality,core_server,6,4,3,80,32,1,0
-2026-08-13,18.6,50,Client tools,core_server,3,2,5,82,4,1,0
-2026-08-13,18.6,52,Build & platform,core_server,3,2,3,47,48,1,0
-2026-08-13,18.6,60,Other functionality,core_server,3,2,4,80,6,1,0
-2026-08-13,18.6,69,Other functionality,core_server,1,1,1,11,3,0,0
-2026-08-13,18.6,71,Other functionality,core_server,6,4,1,7,2,0,0
-2026-08-13,18.6,78,Build & platform,core_server,1,1,3,87,12,1,0
-2026-08-13,18.6,92,Replication & recovery,replication_recovery,3,2,1,9,0,0,0
-2026-08-13,18.6,100,Other functionality,replication_recovery,1,1,4,23,19,0,0
-2026-08-13,18.6,104,Client tools,client_tools,3,2,1,14,0,0,0
-2026-08-13,18.6,105,Client tools,client_tools,3,2,1,7,4,0,0
-2026-08-13,18.6,107,Crash & corruption,client_tools,1,1,1,1,1,0,0
-2026-08-13,18.6,109,Crash & corruption,client_tools,1,1,3,245,18,1,0
-2026-08-13,18.6,111,Client tools,client_tools,1,1,2,3,0,0,0
-2026-08-13,18.6,118,Client tools,client_tools,2,2,1,29,10,0,0
-2026-08-13,18.6,119,Client tools,client_tools,1,1,2,3,2,0,0
-2026-08-13,18.6,120,Crash & corruption,extensions_contrib,1,1,1,9,7,0,0
-2026-08-13,18.6,121,Crash & corruption,extensions_contrib,3,2,1,3,0,0,0
-2026-08-13,18.6,124,Extensions & contrib,extensions_contrib,3,2,1,1,1,0,0
-2026-08-13,18.6,126,Extensions & contrib,extensions_contrib,2,2,3,38,6,0,0
-2026-08-13,18.6,127,Extensions & contrib,extensions_contrib,1,1,3,18,2,0,0
-2026-08-13,18.6,132,Security hardening (no CVE),extensions_contrib,1,1,1,15,5,0,0
+wave_dt,version,item_index,category,dominant_subsystem,annotated_commit_cnt,matched_commit_cnt,file_cnt,lines_added_sum,lines_deleted_sum,has_test_changes,is_docs_only
+2022-11-10,15.1,0,Crash & corruption,core_server,2,2,1,12,6,false,false
+2022-11-10,15.1,1,Crash & corruption,core_server,7,2,3,98,28,true,false
+2022-11-10,15.1,2,Other functionality,core_server,7,2,1,12,0,false,false
+2022-11-10,15.1,3,Other functionality,core_server,3,2,4,208,1,true,false
+2022-11-10,15.1,4,Extensions & contrib,extensions_contrib,2,2,3,29,0,false,false
+2022-11-10,15.1,5,Other functionality,core_server,9,3,2,40,10,true,false
+2022-11-10,15.1,6,Wrong results & planner,core_server,2,2,3,18,4,true,false
+2022-11-10,15.1,7,Replication & recovery,core_server,7,2,1,8,5,false,false
+2022-11-10,15.1,8,Crash & corruption,extensions_contrib,12,3,4,78,0,false,false
+2022-11-10,15.1,9,Replication & recovery,replication_recovery,13,3,1,2,0,false,false
+2022-11-10,15.1,10,Crash & corruption,replication_recovery,4,2,1,17,3,false,false
+2022-11-10,15.1,11,Crash & corruption,core_server,7,2,1,15,5,false,false
+2022-11-10,15.1,12,Replication & recovery,core_server,2,2,4,33,21,true,false
+2022-11-10,15.1,13,Crash & corruption,planner,5,2,1,18,0,false,false
+2022-11-10,15.1,14,Crash & corruption,core_server,7,2,1,44,12,false,false
+2022-11-10,15.1,15,Client tools,client_tools,3,2,3,70,7,true,false
+2022-11-10,15.1,16,Client tools,client_tools,2,2,1,1,1,false,false
+2022-11-10,15.1,17,Replication & recovery,core_server,7,2,2,34,20,false,false
+2022-11-10,15.1,18,Client tools,client_tools,2,2,2,13,6,false,false
+2022-11-10,15.1,19,Client tools,core_server,2,2,4,37,3,false,false
+2022-11-10,15.1,20,Crash & corruption,extensions_contrib,7,2,1,14,2,false,false
+2022-11-10,15.1,21,Build & platform,build_platform,6,2,4,113,0,false,false
+2022-11-10,15.1,22,Build & platform,core_server,7,2,1,44,23,false,false
+2022-11-10,15.1,23,Build & platform,core_server,12,2,2,5,5,false,false
+2022-11-10,15.1,24,Build & platform,core_server,5,2,1,7,7,false,false
+2023-02-09,15.2,0,Security (CVE),client_tools,5,2,1,2,0,false,false
+2023-02-09,15.2,1,Other functionality,core_server,8,4,4,50,17,true,false
+2023-02-09,15.2,2,Other functionality,core_server,2,2,3,37,2,true,false
+2023-02-09,15.2,3,Other functionality,core_server,2,2,3,5,5,true,false
+2023-02-09,15.2,4,Other functionality,core_server,2,2,1,2,1,false,false
+2023-02-09,15.2,5,Other functionality,core_server,2,2,1,1,1,false,false
+2023-02-09,15.2,6,Other functionality,core_server,3,2,3,129,73,true,false
+2023-02-09,15.2,7,Other functionality,core_server,6,4,5,22,29,false,false
+2023-02-09,15.2,8,Client tools,core_server,6,2,4,81,45,true,false
+2023-02-09,15.2,9,Other functionality,core_server,6,2,3,104,55,true,false
+2023-02-09,15.2,10,Other functionality,core_server,5,2,3,46,2,true,false
+2023-02-09,15.2,11,Other functionality,core_server,3,2,5,90,18,true,false
+2023-02-09,15.2,12,Crash & corruption,core_server,6,2,1,3,2,false,false
+2023-02-09,15.2,13,Replication & recovery,core_server,6,2,1,1,1,false,false
+2023-02-09,15.2,14,Replication & recovery,replication_recovery,6,2,1,7,2,false,false
+2023-02-09,15.2,15,Replication & recovery,replication_recovery,4,2,2,21,15,false,false
+2023-02-09,15.2,16,Replication & recovery,core_server,2,2,2,22,29,false,false
+2023-02-09,15.2,17,Other functionality,core_server,6,2,5,45,16,false,false
+2023-02-09,15.2,18,Crash & corruption,core_server,6,2,1,7,0,false,false
+2023-02-09,15.2,19,Wrong results & planner,planner,2,2,2,12,0,false,false
+2023-02-09,15.2,20,Other functionality,core_server,2,2,2,32,0,false,false
+2023-02-09,15.2,21,Other functionality,planner,6,2,1,12,0,false,false
+2023-02-09,15.2,22,Wrong results & planner,planner,6,4,5,63,3,true,false
+2023-02-09,15.2,23,Other functionality,planner,6,2,1,14,2,false,false
+2023-02-09,15.2,24,Wrong results & planner,core_server,6,2,1,40,5,false,false
+2023-02-09,15.2,25,Crash & corruption,core_server,2,2,1,7,0,false,false
+2023-02-09,15.2,26,Other functionality,core_server,3,2,3,20,17,true,false
+2023-02-09,15.2,27,Crash & corruption,core_server,3,2,1,1,1,false,false
+2023-02-09,15.2,28,Other functionality,core_server,6,2,4,60,21,false,false
+2023-02-09,15.2,29,Crash & corruption,core_server,5,2,2,4,0,false,false
+2023-02-09,15.2,30,Crash & corruption,replication_recovery,3,2,2,7,10,true,false
+2023-02-09,15.2,31,Crash & corruption,replication_recovery,6,2,3,32,13,true,false
+2023-02-09,15.2,32,Replication & recovery,core_server,6,2,3,110,30,false,false
+2023-02-09,15.2,33,Replication & recovery,replication_recovery,4,2,2,10,0,false,false
+2023-02-09,15.2,34,Crash & corruption,replication_recovery,3,2,1,4,0,false,false
+2023-02-09,15.2,35,Replication & recovery,replication_recovery,5,1,1,7,0,false,false
+2023-02-09,15.2,36,Replication & recovery,replication_recovery,2,2,1,2,0,false,false
+2023-02-09,15.2,37,Replication & recovery,replication_recovery,2,2,4,42,6,true,false
+2023-02-09,15.2,38,Crash & corruption,core_server,6,2,2,9,6,false,false
+2023-02-09,15.2,39,Replication & recovery,core_server,6,2,1,4,2,false,false
+2023-02-09,15.2,40,Other functionality,core_server,3,2,1,46,27,false,false
+2023-02-09,15.2,41,Other functionality,core_server,6,2,1,3,2,false,false
+2023-02-09,15.2,42,Build & platform,core_server,6,2,1,14,10,false,false
+2023-02-09,15.2,43,Crash & corruption,core_server,3,2,1,5,1,false,false
+2023-02-09,15.2,44,Crash & corruption,planner,5,2,3,39,15,true,false
+2023-02-09,15.2,45,Other functionality,core_server,6,2,1,3,3,false,false
+2023-02-09,15.2,46,Crash & corruption,core_server,2,2,1,1,0,false,false
+2023-02-09,15.2,47,Client tools,client_tools,2,2,1,7,2,false,false
+2023-02-09,15.2,48,Client tools,client_tools,3,2,4,94,26,true,false
+2023-02-09,15.2,49,Other functionality,client_tools,6,2,1,3,2,false,false
+2023-02-09,15.2,50,Extensions & contrib,extensions_contrib,2,2,4,32,2,false,false
+2023-02-09,15.2,51,Crash & corruption,extensions_contrib,6,2,4,33,7,false,false
+2023-02-09,15.2,52,Extensions & contrib,core_server,4,1,1,10,0,false,false
+2023-02-09,15.2,53,Extensions & contrib,extensions_contrib,6,2,1,2,0,false,false
+2023-02-09,15.2,54,Extensions & contrib,build_platform,6,2,1,3,0,false,false
+2023-02-09,15.2,55,Build & platform,core_server,6,2,2,37,0,false,false
+2023-02-09,15.2,56,Replication & recovery,core_server,5,1,2,4,0,false,false
+2023-05-11,15.3,0,Security (CVE),extensions_contrib,12,4,1,0,1,false,false
+2023-05-11,15.3,1,Security (CVE),planner,6,2,3,54,0,true,false
+2023-05-11,15.3,2,Crash & corruption,core_server,2,2,3,47,1,true,false
+2023-05-11,15.3,3,Crash & corruption,core_server,2,2,1,4,3,false,false
+2023-05-11,15.3,4,Crash & corruption,core_server,6,2,6,192,22,true,false
+2023-05-11,15.3,5,Wrong results & planner,planner,4,4,3,45,3,true,false
+2023-05-11,15.3,6,Other functionality,core_server,4,4,3,34,4,true,false
+2023-05-11,15.3,7,Crash & corruption,core_server,4,4,8,636,174,true,false
+2023-05-11,15.3,8,Build & platform,core_server,2,2,3,262,0,true,false
+2023-05-11,15.3,9,Other functionality,core_server,2,2,6,76,12,true,false
+2023-05-11,15.3,10,Other functionality,core_server,6,2,3,67,10,true,false
+2023-05-11,15.3,11,Other functionality,core_server,5,2,3,23,10,true,false
+2023-05-11,15.3,12,Other functionality,core_server,6,2,4,77,3,true,false
+2023-05-11,15.3,13,Crash & corruption,core_server,6,2,1,12,4,false,false
+2023-05-11,15.3,14,Security hardening (no CVE),core_server,6,2,3,16,2,true,false
+2023-05-11,15.3,15,Security hardening (no CVE),core_server,6,2,3,14,5,true,false
+2023-05-11,15.3,16,Build & platform,core_server,2,2,8,16,42,false,false
+2023-05-11,15.3,17,Crash & corruption,core_server,2,2,3,9,1,true,false
+2023-05-11,15.3,18,Extensions & contrib,core_server,2,2,3,37,38,true,false
+2023-05-11,15.3,19,Crash & corruption,core_server,6,2,4,78,59,true,false
+2023-05-11,15.3,20,Crash & corruption,core_server,5,2,1,73,12,false,false
+2023-05-11,15.3,21,Crash & corruption,core_server,6,2,3,10,2,true,false
+2023-05-11,15.3,22,Crash & corruption,core_server,6,2,1,3,0,false,false
+2023-05-11,15.3,23,Wrong results & planner,planner,6,2,4,22,10,false,false
+2023-05-11,15.3,24,Other functionality,planner,3,2,1,3,25,false,false
+2023-05-11,15.3,25,Crash & corruption,planner,2,2,3,161,84,true,false
+2023-05-11,15.3,26,Other functionality,core_server,6,2,1,10,1,false,false
+2023-05-11,15.3,27,Crash & corruption,core_server,6,2,2,11,8,false,false
+2023-05-11,15.3,28,Crash & corruption,core_server,5,2,3,21,2,true,false
+2023-05-11,15.3,29,Wrong results & planner,core_server,6,2,3,288,31,true,false
+2023-05-11,15.3,30,Crash & corruption,core_server,6,2,3,74,33,false,false
+2023-05-11,15.3,31,Other functionality,core_server,5,2,8,280,207,true,false
+2023-05-11,15.3,32,Crash & corruption,core_server,3,2,1,8,1,false,false
+2023-05-11,15.3,33,Other functionality,extensions_contrib,3,2,3,48,2,false,false
+2023-05-11,15.3,34,Other functionality,core_server,3,2,1,13,5,false,false
+2023-05-11,15.3,35,Other functionality,core_server,6,2,1,1,1,false,false
+2023-05-11,15.3,36,Crash & corruption,core_server,6,2,4,77,13,true,false
+2023-05-11,15.3,37,Crash & corruption,core_server,6,2,5,332,134,true,false
+2023-05-11,15.3,38,Crash & corruption,core_server,6,2,4,65,7,true,false
+2023-05-11,15.3,39,Crash & corruption,core_server,6,2,3,60,4,true,false
+2023-05-11,15.3,40,Build & platform,core_server,6,2,3,130,84,true,false
+2023-05-11,15.3,41,Crash & corruption,core_server,11,4,1,31,18,false,false
+2023-05-11,15.3,42,Replication & recovery,replication_recovery,6,2,1,22,4,false,false
+2023-05-11,15.3,43,Other functionality,core_server,4,2,1,3,2,false,false
+2023-05-11,15.3,44,Other functionality,core_server,3,2,1,7,0,false,false
+2023-05-11,15.3,45,Crash & corruption,core_server,3,2,3,15,2,true,false
+2023-05-11,15.3,46,Crash & corruption,core_server,6,2,1,13,4,false,false
+2023-05-11,15.3,47,Replication & recovery,core_server,11,4,2,16,5,true,false
+2023-05-11,15.3,48,Other functionality,core_server,4,2,1,1,1,false,false
+2023-05-11,15.3,49,Other functionality,replication_recovery,3,2,1,2,0,false,false
+2023-05-11,15.3,50,Replication & recovery,replication_recovery,4,2,1,1,1,false,false
+2023-05-11,15.3,51,Replication & recovery,core_server,2,2,3,51,6,false,false
+2023-05-11,15.3,52,Client tools,build_platform,6,2,15,148,11,true,false
+2023-05-11,15.3,53,Crash & corruption,core_server,18,6,1,0,5,false,false
+2023-05-11,15.3,54,Other functionality,core_server,2,2,1,3,3,false,false
+2023-05-11,15.3,55,Other functionality,core_server,6,2,3,14,0,false,false
+2023-05-11,15.3,56,Wrong results & planner,core_server,6,2,1,33,20,false,false
+2023-05-11,15.3,57,Crash & corruption,core_server,2,2,3,31,3,true,false
+2023-05-11,15.3,58,Crash & corruption,replication_recovery,6,2,2,22,2,false,false
+2023-05-11,15.3,59,Crash & corruption,core_server,6,2,1,10,3,false,false
+2023-05-11,15.3,60,Crash & corruption,replication_recovery,6,2,1,4,0,false,false
+2023-05-11,15.3,61,Crash & corruption,extensions_contrib,5,2,2,65,30,false,false
+2023-05-11,15.3,62,Crash & corruption,extensions_contrib,6,2,3,119,23,false,false
+2023-05-11,15.3,63,Crash & corruption,extensions_contrib,12,4,3,212,121,false,false
+2023-05-11,15.3,64,Crash & corruption,extensions_contrib,6,2,1,36,18,false,false
+2023-05-11,15.3,65,Client tools,client_tools,5,2,1,14,9,false,false
+2023-05-11,15.3,66,Crash & corruption,client_tools,7,2,5,310,127,false,false
+2023-05-11,15.3,67,Crash & corruption,client_tools,6,2,8,288,52,false,false
+2023-05-11,15.3,68,Client tools,core_server,6,4,8,166,22,false,false
+2023-05-11,15.3,69,Client tools,client_tools,3,2,2,127,51,false,false
+2023-05-11,15.3,70,Extensions & contrib,extensions_contrib,6,4,1,1,2,false,false
+2023-05-11,15.3,71,Crash & corruption,extensions_contrib,3,2,2,48,13,false,false
+2023-05-11,15.3,72,Extensions & contrib,extensions_contrib,2,2,1,5,0,false,false
+2023-05-11,15.3,73,Crash & corruption,extensions_contrib,6,2,3,29,1,false,false
+2023-05-11,15.3,74,Crash & corruption,extensions_contrib,4,2,4,27,4,false,false
+2023-05-11,15.3,75,Extensions & contrib,extensions_contrib,3,2,5,62,56,false,false
+2023-05-11,15.3,76,Crash & corruption,extensions_contrib,6,2,3,25,10,false,false
+2023-05-11,15.3,77,Extensions & contrib,extensions_contrib,2,2,1,18,4,false,false
+2023-05-11,15.3,78,Extensions & contrib,extensions_contrib,2,2,1,53,5,false,false
+2023-05-11,15.3,79,Build & platform,build_platform,6,2,3,3,3,false,false
+2023-05-11,15.3,80,Build & platform,docs,6,2,4,70,36,false,true
+2023-05-11,15.3,81,Build & platform,other,6,2,1,1,1,false,false
+2023-08-10,15.4,0,Security (CVE),core_server,7,2,7,79,15,true,false
+2023-08-10,15.4,1,Security (CVE),core_server,3,2,4,152,50,true,false
+2023-08-10,15.4,2,Other functionality,core_server,10,2,5,134,8,true,false
+2023-08-10,15.4,3,Crash & corruption,client_tools,7,2,20,421,28,true,false
+2023-08-10,15.4,4,Crash & corruption,core_server,7,2,3,85,7,true,false
+2023-08-10,15.4,5,Other functionality,core_server,5,1,3,58,2,true,false
+2023-08-10,15.4,6,Other functionality,core_server,7,2,3,117,4,true,false
+2023-08-10,15.4,7,Other functionality,core_server,7,2,3,79,7,true,false
+2023-08-10,15.4,8,Other functionality,core_server,1,1,3,76,0,true,false
+2023-08-10,15.4,9,Wrong results & planner,planner,5,1,4,36,8,true,false
+2023-08-10,15.4,10,Wrong results & planner,planner,4,2,1,17,0,false,false
+2023-08-10,15.4,11,Wrong results & planner,planner,7,2,5,78,2,false,false
+2023-08-10,15.4,12,Other functionality,core_server,5,1,3,52,1,true,false
+2023-08-10,15.4,13,Crash & corruption,core_server,21,6,2,10,3,false,false
+2023-08-10,15.4,14,Other functionality,core_server,2,1,7,240,41,true,false
+2023-08-10,15.4,15,Other functionality,planner,4,1,3,60,1,true,false
+2023-08-10,15.4,16,Crash & corruption,core_server,5,1,3,31,12,true,false
+2023-08-10,15.4,17,Crash & corruption,core_server,9,3,1,32,1,false,false
+2023-08-10,15.4,18,Crash & corruption,core_server,5,2,1,0,7,false,false
+2023-08-10,15.4,19,Other functionality,core_server,3,1,3,31,4,true,false
+2023-08-10,15.4,20,Crash & corruption,core_server,5,1,1,15,0,false,false
+2023-08-10,15.4,21,Other functionality,core_server,7,2,1,26,48,false,false
+2023-08-10,15.4,22,Other functionality,core_server,1,1,1,1,0,false,false
+2023-08-10,15.4,23,Build & platform,core_server,7,2,1,2,0,false,false
+2023-08-10,15.4,24,Crash & corruption,core_server,5,2,1,3,1,false,false
+2023-08-10,15.4,25,Replication & recovery,core_server,3,2,2,26,6,true,false
+2023-08-10,15.4,26,Other functionality,core_server,7,2,1,43,22,false,false
+2023-08-10,15.4,27,Crash & corruption,core_server,10,2,1,16,7,false,false
+2023-08-10,15.4,28,Crash & corruption,core_server,7,2,1,4,0,false,false
+2023-08-10,15.4,29,Crash & corruption,replication_recovery,14,4,1,5,5,false,false
+2023-08-10,15.4,30,Crash & corruption,core_server,7,2,1,3,0,false,false
+2023-08-10,15.4,31,Crash & corruption,core_server,7,2,1,2,0,false,false
+2023-08-10,15.4,32,Replication & recovery,replication_recovery,3,2,1,4,8,false,false
+2023-08-10,15.4,33,Crash & corruption,core_server,6,2,1,2,1,false,false
+2023-08-10,15.4,34,Crash & corruption,core_server,5,1,3,22,1,true,false
+2023-08-10,15.4,35,Crash & corruption,core_server,1,1,6,118,4,true,false
+2023-08-10,15.4,36,Extensions & contrib,extensions_contrib,5,1,3,15,7,false,false
+2023-08-10,15.4,37,Extensions & contrib,extensions_contrib,5,1,5,69,5,false,false
+2023-08-10,15.4,38,Crash & corruption,extensions_contrib,5,1,3,12,4,false,false
+2023-08-10,15.4,39,Extensions & contrib,extensions_contrib,7,2,1,0,3,false,false
+2023-08-10,15.4,40,Crash & corruption,extensions_contrib,2,1,6,178,31,false,false
+2023-08-10,15.4,41,Client tools,client_tools,1,1,2,26,19,false,false
+2023-08-10,15.4,42,Client tools,client_tools,2,1,4,89,1,false,false
+2023-08-10,15.4,43,Client tools,client_tools,1,1,1,4,4,false,false
+2023-08-10,15.4,44,Crash & corruption,client_tools,1,1,2,28,18,false,false
+2023-08-10,15.4,45,Other functionality,core_server,7,2,1,1,0,false,false
+2023-08-10,15.4,46,Other functionality,build_platform,1,1,1,4,5,false,false
+2023-11-09,15.5,0,Security (CVE),core_server,7,3,3,33,12,true,false
+2023-11-09,15.5,1,Security (CVE),core_server,7,3,5,110,24,true,false
+2023-11-09,15.5,2,Security (CVE),core_server,14,6,3,40,2,true,false
+2023-11-09,15.5,3,Wrong results & planner,extensions_contrib,6,3,3,226,80,false,false
+2023-11-09,15.5,4,Wrong results & planner,core_server,5,3,5,16,6,true,false
+2023-11-09,15.5,5,Other functionality,core_server,4,3,3,44,1,true,false
+2023-11-09,15.5,6,Other functionality,core_server,8,6,3,96,6,true,false
+2023-11-09,15.5,7,Other functionality,core_server,4,3,3,54,29,true,false
+2023-11-09,15.5,8,Crash & corruption,core_server,14,6,3,69,27,true,false
+2023-11-09,15.5,9,Other functionality,core_server,3,3,10,237,38,true,false
+2023-11-09,15.5,10,Other functionality,planner,8,7,1,2,1,false,false
+2023-11-09,15.5,11,Other functionality,core_server,7,3,3,19,1,false,false
+2023-11-09,15.5,12,Crash & corruption,core_server,4,3,1,22,3,false,false
+2023-11-09,15.5,13,Crash & corruption,core_server,7,3,1,17,9,false,false
+2023-11-09,15.5,14,Crash & corruption,core_server,7,3,2,17,0,false,false
+2023-11-09,15.5,15,Other functionality,extensions_contrib,6,3,1,4,4,false,false
+2023-11-09,15.5,16,Extensions & contrib,core_server,7,3,4,74,9,false,false
+2023-11-09,15.5,17,Other functionality,core_server,2,2,3,83,2,true,false
+2023-11-09,15.5,18,Other functionality,core_server,7,3,1,2,0,false,false
+2023-11-09,15.5,19,Other functionality,core_server,7,3,1,2,2,false,false
+2023-11-09,15.5,20,Other functionality,core_server,6,2,1,2,2,false,false
+2023-11-09,15.5,21,Crash & corruption,core_server,5,3,1,8,4,false,false
+2023-11-09,15.5,22,Other functionality,core_server,4,3,1,6,0,false,false
+2023-11-09,15.5,23,Crash & corruption,core_server,7,3,2,23,3,false,false
+2023-11-09,15.5,24,Other functionality,core_server,7,3,3,44,0,true,false
+2023-11-09,15.5,25,Crash & corruption,core_server,11,3,5,62,1,false,false
+2023-11-09,15.5,26,Other functionality,core_server,6,3,1,30,0,false,false
+2023-11-09,15.5,27,Other functionality,core_server,7,3,1,9,0,false,false
+2023-11-09,15.5,28,Other functionality,core_server,6,3,1,2,1,false,false
+2023-11-09,15.5,29,Other functionality,core_server,5,3,1,19,2,false,false
+2023-11-09,15.5,30,Replication & recovery,core_server,4,3,1,1,0,false,false
+2023-11-09,15.5,31,Replication & recovery,core_server,3,3,1,14,2,false,false
+2023-11-09,15.5,32,Other functionality,extensions_contrib,7,3,3,106,2,false,false
+2023-11-09,15.5,33,Crash & corruption,core_server,3,3,1,17,8,false,false
+2023-11-09,15.5,34,Crash & corruption,core_server,7,3,4,119,20,true,false
+2023-11-09,15.5,35,Other functionality,planner,4,3,1,2,2,false,false
+2023-11-09,15.5,36,Crash & corruption,core_server,7,3,2,28,21,false,false
+2023-11-09,15.5,37,Crash & corruption,replication_recovery,5,1,1,16,4,false,false
+2023-11-09,15.5,38,Replication & recovery,replication_recovery,6,3,1,8,39,false,false
+2023-11-09,15.5,39,Replication & recovery,replication_recovery,12,6,2,24,0,true,false
+2023-11-09,15.5,40,Crash & corruption,core_server,2,2,2,74,57,false,false
+2023-11-09,15.5,41,Other functionality,core_server,4,2,1,1,1,false,false
+2023-11-09,15.5,42,Other functionality,core_server,4,2,1,11,8,false,false
+2023-11-09,15.5,43,Other functionality,core_server,6,2,5,108,49,false,false
+2023-11-09,15.5,44,Replication & recovery,core_server,7,2,2,90,1,false,false
+2023-11-09,15.5,45,Other functionality,tests,12,4,3,0,157,true,false
+2023-11-09,15.5,46,Build & platform,core_server,4,3,1,6,4,false,false
+2023-11-09,15.5,47,Crash & corruption,replication_recovery,7,3,1,26,30,false,false
+2023-11-09,15.5,48,Crash & corruption,extensions_contrib,7,3,4,37,3,false,false
+2023-11-09,15.5,49,Crash & corruption,client_tools,4,4,1,1,1,false,false
+2023-11-09,15.5,50,Client tools,client_tools,7,3,2,27,7,false,false
+2023-11-09,15.5,51,Client tools,client_tools,10,4,1,50,1,false,false
+2023-11-09,15.5,52,Replication & recovery,replication_recovery,6,2,1,2,1,false,false
+2023-11-09,15.5,53,Client tools,client_tools,6,3,2,49,7,false,false
+2023-11-09,15.5,54,Crash & corruption,extensions_contrib,7,3,4,163,4,false,false
+2023-11-09,15.5,55,Extensions & contrib,extensions_contrib,7,3,3,17,9,false,false
+2023-11-09,15.5,56,Build & platform,core_server,20,9,2,37,0,false,false
+2023-11-09,15.5,57,Build & platform,other,14,6,1,17,9,false,false
+2023-11-09,15.5,58,Extensions & contrib,extensions_contrib,5,3,1,3,1,false,false
+2023-11-09,15.5,59,Other functionality,core_server,7,3,2,1,2,false,false
+2023-11-09,16.1,15,Other functionality,extensions_contrib,2,2,4,90,9,false,false
+2023-11-09,16.1,21,Replication & recovery,core_server,2,2,4,44,2,true,false
+2023-11-09,16.1,22,Other functionality,core_server,2,2,3,85,0,true,false
+2023-11-09,16.1,23,Extensions & contrib,core_server,2,2,3,40,1,true,false
+2023-11-09,16.1,30,Other functionality,planner,2,2,1,17,1,false,false
+2023-11-09,16.1,35,Other functionality,extensions_contrib,2,2,3,47,1,false,false
+2023-11-09,16.1,36,Other functionality,core_server,2,2,1,1,1,false,false
+2023-11-09,16.1,47,Replication & recovery,client_tools,2,2,2,43,30,false,false
+2023-11-09,16.1,51,Client tools,client_tools,2,2,2,30,11,false,false
+2023-11-09,16.1,52,Client tools,client_tools,2,2,1,24,1,false,false
+2024-02-08,15.6,0,Security (CVE),core_server,12,6,3,38,2,true,false
+2024-02-08,15.6,1,Crash & corruption,core_server,7,3,6,234,94,false,false
+2024-02-08,15.6,2,Performance,core_server,4,1,5,42,27,false,false
+2024-02-08,15.6,3,Crash & corruption,planner,5,2,3,390,0,true,false
+2024-02-08,15.6,4,Wrong results & planner,planner,6,3,3,46,2,true,false
+2024-02-08,15.6,5,Other functionality,core_server,3,3,3,41,0,true,false
+2024-02-08,15.6,6,Other functionality,core_server,3,3,3,97,0,true,false
+2024-02-08,15.6,7,Crash & corruption,core_server,3,3,3,167,8,true,false
+2024-02-08,15.6,8,Other functionality,core_server,4,3,1,23,5,false,false
+2024-02-08,15.6,9,Other functionality,core_server,12,6,1,1,0,false,false
+2024-02-08,15.6,10,Crash & corruption,core_server,6,3,4,64,20,true,false
+2024-02-08,15.6,11,Crash & corruption,core_server,4,3,1,1,2,false,false
+2024-02-08,15.6,12,Other functionality,core_server,6,3,3,30,0,true,false
+2024-02-08,15.6,13,Other functionality,core_server,6,3,4,132,30,true,false
+2024-02-08,15.6,14,Other functionality,core_server,6,3,1,15,8,false,false
+2024-02-08,15.6,15,Other functionality,core_server,6,3,10,141,56,true,false
+2024-02-08,15.6,16,Crash & corruption,core_server,12,6,1,95,95,false,false
+2024-02-08,15.6,17,Other functionality,core_server,6,3,3,8,1,true,false
+2024-02-08,15.6,18,Wrong results & planner,core_server,6,3,3,29,4,true,false
+2024-02-08,15.6,19,Wrong results & planner,core_server,6,3,3,80,44,true,false
+2024-02-08,15.6,20,Other functionality,core_server,3,3,1,3,0,false,false
+2024-02-08,15.6,21,Other functionality,core_server,6,3,1,8,1,false,false
+2024-02-08,15.6,22,Other functionality,core_server,6,3,1,4,1,false,false
+2024-02-08,15.6,23,Other functionality,core_server,8,6,1,18,1,false,false
+2024-02-08,15.6,24,Crash & corruption,core_server,6,3,7,418,20,true,false
+2024-02-08,15.6,25,Other functionality,core_server,6,3,1,5,1,false,false
+2024-02-08,15.6,26,Other functionality,core_server,6,3,3,77,11,true,false
+2024-02-08,15.6,27,Other functionality,core_server,6,3,9,54,55,true,false
+2024-02-08,15.6,28,Other functionality,core_server,2,2,1,1,1,false,false
+2024-02-08,15.6,29,Crash & corruption,core_server,6,6,2,9,0,false,false
+2024-02-08,15.6,30,Replication & recovery,replication_recovery,3,3,1,34,0,false,false
+2024-02-08,15.6,31,Replication & recovery,replication_recovery,6,3,1,1,0,false,false
+2024-02-08,15.6,32,Replication & recovery,replication_recovery,3,3,1,37,9,false,false
+2024-02-08,15.6,33,Crash & corruption,replication_recovery,6,3,1,15,5,false,false
+2024-02-08,15.6,34,Replication & recovery,replication_recovery,3,3,2,55,2,true,false
+2024-02-08,15.6,35,Replication & recovery,replication_recovery,3,3,2,34,11,true,false
+2024-02-08,15.6,36,Replication & recovery,extensions_contrib,2,1,3,65,4,false,false
+2024-02-08,15.6,37,Client tools,core_server,6,3,1,5,7,false,false
+2024-02-08,15.6,38,Crash & corruption,build_platform,6,3,8,11,27,true,false
+2024-02-08,15.6,39,Extensions & contrib,core_server,6,3,4,45,14,false,false
+2024-02-08,15.6,40,Other functionality,extensions_contrib,3,2,3,50,29,false,false
+2024-02-08,15.6,41,Other functionality,core_server,6,3,1,4,0,false,false
+2024-02-08,15.6,42,Other functionality,extensions_contrib,4,3,5,122,11,false,false
+2024-02-08,15.6,43,Client tools,client_tools,8,6,1,3,1,false,false
+2024-02-08,15.6,44,Client tools,client_tools,4,3,1,8,0,false,false
+2024-02-08,15.6,45,Crash & corruption,client_tools,6,3,1,42,22,false,false
+2024-02-08,15.6,46,Client tools,client_tools,6,3,3,56,60,false,false
+2024-02-08,15.6,47,Client tools,tests,12,6,1,1,1,true,false
+2024-02-08,15.6,48,Client tools,client_tools,6,3,3,32,6,false,false
+2024-02-08,15.6,49,Client tools,client_tools,4,3,2,41,2,false,false
+2024-02-08,15.6,50,Crash & corruption,extensions_contrib,6,3,4,27,22,false,false
+2024-02-08,15.6,51,Extensions & contrib,extensions_contrib,6,3,3,14,2,false,false
+2024-02-08,15.6,52,Extensions & contrib,extensions_contrib,6,3,3,11,7,false,false
+2024-02-08,15.6,53,Client tools,tests,12,6,1,1,1,true,false
+2024-02-08,15.6,54,Other functionality,core_server,3,3,3,69,69,false,false
+2024-02-08,15.6,55,Build & platform,core_server,6,3,2,12,4,false,false
+2024-02-08,15.6,56,Build & platform,replication_recovery,5,3,1,4,2,false,false
+2024-02-08,15.6,57,Build & platform,extensions_contrib,8,5,1,1,1,false,false
+2024-02-08,15.6,58,Build & platform,core_server,6,3,1,4,1,false,false
+2024-02-08,16.2,5,Other functionality,planner,2,2,1,1,1,false,false
+2024-02-08,16.2,6,Other functionality,planner,2,2,3,51,6,true,false
+2024-02-08,16.2,11,Crash & corruption,core_server,2,2,1,2,2,false,false
+2024-02-08,16.2,12,Replication & recovery,core_server,2,2,3,39,3,true,false
+2024-02-08,16.2,17,Other functionality,core_server,2,2,3,9,13,true,false
+2024-02-08,16.2,24,Other functionality,core_server,2,2,1,11,0,false,false
+2024-02-08,16.2,32,Other functionality,core_server,2,2,9,54,55,true,false
+2024-02-08,16.2,38,Replication & recovery,replication_recovery,2,2,1,47,8,false,false
+2024-02-08,16.2,43,Replication & recovery,tests,4,4,1,81,70,true,false
+2024-02-08,16.2,48,Crash & corruption,replication_recovery,2,2,1,5,0,false,false
+2024-02-08,16.2,55,Client tools,client_tools,2,2,2,9,17,false,false
+2024-02-08,16.2,58,Client tools,client_tools,2,2,1,1,1,false,false
+2024-05-09,15.7,0,Security (CVE),core_server,4,3,7,81,17,true,false
+2024-05-09,15.7,1,Other functionality,core_server,6,3,5,227,11,true,false
+2024-05-09,15.7,2,Other functionality,core_server,3,3,3,27,1,true,false
+2024-05-09,15.7,3,Other functionality,core_server,3,3,5,106,8,true,false
+2024-05-09,15.7,4,Wrong results & planner,core_server,6,3,3,187,2,true,false
+2024-05-09,15.7,5,Other functionality,core_server,6,3,3,24,22,true,false
+2024-05-09,15.7,6,Other functionality,core_server,3,3,3,100,1,true,false
+2024-05-09,15.7,7,Replication & recovery,core_server,7,6,1,16,0,false,false
+2024-05-09,15.7,8,Other functionality,client_tools,3,3,3,14,4,false,false
+2024-05-09,15.7,9,Other functionality,core_server,6,3,2,8,6,true,false
+2024-05-09,15.7,10,Other functionality,core_server,3,3,3,79,9,true,false
+2024-05-09,15.7,11,Crash & corruption,core_server,6,3,3,60,1,false,false
+2024-05-09,15.7,12,Crash & corruption,core_server,6,3,1,16,12,false,false
+2024-05-09,15.7,13,Other functionality,core_server,3,3,1,11,13,false,false
+2024-05-09,15.7,14,Crash & corruption,core_server,4,1,1,6,0,false,false
+2024-05-09,15.7,15,Wrong results & planner,planner,6,3,2,34,7,false,false
+2024-05-09,15.7,16,Other functionality,core_server,2,2,4,67,24,true,false
+2024-05-09,15.7,17,Other functionality,core_server,6,3,1,4,4,false,false
+2024-05-09,15.7,18,Crash & corruption,planner,6,3,1,7,2,false,false
+2024-05-09,15.7,19,Other functionality,core_server,4,3,3,63,6,true,false
+2024-05-09,15.7,20,Other functionality,planner,6,3,2,2,2,false,false
+2024-05-09,15.7,21,Crash & corruption,core_server,12,6,7,41,13,true,false
+2024-05-09,15.7,22,Crash & corruption,core_server,6,3,6,36,4,true,false
+2024-05-09,15.7,23,Other functionality,core_server,7,4,1,0,3,false,false
+2024-05-09,15.7,24,Wrong results & planner,core_server,4,3,5,97,19,true,false
+2024-05-09,15.7,25,Wrong results & planner,core_server,6,3,3,22,4,true,false
+2024-05-09,15.7,26,Crash & corruption,core_server,6,3,1,33,35,false,false
+2024-05-09,15.7,27,Other functionality,core_server,6,3,1,19,11,false,false
+2024-05-09,15.7,28,Crash & corruption,core_server,4,3,4,112,20,true,false
+2024-05-09,15.7,29,Other functionality,core_server,5,2,1,38,32,false,false
+2024-05-09,15.7,30,Crash & corruption,core_server,3,2,2,25,24,false,false
+2024-05-09,15.7,31,Crash & corruption,core_server,6,3,2,15,8,false,false
+2024-05-09,15.7,32,Crash & corruption,core_server,6,3,5,141,9,true,false
+2024-05-09,15.7,33,Crash & corruption,replication_recovery,3,3,2,22,4,false,false
+2024-05-09,15.7,34,Crash & corruption,core_server,6,3,1,1,1,false,false
+2024-05-09,15.7,35,Other functionality,core_server,6,3,1,1,5,false,false
+2024-05-09,15.7,36,Build & platform,client_tools,6,3,2,36,6,false,false
+2024-05-09,15.7,37,Client tools,client_tools,12,6,2,52,26,false,false
+2024-05-09,15.7,38,Crash & corruption,client_tools,16,7,12,289,80,false,false
+2024-05-09,15.7,39,Client tools,client_tools,6,3,1,18,19,false,false
+2024-05-09,15.7,40,Client tools,client_tools,6,3,9,70,2,false,false
+2024-05-09,15.7,41,Client tools,client_tools,3,3,1,2,0,false,false
+2024-05-09,15.7,42,Client tools,client_tools,9,3,1,10,7,false,false
+2024-05-09,15.7,43,Replication & recovery,replication_recovery,3,3,9,47,4,false,false
+2024-05-09,15.7,44,Other functionality,extensions_contrib,6,3,7,76,36,true,false
+2024-05-09,15.7,45,Extensions & contrib,extensions_contrib,12,6,3,55,5,false,false
+2024-05-09,15.7,46,Extensions & contrib,core_server,6,5,2,2,2,false,false
+2024-05-09,15.7,47,Extensions & contrib,extensions_contrib,6,3,3,114,36,false,false
+2024-05-09,15.7,48,Extensions & contrib,extensions_contrib,6,3,1,5,3,false,false
+2024-05-09,15.7,49,Extensions & contrib,extensions_contrib,5,2,2,12,9,false,false
+2024-05-09,15.7,50,Build & platform,core_server,6,3,1,5,2,false,false
+2024-05-09,15.7,51,Other functionality,core_server,6,3,1,31,4,false,false
+2024-05-09,16.3,12,Other functionality,core_server,2,2,1,0,4,false,false
+2024-05-09,16.3,16,Other functionality,planner,2,2,1,15,4,false,false
+2024-05-09,16.3,22,Performance,core_server,2,2,2,124,25,false,false
+2024-05-09,16.3,35,Crash & corruption,replication_recovery,2,2,1,33,6,false,false
+2024-05-09,16.3,40,Crash & corruption,build_platform,2,2,5,61,0,false,false
+2024-05-09,16.3,45,Client tools,client_tools,2,2,2,21,2,false,false
+2024-08-08,15.8,0,Security (CVE),core_server,7,3,15,255,1,true,false
+2024-08-08,15.8,1,Crash & corruption,core_server,5,3,2,29,8,false,false
+2024-08-08,15.8,2,Other functionality,core_server,7,3,3,24,1,true,false
+2024-08-08,15.8,3,Other functionality,tests,14,6,2,4,2,true,false
+2024-08-08,15.8,4,Wrong results & planner,core_server,6,4,1,60,50,false,false
+2024-08-08,15.8,5,Other functionality,core_server,5,3,3,82,1,true,false
+2024-08-08,15.8,6,Crash & corruption,tests,10,4,2,26,0,true,false
+2024-08-08,15.8,7,Other functionality,extensions_contrib,5,2,4,130,14,false,false
+2024-08-08,15.8,8,Wrong results & planner,core_server,7,3,3,124,80,true,false
+2024-08-08,15.8,9,Wrong results & planner,core_server,7,3,3,157,13,true,false
+2024-08-08,15.8,10,Other functionality,core_server,4,3,3,18,2,true,false
+2024-08-08,15.8,11,Replication & recovery,core_server,5,2,3,56,13,true,false
+2024-08-08,15.8,12,Other functionality,core_server,5,2,3,19,13,true,false
+2024-08-08,15.8,13,Security (CVE),core_server,7,3,3,14,1,true,false
+2024-08-08,15.8,14,Other functionality,core_server,5,2,3,64,3,false,false
+2024-08-08,15.8,15,Other functionality,core_server,7,3,3,25,14,true,false
+2024-08-08,15.8,16,Build & platform,core_server,7,3,3,102,20,true,false
+2024-08-08,15.8,17,Other functionality,core_server,2,2,1,7,0,false,false
+2024-08-08,15.8,18,Other functionality,core_server,5,2,3,32,5,true,false
+2024-08-08,15.8,19,Client tools,core_server,5,2,3,27,6,true,false
+2024-08-08,15.8,20,Other functionality,planner,5,2,3,27,1,true,false
+2024-08-08,15.8,21,Other functionality,core_server,5,2,1,47,13,false,false
+2024-08-08,15.8,22,Other functionality,core_server,3,2,3,86,73,true,false
+2024-08-08,15.8,23,Other functionality,planner,5,2,5,107,29,true,false
+2024-08-08,15.8,24,Crash & corruption,core_server,5,2,1,17,1,false,false
+2024-08-08,15.8,25,Other functionality,tests,10,6,4,0,68,true,false
+2024-08-08,15.8,26,Replication & recovery,core_server,5,2,7,85,17,true,false
+2024-08-08,15.8,27,Crash & corruption,extensions_contrib,7,3,7,122,10,false,false
+2024-08-08,15.8,28,Replication & recovery,core_server,2,2,2,14,2,false,false
+2024-08-08,15.8,29,Replication & recovery,replication_recovery,2,2,1,10,0,false,false
+2024-08-08,15.8,30,Crash & corruption,core_server,6,2,2,17,1,false,false
+2024-08-08,15.8,31,Other functionality,core_server,2,2,1,8,0,false,false
+2024-08-08,15.8,32,Crash & corruption,replication_recovery,3,2,2,11,0,false,false
+2024-08-08,15.8,33,Build & platform,core_server,7,3,1,32,0,false,false
+2024-08-08,15.8,34,Security hardening (no CVE),core_server,4,2,1,3,2,false,false
+2024-08-08,15.8,35,Build & platform,core_server,19,8,1,3,3,false,false
+2024-08-08,15.8,36,Other functionality,extensions_contrib,5,2,3,138,56,false,false
+2024-08-08,15.8,37,Extensions & contrib,build_platform,11,1,2,0,2,false,false
+2024-08-08,15.8,38,Extensions & contrib,extensions_contrib,5,2,3,42,16,false,false
+2024-08-08,15.8,39,Crash & corruption,extensions_contrib,5,2,5,80,3,false,false
+2024-08-08,15.8,40,Crash & corruption,extensions_contrib,5,2,3,28,2,false,false
+2024-08-08,15.8,41,Client tools,client_tools,7,3,2,11,9,false,false
+2024-08-08,15.8,42,Crash & corruption,client_tools,2,2,1,2,2,false,false
+2024-08-08,15.8,43,Client tools,client_tools,5,2,1,4,1,false,false
+2024-08-08,15.8,44,Extensions & contrib,extensions_contrib,4,3,3,85,5,false,false
+2024-08-08,15.8,45,Extensions & contrib,extensions_contrib,4,2,3,40,0,false,false
+2024-08-08,15.8,46,Build & platform,core_server,7,3,2,95,9,false,false
+2024-08-08,15.8,47,Crash & corruption,planner,3,2,1,1,1,false,false
+2024-08-08,15.8,48,Crash & corruption,core_server,5,2,3,27,5,false,false
+2024-08-08,16.4,1,Wrong results & planner,core_server,3,2,4,100,20,true,false
+2024-08-08,16.4,9,Other functionality,core_server,1,1,3,195,0,true,false
+2024-08-08,16.4,16,Other functionality,core_server,3,2,3,18,10,false,false
+2024-08-08,16.4,27,Other functionality,client_tools,1,1,5,14,6,true,false
+2024-08-08,16.4,41,Other functionality,client_tools,1,1,5,23,3,true,false
+2024-08-08,16.4,48,Extensions & contrib,extensions_contrib,3,2,3,68,0,false,false
+2024-11-14,15.9,0,Security (CVE),core_server,7,4,5,226,6,true,false
+2024-11-14,15.9,1,Security (CVE),client_tools,7,4,3,22,35,false,false
+2024-11-14,15.9,2,Security (CVE),core_server,14,8,1,18,1,false,false
+2024-11-14,15.9,3,Security (CVE),extensions_contrib,26,14,2,5,0,false,false
+2024-11-14,15.9,4,Other functionality,core_server,10,8,3,27,30,true,false
+2024-11-14,15.9,5,Crash & corruption,planner,8,6,1,11,2,false,false
+2024-11-14,15.9,6,Other functionality,core_server,11,5,3,51,0,true,false
+2024-11-14,15.9,7,Wrong results & planner,planner,14,8,3,324,2,true,false
+2024-11-14,15.9,8,Other functionality,planner,6,4,3,71,38,true,false
+2024-11-14,15.9,9,Build & platform,core_server,6,3,1,3,0,false,false
+2024-11-14,15.9,10,Crash & corruption,core_server,7,4,3,17,5,true,false
+2024-11-14,15.9,11,Other functionality,core_server,7,4,1,12,5,false,false
+2024-11-14,15.9,12,Crash & corruption,core_server,7,4,1,9,4,false,false
+2024-11-14,15.9,13,Crash & corruption,replication_recovery,7,4,1,8,1,false,false
+2024-11-14,15.9,14,Crash & corruption,core_server,7,4,1,8,0,false,false
+2024-11-14,15.9,15,Crash & corruption,core_server,49,28,1,2,4,false,false
+2024-11-14,15.9,16,Crash & corruption,core_server,6,3,3,67,0,false,false
+2024-11-14,15.9,17,Performance,replication_recovery,13,7,3,23,11,false,false
+2024-11-14,15.9,18,Other functionality,core_server,4,3,4,42,4,false,false
+2024-11-14,15.9,19,Crash & corruption,core_server,6,3,2,17,5,false,false
+2024-11-14,15.9,20,Crash & corruption,core_server,4,3,5,92,3,true,false
+2024-11-14,15.9,21,Other functionality,core_server,11,6,1,5,5,false,false
+2024-11-14,15.9,22,Other functionality,core_server,6,3,2,14,2,true,false
+2024-11-14,15.9,23,Other functionality,core_server,7,4,1,3,0,false,false
+2024-11-14,15.9,24,Other functionality,client_tools,3,3,4,74,62,true,false
+2024-11-14,15.9,25,Replication & recovery,extensions_contrib,10,8,4,45,44,false,false
+2024-11-14,15.9,26,Replication & recovery,replication_recovery,7,4,1,11,6,false,false
+2024-11-14,15.9,27,Other functionality,core_server,6,3,1,1,2,false,false
+2024-11-14,15.9,28,Other functionality,core_server,12,6,1,3,1,false,false
+2024-11-14,15.9,29,Other functionality,core_server,6,3,5,85,19,true,false
+2024-11-14,15.9,30,Other functionality,extensions_contrib,7,4,3,47,4,false,false
+2024-11-14,15.9,31,Other functionality,extensions_contrib,4,3,2,16,12,false,false
+2024-11-14,15.9,32,Client tools,core_server,4,3,1,1,4,false,false
+2024-11-14,15.9,33,Client tools,client_tools,7,4,1,4,4,false,false
+2024-11-14,15.9,34,Other functionality,client_tools,5,3,1,21,2,false,false
+2024-11-14,15.9,35,Security hardening (no CVE),client_tools,7,4,5,109,48,false,false
+2024-11-14,15.9,36,Client tools,core_server,3,3,7,112,41,true,false
+2024-11-14,15.9,37,Replication & recovery,replication_recovery,6,3,1,2,4,false,false
+2024-11-14,15.9,38,Replication & recovery,core_server,19,4,1,27,1,false,false
+2024-11-14,15.9,39,Client tools,client_tools,20,12,1,2,1,false,false
+2024-11-14,15.9,40,Extensions & contrib,extensions_contrib,12,6,2,5,3,false,false
+2024-11-14,15.9,41,Crash & corruption,core_server,7,4,11,985,2,false,false
+2024-11-14,15.9,42,Crash & corruption,core_server,7,4,6,10,10,false,false
+2024-11-14,15.9,43,Build & platform,build_platform,6,3,1,4,1,false,false
+2024-11-14,15.9,44,Build & platform,core_server,1,1,1,4,2,false,false
+2024-11-14,16.5,9,Performance,planner,2,2,4,107,15,true,false
+2024-11-14,16.5,12,Crash & corruption,core_server,3,3,5,92,11,true,false
+2024-11-14,16.5,13,Build & platform,core_server,2,2,5,32,3,true,false
+2024-11-14,16.5,15,Build & platform,client_tools,3,3,2,93,17,false,false
+2024-11-14,16.5,24,Other functionality,core_server,2,2,5,84,23,true,false
+2024-11-14,16.5,26,Other functionality,core_server,2,2,3,217,100,true,false
+2024-11-14,16.5,30,Wrong results & planner,core_server,2,2,1,1,1,false,false
+2024-11-14,16.5,34,Replication & recovery,core_server,2,2,4,66,1,true,false
+2024-11-14,16.5,44,Crash & corruption,client_tools,2,2,5,59,27,true,false
+2024-11-14,16.5,45,Client tools,client_tools,3,3,2,16,5,false,false
+2024-11-14,17.1,5,Crash & corruption,core_server,1,1,1,2,2,false,false
+2024-11-14,17.1,7,Wrong results & planner,planner,2,2,4,62,3,true,false
+2024-11-14,17.1,8,Crash & corruption,core_server,2,2,2,7,1,false,false
+2024-11-14,17.1,9,Wrong results & planner,planner,4,4,3,89,0,true,false
+2024-11-14,17.1,11,Wrong results & planner,core_server,2,2,3,21,8,false,false
+2024-11-14,17.1,13,Other functionality,core_server,2,2,3,26,4,true,false
+2024-11-14,17.1,16,Crash & corruption,core_server,2,2,1,19,9,false,false
+2024-11-14,17.1,17,Other functionality,extensions_contrib,2,2,7,105,51,true,false
+2024-11-14,17.1,18,Other functionality,core_server,2,2,3,28,2,true,false
+2024-11-14,17.1,32,Client tools,client_tools,2,2,1,1,1,false,false
+2024-11-14,17.1,34,Replication & recovery,replication_recovery,2,2,3,24,14,false,false
+2024-11-14,17.1,35,Other functionality,client_tools,2,2,3,75,0,false,false
+2024-11-14,17.1,36,Other functionality,client_tools,2,2,1,9,4,false,false
+2024-11-21,15.10,0,Other functionality,core_server,4,3,1,3,3,false,false
+2024-11-21,15.10,1,Security (CVE),core_server,7,4,6,90,3,true,false
+2024-11-21,15.10,2,Replication & recovery,replication_recovery,6,4,1,3,1,false,false
+2024-11-21,15.10,3,Replication & recovery,replication_recovery,5,4,7,169,7,false,false
+2024-11-21,15.10,4,Crash & corruption,core_server,4,4,2,54,5,false,false
+2024-11-21,15.10,5,Extensions & contrib,extensions_contrib,6,4,1,2,0,false,false
+2024-11-21,15.10,6,Crash & corruption,extensions_contrib,6,4,3,16,2,false,false
+2024-11-21,15.10,7,Crash & corruption,core_server,5,4,6,79,1,true,false
+2025-02-13,15.11,0,Security (CVE),client_tools,37,24,1,14,5,false,false
+2025-02-13,15.11,1,Other functionality,core_server,6,4,11,80,92,true,false
+2025-02-13,15.11,2,Other functionality,core_server,4,4,3,34,18,true,false
+2025-02-13,15.11,3,Other functionality,core_server,6,4,1,2,2,false,false
+2025-02-13,15.11,4,Crash & corruption,core_server,6,4,6,252,83,true,false
+2025-02-13,15.11,5,Crash & corruption,core_server,8,6,5,77,93,false,false
+2025-02-13,15.11,6,Crash & corruption,core_server,16,10,6,89,33,false,false
+2025-02-13,15.11,7,Crash & corruption,core_server,6,4,1,20,7,false,false
+2025-02-13,15.11,8,Crash & corruption,replication_recovery,3,1,3,11,21,false,false
+2025-02-13,15.11,9,Other functionality,core_server,6,4,5,51,2,true,false
+2025-02-13,15.11,10,Other functionality,extensions_contrib,6,4,3,118,10,false,false
+2025-02-13,15.11,11,Other functionality,core_server,4,4,3,39,2,true,false
+2025-02-13,15.11,12,Other functionality,core_server,6,4,3,25,13,true,false
+2025-02-13,15.11,13,Other functionality,core_server,6,4,5,26,13,true,false
+2025-02-13,15.11,14,Other functionality,core_server,12,8,1,2,2,false,false
+2025-02-13,15.11,15,Other functionality,planner,6,4,1,12,12,false,false
+2025-02-13,15.11,16,Wrong results & planner,planner,6,4,3,56,0,true,false
+2025-02-13,15.11,17,Other functionality,core_server,6,4,1,4,2,false,false
+2025-02-13,15.11,18,Other functionality,core_server,6,4,1,1,1,false,false
+2025-02-13,15.11,19,Replication & recovery,replication_recovery,6,4,3,162,6,true,false
+2025-02-13,15.11,20,Crash & corruption,core_server,6,4,4,6,4,false,false
+2025-02-13,15.11,21,Client tools,core_server,12,8,2,102,0,false,false
+2025-02-13,15.11,22,Crash & corruption,replication_recovery,15,11,1,2,2,false,false
+2025-02-13,15.11,23,Crash & corruption,core_server,3,1,1,5,0,false,false
+2025-02-13,15.11,24,Replication & recovery,core_server,6,4,1,2,2,false,false
+2025-02-13,15.11,25,Other functionality,core_server,6,4,3,21,5,true,false
+2025-02-13,15.11,26,Build & platform,build_platform,6,4,2,112,0,false,false
+2025-02-13,15.11,27,Client tools,core_server,6,2,1,14,3,false,false
+2025-02-13,15.11,28,Crash & corruption,core_server,6,4,3,28,2,true,false
+2025-02-13,15.11,29,Crash & corruption,core_server,6,4,1,9,3,false,false
+2025-02-13,15.11,30,Crash & corruption,core_server,6,4,19,49,73,false,false
+2025-02-13,15.11,31,Crash & corruption,extensions_contrib,4,4,2,69,2,false,false
+2025-02-13,15.11,32,Other functionality,core_server,6,4,6,64,5,true,false
+2025-02-13,15.11,33,Wrong results & planner,core_server,5,4,6,92,78,false,false
+2025-02-13,15.11,34,Crash & corruption,extensions_contrib,6,4,4,49,64,false,false
+2025-02-13,15.11,35,Extensions & contrib,extensions_contrib,6,4,1,10,6,false,false
+2025-02-13,15.11,36,Client tools,client_tools,6,4,1,29,33,false,false
+2025-02-13,15.11,37,Client tools,client_tools,6,4,1,1,1,false,false
+2025-02-13,15.11,38,Crash & corruption,core_server,6,4,4,97,19,false,false
+2025-02-13,15.11,39,Client tools,core_server,6,4,3,19,2,false,false
+2025-02-13,15.11,40,Client tools,client_tools,6,4,2,59,7,false,false
+2025-02-13,15.11,41,Client tools,client_tools,12,8,1,20,10,false,false
+2025-02-13,15.11,42,Crash & corruption,client_tools,6,4,1,18,7,false,false
+2025-02-13,15.11,43,Crash & corruption,client_tools,6,4,2,27,17,false,false
+2025-02-13,15.11,44,Replication & recovery,replication_recovery,12,8,3,3,3,false,false
+2025-02-13,15.11,45,Build & platform,build_platform,6,4,3,58,4,false,false
+2025-02-13,15.11,46,Build & platform,build_platform,11,1,2,97,0,false,false
+2025-02-13,16.7,15,Wrong results & planner,planner,6,6,4,233,5,true,false
+2025-02-13,16.7,16,Crash & corruption,core_server,3,3,3,63,5,true,false
+2025-02-13,16.7,20,Other functionality,core_server,3,3,1,21,14,false,false
+2025-02-13,16.7,25,Crash & corruption,core_server,3,3,1,4,0,false,false
+2025-02-13,16.7,45,Crash & corruption,client_tools,3,3,1,2,1,false,false
+2025-02-13,16.7,47,Extensions & contrib,extensions_contrib,3,3,5,81,6,false,false
+2025-02-13,16.7,49,Build & platform,build_platform,2,2,1,28,5,false,false
+2025-02-13,16.7,50,Build & platform,build_platform,6,6,1,1,0,false,false
+2025-02-13,16.7,51,Build & platform,build_platform,1,1,1,4,1,false,false
+2025-02-13,16.7,52,Build & platform,client_tools,3,3,1,2,4,false,false
+2025-02-13,16.7,53,Extensions & contrib,extensions_contrib,3,3,1,1,1,false,false
+2025-02-13,17.3,1,Other functionality,core_server,2,2,1,9,0,false,false
+2025-02-13,17.3,3,Other functionality,core_server,2,2,2,3,2,false,false
+2025-02-13,17.3,4,Other functionality,core_server,2,2,1,6,2,false,false
+2025-02-13,17.3,14,Other functionality,tests,2,2,2,25,0,true,false
+2025-02-13,17.3,16,Other functionality,core_server,2,2,3,22,5,true,false
+2025-02-13,17.3,19,Other functionality,planner,2,2,1,22,2,false,false
+2025-02-13,17.3,24,Replication & recovery,core_server,2,2,4,44,24,false,false
+2025-02-13,17.3,27,Wrong results & planner,core_server,2,2,2,6,9,false,false
+2025-02-13,17.3,34,Crash & corruption,replication_recovery,2,2,1,17,27,false,false
+2025-02-13,17.3,37,Crash & corruption,core_server,2,2,2,9,15,false,false
+2025-02-13,17.3,43,Other functionality,core_server,2,2,1,10,36,false,false
+2025-02-13,17.3,46,Crash & corruption,core_server,2,2,1,11,8,false,false
+2025-02-13,17.3,47,Crash & corruption,core_server,1,1,1,10,0,false,false
+2025-02-13,17.3,53,Client tools,client_tools,2,2,1,1,1,false,false
+2025-02-13,17.3,62,Crash & corruption,extensions_contrib,2,2,3,40,0,false,false
+2025-02-13,17.3,63,Crash & corruption,extensions_contrib,2,2,3,84,24,false,false
+2025-02-20,15.12,0,Security (CVE),client_tools,18,12,1,7,5,false,false
+2025-02-20,16.8,1,Build & platform,build_platform,3,3,1,2,1,false,false
+2025-02-20,17.4,1,Crash & corruption,replication_recovery,2,2,1,13,12,false,false
+2025-05-08,15.13,0,Security (CVE),tests,12,8,1,82,80,true,false
+2025-05-08,15.13,1,Other functionality,core_server,6,4,4,107,73,true,false
+2025-05-08,15.13,2,Crash & corruption,core_server,5,4,1,11,0,false,false
+2025-05-08,15.13,3,Other functionality,core_server,12,6,4,140,5,true,false
+2025-05-08,15.13,4,Other functionality,core_server,4,4,4,34,2,true,false
+2025-05-08,15.13,5,Other functionality,planner,5,4,6,90,27,true,false
+2025-05-08,15.13,6,Other functionality,core_server,6,4,3,124,43,true,false
+2025-05-08,15.13,7,Other functionality,core_server,6,4,4,166,8,true,false
+2025-05-08,15.13,8,Other functionality,core_server,6,4,1,4,0,false,false
+2025-05-08,15.13,9,Other functionality,core_server,12,8,3,18,2,true,false
+2025-05-08,15.13,10,Other functionality,core_server,4,4,4,34,10,true,false
+2025-05-08,15.13,11,Other functionality,core_server,6,4,5,17,9,true,false
+2025-05-08,15.13,12,Other functionality,core_server,6,4,4,65,0,true,false
+2025-05-08,15.13,13,Wrong results & planner,planner,5,4,1,2,2,false,false
+2025-05-08,15.13,14,Other functionality,core_server,6,4,5,13,133,false,false
+2025-05-08,15.13,15,Performance,extensions_contrib,12,8,3,64,5,false,false
+2025-05-08,15.13,16,Crash & corruption,core_server,6,4,3,28,41,false,false
+2025-05-08,15.13,17,Other functionality,core_server,5,4,1,25,3,false,false
+2025-05-08,15.13,18,Crash & corruption,replication_recovery,6,4,3,104,22,false,false
+2025-05-08,15.13,19,Crash & corruption,core_server,6,4,1,7,3,false,false
+2025-05-08,15.13,20,Crash & corruption,core_server,6,4,61,4970,4578,false,false
+2025-05-08,15.13,21,Replication & recovery,extensions_contrib,6,4,3,71,12,false,false
+2025-05-08,15.13,22,Crash & corruption,extensions_contrib,12,8,4,2,2,false,false
+2025-05-08,15.13,23,Replication & recovery,core_server,12,8,1,2,2,false,false
+2025-05-08,15.13,24,Replication & recovery,replication_recovery,4,4,1,3,3,false,false
+2025-05-08,15.13,25,Crash & corruption,replication_recovery,2,1,1,5,1,false,false
+2025-05-08,15.13,26,Crash & corruption,core_server,4,4,1,0,3,false,false
+2025-05-08,15.13,27,Crash & corruption,core_server,6,4,1,12,5,false,false
+2025-05-08,15.13,28,Crash & corruption,core_server,5,4,1,24,0,false,false
+2025-05-08,15.13,29,Other functionality,extensions_contrib,6,4,3,30,5,false,false
+2025-05-08,15.13,30,Client tools,client_tools,6,4,1,20,6,false,false
+2025-05-08,15.13,31,Crash & corruption,client_tools,6,4,1,57,9,false,false
+2025-05-08,15.13,32,Crash & corruption,client_tools,11,10,1,9,6,false,false
+2025-05-08,15.13,33,Crash & corruption,core_server,7,3,3,144,17,false,false
+2025-05-08,15.13,34,Crash & corruption,extensions_contrib,6,4,1,27,18,false,false
+2025-05-08,15.13,35,Crash & corruption,extensions_contrib,6,4,1,8,0,false,false
+2025-05-08,15.13,36,Build & platform,build_platform,6,4,5,49,24,false,false
+2025-05-08,16.9,7,Other functionality,core_server,3,3,3,36,4,true,false
+2025-05-08,16.9,14,Wrong results & planner,tests,6,6,1,6,0,true,false
+2025-05-08,16.9,15,Other functionality,planner,3,3,4,115,16,true,false
+2025-05-08,16.9,21,Replication & recovery,replication_recovery,3,3,3,66,2,true,false
+2025-05-08,16.9,23,Crash & corruption,core_server,3,3,1,1,1,false,false
+2025-05-08,16.9,24,Crash & corruption,core_server,3,3,3,9,1,true,false
+2025-05-08,16.9,26,Crash & corruption,core_server,3,3,10,36,13,false,false
+2025-05-08,16.9,28,Replication & recovery,replication_recovery,3,3,3,34,2,true,false
+2025-05-08,16.9,29,Replication & recovery,replication_recovery,3,3,2,61,6,true,false
+2025-05-08,16.9,32,Replication & recovery,core_server,3,3,4,87,29,true,false
+2025-05-08,16.9,34,Replication & recovery,core_server,3,3,3,133,14,true,false
+2025-05-08,17.5,7,Other functionality,core_server,2,2,3,24,1,true,false
+2025-05-08,17.5,17,Wrong results & planner,planner,2,2,3,175,93,true,false
+2025-05-08,17.5,18,Other functionality,planner,2,2,2,16,1,false,false
+2025-05-08,17.5,20,Wrong results & planner,core_server,2,2,3,36,0,true,false
+2025-05-08,17.5,27,Other functionality,core_server,2,2,1,27,11,false,false
+2025-05-08,17.5,33,Crash & corruption,planner,2,2,3,64,9,true,false
+2025-05-08,17.5,39,Crash & corruption,replication_recovery,2,2,3,35,17,true,false
+2025-05-08,17.5,43,Other functionality,core_server,2,2,1,3,3,false,false
+2025-05-08,17.5,46,Crash & corruption,core_server,2,2,3,30,2,true,false
+2025-05-08,17.5,52,Client tools,client_tools,2,2,1,73,62,false,false
+2025-05-08,17.5,55,Extensions & contrib,extensions_contrib,2,2,3,79,8,false,false
+2025-05-08,17.5,56,Client tools,tests,2,2,1,1,1,true,false
+2025-05-08,17.5,58,Other functionality,core_server,3,3,1,2,2,false,false
+2025-05-08,17.5,59,Other functionality,core_server,2,2,1,3,23,false,false
+2025-08-14,15.14,0,Security (CVE),core_server,7,4,12,596,304,true,false
+2025-08-14,15.14,1,Security (CVE),client_tools,9,4,22,435,13,true,false
+2025-08-14,15.14,2,Security (CVE),client_tools,7,4,7,90,40,false,false
+2025-08-14,15.14,3,Performance,core_server,6,4,1,1,1,false,false
+2025-08-14,15.14,4,Other functionality,core_server,14,8,1,1,9,false,false
+2025-08-14,15.14,5,Crash & corruption,core_server,3,3,3,188,3,true,false
+2025-08-14,15.14,6,Other functionality,core_server,7,4,3,20,0,true,false
+2025-08-14,15.14,7,Other functionality,extensions_contrib,7,4,6,295,4,false,false
+2025-08-14,15.14,8,Other functionality,extensions_contrib,5,4,5,64,5,false,false
+2025-08-14,15.14,9,Crash & corruption,core_server,6,4,3,49,8,false,false
+2025-08-14,15.14,10,Crash & corruption,core_server,5,3,1,36,2,false,false
+2025-08-14,15.14,11,Other functionality,core_server,5,3,1,16,2,false,false
+2025-08-14,15.14,12,Other functionality,tests,10,6,2,8,3,true,false
+2025-08-14,15.14,13,Other functionality,tests,7,5,1,1,0,true,false
+2025-08-14,15.14,14,Crash & corruption,core_server,13,7,1,6,3,false,false
+2025-08-14,15.14,15,Crash & corruption,replication_recovery,7,4,1,15,5,false,false
+2025-08-14,15.14,16,Client tools,core_server,7,4,3,53,8,true,false
+2025-08-14,15.14,17,Other functionality,core_server,5,3,4,32,6,false,false
+2025-08-14,15.14,18,Replication & recovery,replication_recovery,5,4,3,46,2,false,false
+2025-08-14,15.14,19,Other functionality,core_server,5,3,1,20,14,false,false
+2025-08-14,15.14,20,Replication & recovery,replication_recovery,6,3,5,231,45,false,false
+2025-08-14,15.14,21,Crash & corruption,replication_recovery,5,3,3,60,9,false,false
+2025-08-14,15.14,22,Replication & recovery,replication_recovery,5,3,1,21,2,false,false
+2025-08-14,15.14,23,Replication & recovery,core_server,5,3,1,6,0,false,false
+2025-08-14,15.14,24,Crash & corruption,core_server,3,3,1,32,6,false,false
+2025-08-14,15.14,25,Crash & corruption,core_server,5,3,5,88,0,false,false
+2025-08-14,15.14,26,Crash & corruption,core_server,12,7,7,85,0,true,false
+2025-08-14,15.14,27,Crash & corruption,core_server,7,4,1,8,17,false,false
+2025-08-14,15.14,28,Crash & corruption,core_server,3,3,5,25,4,true,false
+2025-08-14,15.14,29,Other functionality,extensions_contrib,7,4,1,5,1,false,false
+2025-08-14,15.14,30,Crash & corruption,extensions_contrib,10,6,1,133,133,false,false
+2025-08-14,15.14,31,Client tools,client_tools,7,4,2,6,3,false,false
+2025-08-14,15.14,32,Other functionality,client_tools,5,3,2,96,35,false,false
+2025-08-14,15.14,33,Client tools,client_tools,5,3,3,33,7,false,false
+2025-08-14,15.14,34,Client tools,client_tools,7,4,1,6,1,false,false
+2025-08-14,15.14,35,Client tools,client_tools,6,4,1,22,8,false,false
+2025-08-14,15.14,36,Crash & corruption,client_tools,5,4,1,15,2,false,false
+2025-08-14,15.14,37,Client tools,client_tools,7,4,3,32,1,true,false
+2025-08-14,15.14,38,Client tools,client_tools,18,10,6,335,30,true,false
+2025-08-14,15.14,39,Client tools,client_tools,31,16,1,1,1,false,false
+2025-08-14,15.14,40,Crash & corruption,replication_recovery,7,4,2,8,2,true,false
+2025-08-14,15.14,41,Replication & recovery,core_server,3,3,1,2,0,false,false
+2025-08-14,15.14,42,Crash & corruption,extensions_contrib,5,3,1,38,38,false,false
+2025-08-14,15.14,43,Extensions & contrib,extensions_contrib,5,3,1,9,2,false,false
+2025-08-14,15.14,44,Extensions & contrib,extensions_contrib,5,3,3,40,1,false,false
+2025-08-14,15.14,45,Crash & corruption,extensions_contrib,5,3,1,35,27,false,false
+2025-08-14,15.14,46,Build & platform,build_platform,7,4,12,33,33,false,false
+2025-08-14,15.14,47,Build & platform,build_platform,7,4,3,60,57,false,false
+2025-08-14,15.14,48,Build & platform,core_server,7,4,2,19,2,false,false
+2025-08-14,15.14,49,Other functionality,core_server,11,7,1,9,3,false,false
+2025-08-14,15.14,50,Build & platform,build_platform,6,4,1,1,1,false,false
+2025-08-14,15.14,51,Build & platform,core_server,7,4,1,14,8,false,false
+2025-08-14,15.14,52,Build & platform,extensions_contrib,7,4,1,1,1,false,false
+2025-08-14,15.14,53,Build & platform,core_server,8,5,1,2,0,false,false
+2025-08-14,16.10,23,Replication & recovery,replication_recovery,2,2,2,42,13,false,false
+2025-08-14,16.10,24,Crash & corruption,replication_recovery,4,3,1,1,1,false,false
+2025-08-14,16.10,26,Replication & recovery,replication_recovery,2,2,1,9,1,false,false
+2025-08-14,16.10,28,Crash & corruption,core_server,6,5,1,13,8,false,false
+2025-08-14,16.10,55,Build & platform,build_platform,2,2,1,1,1,false,false
+2025-08-14,17.6,5,Crash & corruption,core_server,3,2,6,89,50,true,false
+2025-08-14,17.6,13,Other functionality,core_server,3,2,1,12,7,false,false
+2025-08-14,17.6,18,Other functionality,core_server,3,2,1,2,2,false,false
+2025-08-14,17.6,24,Replication & recovery,replication_recovery,3,2,1,4,4,false,false
+2025-08-14,17.6,33,Crash & corruption,core_server,1,1,1,1,1,false,false
+2025-08-14,17.6,40,Crash & corruption,client_tools,3,2,1,1,0,false,false
+2025-08-14,17.6,47,Replication & recovery,replication_recovery,3,2,1,10,1,false,false
+2025-08-14,17.6,48,Client tools,client_tools,3,2,4,160,49,false,false
+2025-08-14,17.6,51,Client tools,client_tools,3,2,2,18,9,false,false
+2025-08-14,17.6,52,Client tools,client_tools,1,1,1,8,3,false,false
+2025-08-14,17.6,54,Client tools,replication_recovery,3,2,5,14,77,false,false
+2025-08-14,17.6,59,Crash & corruption,extensions_contrib,1,1,5,35,0,false,false
+2025-11-13,15.15,0,Security (CVE),core_server,7,5,6,90,4,true,false
+2025-11-13,15.15,1,Security (CVE),client_tools,7,5,5,224,33,false,false
+2025-11-13,15.15,2,Other functionality,core_server,6,4,3,82,27,true,false
+2025-11-13,15.15,3,Wrong results & planner,core_server,6,4,3,75,1,true,false
+2025-11-13,15.15,4,Other functionality,planner,6,4,3,44,2,true,false
+2025-11-13,15.15,5,Crash & corruption,planner,4,4,1,3,4,false,false
+2025-11-13,15.15,6,Crash & corruption,core_server,7,5,1,0,1,false,false
+2025-11-13,15.15,7,Crash & corruption,extensions_contrib,6,4,3,97,0,false,false
+2025-11-13,15.15,8,Other functionality,core_server,6,4,1,2,2,false,false
+2025-11-13,15.15,9,Other functionality,core_server,14,10,1,2,1,false,false
+2025-11-13,15.15,10,Crash & corruption,core_server,7,5,1,5,5,false,false
+2025-11-13,15.15,11,Build & platform,core_server,7,5,1,1,1,false,false
+2025-11-13,15.15,12,Crash & corruption,core_server,5,5,3,116,7,true,false
+2025-11-13,15.15,13,Other functionality,core_server,11,8,3,37,1,true,false
+2025-11-13,15.15,14,Crash & corruption,extensions_contrib,7,5,6,117,7,false,false
+2025-11-13,15.15,15,Other functionality,core_server,6,5,3,17,76,true,false
+2025-11-13,15.15,16,Other functionality,core_server,7,5,5,86,40,true,false
+2025-11-13,15.15,17,Other functionality,core_server,7,5,5,59,0,true,false
+2025-11-13,15.15,18,Other functionality,core_server,7,5,3,25,0,true,false
+2025-11-13,15.15,19,Other functionality,core_server,8,8,3,244,86,true,false
+2025-11-13,15.15,20,Crash & corruption,core_server,6,4,2,33,43,false,false
+2025-11-13,15.15,21,Crash & corruption,core_server,5,5,1,1,0,false,false
+2025-11-13,15.15,22,Crash & corruption,core_server,4,4,2,38,1,false,false
+2025-11-13,15.15,23,Wrong results & planner,core_server,4,4,4,179,8,true,false
+2025-11-13,15.15,24,Replication & recovery,core_server,15,11,3,69,1,true,false
+2025-11-13,15.15,25,Crash & corruption,core_server,6,4,3,42,3,true,false
+2025-11-13,15.15,26,Replication & recovery,replication_recovery,7,5,1,33,17,false,false
+2025-11-13,15.15,27,Other functionality,replication_recovery,7,5,3,70,24,false,false
+2025-11-13,15.15,28,Replication & recovery,replication_recovery,7,5,1,7,0,false,false
+2025-11-13,15.15,29,Replication & recovery,replication_recovery,7,5,4,31,5,true,false
+2025-11-13,15.15,30,Replication & recovery,core_server,6,4,7,41,4,true,false
+2025-11-13,15.15,31,Crash & corruption,replication_recovery,5,5,1,24,5,false,false
+2025-11-13,15.15,32,Crash & corruption,replication_recovery,6,4,4,99,2,true,false
+2025-11-13,15.15,33,Crash & corruption,core_server,7,5,3,16,5,false,false
+2025-11-13,15.15,34,Build & platform,core_server,6,4,1,33,13,false,false
+2025-11-13,15.15,35,Build & platform,core_server,7,5,1,3,3,false,false
+2025-11-13,15.15,36,Other functionality,core_server,6,5,1,1,0,false,false
+2025-11-13,15.15,37,Crash & corruption,extensions_contrib,7,5,1,21,8,false,false
+2025-11-13,15.15,38,Client tools,client_tools,5,4,1,2,2,false,false
+2025-11-13,15.15,39,Client tools,client_tools,7,5,1,15,12,false,false
+2025-11-13,15.15,40,Replication & recovery,client_tools,6,4,2,13,6,false,false
+2025-11-13,15.15,41,Client tools,client_tools,19,13,1,2,1,false,false
+2025-11-13,15.15,42,Client tools,client_tools,6,4,1,1,1,false,false
+2025-11-13,15.15,43,Replication & recovery,client_tools,12,8,1,15,0,false,false
+2025-11-13,15.15,44,Client tools,client_tools,14,12,1,9,0,false,false
+2025-11-13,15.15,45,Crash & corruption,client_tools,7,5,2,25,0,false,false
+2025-11-13,15.15,46,Client tools,client_tools,7,5,1,3,3,false,false
+2025-11-13,15.15,47,Crash & corruption,client_tools,5,5,1,8,1,false,false
+2025-11-13,15.15,48,Extensions & contrib,core_server,8,6,1,4,0,false,false
+2025-11-13,15.15,49,Extensions & contrib,extensions_contrib,11,9,1,1,1,false,false
+2025-11-13,15.15,50,Crash & corruption,extensions_contrib,7,5,1,22,10,false,false
+2025-11-13,15.15,51,Build & platform,core_server,7,5,1,10,2,false,false
+2025-11-13,15.15,52,Build & platform,core_server,6,4,1,4,0,false,false
+2025-11-13,15.15,53,Build & platform,other,7,5,1,5,0,false,false
+2025-11-13,16.11,2,Wrong results & planner,planner,3,3,3,47,0,true,false
+2025-11-13,16.11,30,Replication & recovery,replication_recovery,4,4,3,16,10,false,false
+2025-11-13,16.11,34,Replication & recovery,replication_recovery,4,4,1,24,46,false,false
+2025-11-13,16.11,38,Crash & corruption,core_server,4,4,1,13,4,false,false
+2025-11-13,16.11,57,Build & platform,build_platform,6,6,1,10,1,false,false
+2025-11-13,17.7,2,Other functionality,core_server,6,6,2,5,5,true,false
+2025-11-13,17.7,20,Crash & corruption,core_server,3,3,1,2,0,false,false
+2025-11-13,17.7,24,Replication & recovery,replication_recovery,2,2,1,16,0,false,false
+2025-11-13,17.7,32,Replication & recovery,replication_recovery,3,3,3,41,43,true,false
+2025-11-13,17.7,48,Client tools,client_tools,3,3,3,14,3,true,false
+2025-11-13,17.7,57,Crash & corruption,client_tools,3,3,1,2,0,false,false
+2025-11-13,18.1,3,Other functionality,planner,3,3,3,143,26,true,false
+2025-11-13,18.1,4,Crash & corruption,planner,2,2,3,62,6,true,false
+2025-11-13,18.1,5,Crash & corruption,planner,2,2,3,49,7,true,false
+2025-11-13,18.1,6,Wrong results & planner,core_server,2,2,1,7,0,false,false
+2025-11-13,18.1,8,Build & platform,core_server,2,2,1,41,11,false,false
+2025-11-13,18.1,12,Crash & corruption,core_server,2,2,2,5,1,false,false
+2025-11-13,18.1,13,Other functionality,core_server,2,2,1,64,58,false,false
+2025-11-13,18.1,14,Client tools,planner,3,3,5,103,87,true,false
+2025-11-13,18.1,16,Crash & corruption,core_server,2,2,3,19,0,true,false
+2025-11-13,18.1,21,Other functionality,core_server,2,2,3,32,0,true,false
+2025-11-13,18.1,33,Build & platform,core_server,2,2,2,18,31,false,false
+2025-11-13,18.1,41,Client tools,client_tools,7,5,1,2,1,false,false
+2025-11-13,18.1,49,Crash & corruption,extensions_contrib,2,2,3,123,16,false,false
+2026-02-12,15.16,0,Security (CVE),core_server,6,5,8,82,3,true,false
+2026-02-12,15.16,1,Security (CVE),core_server,16,13,6,220,1,false,false
+2026-02-12,15.16,2,Security (CVE),extensions_contrib,6,5,8,599,3,false,false
+2026-02-12,15.16,3,Security (CVE),extensions_contrib,36,30,3,15,12,false,false
+2026-02-12,15.16,4,Other functionality,core_server,6,5,3,87,42,true,false
+2026-02-12,15.16,5,Other functionality,core_server,5,5,4,107,57,true,false
+2026-02-12,15.16,6,Other functionality,extensions_contrib,6,5,3,49,3,false,false
+2026-02-12,15.16,7,Other functionality,planner,6,5,3,44,0,true,false
+2026-02-12,15.16,8,Crash & corruption,core_server,6,5,1,5,1,false,false
+2026-02-12,15.16,9,Performance,core_server,18,15,1,1,0,false,false
+2026-02-12,15.16,10,Other functionality,core_server,6,5,1,21,13,false,false
+2026-02-12,15.16,11,Crash & corruption,core_server,6,5,5,236,16,true,false
+2026-02-12,15.16,12,Replication & recovery,core_server,12,9,13,362,126,true,false
+2026-02-12,15.16,13,Crash & corruption,core_server,6,5,2,15,2,false,false
+2026-02-12,15.16,14,Crash & corruption,replication_recovery,6,5,1,17,0,false,false
+2026-02-12,15.16,15,Other functionality,core_server,6,5,1,1,1,false,false
+2026-02-12,15.16,16,Crash & corruption,core_server,6,5,1,40,18,false,false
+2026-02-12,15.16,17,Crash & corruption,replication_recovery,6,5,1,7,0,false,false
+2026-02-12,15.16,18,Other functionality,replication_recovery,12,10,1,7,2,false,false
+2026-02-12,15.16,19,Performance,core_server,6,5,3,90,5,true,false
+2026-02-12,15.16,20,Crash & corruption,replication_recovery,6,5,1,10,0,false,false
+2026-02-12,15.16,21,Replication & recovery,core_server,6,5,2,11,2,false,false
+2026-02-12,15.16,22,Replication & recovery,replication_recovery,5,5,1,34,9,false,false
+2026-02-12,15.16,23,Crash & corruption,tests,12,11,1,8,2,true,false
+2026-02-12,15.16,24,Crash & corruption,replication_recovery,6,5,4,45,10,false,false
+2026-02-12,15.16,25,Replication & recovery,replication_recovery,6,5,3,39,35,true,false
+2026-02-12,15.16,26,Other functionality,core_server,6,5,2,13,1,false,false
+2026-02-12,15.16,27,Other functionality,core_server,6,5,1,3,2,false,false
+2026-02-12,15.16,28,Other functionality,replication_recovery,24,21,1,1,1,false,false
+2026-02-12,15.16,29,Build & platform,core_server,6,5,1,4,0,false,false
+2026-02-12,15.16,30,Build & platform,core_server,6,5,1,7,0,false,false
+2026-02-12,15.16,31,Other functionality,core_server,6,5,1,2,2,false,false
+2026-02-12,15.16,32,Client tools,client_tools,6,5,1,4,0,false,false
+2026-02-12,15.16,33,Client tools,client_tools,5,5,2,22,15,false,false
+2026-02-12,15.16,34,Extensions & contrib,extensions_contrib,9,8,2,5,2,false,false
+2026-02-12,15.16,35,Extensions & contrib,extensions_contrib,6,5,3,20,1,true,false
+2026-02-12,15.16,36,Extensions & contrib,extensions_contrib,6,5,4,16,2,true,false
+2026-02-12,15.16,37,Wrong results & planner,extensions_contrib,6,5,1,7,2,false,false
+2026-02-12,15.16,38,Extensions & contrib,extensions_contrib,6,5,3,37,18,false,false
+2026-02-12,16.12,7,Wrong results & planner,planner,4,4,1,4,7,false,false
+2026-02-12,16.12,27,Replication & recovery,replication_recovery,4,4,2,62,13,true,false
+2026-02-12,16.12,33,Other functionality,core_server,4,4,7,87,5,false,false
+2026-02-12,16.12,34,Build & platform,tests,12,12,1,2,2,true,false
+2026-02-12,16.12,35,Build & platform,build_platform,4,4,1,1,1,false,false
+2026-02-12,17.8,12,Crash & corruption,core_server,3,3,3,217,0,true,false
+2026-02-12,17.8,15,Other functionality,client_tools,3,3,3,116,0,false,false
+2026-02-12,17.8,23,Other functionality,core_server,3,3,1,78,43,false,false
+2026-02-12,17.8,31,Replication & recovery,replication_recovery,3,3,1,10,5,false,false
+2026-02-12,17.8,33,Other functionality,core_server,3,3,3,25,8,true,false
+2026-02-12,17.8,42,Crash & corruption,client_tools,3,3,3,32,15,false,false
+2026-02-12,17.8,43,Crash & corruption,client_tools,3,3,1,28,11,false,false
+2026-02-12,18.2,4,Security (CVE),extensions_contrib,4,4,2,185,91,false,false
+2026-02-12,18.2,5,Extensions & contrib,extensions_contrib,3,3,2,74,11,false,false
+2026-02-12,18.2,6,Other functionality,core_server,2,2,5,29,5,true,false
+2026-02-12,18.2,9,Wrong results & planner,core_server,2,2,5,56,11,true,false
+2026-02-12,18.2,11,Other functionality,core_server,2,2,4,41,11,true,false
+2026-02-12,18.2,12,Other functionality,core_server,2,2,3,28,7,true,false
+2026-02-12,18.2,14,Wrong results & planner,planner,2,2,5,190,9,true,false
+2026-02-12,18.2,15,Wrong results & planner,planner,2,2,4,175,3,true,false
+2026-02-12,18.2,16,Wrong results & planner,core_server,2,2,3,116,14,true,false
+2026-02-12,18.2,17,Other functionality,planner,2,2,5,256,9,true,false
+2026-02-12,18.2,18,Wrong results & planner,planner,2,2,1,45,70,false,false
+2026-02-12,18.2,21,Other functionality,core_server,2,2,1,22,5,false,false
+2026-02-12,18.2,24,Extensions & contrib,extensions_contrib,2,2,3,114,2,false,false
+2026-02-12,18.2,29,Crash & corruption,core_server,2,2,1,4,3,false,false
+2026-02-12,18.2,37,Other functionality,core_server,2,2,2,35,9,false,false
+2026-02-12,18.2,38,Other functionality,core_server,2,2,1,11,1,false,false
+2026-02-12,18.2,53,Build & platform,core_server,4,4,1,4,0,false,false
+2026-02-12,18.2,54,Build & platform,core_server,2,2,2,3,3,false,false
+2026-02-12,18.2,59,Client tools,client_tools,2,2,1,24,18,false,false
+2026-02-12,18.2,60,Client tools,client_tools,2,2,1,2,2,false,false
+2026-02-12,18.2,61,Wrong results & planner,client_tools,4,4,1,3,1,false,false
+2026-02-12,18.2,62,Client tools,client_tools,2,2,1,1,0,false,false
+2026-02-12,18.2,70,Extensions & contrib,extensions_contrib,2,2,1,1,1,false,false
+2026-02-12,18.2,73,Crash & corruption,extensions_contrib,2,2,3,38,3,false,false
+2026-02-26,15.17,0,Replication & recovery,replication_recovery,5,4,2,3,10,false,false
+2026-02-26,15.17,1,Security (CVE),core_server,18,15,1,2,2,false,false
+2026-02-26,15.17,2,Other functionality,core_server,6,5,1,16,4,false,false
+2026-02-26,15.17,3,Other functionality,extensions_contrib,6,5,3,26,17,false,false
+2026-02-26,15.17,4,Crash & corruption,extensions_contrib,6,5,1,2,1,false,false
+2026-02-26,16.13,2,Other functionality,planner,4,4,3,83,4,true,false
+2026-02-26,18.3,2,Security (CVE),extensions_contrib,2,2,1,1,1,false,false
+2026-02-26,18.3,3,Client tools,core_server,2,2,7,263,326,false,false
+2026-02-26,18.3,5,Other functionality,core_server,2,2,5,34,8,true,false
+2026-05-14,15.18,0,Security (CVE),core_server,10,8,3,107,2,true,false
+2026-05-14,15.18,1,Security (CVE),extensions_contrib,57,47,2,2,2,false,false
+2026-05-14,15.18,2,Security (CVE),core_server,6,5,3,39,3,true,false
+2026-05-14,15.18,3,Security (CVE),core_server,12,10,1,9,5,false,false
+2026-05-14,15.18,4,Security (CVE),core_server,6,5,3,39,0,true,false
+2026-05-14,15.18,5,Security (CVE),core_server,10,8,3,11,9,false,false
+2026-05-14,15.18,6,Security (CVE),client_tools,6,5,5,46,12,false,false
+2026-05-14,15.18,7,Security (CVE),core_server,6,5,5,57,0,false,false
+2026-05-14,15.18,8,Security (CVE),extensions_contrib,12,10,4,0,29,false,false
+2026-05-14,15.18,9,Security (CVE),extensions_contrib,6,5,3,35,2,false,false
+2026-05-14,15.18,10,Security (CVE),extensions_contrib,6,5,1,38,46,false,false
+2026-05-14,15.18,11,Wrong results & planner,planner,18,16,6,160,8,true,false
+2026-05-14,15.18,12,Other functionality,core_server,6,5,5,221,38,true,false
+2026-05-14,15.18,13,Other functionality,core_server,5,4,1,2,1,false,false
+2026-05-14,15.18,14,Other functionality,core_server,5,5,3,40,0,true,false
+2026-05-14,15.18,15,Other functionality,core_server,6,5,3,63,2,true,false
+2026-05-14,15.18,16,Other functionality,core_server,6,5,3,176,1,true,false
+2026-05-14,15.18,17,Other functionality,core_server,6,5,3,17,0,true,false
+2026-05-14,15.18,18,Other functionality,core_server,6,5,3,16,0,true,false
+2026-05-14,15.18,19,Other functionality,core_server,6,5,1,43,7,false,false
+2026-05-14,15.18,20,Crash & corruption,core_server,6,5,4,369,68,true,false
+2026-05-14,15.18,21,Security hardening (no CVE),core_server,6,5,1,43,18,false,false
+2026-05-14,15.18,22,Security hardening (no CVE),core_server,12,10,1,24,10,false,false
+2026-05-14,15.18,23,Other functionality,core_server,6,5,3,172,7,true,false
+2026-05-14,15.18,24,Other functionality,core_server,5,5,3,29,3,true,false
+2026-05-14,15.18,25,Security hardening (no CVE),core_server,6,5,1,19,8,false,false
+2026-05-14,15.18,26,Crash & corruption,core_server,6,5,1,17,3,false,false
+2026-05-14,15.18,27,Replication & recovery,replication_recovery,6,5,1,19,16,false,false
+2026-05-14,15.18,28,Replication & recovery,core_server,6,5,3,18,1,false,false
+2026-05-14,15.18,29,Security hardening (no CVE),core_server,6,5,5,96,0,true,false
+2026-05-14,15.18,30,Crash & corruption,planner,6,5,2,25,1,false,false
+2026-05-14,15.18,31,Other functionality,core_server,5,5,1,15,33,false,false
+2026-05-14,15.18,32,Crash & corruption,replication_recovery,5,4,2,68,19,false,false
+2026-05-14,15.18,33,Replication & recovery,replication_recovery,12,10,1,7,1,false,false
+2026-05-14,15.18,34,Replication & recovery,core_server,6,5,1,11,1,false,false
+2026-05-14,15.18,35,Crash & corruption,client_tools,6,5,10,312,12,false,false
+2026-05-14,15.18,36,Crash & corruption,client_tools,15,15,3,14,4,false,false
+2026-05-14,15.18,37,Client tools,client_tools,6,5,5,28,1,false,false
+2026-05-14,15.18,38,Replication & recovery,extensions_contrib,5,5,1,1,14,false,false
+2026-05-14,15.18,39,Extensions & contrib,extensions_contrib,7,6,3,60,64,false,false
+2026-05-14,15.18,40,Extensions & contrib,extensions_contrib,6,5,1,13,9,false,false
+2026-05-14,15.18,41,Crash & corruption,extensions_contrib,6,5,3,133,4,false,false
+2026-05-14,16.14,2,Security (CVE),core_server,4,4,2,43,30,true,false
+2026-05-14,16.14,13,Wrong results & planner,planner,7,7,1,2,0,false,false
+2026-05-14,16.14,26,Wrong results & planner,core_server,4,4,1,21,12,false,false
+2026-05-14,16.14,27,Other functionality,core_server,4,4,1,1,1,false,false
+2026-05-14,16.14,29,Other functionality,replication_recovery,4,4,1,9,0,false,false
+2026-05-14,16.14,36,Crash & corruption,core_server,4,4,1,5,0,false,false
+2026-05-14,16.14,43,Client tools,client_tools,4,4,1,30,19,false,false
+2026-05-14,17.10,2,Security (CVE),replication_recovery,3,3,1,8,3,false,false
+2026-05-14,17.10,31,Other functionality,core_server,3,3,3,33,0,true,false
+2026-05-14,17.10,33,Other functionality,core_server,3,3,1,55,6,false,false
+2026-05-14,17.10,34,Crash & corruption,core_server,3,3,4,42,4,false,false
+2026-05-14,17.10,35,Replication & recovery,core_server,3,3,1,16,5,false,false
+2026-05-14,17.10,36,Replication & recovery,core_server,8,8,5,115,44,false,false
+2026-05-14,17.10,37,Other functionality,replication_recovery,3,3,1,14,2,false,false
+2026-05-14,17.10,42,Other functionality,tests,6,6,2,55,0,true,false
+2026-05-14,18.4,5,Security (CVE),planner,2,2,5,248,5,true,false
+2026-05-14,18.4,16,Wrong results & planner,planner,2,2,8,320,97,true,false
+2026-05-14,18.4,17,Wrong results & planner,core_server,2,2,3,23,3,true,false
+2026-05-14,18.4,18,Other functionality,core_server,2,2,6,77,19,true,false
+2026-05-14,18.4,19,Other functionality,planner,2,2,3,92,0,true,false
+2026-05-14,18.4,21,Other functionality,core_server,2,2,1,4,2,false,false
+2026-05-14,18.4,26,Other functionality,core_server,2,2,1,3,3,false,false
+2026-05-14,18.4,28,Other functionality,core_server,2,2,3,92,0,true,false
+2026-05-14,18.4,29,Other functionality,core_server,2,2,4,91,8,true,false
+2026-05-14,18.4,48,Other functionality,core_server,2,2,1,1,1,false,false
+2026-05-14,18.4,50,Crash & corruption,core_server,2,2,1,4,1,false,false
+2026-05-14,18.4,54,Other functionality,core_server,2,2,1,2,2,false,false
+2026-05-14,18.4,56,Other functionality,core_server,2,2,3,38,17,true,false
+2026-05-14,18.4,63,Replication & recovery,client_tools,2,2,11,87,50,false,false
+2026-05-14,18.4,65,Client tools,client_tools,2,2,2,40,0,false,false
+2026-05-14,18.4,70,Extensions & contrib,extensions_contrib,2,2,3,134,6,false,false
+2026-08-13,15.19,0,Security (CVE),client_tools,11,8,5,113,113,false,false
+2026-08-13,15.19,1,Security (CVE),extensions_contrib,14,10,15,254,13,false,false
+2026-08-13,15.19,2,Security (CVE),client_tools,14,10,20,313,57,true,false
+2026-08-13,15.19,3,Security (CVE),core_server,7,5,1,2,2,false,false
+2026-08-13,15.19,4,Security (CVE),core_server,7,5,1,18,3,false,false
+2026-08-13,15.19,5,Security (CVE),core_server,7,5,1,12,11,false,false
+2026-08-13,15.19,6,Security (CVE),core_server,7,5,3,51,5,true,false
+2026-08-13,15.19,7,Security (CVE),planner,4,3,4,43,8,true,false
+2026-08-13,15.19,8,Security (CVE),core_server,7,5,1,2,1,false,false
+2026-08-13,15.19,9,Security (CVE),core_server,14,10,5,126,35,false,false
+2026-08-13,15.19,10,Security (CVE),core_server,14,10,6,109,13,false,false
+2026-08-13,15.19,11,Security (CVE),core_server,14,10,2,40,0,false,false
+2026-08-13,15.19,12,Security (CVE),core_server,7,5,7,129,42,true,false
+2026-08-13,15.19,13,Security (CVE),core_server,7,5,1,2,1,false,false
+2026-08-13,15.19,14,Security (CVE),core_server,21,15,22,318,9,true,false
+2026-08-13,15.19,15,Security (CVE),core_server,7,5,3,64,2,false,false
+2026-08-13,15.19,16,Security (CVE),core_server,4,3,1,7,2,false,false
+2026-08-13,15.19,17,Security (CVE),core_server,5,4,2,14,1,false,false
+2026-08-13,15.19,18,Security (CVE),client_tools,7,5,6,66,5,false,false
+2026-08-13,15.19,19,Security (CVE),client_tools,7,5,3,20,2,false,false
+2026-08-13,15.19,20,Security (CVE),client_tools,7,5,5,140,45,true,false
+2026-08-13,15.19,21,Security (CVE),extensions_contrib,7,5,2,14,3,false,false
+2026-08-13,15.19,22,Security (CVE),extensions_contrib,7,5,3,24,24,false,false
+2026-08-13,15.19,23,Security (CVE),extensions_contrib,7,5,4,37,5,false,false
+2026-08-13,15.19,24,Security (CVE),core_server,7,5,4,77,43,false,false
+2026-08-13,15.19,25,Security (CVE),extensions_contrib,3,2,1,16,28,false,false
+2026-08-13,15.19,26,Security (CVE),extensions_contrib,7,5,1,2,2,false,false
+2026-08-13,15.19,27,Security (CVE),extensions_contrib,5,4,3,138,261,true,false
+2026-08-13,15.19,28,Crash & corruption,replication_recovery,3,2,1,5,2,false,false
+2026-08-13,15.19,29,Crash & corruption,extensions_contrib,7,5,4,163,33,false,false
+2026-08-13,15.19,30,Wrong results & planner,core_server,7,5,3,68,8,true,false
+2026-08-13,15.19,31,Wrong results & planner,planner,7,5,1,41,33,false,false
+2026-08-13,15.19,32,Wrong results & planner,core_server,5,4,6,102,27,false,false
+2026-08-13,15.19,33,Wrong results & planner,core_server,6,5,3,361,9,true,false
+2026-08-13,15.19,34,Other functionality,core_server,7,5,3,71,10,true,false
+2026-08-13,15.19,35,Other functionality,core_server,7,5,3,19,20,true,false
+2026-08-13,15.19,36,Other functionality,core_server,7,5,7,110,2,true,false
+2026-08-13,15.19,37,Other functionality,core_server,8,6,3,150,17,true,false
+2026-08-13,15.19,38,Other functionality,core_server,5,4,3,99,1,true,false
+2026-08-13,15.19,39,Other functionality,core_server,5,4,1,1,3,false,false
+2026-08-13,15.19,40,Other functionality,core_server,5,4,1,1,1,false,false
+2026-08-13,15.19,41,Crash & corruption,core_server,7,5,3,23,1,true,false
+2026-08-13,15.19,42,Other functionality,core_server,5,4,1,30,57,false,false
+2026-08-13,15.19,43,Other functionality,tests,10,8,1,6,0,true,false
+2026-08-13,15.19,44,Other functionality,core_server,3,2,3,19,6,true,false
+2026-08-13,15.19,45,Other functionality,core_server,7,5,3,28,0,true,false
+2026-08-13,15.19,46,Crash & corruption,core_server,7,5,1,21,8,false,false
+2026-08-13,15.19,47,Security hardening (no CVE),core_server,7,5,1,17,1,false,false
+2026-08-13,15.19,48,Other functionality,core_server,7,5,1,7,0,false,false
+2026-08-13,15.19,49,Crash & corruption,core_server,7,5,3,124,54,true,false
+2026-08-13,15.19,50,Other functionality,core_server,5,4,1,35,14,false,false
+2026-08-13,15.19,51,Crash & corruption,core_server,10,8,5,379,5,true,false
+2026-08-13,15.19,52,Crash & corruption,core_server,7,5,1,14,5,false,false
+2026-08-13,15.19,53,Crash & corruption,core_server,4,4,1,10,3,false,false
+2026-08-13,15.19,54,Crash & corruption,core_server,10,8,1,19,11,false,false
+2026-08-13,15.19,55,Replication & recovery,replication_recovery,5,4,2,22,7,true,false
+2026-08-13,15.19,56,Replication & recovery,replication_recovery,5,4,1,19,4,false,false
+2026-08-13,15.19,57,Security hardening (no CVE),replication_recovery,5,4,7,159,73,false,false
+2026-08-13,15.19,58,Replication & recovery,extensions_contrib,7,5,4,108,4,true,false
+2026-08-13,15.19,59,Crash & corruption,core_server,6,5,6,66,27,true,false
+2026-08-13,15.19,60,Replication & recovery,replication_recovery,7,5,7,247,7,true,false
+2026-08-13,15.19,61,Crash & corruption,replication_recovery,5,4,1,27,25,false,false
+2026-08-13,15.19,62,Replication & recovery,replication_recovery,5,4,1,1,0,false,false
+2026-08-13,15.19,63,Replication & recovery,core_server,10,9,3,12,13,false,false
+2026-08-13,15.19,64,Crash & corruption,core_server,12,12,6,25,22,false,false
+2026-08-13,15.19,65,Other functionality,core_server,6,5,1,5,2,false,false
+2026-08-13,15.19,66,Crash & corruption,extensions_contrib,5,4,3,15,1,false,false
+2026-08-13,15.19,67,Crash & corruption,extensions_contrib,6,4,15,500,4,false,false
+2026-08-13,15.19,68,Client tools,client_tools,28,20,2,11,5,false,false
+2026-08-13,15.19,69,Client tools,client_tools,5,4,1,1,1,false,false
+2026-08-13,15.19,70,Client tools,client_tools,5,4,2,5,13,false,false
+2026-08-13,15.19,71,Client tools,client_tools,5,4,3,41,3,true,false
+2026-08-13,15.19,72,Client tools,client_tools,7,5,2,5,3,false,false
+2026-08-13,15.19,73,Client tools,client_tools,7,5,1,1,1,false,false
+2026-08-13,15.19,74,Crash & corruption,client_tools,4,4,1,11,12,false,false
+2026-08-13,15.19,75,Other functionality,replication_recovery,5,4,2,2,2,false,false
+2026-08-13,15.19,76,Extensions & contrib,extensions_contrib,5,4,1,1,1,false,false
+2026-08-13,15.19,77,Wrong results & planner,extensions_contrib,7,5,10,345,86,false,false
+2026-08-13,15.19,78,Crash & corruption,extensions_contrib,7,5,2,34,4,false,false
+2026-08-13,15.19,79,Crash & corruption,extensions_contrib,10,8,1,9,0,false,false
+2026-08-13,15.19,80,Extensions & contrib,extensions_contrib,5,4,1,3,0,false,false
+2026-08-13,15.19,81,Crash & corruption,extensions_contrib,5,4,5,63,9,false,false
+2026-08-13,15.19,82,Crash & corruption,extensions_contrib,5,4,1,3,3,false,false
+2026-08-13,15.19,83,Crash & corruption,extensions_contrib,7,5,3,28,3,false,false
+2026-08-13,15.19,84,Security (CVE),extensions_contrib,5,4,1,2,1,false,false
+2026-08-13,15.19,85,Extensions & contrib,extensions_contrib,5,4,3,55,3,false,false
+2026-08-13,15.19,86,Crash & corruption,extensions_contrib,5,4,4,31,4,false,false
+2026-08-13,15.19,87,Build & platform,build_platform,3,2,5,95,19,false,false
+2026-08-13,15.19,88,Build & platform,extensions_contrib,5,4,4,25,24,true,false
+2026-08-13,16.15,32,Wrong results & planner,planner,10,8,1,12,7,false,false
+2026-08-13,16.15,37,Other functionality,core_server,5,4,4,42,0,true,false
+2026-08-13,16.15,38,Other functionality,core_server,5,4,3,174,0,true,false
+2026-08-13,16.15,44,Replication & recovery,core_server,5,4,5,97,9,true,false
+2026-08-13,16.15,49,Crash & corruption,core_server,3,3,4,72,0,true,false
+2026-08-13,16.15,53,Security hardening (no CVE),core_server,7,6,3,34,4,true,false
+2026-08-13,16.15,56,Other functionality,core_server,5,4,1,1,1,false,false
+2026-08-13,16.15,62,Replication & recovery,replication_recovery,7,7,1,12,0,false,false
+2026-08-13,17.11,35,Other functionality,core_server,4,3,3,43,2,true,false
+2026-08-13,17.11,43,Security hardening (no CVE),core_server,4,3,3,70,14,false,false
+2026-08-13,17.11,49,Other functionality,core_server,6,5,5,73,38,true,false
+2026-08-13,17.11,51,Other functionality,core_server,4,3,5,64,1,true,false
+2026-08-13,17.11,56,Other functionality,core_server,4,3,1,2,2,false,false
+2026-08-13,17.11,57,Crash & corruption,core_server,2,2,1,0,2,false,false
+2026-08-13,17.11,61,Replication & recovery,core_server,2,2,1,15,5,false,false
+2026-08-13,17.11,67,Wrong results & planner,core_server,12,9,3,84,46,false,false
+2026-08-13,17.11,68,Replication & recovery,client_tools,8,6,3,306,14,false,false
+2026-08-13,17.11,76,Replication & recovery,core_server,2,2,3,136,2,true,false
+2026-08-13,17.11,77,Crash & corruption,replication_recovery,2,2,1,13,10,false,false
+2026-08-13,17.11,92,Crash & corruption,client_tools,2,2,1,3,0,false,false
+2026-08-13,17.11,93,Replication & recovery,replication_recovery,2,2,1,0,2,false,false
+2026-08-13,17.11,101,Crash & corruption,extensions_contrib,2,2,1,4,1,false,false
+2026-08-13,18.6,28,Other functionality,core_server,3,2,1,5,3,false,false
+2026-08-13,18.6,31,Crash & corruption,core_server,2,2,3,38,7,false,false
+2026-08-13,18.6,32,Other functionality,core_server,3,2,5,333,152,true,false
+2026-08-13,18.6,33,Performance,core_server,3,2,2,9,8,false,false
+2026-08-13,18.6,34,Other functionality,core_server,1,1,7,75,9,true,false
+2026-08-13,18.6,37,Crash & corruption,planner,4,3,3,92,5,true,false
+2026-08-13,18.6,39,Wrong results & planner,planner,3,2,12,1370,242,true,false
+2026-08-13,18.6,41,Wrong results & planner,core_server,1,1,1,8,0,false,false
+2026-08-13,18.6,44,Other functionality,core_server,1,1,3,13,0,true,false
+2026-08-13,18.6,49,Other functionality,core_server,6,4,3,80,32,true,false
+2026-08-13,18.6,50,Client tools,core_server,3,2,5,82,4,true,false
+2026-08-13,18.6,52,Build & platform,core_server,3,2,3,47,48,true,false
+2026-08-13,18.6,60,Other functionality,core_server,3,2,4,80,6,true,false
+2026-08-13,18.6,69,Other functionality,core_server,1,1,1,11,3,false,false
+2026-08-13,18.6,71,Other functionality,core_server,6,4,1,7,2,false,false
+2026-08-13,18.6,78,Build & platform,core_server,1,1,3,87,12,true,false
+2026-08-13,18.6,92,Replication & recovery,replication_recovery,3,2,1,9,0,false,false
+2026-08-13,18.6,100,Other functionality,replication_recovery,1,1,4,23,19,false,false
+2026-08-13,18.6,104,Client tools,client_tools,3,2,1,14,0,false,false
+2026-08-13,18.6,105,Client tools,client_tools,3,2,1,7,4,false,false
+2026-08-13,18.6,107,Crash & corruption,client_tools,1,1,1,1,1,false,false
+2026-08-13,18.6,109,Crash & corruption,client_tools,1,1,3,245,18,true,false
+2026-08-13,18.6,111,Client tools,client_tools,1,1,2,3,0,false,false
+2026-08-13,18.6,118,Client tools,client_tools,2,2,1,29,10,false,false
+2026-08-13,18.6,119,Client tools,client_tools,1,1,2,3,2,false,false
+2026-08-13,18.6,120,Crash & corruption,extensions_contrib,1,1,1,9,7,false,false
+2026-08-13,18.6,121,Crash & corruption,extensions_contrib,3,2,1,3,0,false,false
+2026-08-13,18.6,124,Extensions & contrib,extensions_contrib,3,2,1,1,1,false,false
+2026-08-13,18.6,126,Extensions & contrib,extensions_contrib,2,2,3,38,6,false,false
+2026-08-13,18.6,127,Extensions & contrib,extensions_contrib,1,1,3,18,2,false,false
+2026-08-13,18.6,132,Security hardening (no CVE),extensions_contrib,1,1,1,15,5,false,false

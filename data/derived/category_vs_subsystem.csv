@@ -1,56 +1,56 @@
-category,dominant_subsystem,n_fixes
-Build & platform,core_server,37
+category,dominant_subsystem,fix_cnt
 Build & platform,build_platform,18
 Build & platform,client_tools,3
+Build & platform,core_server,37
+Build & platform,docs,1
 Build & platform,extensions_contrib,3
 Build & platform,other,3
-Build & platform,docs,1
 Build & platform,replication_recovery,1
 Build & platform,tests,1
+Client tools,build_platform,1
 Client tools,client_tools,78
 Client tools,core_server,13
-Client tools,tests,3
-Client tools,build_platform,1
 Client tools,planner,1
 Client tools,replication_recovery,1
+Client tools,tests,3
+Crash & corruption,build_platform,2
+Crash & corruption,client_tools,27
 Crash & corruption,core_server,173
 Crash & corruption,extensions_contrib,51
-Crash & corruption,replication_recovery,36
-Crash & corruption,client_tools,27
 Crash & corruption,planner,13
-Crash & corruption,build_platform,2
+Crash & corruption,replication_recovery,36
 Crash & corruption,tests,2
-Extensions & contrib,extensions_contrib,48
-Extensions & contrib,core_server,7
 Extensions & contrib,build_platform,2
-Other functionality,core_server,259
-Other functionality,planner,25
-Other functionality,extensions_contrib,20
+Extensions & contrib,core_server,7
+Extensions & contrib,extensions_contrib,48
+Other functionality,build_platform,1
 Other functionality,client_tools,10
+Other functionality,core_server,259
+Other functionality,extensions_contrib,20
+Other functionality,planner,25
 Other functionality,replication_recovery,8
 Other functionality,tests,8
-Other functionality,build_platform,1
 Performance,core_server,6
 Performance,extensions_contrib,1
 Performance,planner,1
 Performance,replication_recovery,1
-Replication & recovery,replication_recovery,60
-Replication & recovery,core_server,41
 Replication & recovery,client_tools,5
+Replication & recovery,core_server,41
 Replication & recovery,extensions_contrib,5
+Replication & recovery,replication_recovery,60
 Replication & recovery,tests,1
+Security (CVE),client_tools,13
 Security (CVE),core_server,39
 Security (CVE),extensions_contrib,18
-Security (CVE),client_tools,13
 Security (CVE),planner,3
 Security (CVE),replication_recovery,1
 Security (CVE),tests,1
-Security hardening (no CVE),core_server,10
 Security hardening (no CVE),client_tools,1
+Security hardening (no CVE),core_server,10
 Security hardening (no CVE),extensions_contrib,1
 Security hardening (no CVE),replication_recovery,1
-Wrong results & planner,core_server,31
-Wrong results & planner,planner,27
-Wrong results & planner,extensions_contrib,3
 Wrong results & planner,client_tools,1
+Wrong results & planner,core_server,31
+Wrong results & planner,extensions_contrib,3
+Wrong results & planner,planner,27
 Wrong results & planner,tests,1

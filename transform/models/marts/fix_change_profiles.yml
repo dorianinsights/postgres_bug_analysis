@@ -13,7 +13,7 @@ models:
     columns:
       - name: category
         tests: [not_null]
-      - name: n_annotated_commits
+      - name: annotated_commit_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:

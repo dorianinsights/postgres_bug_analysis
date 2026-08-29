@@ -9,8 +9,9 @@ Three explicit stages, each re-runnable on its own:
 ```
 scrape_release_notes_sgml.py ──> data/raw/*.csv ──────┐
                                  (scraper output)     │
-postgres_clone.py ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> data/derived/*.csv ──> faces/*.yml (dct)
-                      (full bare clone)               │    (mart output)                                     (visualization)
+postgres_clone.py ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> transform.duckdb marts ──> faces/*.yml (dct)
+                      (full bare clone)               │        │ (typed tables — what the faces read)           (visualization)
+                                                      │        └────> data/derived/*.csv (diffable audit export)
 mailing_list_sync.py ──> .cache/mbox/ ────────────────┘
                       (monthly mbox archives)
                       (both caches are read directly at build time)
@@ -49,10 +50,12 @@ python3.12 -m venv venv
 ## Data files (`data/`)
 
 Two subdirectories, one per pipeline direction: `data/raw/` is written by the
-release-notes scraper and read by the dbt sources; `data/derived/` is written
-by the dbt external mart models and read by the faces (the changelog face
-also reads `raw/releases.csv` directly). Nothing writes and reads the same
-directory. **Git-side and mail-side data have no CSV landing layer at all**:
+release-notes scraper and read by the dbt sources; `data/derived/` holds the
+CSV **audit exports** of the mart tables — committed and line-diffable in
+review, but read back by nothing (the faces read the typed mart tables in
+`transform/transform.duckdb` instead, so DATE/DOUBLE/BIGINT typing survives
+end to end with no re-casting; the changelog face still reads
+`raw/releases.csv` directly). Nothing writes and reads the same directory. **Git-side and mail-side data have no CSV landing layer at all**:
 the clone at `.cache/postgres.git` is content-addressed and immutable — its
 own perfect raw store — so the transform's `models/raw_git/` Python models
 read it directly at build time, and every git-derived table shares one
@@ -71,12 +74,13 @@ Raw (`data/raw/`, from the release-notes scraper — rerun it to refresh):
 | `release_items.csv` | one changelog item | same sources: summary and full text (CVE ids are derived downstream) |
 | `item_commits.csv` | one (item, branch-commit) | the SGML comment annotations: author + every branch each fix landed on, with commit hash — ground truth linking changelog items to git commits |
 
-Derived (`data/derived/`, written by the `transform/` dbt project's external
-models — rerun `dbt build` to change analysis rules without re-scraping):
+Derived (`data/derived/`, the CSV audit exports of the mart tables, written
+by the transform's on-run-end hook — rerun `dbt build` to change analysis
+rules without re-scraping; one `.csv` per mart, same name):
 
 | File | Grain | Notes |
 |---|---|---|
-| `fix_items.csv` | one distinct fix per wave | the item-grain fact the wave rollups aggregate: the deduped representative item with category, CVEs, and backpatch breadth (`n_branch_items`) |
+| `fix_items.csv` | one distinct fix per wave | the item-grain fact the wave rollups aggregate: the deduped representative item with category, CVEs, and backpatch breadth (`branch_item_cnt`) |
 | `wave_summary.csv` | one same-day release wave | distinct fixes (deduped across branches), CVEs, security count, out-of-band + partial-window flags |
 | `wave_categories.csv` | (wave, category) | keyword-rule buckets from the `category_rules` seed; CVE / hardening checked first |
 | `wave_contributors.csv` | (wave, contributor) | credits parsed from the notes' trailing "(Name, Name)" lists, with first-seen wave |
@@ -97,17 +101,24 @@ models — rerun `dbt build` to change analysis rules without re-scraping):
 - `git_activity.yml` — the commit-level view: quarterly distinct backpatched
   fixes, per-branch series, AI-credited commits (chart + full credit-line
   table), and the like-for-like release-cycle pace comparison.
+- `bug_reports.yml` — the pgsql-bugs view: monthly report volume with a
+  6-month average, acted-upon share, outcome and latency breakdowns,
+  discussion volume by outcome, and the most-discussed reports table.
 
 Rendered copies land in `out/` (gitignored; regenerate with `dct render`).
 
 ## Transform (`transform/`)
 
 A dbt project targeting DuckDB (dbt-duckdb) — run `dbt build` from inside
-`transform/`. The raw CSVs are read in place as external sources (nothing is
-loaded into the scratch `.duckdb` file), and the derived CSVs are written by
-`external`-materialized mart models to `data/derived/` — the five files
-build_datasets.py used to produce (same columns, so the faces don't know the
-producer changed) plus the item-grain `fix_items.csv`. Each layer lives in
+`transform/`. The raw CSVs are read in place as external sources, and the
+marts are typed tables inside `transform.duckdb` — the interface the faces
+query (dct's `warehouse` source opens the file read-only) and what dbt tests
+run against, so types survive with no sniffing or re-casting. An on-run-end
+hook (`macros/export_marts_csv.sql`) then exports every mart to its
+`data/derived/*.csv` twin for git-diffable review. `transform.duckdb` itself
+stays gitignored — `dbt build` regenerates it — but note DuckDB is
+single-writer: close interactive `duckdb` CLI sessions on it before
+building. Each layer lives in
 its own schema — `raw`, `staging`, `intermediate`, `marts`, `seeds` (the
 `generate_schema_name` macro uses the configured names verbatim instead of
 dbt's target-prefixed default), so browsing the .duckdb shows the layer in
@@ -135,21 +146,51 @@ every object's name. Layers:
   `int_fix_groups` (cross-branch dedup as recursive-CTE connected
   components), `int_fix_reps` (one categorized representative per distinct
   fix), `int_wave_summary`, `int_git_commits` (plumbing/AI-credit flags).
-- `models/marts/` — the external models, each a `-> data/derived/*.csv` writer:
-  the item-grain `fix_items` fact, the commit-grain `git_commits_enriched`
-  export, and the five wave/projection/pace rollups.
+- `models/marts/` — the typed tables the faces and CSV exports read: the
+  item-grain `fix_items` fact, the commit-grain `git_commits_enriched`
+  export, the wave/projection/pace rollups, and the bug-report outcome
+  marts. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
+  which downstream writers silently turn into DOUBLE — cast count-like
+  sums to `::BIGINT` at the aggregation site.
 - `seeds/` — the categorization taxonomy: `categories` (bucket + display
   order) and `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules).
 
-Every model is heavily tested — 294 data tests in all: column-level schema
+Every model is heavily tested — 279 data tests in all: column-level schema
 tests (uniqueness, not-null, relationships, accepted ranges on counts and
 dates, regex format checks) using `dbt_utils` and Metaplane's
 `dbt_expectations` (installed via `dbt deps`), plus seven singular
 reconciliation tests (rollups vs the item grain, commit annotations vs
 items, connected-components sanity, exactly one open cycle). `dbt build`
-is therefore also the validation pass. Join style: always an explicit
-join type with `ON` conditions — `USING` is forbidden (sqlfluff ST07).
+is therefore also the validation pass.
+
+SQL conventions (enforced by sqlfluff where a rule exists; the naming ones
+are convention-only — sqlfluff has no column-naming rules):
+
+- Joins: always an explicit join type with `ON` conditions — `USING` is
+  forbidden (sqlfluff ST07).
+- Booleans are real BOOLEANs (never 0/1 integers) and are named with an
+  `is_`/`has_` prefix as grammatically appropriate (`is_acted_upon`,
+  `has_test_changes`). Consumers write `WHERE is_x` / `WHERE NOT is_x`,
+  and count them with `COUNT(*) FILTER (WHERE is_x)`, never `SUM(x)`.
+- Aggregate-derived columns carry the aggregate as a suffix: `*_cnt`
+  (COUNT), `*_sum` (SUM), `*_median`, `*_avg`, `*_pct` — e.g.
+  `report_cnt`, `lines_added_sum`, `days_to_commit_median`,
+  `acted_upon_pct`. MIN/MAX keep semantic names (`first_commit_dt`,
+  `last_message_dt`).
+- No final `ORDER BY` in models — a table has no reliable order, so every
+  consumer orders explicitly (the faces do; the CSV exporter uses
+  `ORDER BY ALL` for deterministic committed files). `ORDER BY` inside a
+  model is fine only where it is functional (with `LIMIT`, in window
+  frames, in `STRING_AGG`).
+- `GROUP BY ALL` (DuckDB-native) instead of enumerating grouped columns —
+  the one exception is a grouping column that `GROUP BY ALL` cannot see
+  (referenced only inside an aggregate `FILTER`), which stays explicit
+  with a comment.
+- Watch aggregate result types: DuckDB's `SUM(INTEGER)` is HUGEINT, which
+  downstream writers silently turn into DOUBLE — cast count-like sums to
+  `::BIGINT` at the aggregation site.
+
 This project replaced `build_datasets.py` + `categorize.py` on 2026-08-28;
 at cutover every derived CSV was verified field-identical against the
 Python implementation's output (the only byte difference: the csv module
@@ -181,7 +222,7 @@ by the dbt tests themselves.
   (connected components in `int_fix_groups.sql` — its header comment
   documents the four real-world cases behind the rule).
 - The corpus's first wave (15.1, Nov 2022) accumulated only ~4 weeks of fixes
-  and is flagged `partial_window`; projection fits exclude it.
+  and is flagged `is_partial_window`; projection fits exclude it.
 - Timestamps keep full fidelity (ISO 8601 with offset) through raw and
   staging (`_ts` columns, TIMESTAMPTZ); truncation to a calendar day
   (`_dt`) happens as far downstream as possible, at the point of use, and

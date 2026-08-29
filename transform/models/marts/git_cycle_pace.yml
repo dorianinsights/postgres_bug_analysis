@@ -16,7 +16,7 @@ models:
       # The early window is a prefix of the full cycle.
       - dbt_utils.expression_is_true:
           arguments:
-            expression: distinct_fixes_full IS NULL OR distinct_fixes_full >= distinct_fixes_early
+            expression: full_distinct_fix_cnt IS NULL OR full_distinct_fix_cnt >= early_distinct_fix_cnt
     columns:
       - name: cycle_start_dt
         tests:
@@ -29,16 +29,13 @@ models:
       - name: is_open_cycle
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]
       - name: window_days
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: distinct_fixes_early
+      - name: early_distinct_fix_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:

@@ -11,7 +11,7 @@ models:
           arguments:
             combination_of_columns: [category, dominant_subsystem]
     columns:
-      - name: n_fixes
+      - name: fix_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:

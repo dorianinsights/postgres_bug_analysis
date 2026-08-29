@@ -23,6 +23,3 @@ models:
       - name: is_plumbing
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]

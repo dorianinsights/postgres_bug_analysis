@@ -33,18 +33,19 @@ models:
       +materialized: table
       +schema: intermediate
     marts:
-      # External models COPY their result to ../data/derived/*.csv — the same files
-      # build_datasets.py used to write, so the faces' queries are unchanged.
-      # csv_read_options governs the VIEW dbt registers over the written file
-      # (which is what dbt tests query): restrict sniffing exactly like the
-      # sources do, or "15.10" in a version column re-sniffs as DOUBLE 15.1.
-      +materialized: external
-      +format: csv
+      # Typed tables — the interface the faces read (dct queries this
+      # .duckdb file read-only via the `warehouse` source), and what dbt
+      # tests query, so types survive end to end with no sniffing. The
+      # on-run-end hook below exports each mart to ../data/derived/*.csv:
+      # a write-only, line-diffable audit artifact that is committed and
+      # reviewed but never read back by anything.
+      +materialized: table
       +schema: marts
-      +csv_read_options:
-        auto_detect: true
-        auto_type_candidates: ["BIGINT", "DATE", "VARCHAR"]
 
 seeds:
   postgres_bug_analysis:
     +schema: seeds
+
+# Export every successfully built mart to its diffable CSV twin.
+on-run-end:
+  - "{{ export_marts_csv(results) }}"

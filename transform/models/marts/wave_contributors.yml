@@ -24,7 +24,7 @@ models:
                 max_value: current_date
       - name: contributor
         tests: [not_null]
-      - name: credits
+      - name: credit_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:
@@ -35,12 +35,6 @@ models:
       - name: is_first_wave
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]
-      - name: out_of_band
+      - name: is_out_of_band
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]

@@ -5,7 +5,7 @@ models:
     description: >
       One distinct fix per wave (the deduped representative item),
       categorized -> ../data/derived/fix_items.csv. The item-grain fact the
-      wave rollups aggregate; n_branch_items = per-branch changelog items
+      wave rollups aggregate; branch_item_cnt = per-branch changelog items
       folded into the fix. cves is NULL when the fix carries none.
     tests:
       - dbt_utils.unique_combination_of_columns:
@@ -49,15 +49,12 @@ models:
               arguments:
                 min_value: 0
                 max_value: 9
-      - name: n_branch_items
+      - name: branch_item_cnt
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: out_of_band
+      - name: is_out_of_band
         tests:
           - not_null
-          - accepted_values:
-              arguments:
-                values: [0, 1]

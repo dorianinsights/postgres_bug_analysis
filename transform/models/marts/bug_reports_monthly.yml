@@ -5,10 +5,20 @@ models:
     description: >
       Monthly pgsql-bugs report volume vs acted-upon rate ->
       ../data/derived/bug_reports_monthly.csv (recent months
-      right-censored). Tested at int_bug_monthly; the decimal pct column
-      re-sniffs as text in this CSV-backed view.
+      right-censored). Grain = report_month_dt.
     columns:
       - name: report_month_dt
         tests: [unique, not_null]
-      - name: n_reports
-        tests: [not_null]
+      - name: report_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: acted_upon_pct
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100

@@ -8,9 +8,9 @@
 WITH item_counts AS (
   SELECT
     version,
-    COUNT(*) AS n_parsed_items
+    COUNT(*) AS parsed_item_cnt
   FROM {{ ref('stg_release_items') }}
-  GROUP BY version
+  GROUP BY ALL
 ),
 
 fix_releases AS (
@@ -19,7 +19,7 @@ fix_releases AS (
     rel.major,
     rel.minor,
     rel.release_dt,
-    cnt.n_parsed_items
+    cnt.parsed_item_cnt
   FROM {{ ref('stg_releases') }} AS rel
   INNER JOIN item_counts AS cnt ON rel.version = cnt.version
   WHERE rel.minor > 0
@@ -29,13 +29,13 @@ grouped AS (
   SELECT
     release_dt AS wave_dt,
     STRING_AGG(version, ' / ' ORDER BY major, minor) AS versions,
-    COUNT(*) AS n_releases,
-    MAX(n_parsed_items) < 20 AS out_of_band
+    COUNT(*) AS release_cnt,
+    MAX(parsed_item_cnt) < 20 AS is_out_of_band
   FROM fix_releases
-  GROUP BY release_dt
+  GROUP BY ALL
 )
 
 SELECT
   *,
-  wave_dt = MIN(wave_dt) OVER () AS partial_window
+  wave_dt = MIN(wave_dt) OVER () AS is_partial_window
 FROM grouped
