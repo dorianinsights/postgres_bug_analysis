@@ -37,5 +37,5 @@ SELECT
   waves.out_of_band::INTEGER AS out_of_band,
   waves.partial_window::INTEGER AS partial_window
 FROM {{ ref('int_waves') }} AS waves
-LEFT JOIN fix_counts AS fix USING (wave_date)
-LEFT JOIN cve_counts AS cve USING (wave_date)
+LEFT JOIN fix_counts AS fix ON waves.wave_date = fix.wave_date
+LEFT JOIN cve_counts AS cve ON waves.wave_date = cve.wave_date

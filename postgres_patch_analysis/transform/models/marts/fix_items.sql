@@ -26,6 +26,6 @@ SELECT
   waves.out_of_band::INTEGER AS out_of_band
 FROM {{ ref('int_fix_reps') }} AS reps
 INNER JOIN group_sizes AS grp ON reps.item_ord = grp.group_ord
-INNER JOIN {{ ref('categories') }} AS cats USING (category)
-INNER JOIN {{ ref('int_waves') }} AS waves USING (wave_date)
+INNER JOIN {{ ref('categories') }} AS cats ON reps.category = cats.category
+INNER JOIN {{ ref('int_waves') }} AS waves ON reps.wave_date = waves.wave_date
 ORDER BY reps.wave_date, reps.item_ord

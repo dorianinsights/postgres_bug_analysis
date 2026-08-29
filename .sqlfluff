@@ -4,6 +4,9 @@ dialect = duckdb
 # which is all these models need — no dbt project compile per lint.
 templater = jinja
 max_line_length = 400
+# ST06 (column order) excluded; ST07 (structure.using) deliberately stays
+# ENABLED — USING joins are forbidden, always spell out the join type and
+# ON <left>.<col> = <right>.<col>.
 exclude_rules = ST06
 
 [sqlfluff:rules:layout.long_lines]

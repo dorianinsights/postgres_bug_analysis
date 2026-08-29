@@ -34,12 +34,12 @@ latest AS (
 stats AS (
   SELECT
     (
-      SELECT AVG(distinct_fixes)
+      SELECT AVG(fullq.distinct_fixes)
       FROM fullq, fit
       WHERE fullq.idx BETWEEN fit.n_waves - 4 AND fit.n_waves - 2
     ) AS baseline,
     (
-      SELECT STDDEV_SAMP(distinct_fixes)
+      SELECT STDDEV_SAMP(fullq.distinct_fixes)
       FROM fullq, fit
       WHERE fullq.idx <= fit.n_waves - 2
     ) AS sdev
@@ -57,33 +57,33 @@ scenarios AS (
   FROM latest, stats
   UNION ALL
   SELECT
-    'trend',
-    1,
+    'trend' AS scenario,
+    1 AS scenario_order,
     latest.projected_date,
-    ROUND(fit.intercept + fit.slope * fit.n_waves)::INTEGER,
-    NULL,
-    NULL,
-    'least-squares line through all full-quarter waves, extended one slot'
+    ROUND(fit.intercept + fit.slope * fit.n_waves)::INTEGER AS distinct_fixes,
+    null AS low,
+    null AS high,
+    'least-squares line through all full-quarter waves, extended one slot' AS assumption
   FROM latest, fit
   UNION ALL
   SELECT
-    'regime repeat',
-    2,
+    'regime repeat' AS scenario,
+    2 AS scenario_order,
     latest.projected_date,
-    latest.latest_fixes,
-    NULL,
-    NULL,
-    'whatever produced the latest wave keeps delivering at that level'
+    latest.latest_fixes AS distinct_fixes,
+    null AS low,
+    null AS high,
+    'whatever produced the latest wave keeps delivering at that level' AS assumption
   FROM latest
   UNION ALL
   SELECT
-    'escalation',
-    3,
+    'escalation' AS scenario,
+    3 AS scenario_order,
     latest.projected_date,
-    ROUND(latest.latest_fixes + fit.slope)::INTEGER,
-    NULL,
-    NULL,
-    'latest wave is the new base and growth continues at the fitted trend rate'
+    ROUND(latest.latest_fixes + fit.slope)::INTEGER AS distinct_fixes,
+    null AS low,
+    null AS high,
+    'latest wave is the new base and growth continues at the fitted trend rate' AS assumption
   FROM latest, fit
 )
 

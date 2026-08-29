@@ -4,7 +4,7 @@
 SELECT
   version,
   major::INTEGER AS major,
-  "date"::DATE AS release_date,
+  date::DATE AS release_date,
   item_index::INTEGER AS item_index,
   summary,
   "full" AS full_text,

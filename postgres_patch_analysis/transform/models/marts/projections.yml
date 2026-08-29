@@ -4,6 +4,19 @@ models:
   - name: projections
     description: >
       Next-wave scenario values -> ../data/derived/projections.csv.
+      Exactly one row per scenario.
+    tests:
+      - dbt_expectations.expect_table_row_count_to_equal:
+          arguments:
+            value: 4
+      # low/high form the reversion band: present together or not at all,
+      # and when present they must bracket the projected value.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (low IS NULL) = (high IS NULL)
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: low IS NULL OR (low <= distinct_fixes AND distinct_fixes <= high)
     columns:
       - name: scenario
         tests:
@@ -12,5 +25,20 @@ models:
           - accepted_values:
               arguments:
                 values: [reversion, trend, regime repeat, escalation]
+      - name: scenario_order
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2, 3]
+      - name: projected_date
+        tests: [not_null]
       - name: distinct_fixes
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: assumption
         tests: [not_null]

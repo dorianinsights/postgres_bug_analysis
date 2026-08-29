@@ -29,7 +29,7 @@ WITH RECURSIVE item_keys AS (
     wave_date,
     hash_key AS join_key
   FROM {{ ref('int_fix_items') }}
-  WHERE hash_key IS NOT NULL
+  WHERE hash_key IS NOT null
 ),
 
 edges AS (

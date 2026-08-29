@@ -26,8 +26,9 @@ python3.12 -m venv ../venv
 ../venv/bin/python scrape_release_notes_sgml.py
 
 # 2. Derive analysis datasets (dbt project; profiles.yml is local to the
-#    directory, so no ~/.dbt setup is needed)
-(cd transform && ../../venv/bin/dbt build)
+#    directory, so no ~/.dbt setup is needed; deps installs dbt_utils +
+#    dbt_expectations, one-time per clone)
+(cd transform && ../../venv/bin/dbt deps && ../../venv/bin/dbt build)
 
 # 3. Visualize (run from this directory — dbt_charts.yml anchors the project)
 ../venv/bin/dct validate faces/*.yml
@@ -99,8 +100,14 @@ producer changed) plus the item-grain `fix_items.csv`. Layers:
   order) and `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules).
 
-Every model carries schema tests (uniqueness, not-null, relationships,
-accepted values — 66 in all), so `dbt build` is also the validation pass.
+Every model is heavily tested — 211 data tests in all: column-level schema
+tests (uniqueness, not-null, relationships, accepted ranges on counts and
+dates, regex format checks) using `dbt_utils` and Metaplane's
+`dbt_expectations` (installed via `dbt deps`), plus seven singular
+reconciliation tests (rollups vs the item grain, commit annotations vs
+items, connected-components sanity, exactly one open cycle). `dbt build`
+is therefore also the validation pass. Join style: always an explicit
+join type with `ON` conditions — `USING` is forbidden (sqlfluff ST07).
 This project replaced `build_datasets.py` + `categorize.py` on 2026-08-28;
 at cutover every derived CSV was verified field-identical against the
 Python implementation's output (the only byte difference: the csv module

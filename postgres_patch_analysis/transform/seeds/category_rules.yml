@@ -18,7 +18,12 @@ seeds:
         pattern: VARCHAR
     columns:
       - name: match_order
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
       - name: category
         tests:
           - not_null

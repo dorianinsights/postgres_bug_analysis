@@ -2,14 +2,15 @@
 -- order), categorized. Category precedence (formerly categorize.py):
 -- any CVE -> "Security (CVE)"; else the lowest-match_order rule whose
 -- pattern matches the full text; else "Other functionality".
-WITH reps AS (
+WITH group_ids AS (
+  SELECT DISTINCT group_ord
+  FROM {{ ref('int_fix_groups') }}
+),
+
+reps AS (
   SELECT itm.*
   FROM {{ ref('int_fix_items') }} AS itm
-  INNER JOIN (
-    SELECT DISTINCT group_ord
-    FROM {{ ref('int_fix_groups') }}
-  ) AS grp
-    ON itm.item_ord = grp.group_ord
+  INNER JOIN group_ids AS grp ON itm.item_ord = grp.group_ord
 ),
 
 first_matches AS (

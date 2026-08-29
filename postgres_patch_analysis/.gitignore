@@ -8,3 +8,4 @@ __pycache__/
 # dbt scratch state (transform/ project)
 transform/target/
 transform/logs/
+transform/dbt_packages/

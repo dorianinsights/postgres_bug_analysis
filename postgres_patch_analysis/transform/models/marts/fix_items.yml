@@ -6,15 +6,60 @@ models:
       One distinct fix per wave (the deduped representative item),
       categorized -> ../data/derived/fix_items.csv. The item-grain fact the
       wave rollups aggregate; n_branch_items = per-branch changelog items
-      folded into the fix.
+      folded into the fix. (cves has no not_null test here: the registered
+      view re-reads the written CSV, where the empty string round-trips to
+      NULL — the '' invariant is tested on int_fix_reps.)
     tests:
-      - unique_combination:
+      - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [version, item_index]
     columns:
+      - name: wave_date
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "'2017-10-01'"
+                max_value: current_date
+      - name: version
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^\d+\.\d+$'
+      - name: item_index
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
       - name: summary
         tests: [not_null]
+      - name: full_text
+        tests: [not_null]
       - name: category
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('categories')
+                field: category
+      - name: category_order
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 9
       - name: n_branch_items
-        tests: [not_null]
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: out_of_band
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]

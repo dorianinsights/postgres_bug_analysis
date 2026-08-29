@@ -6,11 +6,49 @@ models:
       Every fix-counting changelog item with its dedup keys.
       Grain = (version, item_index); item_ord is a dense file-order ordinal.
     tests:
-      - unique_combination:
+      - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [version, item_index]
     columns:
       - name: item_ord
-        tests: [unique, not_null]
-      - name: text_key
+        tests:
+          - unique
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: wave_date
         tests: [not_null]
+      - name: version
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_releases')
+                field: version
+      - name: item_index
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: summary
+        tests: [not_null]
+      - name: full_text
+        tests: [not_null]
+      - name: cves
+        tests: [not_null]
+      - name: text_key
+        tests:
+          - not_null
+          # Prefix plus a non-empty normalized payload.
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^t:.+$'
+      - name: hash_key
+        tests:
+          # Nullable (items without commit annotations); when present, the
+          # prefix plus a comma-joined sorted list of hex hashes.
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^h:[0-9a-f]+(,[0-9a-f]+)*$'

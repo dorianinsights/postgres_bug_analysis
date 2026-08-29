@@ -3,8 +3,51 @@ version: 2
 models:
   - name: int_wave_summary
     description: Wave-grain rollup of the deduped fixes. Grain = wave_date.
+    tests:
+      # Security fixes are a subset of all fixes. (distinct_cves is NOT
+      # bounded by security_fixes: one item can carry several CVEs — the
+      # 2025-08-14 wave has 5 CVEs across 3 security items.)
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: security_fixes <= distinct_fixes
     columns:
       - name: wave_date
         tests: [unique, not_null]
-      - name: distinct_fixes
+      - name: versions
         tests: [not_null]
+      - name: n_releases
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: distinct_fixes
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: distinct_cves
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: security_fixes
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: out_of_band
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: partial_window
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]

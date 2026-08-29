@@ -4,12 +4,42 @@ models:
   - name: wave_categories
     description: >
       Tidy (wave, category) fix counts -> ../data/derived/wave_categories.csv.
+      Only categories present in a wave are written, so fixes >= 1.
     tests:
-      - unique_combination:
+      - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [wave_date, category]
     columns:
-      - name: fixes
-        tests: [not_null]
+      - name: wave_date
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "'2017-10-01'"
+                max_value: current_date
+      - name: category
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('categories')
+                field: category
       - name: category_order
-        tests: [not_null]
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 9
+      - name: fixes
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: out_of_band
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]

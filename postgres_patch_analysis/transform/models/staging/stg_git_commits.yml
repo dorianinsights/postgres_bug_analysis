@@ -4,11 +4,37 @@ models:
   - name: stg_git_commits
     description: One commit per branch since the corpus history floor.
     tests:
-      - unique_combination:
+      - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [branch, commit_hash]
     columns:
+      - name: branch
+        tests:
+          - not_null
+          # Only modern branch names here (the scraper reads corpus branches
+          # + master), unlike the SGML annotations.
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^(master|REL_\d+_STABLE)$'
+      - name: commit_hash
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^[0-9a-f]{40}$'
       - name: commit_date
-        tests: [not_null]
+        tests:
+          - not_null
+          # Floor: earliest GIT_HISTORY_SINCE the corpus allows (FIRST_MAJOR
+          # >= 10 -> 2016-10-01). Ceiling: committer-local dates can sit up
+          # to a calendar day ahead of us, hence the +2 slop.
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "'2016-10-01'"
+                max_value: current_date + 2
       - name: subject
+        tests: [not_null]
+      - name: is_plumbing
+        tests: [not_null]
+      - name: ai_credit
         tests: [not_null]

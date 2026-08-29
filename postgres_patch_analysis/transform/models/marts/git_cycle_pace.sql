@@ -28,7 +28,7 @@ wraps AS (
 ),
 
 today AS (
-  SELECT CAST(NOW() AT TIME ZONE 'utc' AS DATE) AS utc_today
+  SELECT (NOW() AT TIME ZONE 'utc')::DATE AS utc_today
 ),
 
 cycles AS (
@@ -49,7 +49,7 @@ bounded AS (
   SELECT
     cyc.cycle_start,
     cyc.next_wrap,
-    (cyc.next_wrap IS NULL)::INTEGER AS is_open_cycle,
+    (cyc.next_wrap IS null)::INTEGER AS is_open_cycle,
     age.window_days,
     LEAST(cyc.cycle_start + age.window_days, COALESCE(cyc.next_wrap, tdy.utc_today)) AS early_end,
     COALESCE(cyc.next_wrap, tdy.utc_today) AS full_end
@@ -73,7 +73,7 @@ SELECT
     WHERE fix.commit_date > bnd.cycle_start AND fix.commit_date <= bnd.early_end
   ) AS distinct_fixes_early,
   CASE
-    WHEN bnd.next_wrap IS NULL THEN NULL
+    WHEN bnd.next_wrap IS null THEN null
     ELSE COUNT(DISTINCT fix.fix_key) FILTER (
       WHERE fix.commit_date > bnd.cycle_start AND fix.commit_date <= bnd.next_wrap
     )

@@ -6,11 +6,41 @@ models:
       Tidy (wave, contributor) credit counts with each name's first-seen
       wave -> ../data/derived/wave_contributors.csv.
     tests:
-      - unique_combination:
+      - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [wave_date, contributor]
+      # A contributor's first-seen wave can never postdate a wave they
+      # appear in.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: first_seen_wave <= wave_date
     columns:
-      - name: credits
+      - name: wave_date
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "'2017-10-01'"
+                max_value: current_date
+      - name: contributor
         tests: [not_null]
+      - name: credits
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
       - name: first_seen_wave
         tests: [not_null]
+      - name: is_first_wave
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: out_of_band
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]

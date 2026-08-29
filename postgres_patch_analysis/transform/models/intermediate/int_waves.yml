@@ -5,6 +5,22 @@ models:
     description: One same-day release wave with its flags. Grain = wave_date.
     columns:
       - name: wave_date
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "'2017-10-01'"
+                max_value: current_date
       - name: versions
+        tests: [not_null]
+      - name: n_releases
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: out_of_band
+        tests: [not_null]
+      - name: partial_window
         tests: [not_null]

@@ -5,6 +5,12 @@ models:
     description: >
       item_ord -> group_ord (the component's lowest item_ord) from the
       connected-components dedup. Every fix item appears exactly once.
+    tests:
+      # group_ord is the MIN item_ord of the component, so it can never
+      # exceed any member's own ordinal.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: group_ord <= item_ord
     columns:
       - name: item_ord
         tests:
@@ -15,4 +21,9 @@ models:
                 to: ref('int_fix_items')
                 field: item_ord
       - name: group_ord
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_fix_items')
+                field: item_ord

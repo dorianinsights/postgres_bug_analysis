@@ -15,7 +15,7 @@ WITH extracted AS (
 name_lists AS (
   SELECT
     wave_date,
-    LIST_TRANSFORM(STRING_SPLIT(credit_blob, ','), part -> TRIM(part)) AS names
+    LIST_TRANSFORM(STRING_SPLIT(credit_blob, ','), part -> TRIM(part)) AS name_list
   FROM extracted
   WHERE credit_blob != ''
 ),
@@ -23,22 +23,24 @@ name_lists AS (
 valid_lists AS (
   SELECT
     wave_date,
-    names
+    name_list
   FROM name_lists
-  WHERE LEN(LIST_FILTER(names, part -> LENGTH(part) > 40 OR REGEXP_MATCHES(part, '\d'))) = 0
+  WHERE LEN(LIST_FILTER(name_list, part -> LENGTH(part) > 40 OR REGEXP_MATCHES(part, '\d'))) = 0
+),
+
+unnested AS (
+  SELECT
+    wave_date,
+    UNNEST(name_list) AS contributor
+  FROM valid_lists
 ),
 
 credits AS (
   SELECT
     wave_date,
     contributor,
-    COUNT(*) AS credits
-  FROM (
-    SELECT
-      wave_date,
-      UNNEST(names) AS contributor
-    FROM valid_lists
-  )
+    COUNT(*) AS credits  -- noqa: RF04 (column name is the CSV contract)
+  FROM unnested
   WHERE contributor != ''
   GROUP BY wave_date, contributor
 ),
@@ -58,10 +60,10 @@ SELECT
   fst.first_seen_wave,
   (
     fst.first_seen_wave = crd.wave_date
-    AND crd.wave_date != (SELECT MIN(wave_date) FROM {{ ref('int_waves') }})
+    AND crd.wave_date != (SELECT MIN(wvs.wave_date) FROM {{ ref('int_waves') }} AS wvs)
   )::INTEGER AS is_first_wave,
   waves.out_of_band::INTEGER AS out_of_band
 FROM credits AS crd
-INNER JOIN first_seen AS fst USING (contributor)
-INNER JOIN {{ ref('int_waves') }} AS waves USING (wave_date)
+INNER JOIN first_seen AS fst ON crd.contributor = fst.contributor
+INNER JOIN {{ ref('int_waves') }} AS waves ON crd.wave_date = waves.wave_date
 ORDER BY crd.wave_date, crd.contributor

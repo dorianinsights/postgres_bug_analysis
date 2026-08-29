@@ -5,8 +5,42 @@ models:
     description: >
       Distinct stable-branch fixes in each recent cycle's first N days
       (N = the open cycle's age) -> ../data/derived/git_cycle_pace.csv.
+    tests:
+      # A closed cycle ends after it starts; the open cycle has no end.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: cycle_end IS NULL OR cycle_end > cycle_start
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: is_open_cycle = CASE WHEN cycle_end IS NULL THEN 1 ELSE 0 END
+      # The early window is a prefix of the full cycle.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: distinct_fixes_full IS NULL OR distinct_fixes_full >= distinct_fixes_early
     columns:
       - name: cycle_start
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "'2016-10-01'"
+                max_value: current_date
+      - name: is_open_cycle
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: window_days
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
       - name: distinct_fixes_early
-        tests: [not_null]
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0

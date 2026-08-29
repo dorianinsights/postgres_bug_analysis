@@ -8,9 +8,45 @@ models:
       several commits, including more than one on the same branch
       (follow-up fixes).
     tests:
-      - unique_combination:
+      - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [version, item_index, branch, commit_hash]
     columns:
-      - name: commit_hash
+      - name: version
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_releases')
+                field: version
+      - name: item_index
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: author
         tests: [not_null]
+      - name: branch
+        tests:
+          - not_null
+          # Annotations reach back to pre-PG10 branches, whose naming had no
+          # underscore after REL (REL9_6_STABLE vs REL_15_STABLE).
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^(master|REL_\d+_STABLE|REL\d+_\d+_STABLE)$'
+      - name: commit_hash
+        tests:
+          - not_null
+          # Abbreviated hex hashes; length grows with the repo, so 7-40.
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^[0-9a-f]{7,40}$'
+      - name: commit_date
+        tests:
+          - not_null
+          # Datetime + offset, occasionally followed by an author annotation
+          # ("... -0400 !! no live bug" occurs in real data) — hence the .*.
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}.*$'

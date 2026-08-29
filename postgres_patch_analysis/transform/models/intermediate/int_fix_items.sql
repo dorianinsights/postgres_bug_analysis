@@ -28,10 +28,11 @@ SELECT
   itm.full_text,
   itm.cves,
   't:' || LOWER(TRIM(REGEXP_REPLACE(REPLACE(itm.summary, '§', ' '), '\s+', ' ', 'g'))) AS text_key,
-  CASE WHEN ih.hash_set IS NOT NULL THEN 'h:' || ih.hash_set END AS hash_key
+  CASE WHEN ihs.hash_set IS NOT null THEN 'h:' || ihs.hash_set END AS hash_key
 FROM {{ ref('stg_release_items') }} AS itm
-INNER JOIN {{ ref('stg_releases') }} AS rel USING (version)
-LEFT JOIN item_hashes AS ih USING (version, item_index)
+INNER JOIN {{ ref('stg_releases') }} AS rel ON itm.version = rel.version
+LEFT JOIN item_hashes AS ihs
+  ON itm.version = ihs.version AND itm.item_index = ihs.item_index
 WHERE
   rel.minor > 0
   AND NOT REGEXP_MATCHES(itm.full_text, 'Update time zone data files', 'i')

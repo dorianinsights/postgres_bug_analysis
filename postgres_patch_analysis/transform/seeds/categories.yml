@@ -15,4 +15,10 @@ seeds:
       - name: category
         tests: [unique, not_null]
       - name: category_order
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 9
