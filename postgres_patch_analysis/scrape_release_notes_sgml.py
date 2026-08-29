@@ -14,16 +14,22 @@ persists:
                           mapping from changelog items to git commits
 
 This is the primary release-notes source; the HTML scraper is retained as an
-independent cross-check. Known approximation: major-release (.0) sections nest
-lists, which the flat <listitem> regex mis-splits — their item counts are
-approximate, matching the pipeline's stance that .0 releases aren't fixes and
-are excluded downstream.
+independent cross-check.
+
+Parsing: the files are DocBook XML fragments wearing an .sgml extension —
+multiple top-level <sect1> roots and externally-declared entities — which no
+strict XML parser accepts standalone, so they're parsed leniently with
+BeautifulSoup's html.parser (which also happens to resolve &sect;/&mdash;,
+valid HTML entities too). An item is a NON-NESTED <listitem> under the
+section's "Changes" title; a nested sub-list (e.g. a fix's remediation
+steps) folds into its parent item's text by construction.
 """
 
 import csv
-import html
 import re
 from typing import NamedTuple, TypedDict
+
+from bs4 import BeautifulSoup, Comment, Tag
 
 from corpus import MAJORS
 from scrape_git_commits import ensure_clone, git
@@ -68,20 +74,18 @@ class ParsedRelease(NamedTuple):
     items: list[ParsedItem]
 
 
-SECT1_RE = re.compile(r'<sect1 id="release-([\d-]+)"[^>]*>(.*?)</sect1>', re.DOTALL)
-DATE_RE = re.compile(r"<title>Release date:</title>\s*<para>\s*(\d{4}-\d{2}-\d{2})")
-LISTITEM_RE = re.compile(r"<listitem>(.*?)</listitem>", re.DOTALL)
-COMMENT_RE = re.compile(r"<!--(.*?)-->", re.DOTALL)
-PARA_RE = re.compile(r"<para>(.*?)</para>", re.DOTALL)
-TAG_RE = re.compile(r"<[^>]+>")
 AUTHOR_RE = re.compile(r"^Author: (.+?)\s*$", re.MULTILINE)
 BRANCH_RE = re.compile(r"^Branch: (\S+) \[([0-9a-f]+)\] (.+?)\s*$", re.MULTILINE)
+DATE_TEXT_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 
-def clean_text(sgml: str) -> str:
-    """SGML fragment -> plain text: drop tags (attribute entities with them),
-    then resolve character entities, then collapse whitespace."""
-    return re.sub(r"\s+", " ", html.unescape(TAG_RE.sub(" ", sgml))).strip()
+def normalize(text: str) -> str:
+    """Collapse whitespace (entity resolution already done by the parser)."""
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def is_comment(text: str | None) -> bool:
+    return isinstance(text, Comment)
 
 
 def parse_commit_lines(comment: str) -> list[CommitAnnotation]:
@@ -99,29 +103,53 @@ def parse_commit_lines(comment: str) -> list[CommitAnnotation]:
     return commits
 
 
-def parse_item(raw: str) -> ParsedItem:
+def parse_item(li: Tag) -> ParsedItem:
+    """One <listitem> -> its text, CVEs, and commit annotations.
+
+    Extracts the comment nodes before reading text (bs4 comments are
+    NavigableStrings, so get_text() would otherwise include them). The
+    get_text(" ") separator matches the HTML scraper's text extraction, so
+    the two sources produce comparable summaries.
+    """
     commits: list[CommitAnnotation] = []
-    for comment in COMMENT_RE.findall(raw):
-        commits.extend(parse_commit_lines(comment))
-    body = COMMENT_RE.sub(" ", raw)
-    first_para = PARA_RE.search(body)
-    summary = clean_text(first_para.group(1)) if first_para else clean_text(body)
-    full = clean_text(body)
+    for comment in li.find_all(string=is_comment):
+        commits.extend(parse_commit_lines(str(comment)))
+        comment.extract()
+    first_para = li.find("para")
+    summary = normalize(first_para.get_text(" ")) if first_para else normalize(li.get_text(" "))
+    full = normalize(li.get_text(" "))
     cves: list[str] = sorted(set(re.findall(r"CVE-\d{4}-\d+", full)))
     return ParsedItem(summary=summary, full=full, cves=cves, commits=commits)
+
+
+def parse_section(sect: Tag) -> tuple[str | None, list[ParsedItem]]:
+    """(release date, changelog items) of one <sect1> release section."""
+    date: str | None = None
+    date_title = sect.find("title", string="Release date:")
+    if date_title and (date_para := date_title.find_next("para")):
+        date_match = DATE_TEXT_RE.search(date_para.get_text())
+        date = date_match.group(0) if date_match else None
+    items: list[ParsedItem] = []
+    changes_title = sect.find("title", string="Changes")
+    if changes_title and isinstance(changes_title.parent, Tag):
+        items = [
+            parse_item(li) for li in changes_title.parent.find_all("listitem") if li.find_parent("listitem") is None
+        ]
+    return date, items
 
 
 def parse_major(major: int) -> list[ParsedRelease]:
     """Every release section of one major's SGML file, oldest first."""
     sgml = git("show", f"REL_{major}_STABLE:doc/src/sgml/release-{major}.sgml")
+    soup = BeautifulSoup(sgml, "html.parser")
     releases: list[ParsedRelease] = []
-    for sect_id, body in SECT1_RE.findall(sgml):
-        parts = sect_id.split("-")
+    for sect in soup.find_all("sect1"):
+        sect_id = sect.get("id")
+        if not isinstance(sect_id, str) or not sect_id.startswith("release-"):
+            continue
+        parts = sect_id.removeprefix("release-").split("-")
         minor = int(parts[1]) if len(parts) > 1 else 0
-        date_match = DATE_RE.search(body)
-        date = date_match.group(1) if date_match else None
-        changes_at = body.find("<title>Changes</title>")
-        items = [parse_item(raw) for raw in LISTITEM_RE.findall(body[changes_at:])] if changes_at >= 0 else []
+        date, items = parse_section(sect)
         releases.append(ParsedRelease(major=major, minor=minor, date=date, items=items))
     releases.sort(key=lambda r: (r.major, r.minor))
     return releases
