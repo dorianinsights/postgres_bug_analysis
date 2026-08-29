@@ -1,0 +1,168 @@
+title: "PostgreSQL Fix Velocity — Git Commits"
+description: >
+  Commit-level view of the PostgreSQL stable branches (majors 15-18) plus
+  master: quarterly backpatch volume, AI-tool-credited fixes, and the pace of
+  the currently open release cycle. Data files are produced by
+  scrape_git_commits.py + build_datasets.py.
+
+queries:
+  quarterly_distinct:
+    description: >
+      Distinct fix commits across all stable branches per quarter (subjects
+      deduplicated across branches; release plumbing excluded). The current
+      quarter is partial.
+    source: ../data/git_commits.csv
+    sql: |
+      SELECT
+        DATE_TRUNC('quarter', CAST(commit_date AS DATE)) AS quarter,
+        'distinct fixes' AS series,
+        COUNT(DISTINCT LOWER(TRIM(subject))) AS distinct_fixes
+      FROM git_commits
+      WHERE branch != 'master' AND is_plumbing = 0
+      GROUP BY quarter
+      ORDER BY quarter
+
+  quarter_pad:
+    description: Invisible x-domain padding points for the quarterly bar chart.
+    source: ../data/git_commits.csv
+    sql: |
+      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) - INTERVAL 45 DAY AS quarter, 'distinct fixes' AS series, 0 AS pad_zero
+      FROM git_commits
+      UNION ALL
+      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) + INTERVAL 45 DAY, 'distinct fixes', 0
+      FROM git_commits
+
+  quarterly_by_branch:
+    description: >
+      Fix commits per stable branch per quarter (each branch counts its own
+      backpatches; plumbing excluded).
+    source: ../data/git_commits.csv
+    sql: |
+      SELECT
+        DATE_TRUNC('quarter', CAST(commit_date AS DATE)) AS quarter,
+        branch,
+        COUNT(*) AS fix_commits
+      FROM git_commits
+      WHERE branch != 'master' AND is_plumbing = 0
+      GROUP BY quarter, branch
+      ORDER BY quarter, branch
+
+  ai_credited:
+    description: >
+      Distinct commits whose message credits an AI tool (Claude, ChatGPT,
+      Copilot, ...), per quarter, across stable branches and master.
+    source: ../data/git_commits.csv
+    sql: |
+      SELECT
+        DATE_TRUNC('quarter', CAST(commit_date AS DATE)) AS quarter,
+        'AI-credited commits' AS series,
+        COUNT(DISTINCT LOWER(TRIM(subject))) AS ai_credited_commits
+      FROM git_commits
+      WHERE ai_credit != ''
+      GROUP BY quarter
+      ORDER BY quarter
+
+  ai_pad:
+    description: Invisible x-domain padding points for the AI-credited bar chart.
+    source: ../data/git_commits.csv
+    sql: |
+      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) - INTERVAL 45 DAY AS quarter, 'AI-credited commits' AS series, 0 AS pad_zero
+      FROM git_commits WHERE ai_credit != ''
+      UNION ALL
+      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) + INTERVAL 45 DAY, 'AI-credited commits', 0
+      FROM git_commits WHERE ai_credit != ''
+
+  ai_credit_lines:
+    description: The AI-credited fix commits with their credit lines, newest first.
+    source: ../data/git_commits.csv
+    sql: |
+      SELECT
+        MIN(commit_date) AS commit_date,
+        subject,
+        MIN(ai_credit) AS credit_line
+      FROM git_commits
+      WHERE ai_credit != ''
+      GROUP BY subject
+      ORDER BY commit_date DESC
+
+  cycle_pace:
+    description: >
+      Like-for-like release-cycle pace: distinct stable-branch fixes committed
+      in the first N days after each scheduled wrap, where N is the age of the
+      currently open cycle, next to each closed cycle's full total.
+    source: ../data/git_cycle_pace.csv
+    sql: |
+      SELECT CAST(cycle_start AS VARCHAR) AS cycle, 'first ' || window_days || ' days' AS pace_window, distinct_fixes_early AS fixes
+      FROM git_cycle_pace
+      UNION ALL
+      SELECT CAST(cycle_start AS VARCHAR) AS cycle, 'full cycle' AS pace_window, distinct_fixes_full AS fixes
+      FROM git_cycle_pace
+      WHERE is_open_cycle = 0
+      ORDER BY cycle, pace_window
+
+charts:
+  quarterly_distinct:
+    type: bar
+    query: quarterly_distinct
+    title: "Distinct backpatched fixes per quarter"
+    subtitle: "Across REL_15..18_STABLE, deduplicated by commit subject; current quarter partial"
+    x: quarter
+    y: distinct_fixes
+    color: series
+    height: 380
+    layers:
+      - type: scatter
+        query: quarter_pad
+        x: quarter
+        y: pad_zero
+        color: series
+        style: { marks: { point: { opacity: 0 } } }
+
+  quarterly_by_branch:
+    type: line
+    query: quarterly_by_branch
+    title: "Fix commits per stable branch per quarter"
+    subtitle: "Newer branches receive more backpatches; every branch jumps in Q3 2026"
+    x: quarter
+    y: fix_commits
+    color: branch
+    height: 380
+
+  ai_credited:
+    type: bar
+    query: ai_credited
+    title: "Commits crediting an AI tool"
+    subtitle: "Zero before 2026; accelerating since the Aug 2026 wrap"
+    x: quarter
+    y: ai_credited_commits
+    color: series
+    height: 340
+    layers:
+      - type: scatter
+        query: ai_pad
+        x: quarter
+        y: pad_zero
+        color: series
+        style: { marks: { point: { opacity: 0 } } }
+
+  cycle_pace:
+    type: bar
+    query: cycle_pace
+    title: "Release-cycle pace, like for like"
+    subtitle: "Fixes queued in each cycle's first N days (N = the open cycle's age) vs its full total"
+    x: cycle
+    y: fixes
+    color: pace_window
+    style: { stack: none }
+    height: 340
+
+  ai_credit_table:
+    type: table
+    query: ai_credit_lines
+    title: "AI-credited fix commits"
+
+rows:
+  - quarterly_distinct
+  - quarterly_by_branch
+  - cols: [ai_credited, cycle_pace]
+  - ai_credit_table

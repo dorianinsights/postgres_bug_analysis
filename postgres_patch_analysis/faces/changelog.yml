@@ -1,0 +1,433 @@
+title: "PostgreSQL Fix Velocity — Changelog"
+description: >
+  Every minor release of PostgreSQL majors 15-18, scraped from the official
+  release notes: fix volume per quarterly release wave, fix categories,
+  security fixes, contributors, and next-wave projection scenarios.
+  Data files are produced by scrape_release_notes.py + build_datasets.py.
+
+# NOTE on the *_pad queries and invisible scatter layers: dataface 0.4.0
+# renders bars on a temporal x-axis centered on their date with the scale
+# domain spanning exactly min..max, so the first/last bars overhang the axis
+# ends. Each bar chart therefore carries a zero-opacity scatter layer with two
+# points 45 days beyond the data ends — layer x-values extend the base x-scale,
+# padding the domain so every bar sits inside. (Padding rows in the bar query
+# itself suppresses all x-axis labels in 0.4.0; the layer route keeps them.)
+
+queries:
+  latest_wave:
+    description: The most recent release wave's headline numbers.
+    source: ../data/wave_summary.csv
+    sql: |
+      SELECT wave_date, versions, distinct_fixes, security_fixes, distinct_cves
+      FROM wave_summary
+      ORDER BY wave_date DESC
+      LIMIT 1
+
+  releases_by_branch:
+    description: >
+      Fix items per scheduled minor release, one series per major version.
+      Out-of-band emergency re-releases (< 20 items) are excluded.
+    source: ../data/releases.csv
+    sql: |
+      SELECT
+        date,
+        'PG' || major AS branch,
+        n_items
+      FROM releases
+      WHERE minor > 0 AND n_items >= 20
+      ORDER BY date, major
+
+  wave_categories:
+    description: >
+      Distinct fixes per full-quarter wave by category (backpatched
+      duplicates collapsed across branches; out-of-band waves excluded).
+    source: ../data/wave_categories.csv
+    sql: |
+      SELECT CAST(wave_date AS DATE) AS wave_date, category, category_order, fixes
+      FROM wave_categories
+      WHERE out_of_band = 0
+      ORDER BY wave_date, category_order
+
+  wave_pad:
+    description: Invisible x-domain padding points for the scheduled-wave bar charts.
+    source: ../data/wave_categories.csv
+    sql: |
+      SELECT MIN(CAST(wave_date AS DATE)) - 45 AS wave_date, 'Other functionality' AS category, 0 AS pad_zero
+      FROM wave_categories WHERE out_of_band = 0
+      UNION ALL
+      SELECT MAX(CAST(wave_date AS DATE)) + 45, 'Other functionality', 0
+      FROM wave_categories WHERE out_of_band = 0
+
+  oob_categories:
+    description: The out-of-band emergency waves' fixes by category.
+    source: ../data/wave_categories.csv
+    sql: |
+      SELECT CAST(wave_date AS DATE) AS wave_date, category, category_order, fixes
+      FROM wave_categories
+      WHERE out_of_band = 1
+      ORDER BY wave_date, category_order
+
+  oob_pad:
+    description: Invisible x-domain padding points for the out-of-band bar chart.
+    source: ../data/wave_categories.csv
+    sql: |
+      SELECT MIN(CAST(wave_date AS DATE)) - 45 AS wave_date, 'Crash & corruption' AS category, 0 AS pad_zero
+      FROM wave_categories WHERE out_of_band = 1
+      UNION ALL
+      SELECT MAX(CAST(wave_date AS DATE)) + 45, 'Crash & corruption', 0
+      FROM wave_categories WHERE out_of_band = 1
+
+  security_pad:
+    description: Invisible x-domain padding points for the security bar chart.
+    source: ../data/wave_categories.csv
+    sql: |
+      SELECT MIN(CAST(wave_date AS DATE)) - 45 AS wave_date, 'Security (CVE)' AS category, 0 AS pad_zero
+      FROM wave_categories WHERE out_of_band = 0
+      UNION ALL
+      SELECT MAX(CAST(wave_date AS DATE)) + 45, 'Security (CVE)', 0
+      FROM wave_categories WHERE out_of_band = 0
+
+  security_by_wave:
+    description: >
+      Security fixes per scheduled wave, split into CVE-tagged and
+      uncredited hardening.
+    source: ../data/wave_categories.csv
+    sql: |
+      SELECT CAST(wave_date AS DATE) AS wave_date, category, category_order, fixes
+      FROM wave_categories
+      WHERE out_of_band = 0
+        AND category IN ('Security (CVE)', 'Security hardening (no CVE)')
+      ORDER BY wave_date, category_order
+
+  contributors_by_wave:
+    description: >
+      Distinct credited contributors per scheduled wave, split into names
+      appearing for the first time in this corpus vs returning names.
+    source: ../data/wave_contributors.csv
+    sql: |
+      SELECT
+        CAST(wc.wave_date AS DATE) AS wave_date,
+        CASE WHEN wc.is_first_wave = 1 THEN 'first-time' ELSE 'returning' END AS cohort,
+        COUNT(DISTINCT wc.contributor) AS contributors
+      FROM wave_contributors AS wc
+      WHERE wc.out_of_band = 0
+      GROUP BY wave_date, cohort
+      ORDER BY wave_date, cohort DESC
+
+  contrib_pad:
+    description: Invisible x-domain padding points for the contributors bar chart.
+    source: ../data/wave_categories.csv
+    sql: |
+      SELECT MIN(CAST(wave_date AS DATE)) - 45 AS wave_date, 'returning' AS cohort, 0 AS pad_zero
+      FROM wave_categories WHERE out_of_band = 0
+      UNION ALL
+      SELECT MAX(CAST(wave_date AS DATE)) + 45, 'returning', 0
+      FROM wave_categories WHERE out_of_band = 0
+
+  wave_trend:
+    ignore: ["WARN-MISSING-JOIN-PREDICATE"]
+    description: >
+      Least-squares trendlines over full-quarter wave totals (the partial
+      first wave excluded): one fit over all waves, one excluding the latest
+      wave as a sensitivity check.
+    source: ../data/wave_summary.csv
+    sql: |
+      WITH fullq AS (
+        SELECT CAST(wave_date AS DATE) AS wave_date,
+               ROW_NUMBER() OVER (ORDER BY wave_date) - 1 AS slot,
+               distinct_fixes
+        FROM wave_summary
+        WHERE out_of_band = 0 AND partial_window = 0
+      ),
+      fit_all AS (
+        SELECT REGR_SLOPE(distinct_fixes, slot) AS b, REGR_INTERCEPT(distinct_fixes, slot) AS a FROM fullq
+      ),
+      fit_ex AS (
+        SELECT REGR_SLOPE(distinct_fixes, slot) AS b, REGR_INTERCEPT(distinct_fixes, slot) AS a
+        FROM fullq WHERE slot < (SELECT MAX(slot) FROM fullq)
+      )
+      SELECT fullq.wave_date,
+             fit_all.a + fit_all.b * fullq.slot AS trend_all,
+             fit_ex.a + fit_ex.b * fullq.slot AS trend_excl_latest
+      FROM fullq, fit_all, fit_ex
+      ORDER BY fullq.wave_date
+
+  security_trend:
+    ignore: ["WARN-MISSING-JOIN-PREDICATE"]
+    description: Same two trendlines fitted to the security-fix totals per wave.
+    source: ../data/wave_summary.csv
+    sql: |
+      WITH fullq AS (
+        SELECT CAST(wave_date AS DATE) AS wave_date,
+               ROW_NUMBER() OVER (ORDER BY wave_date) - 1 AS slot,
+               security_fixes
+        FROM wave_summary
+        WHERE out_of_band = 0 AND partial_window = 0
+      ),
+      fit_all AS (
+        SELECT REGR_SLOPE(security_fixes, slot) AS b, REGR_INTERCEPT(security_fixes, slot) AS a FROM fullq
+      ),
+      fit_ex AS (
+        SELECT REGR_SLOPE(security_fixes, slot) AS b, REGR_INTERCEPT(security_fixes, slot) AS a
+        FROM fullq WHERE slot < (SELECT MAX(slot) FROM fullq)
+      )
+      SELECT fullq.wave_date,
+             fit_all.a + fit_all.b * fullq.slot AS trend_all,
+             fit_ex.a + fit_ex.b * fullq.slot AS trend_excl_latest
+      FROM fullq, fit_all, fit_ex
+      ORDER BY fullq.wave_date
+
+  branch_trend:
+    ignore: ["WARN-MISSING-JOIN-PREDICATE"]
+    description: >
+      Pooled trendlines over scheduled per-release fix counts (all branches
+      together; 15.1's partial window excluded), against calendar time.
+    source: ../data/releases.csv
+    sql: |
+      WITH sched AS (
+        SELECT CAST(date AS DATE) AS date, n_items,
+               DATE_DIFF('day', DATE '2022-01-01', CAST(date AS DATE)) AS t
+        FROM releases
+        WHERE minor > 0 AND n_items >= 20 AND NOT (major = 15 AND minor = 1)
+      ),
+      fit_all AS (SELECT REGR_SLOPE(n_items, t) AS b, REGR_INTERCEPT(n_items, t) AS a FROM sched),
+      fit_ex AS (
+        SELECT REGR_SLOPE(n_items, t) AS b, REGR_INTERCEPT(n_items, t) AS a
+        FROM sched WHERE sched.date < (SELECT MAX(date) FROM sched)
+      )
+      SELECT DISTINCT sched.date,
+             fit_all.a + fit_all.b * sched.t AS trend_all,
+             fit_ex.a + fit_ex.b * sched.t AS trend_excl_latest
+      FROM sched, fit_all, fit_ex
+      ORDER BY sched.date
+
+  wave_totals:
+    description: Distinct fixes per full-quarter wave (the projection base series).
+    source: ../data/wave_summary.csv
+    sql: |
+      SELECT wave_date, distinct_fixes
+      FROM wave_summary
+      WHERE out_of_band = 0
+      ORDER BY wave_date
+
+  projections:
+    description: Next-wave scenario projections derived from the wave series.
+    source: ../data/projections.csv
+    sql: |
+      SELECT projected_date, scenario, distinct_fixes, assumption
+      FROM projections
+      ORDER BY scenario_order
+
+  wave_table:
+    description: All waves with headline numbers, newest first.
+    source: ../data/wave_summary.csv
+    sql: |
+      SELECT wave_date, versions, distinct_fixes, security_fixes, distinct_cves,
+             CASE WHEN out_of_band = 1 THEN 'yes' ELSE '' END AS out_of_band
+      FROM wave_summary
+      ORDER BY wave_date DESC
+
+charts:
+  kpi_fixes:
+    type: kpi
+    query: latest_wave
+    value: distinct_fixes
+    label: "Distinct fixes, latest wave"
+
+  kpi_security:
+    type: kpi
+    query: latest_wave
+    value: security_fixes
+    label: "Security fixes, latest wave"
+
+  kpi_cves:
+    type: kpi
+    query: latest_wave
+    value: distinct_cves
+    label: "CVEs closed, latest wave"
+
+  fixes_by_branch:
+    type: line
+    query: releases_by_branch
+    title: "Fixes per scheduled minor release, by major version"
+    subtitle: "A fix backpatched to all branches appears on each line"
+    x: date
+    y: n_items
+    color: branch
+    y_label: "changelog items"
+    height: 380
+    layers:
+      - type: line
+        query: branch_trend
+        x: date
+        y: trend_all
+        label: "pooled trend"
+        style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
+      - type: line
+        query: branch_trend
+        x: date
+        y: trend_excl_latest
+        label: "trend excluding Aug '26"
+        style: { marks: { line: { stroke: { color: "#c0392b", dasharray: "3 5", width: 1.5 } } } }
+
+  category_mix:
+    type: bar
+    query: wave_categories
+    title: "Category mix per full-quarter wave"
+    subtitle: "Distinct fixes; backpatched duplicates collapsed across branches"
+    x: wave_date
+    y: fixes
+    color: category
+    style: { stack: zero }
+    height: 380
+    layers:
+      - type: scatter
+        query: wave_pad
+        x: wave_date
+        y: pad_zero
+        color: category
+        style: { marks: { point: { opacity: 0 } } }
+      - type: line
+        query: wave_trend
+        x: wave_date
+        y: trend_all
+        label: "linear trend (full-quarter waves)"
+        style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
+      - type: line
+        query: wave_trend
+        x: wave_date
+        y: trend_excl_latest
+        label: "trend excluding Aug '26"
+        style: { marks: { line: { stroke: { color: "#c0392b", dasharray: "3 5", width: 1.5 } } } }
+
+  category_share:
+    type: bar
+    query: wave_categories
+    title: "Same data as shares of each wave"
+    subtitle: "100% stacked"
+    x: wave_date
+    y: fixes
+    color: category
+    style:
+      stack: normalize
+      axis_y:
+        labels:
+          format: ".0%"
+    height: 380
+    layers:
+      - type: scatter
+        query: wave_pad
+        x: wave_date
+        y: pad_zero
+        color: category
+        style: { marks: { point: { opacity: 0 } } }
+
+  oob_waves:
+    type: bar
+    query: oob_categories
+    title: "The out-of-band emergency waves"
+    subtitle: "Re-releases shipped one or two weeks after a scheduled wave"
+    x: wave_date
+    y: fixes
+    color: category
+    style: { stack: zero }
+    height: 340
+    layers:
+      - type: scatter
+        query: oob_pad
+        x: wave_date
+        y: pad_zero
+        color: category
+        style: { marks: { point: { opacity: 0 } } }
+
+  security:
+    type: bar
+    query: security_by_wave
+    title: "The security hockey stick"
+    subtitle: "CVE-tagged fixes plus uncredited hardening, per scheduled wave"
+    x: wave_date
+    y: fixes
+    color: category
+    style: { stack: zero }
+    height: 340
+    layers:
+      - type: scatter
+        query: security_pad
+        x: wave_date
+        y: pad_zero
+        color: category
+        style: { marks: { point: { opacity: 0 } } }
+      - type: line
+        query: security_trend
+        x: wave_date
+        y: trend_all
+        label: "linear trend (full-quarter waves)"
+        style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
+      - type: line
+        query: security_trend
+        x: wave_date
+        y: trend_excl_latest
+        label: "trend excluding Aug '26"
+        style: { marks: { line: { stroke: { color: "#c0392b", dasharray: "3 5", width: 1.5 } } } }
+
+  contributors:
+    type: bar
+    query: contributors_by_wave
+    title: "Contributors per wave: first-time vs returning"
+    subtitle: "Names credited in the release notes; first-time = new to this 2022+ corpus"
+    x: wave_date
+    y: contributors
+    color: cohort
+    style: { stack: zero }
+    height: 380
+    layers:
+      - type: scatter
+        query: contrib_pad
+        x: wave_date
+        y: pad_zero
+        color: cohort
+        style: { marks: { point: { opacity: 0 } } }
+
+  projection:
+    type: line
+    query: wave_totals
+    title: "Next-wave projection scenarios"
+    subtitle: "Historical distinct fixes per full-quarter wave, with four scenarios for the next wave"
+    x: wave_date
+    y: distinct_fixes
+    y_label: "distinct fixes"
+    height: 380
+    layers:
+      - type: scatter
+        query: projections
+        x: projected_date
+        y: distinct_fixes
+        color: scenario
+        label: "Scenario"
+      - type: line
+        query: wave_trend
+        x: wave_date
+        y: trend_all
+        label: ""
+        style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
+
+  scenario_table:
+    type: table
+    query: projections
+    title: "Scenario assumptions"
+
+  wave_table:
+    type: table
+    query: wave_table
+    title: "All release waves"
+
+rows:
+  - cols: [kpi_fixes, kpi_security, kpi_cves]
+  - fixes_by_branch
+  - category_mix
+  - category_share
+  - cols: [oob_waves, security]
+  - contributors
+  - projection
+  - scenario_table
+  - wave_table

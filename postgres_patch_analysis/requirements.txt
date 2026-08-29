@@ -1,0 +1,19 @@
+# Requires Python 3.10-3.13.
+requests==2.34.2
+beautifulsoup4==4.15.0
+lxml==6.1.2
+# The visualization layer — docs at https://docs.dbtcharts.com/, CLI `dct`.
+# 0.5.0 is the first real dbt-charts release on PyPI (the package was
+# previously published as `dataface`, CLI `dft`). Do NOT install `dataface`
+# alongside: both wheels ship the same top-level `d3_format` and `mdsvg`
+# modules, so the wheels clobber each other and uninstalling either breaks
+# the survivor. If `dct` ever fails with "No module named 'd3_format'" or
+# "not enough values to unpack", recover with:
+#   pip install --force-reinstall --no-deps dbt-charts==0.5.0
+dbt-charts==0.5.0
+# Dev tooling (repo-wide, mirrors property_analysis): config in the repo-root
+# pyproject.toml; enforced by .claude/hooks/ post-edit hooks and the blocking
+# git pre-commit gate (.pre-commit-config.yaml; one-time: ./venv/bin/pre-commit install).
+ruff==0.16.5
+pyright==1.1.411
+pre_commit==4.6.2

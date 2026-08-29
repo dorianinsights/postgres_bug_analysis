@@ -1,0 +1,51 @@
+# Repo-wide lint / type-check config (no [project] section on purpose — this
+# repo is a collection of independent subprojects sharing one venv, not an
+# installable package). Mirrors the property_analysis setup: ruff for
+# format+lint and pyright for type checking, both enforced twice — a
+# post-edit hook per file (.claude/hooks/) and a blocking git pre-commit gate
+# (.pre-commit-config.yaml).
+
+[tool.pyright]
+# Strict everywhere (repo decision 2026-08-28) — new files must pass strict.
+include = ["."]
+exclude = ["venv", "**/__pycache__", "**/.cache", "**/out"]
+typeCheckingMode = "strict"
+pythonVersion = "3.12"
+venvPath = "."
+venv = "venv"
+# Each subproject dir is its own script root (sibling imports like
+# scrape_release_notes_sgml -> scrape_git_commits resolve within it).
+extraPaths = ["postgres_patch_analysis"]
+
+[tool.ruff]
+target-version = "py312"
+# First-party roots (import sorting + first-party classification per subproject).
+src = ["postgres_patch_analysis"]
+extend-exclude = ["venv", "**/.cache", "**/out"]
+# Apply excludes even to explicitly-passed paths (the post-edit hook passes
+# single files, which would otherwise bypass the exclusion).
+force-exclude = true
+line-length = 120
+
+[tool.ruff.lint]
+# Same rule families as property_analysis: core errors (E, W, F), import
+# order (I), bugbear (B), pyupgrade (UP), simplifications (SIM), pandas (PD),
+# pytest style (PT), builtin shadowing (A), pylint errors (PLE), raise
+# mistakes (RSE), misc footguns (PIE), perf antipatterns (PERF),
+# modernizations (FURB), implicit string concat (ISC), comprehension cleanups
+# (C4), unused-noqa hygiene (RUF100), naive-datetime guards (DTZ), security
+# (S), and the complexity caps C901 / PLR0915 at ruff defaults — never add a
+# new noqa for the caps; split the function instead.
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "PD", "PT",
+          "A", "PLE", "RSE", "PIE", "PERF", "FURB", "ISC", "C4", "RUF100",
+          "DTZ", "S", "C901", "PLR0915"]
+ignore = [
+  "E501",  # line length is the formatter's job (line-length 120 above)
+  "ISC001", # single-line implicit concat conflicts with the formatter
+  "S603",  # subprocess calls use argv lists of known binaries (git), never
+  "S607",  # shell=True and never untrusted input
+]
+
+# Black-compatible defaults (double quotes, 4-space indent).
+[tool.ruff.format]
+docstring-code-format = false

@@ -1,0 +1,39 @@
+# Git pre-commit gate: ruff format + ruff check + pyright on staged Python
+# files. Mirrors property_analysis: `repo: local` with the repo venv's
+# binaries (language: system) so the gate runs the EXACT tool versions pinned
+# in requirements.txt against pyproject.toml's config — no second pinned
+# version to drift.
+#
+# Order matters and mirrors .claude/hooks/ruff-lint.sh: format first (it
+# auto-fixes; pre-commit fails the commit when files are modified — re-stage
+# and retry), then check (report-only; fix findings or noqa deliberately),
+# then pyright (blocking).
+#
+# One-time setup after cloning / rebuilding the venv:
+#   ./venv/bin/pre-commit install
+#
+# Bypass for emergencies only: git commit --no-verify
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: ./venv/bin/ruff format
+        language: system
+        types: [python]
+
+      - id: ruff-check
+        name: ruff check
+        entry: ./venv/bin/ruff check
+        language: system
+        types: [python]
+
+      # Type check (blocking). Config in pyproject.toml [tool.pyright]:
+      # standard mode everywhere. Only staged files are passed, but pyright
+      # still loads the project config and dependency graph.
+      - id: pyright
+        name: pyright
+        entry: ./venv/bin/pyright
+        language: system
+        types: [python]
