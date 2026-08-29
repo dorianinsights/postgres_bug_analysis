@@ -17,7 +17,7 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: [pgsql-bugs]
+                values: [pgsql-bugs, pgsql-hackers]
       - name: message_id
         tests: [not_null]
       - name: sent_ts

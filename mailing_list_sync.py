@@ -25,10 +25,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import requests
+from dotenv import dotenv_values
 
 from corpus import GIT_HISTORY_SINCE
 
-LISTS = ("pgsql-bugs",)
+LISTS = ("pgsql-bugs", "pgsql-hackers")
 LOGIN_URL = "https://www.postgresql.org/account/login/"
 ARCHIVES_LOGIN_URL = "https://www.postgresql.org/list/_auth/accounts/login/"
 MBOX_URL = "https://www.postgresql.org/list/{list_name}/mbox/{list_name}.{year}{month:02d}"
@@ -40,17 +41,13 @@ CSRF_RE = re.compile(r'name="csrfmiddlewaretoken" value="([^"]+)"')
 
 def credentials() -> tuple[str, str]:
     """(username, password) from the environment, falling back to .env."""
-    env: dict[str, str] = dict(os.environ)
-    if ENV_FILE.is_file():
-        for line in ENV_FILE.read_text().splitlines():
-            key, sep, value = line.partition("=")
-            if sep and key.strip() and not key.startswith("#"):
-                env.setdefault(key.strip(), value.strip())
-    try:
-        return env["POSTGRES_COMM_USERNAME"], env["POSTGRES_COMM_PASSWORD"]
-    except KeyError as exc:
+    env: dict[str, str | None] = {**dotenv_values(ENV_FILE), **os.environ}
+    username = env.get("POSTGRES_COMM_USERNAME")
+    password = env.get("POSTGRES_COMM_PASSWORD")
+    if not username or not password:
         msg = f"set POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD (env or {ENV_FILE})"
-        raise SystemExit(msg) from exc
+        raise SystemExit(msg)
+    return username, password
 
 
 def month_range() -> list[tuple[int, int]]:
