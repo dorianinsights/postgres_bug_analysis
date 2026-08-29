@@ -5310,6 +5310,12 @@ REL_18_STABLE,7c503d683ca06d14052614ff39ec8648d1d722d0,2026-08-28,Fix incorrect 
 REL_18_STABLE,9f25197bf27c4c4a02d754842bc4055d83be735b,2026-08-28,Perform join removal by editing the query's jointree.,0,Claude Opus 4.8.
 REL_18_STABLE,b3fa61ab7986ba980f0c03112caa3c01c4f91f0b,2026-08-28,Make platform guards in two regression tests match meson builds,0,
 REL_18_STABLE,b4e76a5f6336dbb688262a67a084747a0112db43,2026-08-28,Update .abi-compliance-history for join removal fix.,0,
+master,0ded7039fab314afb7cbaf36b52209f253c05539,2021-10-01,Fix memory leak in pg_hmac,0,
+master,795862c280c5949bafcd8c44543d887fd32b590a,2021-10-01,Reference test binary using TESTDIR in 001_libpq_pipeline.pl.,0,
+master,8c1144ba73478b818d9cebe8ecd64a14b7d45bde,2021-10-01,Avoid believing incomplete MCV-only stats in get_variable_range().,0,
+master,c6bc655ee2ef09449da7ff688a8be19a13db5c4a,2021-10-01,Error out if SKIP LOCKED and WITH TIES are both specified,0,
+master,d186d233dfde4afb9dff346e13c8adaf4deec6b3,2021-10-01,"Remove unstable, unnecessary test; fix typo",0,
+master,2b0da0365bec6c62cc9c5c317bab6cbee3d52ef4,2021-10-02,pg_stat_statements: Add some tests for older versions still usable,0,
 master,9b8d68cc6589814d121344f59e927a7e4506fb8c,2021-10-02,Update our mapping of Windows time zone names using CLDR info.,0,
 master,ad740067aea5b643ca2f79da086808573d35b5f4,2021-10-02,Re-alphabetize the win32_tzmap[] array.,0,
 master,2903f1404df37e11ecc303dbc164826c4717194b,2021-10-03,Enable deduplication in system catalog indexes.,0,
