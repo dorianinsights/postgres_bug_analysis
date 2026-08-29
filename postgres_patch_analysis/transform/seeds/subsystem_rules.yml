@@ -1,0 +1,25 @@
+version: 2
+
+seeds:
+  - name: subsystem_rules
+    description: >
+      Path -> subsystem classification for changed files (RE2, matched
+      case-sensitively against the file path; lowest match_order wins;
+      unmatched paths fall back to 'other'). Per-FILE classification by
+      directory is far less order-sensitive than per-item keyword matching:
+      the ordering only decides genuinely nested prefixes (a Makefile under
+      src/backend/replication/ counts as replication, not build). The
+      fix-level subsystem is then a weighted vote across the fix's files,
+      not a first-match pick.
+    config:
+      column_types:
+        match_order: INTEGER
+        subsystem: VARCHAR
+        pattern: VARCHAR
+    columns:
+      - name: match_order
+        tests: [unique, not_null]
+      - name: subsystem
+        tests: [not_null]
+      - name: pattern
+        tests: [not_null]

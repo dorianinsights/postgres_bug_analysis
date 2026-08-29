@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: stg_commit_files
+    description: >
+      One file touched by one commit, from git log --numstat.
+      Grain = (commit_hash, file_path). lines_added/deleted are NULL for
+      binary files.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [commit_hash, file_path]
+    columns:
+      - name: commit_hash
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^[0-9a-f]{40}$'
+      - name: file_path
+        tests: [not_null]
+      - name: lines_added
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: lines_deleted
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0

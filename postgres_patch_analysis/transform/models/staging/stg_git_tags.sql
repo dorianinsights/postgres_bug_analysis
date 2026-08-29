@@ -12,5 +12,5 @@ SELECT
   NULLIF(REGEXP_EXTRACT(tag, '^REL_(\d+)_(\d+)$', 1), '')::INTEGER AS major,
   NULLIF(REGEXP_EXTRACT(tag, '^REL_(\d+)_(\d+)$', 2), '')::INTEGER AS minor,
   tag_ts::TIMESTAMPTZ AS tag_ts
-FROM {{ source('scraped', 'git_tags') }}
+FROM {{ ref('raw_git_tags') }}
 WHERE REGEXP_FULL_MATCH(tag, 'REL_\d+_\d+')

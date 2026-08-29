@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: raw_git_tags
+    description: >
+      Every REL_1x_* ref verbatim (release tags AND BETA/RC prereleases)
+      with its full ISO creation timestamp. Filtering and major/minor
+      parsing happen in stg_git_tags.

@@ -7,9 +7,11 @@ the analysis as [dataface / dbt charts](https://docs.dbtcharts.com/) dashboards.
 Three explicit stages, each re-runnable on its own:
 
 ```
-scrape_release_notes_sgml.py ─┐
-                              ├─> data/raw/*.csv ──> transform/ (dbt+DuckDB) ──> data/derived/*.csv ──> faces/*.yml (dct)
-scrape_git_commits.py ────────┘    (scraper output)                              (mart output)          (visualization)
+scrape_release_notes_sgml.py ──> data/raw/*.csv ──────┐
+                                 (scraper output)     ├─> transform/ (dbt+DuckDB) ──> data/derived/*.csv ──> faces/*.yml (dct)
+postgres_clone.py ──> .cache/postgres.git ────────────┘    (mart output)                                     (visualization)
+                      (full bare clone; the git side
+                       is read directly at build time)
 ```
 
 ## Quickstart
@@ -20,9 +22,9 @@ scrape_git_commits.py ────────┘    (scraper output)           
 python3.12 -m venv ../venv
 ../venv/bin/pip install -r requirements.txt
 
-# 1. Scrape (git first run clones ~140MB metadata, then fetches; the SGML
-#    release-notes extractor reads from that same clone — no HTTP)
-../venv/bin/python scrape_git_commits.py
+# 1. Sync the postgres clone (first run: full bare clone, ~800MB) and
+#    extract the release notes from it (no HTTP; the SGML extractor also
+#    syncs the clone itself, so this is one step)
 ../venv/bin/python scrape_release_notes_sgml.py
 
 # 2. Derive analysis datasets (dbt project; profiles.yml is local to the
@@ -39,19 +41,22 @@ python3.12 -m venv ../venv
 ## Data files (`data/`)
 
 Two subdirectories, one per pipeline direction: `data/raw/` is written by the
-scrapers and read by the dbt sources; `data/derived/` is written by the dbt
-external mart models and read by the faces (the changelog face also reads
-`raw/releases.csv` directly). Nothing writes and reads the same directory.
+release-notes scraper and read by the dbt sources; `data/derived/` is written
+by the dbt external mart models and read by the faces (the changelog face
+also reads `raw/releases.csv` directly). Nothing writes and reads the same
+directory. **Git-side data has no CSV landing layer at all**: the clone at
+`.cache/postgres.git` is content-addressed and immutable — its own perfect
+raw store — so the transform's `models/raw_git/` Python models read it
+directly at build time, and every git-derived table shares one consistent
+snapshot of the clone.
 
-Raw (`data/raw/`, from the scrapers — rerun the scraper to refresh):
+Raw (`data/raw/`, from the release-notes scraper — rerun it to refresh):
 
 | File | Grain | Source |
 |---|---|---|
 | `releases.csv` | one minor release | release-notes SGML sources in postgres.git (`doc/src/sgml/release-NN.sgml` per stable branch), majors 15-18 |
 | `release_items.csv` | one changelog item | same sources: summary and full text (CVE ids are derived downstream) |
 | `item_commits.csv` | one (item, branch-commit) | the SGML comment annotations: author + every branch each fix landed on, with commit hash — ground truth linking changelog items to git commits |
-| `git_commits.csv` | one commit per branch | postgres.git `REL_15..18_STABLE` (post-`.0` backpatches) + `master`: full ISO committer timestamp (offset included), subject, and full message body — verbatim, no derived flags |
-| `git_tags.csv` | one `REL_1x_*` ref | every release tag AND BETA/RC prerelease, verbatim with full creation timestamps (staging filters and parses) |
 
 Derived (`data/derived/`, written by the `transform/` dbt project's external
 models — rerun `dbt build` to change analysis rules without re-scraping):
@@ -65,6 +70,8 @@ models — rerun `dbt build` to change analysis rules without re-scraping):
 | `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
 | `git_cycle_pace.csv` | one release cycle | distinct fixes in each cycle's first N days (N = the open cycle's age) vs full totals |
 | `git_commits_enriched.csv` | one commit per branch | the commit-grain export the git face reads: UTC-day `commit_dt` plus the derived `is_plumbing` / `ai_credit` flags |
+| `fix_change_profiles.csv` | one distinct fix | what the fix's representative commit changed: files/lines, test + docs involvement, and the path-derived `dominant_subsystem` alongside the keyword category |
+| `category_vs_subsystem.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
 
 ## Dashboards (`faces/`)
 
@@ -85,11 +92,22 @@ A dbt project targeting DuckDB (dbt-duckdb) — run `dbt build` from inside
 loaded into the scratch `.duckdb` file), and the derived CSVs are written by
 `external`-materialized mart models to `data/derived/` — the five files
 build_datasets.py used to produce (same columns, so the faces don't know the
-producer changed) plus the item-grain `fix_items.csv`. Layers:
+producer changed) plus the item-grain `fix_items.csv`. Each layer lives in
+its own schema — `raw`, `staging`, `intermediate`, `marts`, `seeds` (the
+`generate_schema_name` macro uses the configured names verbatim instead of
+dbt's target-prefixed default), so browsing the .duckdb shows the layer in
+every object's name. Layers:
 
-- `models/staging/` — typed views over the raw CSVs (`stg_*`). The source
-  reader restricts type-sniffing to BIGINT/DATE/VARCHAR so version strings
-  like "15.10" can't collapse into doubles.
+- `models/raw_git/` — Python models (dbt-duckdb) that read
+  `.cache/postgres.git` directly via `transform/gitsource.py`: commits with
+  full message bodies, per-commit `--numstat` file rows, and every
+  `REL_1x_*` ref — verbatim strings, one consistent clone snapshot per
+  build. Requires the clone (run `postgres_clone.py` or either scraper
+  entry point first).
+- `models/staging/` — typed views over the raw CSVs and raw_git tables
+  (`stg_*`). The CSV source reader restricts type-sniffing to
+  BIGINT/DATE/VARCHAR so version strings like "15.10" can't collapse into
+  doubles.
 - `models/intermediate/` — the analysis steps as tables: `int_waves` (wave
   grain + flags), `int_fix_items` (fix items + dedup keys + derived CVEs),
   `int_fix_groups` (cross-branch dedup as recursive-CTE connected
@@ -102,7 +120,7 @@ producer changed) plus the item-grain `fix_items.csv`. Layers:
   order) and `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules).
 
-Every model is heavily tested — 221 data tests in all: column-level schema
+Every model is heavily tested — 245 data tests in all: column-level schema
 tests (uniqueness, not-null, relationships, accepted ranges on counts and
 dates, regex format checks) using `dbt_utils` and Metaplane's
 `dbt_expectations` (installed via `dbt deps`), plus seven singular

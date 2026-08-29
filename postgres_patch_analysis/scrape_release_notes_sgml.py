@@ -32,7 +32,7 @@ from typing import NamedTuple, TypedDict
 from bs4 import BeautifulSoup, Comment, Tag
 
 from corpus import MAJORS
-from scrape_git_commits import ensure_clone, git
+from postgres_clone import ensure_clone, git
 from scrape_release_notes import DATA_DIR, ItemRow, ReleaseRow
 
 

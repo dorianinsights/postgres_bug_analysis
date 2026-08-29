@@ -1,0 +1,9 @@
+match_order,subsystem,pattern
+1,tests,^src/test/
+2,docs,^doc/
+3,planner,^src/backend/optimizer/|^src/backend/statistics/
+4,replication_recovery,^src/backend/replication/|^src/backend/access/transam/|^src/bin/pg_rewind/|^src/bin/pg_basebackup/|^src/bin/pg_waldump/|^src/bin/pg_receivewal/|^src/bin/pg_verifybackup/
+5,client_tools,^src/bin/|^src/interfaces/|^src/fe_utils/
+6,extensions_contrib,^contrib/|^src/pl/
+7,build_platform,^configure|^Makefile|^meson\.build|^\.cirrus|^\.github/|^config/|^src/makefiles/|^src/tools/|\.m4$|/Makefile$|/meson\.build$|^src/template/
+8,core_server,^src/backend/|^src/include/|^src/common/|^src/port/|^src/timezone/

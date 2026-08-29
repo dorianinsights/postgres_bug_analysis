@@ -18,5 +18,3 @@ sources:
       - name: releases
       - name: release_items
       - name: item_commits
-      - name: git_commits
-      - name: git_tags

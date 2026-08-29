@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: category_vs_subsystem
+    description: >
+      Agreement matrix keyword category x path-derived subsystem ->
+      ../data/derived/category_vs_subsystem.csv, over fixes with at least
+      one corpus-matched commit.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [category, dominant_subsystem]
+    columns:
+      - name: n_fixes
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

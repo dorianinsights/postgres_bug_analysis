@@ -8,20 +8,20 @@
 [tool.pyright]
 # Strict everywhere (repo decision 2026-08-28) — new files must pass strict.
 include = ["."]
-exclude = ["venv", "**/__pycache__", "**/.cache", "**/out"]
+exclude = ["venv", "**/__pycache__", "**/.cache", "**/out", "**/target", "**/dbt_packages"]
 typeCheckingMode = "strict"
 pythonVersion = "3.12"
 venvPath = "."
 venv = "venv"
 # Each subproject dir is its own script root (sibling imports like
 # scrape_release_notes_sgml -> scrape_git_commits resolve within it).
-extraPaths = ["postgres_patch_analysis"]
+extraPaths = ["postgres_patch_analysis", "postgres_patch_analysis/transform"]
 
 [tool.ruff]
 target-version = "py312"
 # First-party roots (import sorting + first-party classification per subproject).
 src = ["postgres_patch_analysis"]
-extend-exclude = ["venv", "**/.cache", "**/out"]
+extend-exclude = ["venv", "**/.cache", "**/out", "**/target", "**/dbt_packages"]
 # Apply excludes even to explicitly-passed paths (the post-edit hook passes
 # single files, which would otherwise bypass the exclusion).
 force-exclude = true

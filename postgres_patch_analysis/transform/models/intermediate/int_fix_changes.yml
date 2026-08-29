@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: int_fix_changes
+    description: >
+      Fix-grain change profile from git: annotation-hash coverage, the
+      representative commit's size (files, lines), test/docs involvement,
+      and the path-derived dominant subsystem. Grain = item_ord (one row
+      per distinct fix, NULL profile when no annotated commit matched the
+      corpus).
+    tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: n_matched_commits <= n_annotated_commits
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: n_matched_commits = 0 OR dominant_subsystem IS NOT NULL
+    columns:
+      - name: item_ord
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_fix_reps')
+                field: item_ord
+      - name: dominant_subsystem
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - tests
+                  - docs
+                  - planner
+                  - replication_recovery
+                  - client_tools
+                  - extensions_contrib
+                  - build_platform
+                  - core_server
+                  - other

@@ -16,6 +16,9 @@ dbt-charts==0.5.0
 # `dbt build` runs from transform/ — so pin them explicitly.
 dbt-core==1.12.3
 dbt-duckdb==1.11.0
+# The raw_git dbt Python models return pyarrow tables (pyarrow itself
+# arrives via dbt-charts); the stubs keep pyright strict happy.
+pyarrow-stubs==20.0.0.20260819
 # Dev tooling (repo-wide, mirrors property_analysis): config in the repo-root
 # pyproject.toml; enforced by .claude/hooks/ post-edit hooks and the blocking
 # git pre-commit gate (.pre-commit-config.yaml; one-time: ./venv/bin/pre-commit install).

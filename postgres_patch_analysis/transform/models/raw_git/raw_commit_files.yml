@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: raw_commit_files
+    description: >
+      One row per (commit, file) from git log --numstat over the same
+      revision ranges as raw_git_commits, verbatim ("-" line counts for
+      binary files). All strings; typing happens in stg_commit_files.

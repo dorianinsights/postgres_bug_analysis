@@ -13,12 +13,20 @@ macro-paths: ["macros"]
 target-path: target
 clean-targets: [target]
 
+# One schema per layer (generate_schema_name.sql uses these names verbatim).
 models:
   postgres_patch_analysis:
+    raw_git:
+      # Python models reading ../.cache/postgres.git directly at build time
+      # — the git side has no CSV landing layer; the clone is the raw store.
+      +materialized: table
+      +schema: raw
     staging:
       +materialized: view
+      +schema: staging
     intermediate:
       +materialized: table
+      +schema: intermediate
     marts:
       # External models COPY their result to ../data/derived/*.csv — the same files
       # build_datasets.py used to write, so the faces' queries are unchanged.
@@ -27,6 +35,11 @@ models:
       # sources do, or "15.10" in a version column re-sniffs as DOUBLE 15.1.
       +materialized: external
       +format: csv
+      +schema: marts
       +csv_read_options:
         auto_detect: true
         auto_type_candidates: ["BIGINT", "DATE", "VARCHAR"]
+
+seeds:
+  postgres_patch_analysis:
+    +schema: seeds

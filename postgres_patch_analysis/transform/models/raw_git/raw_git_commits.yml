@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: raw_git_commits
+    description: >
+      One row per commit per branch (corpus stable branches + master since
+      the corpus history floor), read verbatim from the postgres.git clone
+      at build time: hash, full ISO committer timestamp, subject, body.
+      All strings; typing happens in stg_git_commits.

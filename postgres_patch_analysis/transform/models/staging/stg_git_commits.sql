@@ -10,4 +10,4 @@ SELECT
   commit_ts::TIMESTAMPTZ AS commit_ts,
   subject,
   body
-FROM {{ source('scraped', 'git_commits') }}
+FROM {{ ref('raw_git_commits') }}

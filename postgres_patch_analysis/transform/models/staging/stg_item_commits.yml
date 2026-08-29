@@ -11,6 +11,12 @@ models:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [version, item_index, branch, commit_hash]
+      # Every annotation hash is currently exactly 9 chars, and
+      # int_fix_changes joins on LEFT(full_hash, 9). If git starts
+      # abbreviating longer this fails — update that join key with it.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: LENGTH(commit_hash) = 9
     columns:
       - name: version
         tests:
