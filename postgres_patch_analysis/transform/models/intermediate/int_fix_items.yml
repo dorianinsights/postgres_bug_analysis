@@ -36,6 +36,13 @@ models:
         tests: [not_null]
       - name: full_text
         tests: [not_null]
+      - name: cves
+        tests:
+          # Derived from full_text; NULL when the item mentions no CVE,
+          # else sorted distinct ids joined by semicolons.
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^CVE-\d{4}-\d+(;CVE-\d{4}-\d+)*$'
       - name: text_key
         tests:
           - not_null

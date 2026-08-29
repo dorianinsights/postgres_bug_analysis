@@ -38,10 +38,3 @@ models:
         tests: [not_null]
       - name: full_text
         tests: [not_null]
-      - name: cves
-        tests:
-          # NULL when the item has no CVEs (no empty strings in staging);
-          # when present, semicolon-joined ids with no stray separators.
-          - dbt_expectations.expect_column_values_to_match_regex:
-              arguments:
-                regex: '^CVE-\d{4}-\d+(;CVE-\d{4}-\d+)*$'

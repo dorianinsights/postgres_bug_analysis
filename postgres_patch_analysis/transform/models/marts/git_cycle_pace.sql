@@ -60,7 +60,7 @@ fix_commits AS (
   SELECT
     (commit_ts AT TIME ZONE 'utc')::DATE AS commit_dt,
     LOWER(TRIM(REGEXP_REPLACE(subject, '\s+', ' ', 'g'))) AS fix_key
-  FROM {{ ref('stg_git_commits') }}
+  FROM {{ ref('int_git_commits') }}
   WHERE branch != 'master' AND NOT is_plumbing
 )
 

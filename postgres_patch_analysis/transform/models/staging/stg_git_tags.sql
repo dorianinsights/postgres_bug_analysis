@@ -1,9 +1,16 @@
--- tag_ts: the full tag-creation timestamp (ISO 8601 with offset), cast
--- strictly to TIMESTAMP WITH TIME ZONE. Day-truncation happens downstream
--- at the point of use.
+-- The raw file carries every REL_1x_* ref verbatim, prereleases included.
+-- Staging keeps only release tags (REL_MAJOR_MINOR — BETA/RC refs like
+-- REL_18_BETA1 are filtered out) and derives major/minor from the name.
+-- tag_ts: full creation timestamp; day-truncation happens downstream at
+-- the point of use.
+-- NULLIF before the cast: the projection can be evaluated before the WHERE
+-- filter, so a prerelease row's non-matching extract ('') must become NULL
+-- rather than a failed INTEGER cast. Release rows always match, and the
+-- not_null tests still catch any release-shaped tag that doesn't.
 SELECT
   tag,
-  major::INTEGER AS major,
-  minor::INTEGER AS minor,
+  NULLIF(REGEXP_EXTRACT(tag, '^REL_(\d+)_(\d+)$', 1), '')::INTEGER AS major,
+  NULLIF(REGEXP_EXTRACT(tag, '^REL_(\d+)_(\d+)$', 2), '')::INTEGER AS minor,
   tag_ts::TIMESTAMPTZ AS tag_ts
 FROM {{ source('scraped', 'git_tags') }}
+WHERE REGEXP_FULL_MATCH(tag, 'REL_\d+_\d+')

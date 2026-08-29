@@ -11,38 +11,38 @@ queries:
       Distinct fix commits across all stable branches per quarter (subjects
       deduplicated across branches; release plumbing excluded). The current
       quarter is partial.
-    source: ../data/raw/git_commits.csv
+    source: ../data/derived/git_commits_enriched.csv
     sql: |
       SELECT
-        DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE)) AS quarter,
+        DATE_TRUNC('quarter', CAST(commit_dt AS DATE)) AS quarter,
         'distinct fixes' AS series,
         COUNT(DISTINCT LOWER(TRIM(subject))) AS distinct_fixes
-      FROM git_commits
+      FROM git_commits_enriched
       WHERE branch != 'master' AND is_plumbing = 0
       GROUP BY quarter
       ORDER BY quarter
 
   quarter_pad:
     description: Invisible x-domain padding points for the quarterly bar chart.
-    source: ../data/raw/git_commits.csv
+    source: ../data/derived/git_commits_enriched.csv
     sql: |
-      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE))) - INTERVAL 45 DAY AS quarter, 'distinct fixes' AS series, 0 AS pad_zero
-      FROM git_commits
+      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_dt AS DATE))) - INTERVAL 45 DAY AS quarter, 'distinct fixes' AS series, 0 AS pad_zero
+      FROM git_commits_enriched
       UNION ALL
-      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE))) + INTERVAL 45 DAY, 'distinct fixes', 0
-      FROM git_commits
+      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_dt AS DATE))) + INTERVAL 45 DAY, 'distinct fixes', 0
+      FROM git_commits_enriched
 
   quarterly_by_branch:
     description: >
       Fix commits per stable branch per quarter (each branch counts its own
       backpatches; plumbing excluded).
-    source: ../data/raw/git_commits.csv
+    source: ../data/derived/git_commits_enriched.csv
     sql: |
       SELECT
-        DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE)) AS quarter,
+        DATE_TRUNC('quarter', CAST(commit_dt AS DATE)) AS quarter,
         branch,
         COUNT(*) AS fix_commits
-      FROM git_commits
+      FROM git_commits_enriched
       WHERE branch != 'master' AND is_plumbing = 0
       GROUP BY quarter, branch
       ORDER BY quarter, branch
@@ -51,36 +51,36 @@ queries:
     description: >
       Distinct commits whose message credits an AI tool (Claude, ChatGPT,
       Copilot, ...), per quarter, across stable branches and master.
-    source: ../data/raw/git_commits.csv
+    source: ../data/derived/git_commits_enriched.csv
     sql: |
       SELECT
-        DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE)) AS quarter,
+        DATE_TRUNC('quarter', CAST(commit_dt AS DATE)) AS quarter,
         'AI-credited commits' AS series,
         COUNT(DISTINCT LOWER(TRIM(subject))) AS ai_credited_commits
-      FROM git_commits
+      FROM git_commits_enriched
       WHERE ai_credit IS NOT NULL
       GROUP BY quarter
       ORDER BY quarter
 
   ai_pad:
     description: Invisible x-domain padding points for the AI-credited bar chart.
-    source: ../data/raw/git_commits.csv
+    source: ../data/derived/git_commits_enriched.csv
     sql: |
-      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE))) - INTERVAL 45 DAY AS quarter, 'AI-credited commits' AS series, 0 AS pad_zero
-      FROM git_commits WHERE ai_credit IS NOT NULL
+      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_dt AS DATE))) - INTERVAL 45 DAY AS quarter, 'AI-credited commits' AS series, 0 AS pad_zero
+      FROM git_commits_enriched WHERE ai_credit IS NOT NULL
       UNION ALL
-      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE))) + INTERVAL 45 DAY, 'AI-credited commits', 0
-      FROM git_commits WHERE ai_credit IS NOT NULL
+      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_dt AS DATE))) + INTERVAL 45 DAY, 'AI-credited commits', 0
+      FROM git_commits_enriched WHERE ai_credit IS NOT NULL
 
   ai_credit_lines:
     description: The AI-credited fix commits with their credit lines, newest first.
-    source: ../data/raw/git_commits.csv
+    source: ../data/derived/git_commits_enriched.csv
     sql: |
       SELECT
-        MIN(CAST(commit_ts AT TIME ZONE 'utc' AS DATE)) AS commit_dt,
+        MIN(commit_dt) AS commit_dt,
         subject,
         MIN(ai_credit) AS credit_line
-      FROM git_commits
+      FROM git_commits_enriched
       WHERE ai_credit IS NOT NULL
       GROUP BY subject
       ORDER BY commit_dt DESC

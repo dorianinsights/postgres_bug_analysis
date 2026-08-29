@@ -1,11 +1,28 @@
 -- One same-day release wave. ".0" feature releases are not fixes and are
 -- excluded before grouping. A wave is out-of-band (emergency re-release)
--- when its LARGEST release has fewer than 20 items; the corpus's first wave
--- is a partial accumulation window (15.1 shipped ~4 weeks after 15.0).
-WITH fix_releases AS (
-  SELECT *
-  FROM {{ ref('stg_releases') }}
-  WHERE minor > 0
+-- when its LARGEST release has fewer than 20 items — counted here from
+-- stg_release_items (the scraper's n_items column stays in raw only as a
+-- scrape-consistency checksum; see assert_release_items_match_n_items).
+-- The corpus's first wave is a partial accumulation window (15.1 shipped
+-- ~4 weeks after 15.0).
+WITH item_counts AS (
+  SELECT
+    version,
+    COUNT(*) AS n_parsed_items
+  FROM {{ ref('stg_release_items') }}
+  GROUP BY version
+),
+
+fix_releases AS (
+  SELECT
+    rel.version,
+    rel.major,
+    rel.minor,
+    rel.release_dt,
+    cnt.n_parsed_items
+  FROM {{ ref('stg_releases') }} AS rel
+  INNER JOIN item_counts AS cnt ON rel.version = cnt.version
+  WHERE rel.minor > 0
 ),
 
 grouped AS (
@@ -13,7 +30,7 @@ grouped AS (
     release_dt AS wave_dt,
     STRING_AGG(version, ' / ' ORDER BY major, minor) AS versions,
     COUNT(*) AS n_releases,
-    MAX(n_items) < 20 AS out_of_band
+    MAX(n_parsed_items) < 20 AS out_of_band
   FROM fix_releases
   GROUP BY release_dt
 )

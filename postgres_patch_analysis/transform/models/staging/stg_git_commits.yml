@@ -34,7 +34,5 @@ models:
                 max_value: current_date + 2
       - name: subject
         tests: [not_null]
-      - name: is_plumbing
-        tests: [not_null]
-      # ai_credit is NULL for the overwhelming majority of commits (no AI
-      # credit in the message) — deliberately no not_null test.
+      # body is NULL when the commit message has no body — no not_null
+      # test. The derived flags live in int_git_commits.

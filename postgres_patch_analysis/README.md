@@ -40,18 +40,18 @@ python3.12 -m venv ../venv
 
 Two subdirectories, one per pipeline direction: `data/raw/` is written by the
 scrapers and read by the dbt sources; `data/derived/` is written by the dbt
-external mart models and read by the faces (which also read `raw/` directly
-for commit-level charts). Nothing writes and reads the same directory.
+external mart models and read by the faces (the changelog face also reads
+`raw/releases.csv` directly). Nothing writes and reads the same directory.
 
 Raw (`data/raw/`, from the scrapers — rerun the scraper to refresh):
 
 | File | Grain | Source |
 |---|---|---|
 | `releases.csv` | one minor release | release-notes SGML sources in postgres.git (`doc/src/sgml/release-NN.sgml` per stable branch), majors 15-18 |
-| `release_items.csv` | one changelog item | same sources: summary, full text, CVE ids |
+| `release_items.csv` | one changelog item | same sources: summary and full text (CVE ids are derived downstream) |
 | `item_commits.csv` | one (item, branch-commit) | the SGML comment annotations: author + every branch each fix landed on, with commit hash — ground truth linking changelog items to git commits |
-| `git_commits.csv` | one commit per branch | postgres.git `REL_15..18_STABLE` (post-`.0` backpatches) + `master`: full ISO committer timestamp (offset included), plumbing flag, any AI-tool credit line from the message body |
-| `git_tags.csv` | one minor-release tag | postgres.git `REL_1x_y` tags with full creation timestamps (the wrap moments) |
+| `git_commits.csv` | one commit per branch | postgres.git `REL_15..18_STABLE` (post-`.0` backpatches) + `master`: full ISO committer timestamp (offset included), subject, and full message body — verbatim, no derived flags |
+| `git_tags.csv` | one `REL_1x_*` ref | every release tag AND BETA/RC prerelease, verbatim with full creation timestamps (staging filters and parses) |
 
 Derived (`data/derived/`, written by the `transform/` dbt project's external
 models — rerun `dbt build` to change analysis rules without re-scraping):
@@ -64,6 +64,7 @@ models — rerun `dbt build` to change analysis rules without re-scraping):
 | `wave_contributors.csv` | (wave, contributor) | credits parsed from the notes' trailing "(Name, Name)" lists, with first-seen wave |
 | `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
 | `git_cycle_pace.csv` | one release cycle | distinct fixes in each cycle's first N days (N = the open cycle's age) vs full totals |
+| `git_commits_enriched.csv` | one commit per branch | the commit-grain export the git face reads: UTC-day `commit_dt` plus the derived `is_plumbing` / `ai_credit` flags |
 
 ## Dashboards (`faces/`)
 
@@ -90,17 +91,18 @@ producer changed) plus the item-grain `fix_items.csv`. Layers:
   reader restricts type-sniffing to BIGINT/DATE/VARCHAR so version strings
   like "15.10" can't collapse into doubles.
 - `models/intermediate/` — the analysis steps as tables: `int_waves` (wave
-  grain + flags), `int_fix_items` (fix items + dedup keys), `int_fix_groups`
-  (cross-branch dedup as recursive-CTE connected components), `int_fix_reps`
-  (one categorized representative per distinct fix), `int_wave_summary`.
+  grain + flags), `int_fix_items` (fix items + dedup keys + derived CVEs),
+  `int_fix_groups` (cross-branch dedup as recursive-CTE connected
+  components), `int_fix_reps` (one categorized representative per distinct
+  fix), `int_wave_summary`, `int_git_commits` (plumbing/AI-credit flags).
 - `models/marts/` — the external models, each a `-> data/derived/*.csv` writer:
-  the item-grain `fix_items` fact plus the five wave/projection/pace
-  rollups.
+  the item-grain `fix_items` fact, the commit-grain `git_commits_enriched`
+  export, and the five wave/projection/pace rollups.
 - `seeds/` — the categorization taxonomy: `categories` (bucket + display
   order) and `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules).
 
-Every model is heavily tested — 209 data tests in all: column-level schema
+Every model is heavily tested — 221 data tests in all: column-level schema
 tests (uniqueness, not-null, relationships, accepted ranges on counts and
 dates, regex format checks) using `dbt_utils` and Metaplane's
 `dbt_expectations` (installed via `dbt deps`), plus seven singular
@@ -144,6 +146,13 @@ by the dbt tests themselves.
   staging (`_ts` columns, TIMESTAMPTZ); truncation to a calendar day
   (`_dt`) happens as far downstream as possible, at the point of use, and
   buckets by UTC day.
+- **The scrapers are pure extraction** — fields land raw verbatim. Every
+  derivation lives in the transform: plumbing/AI-credit flags
+  (`int_git_commits`), CVE extraction (`int_fix_items`), release-tag
+  filtering and major/minor parsing (`stg_git_tags`), per-release item
+  counts for the out-of-band rule (`int_waves`). The scraper's `n_items`
+  column survives in raw only as a scrape-consistency checksum, enforced
+  by `assert_release_items_match_n_items`.
 - Stable-branch commit series count only post-`.0` commits (the backpatch
   stream); shared pre-branch history belongs to `master`. Security fixes are
   embargoed and reach public git only on wrap day, so mid-cycle security

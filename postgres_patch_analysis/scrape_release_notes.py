@@ -5,7 +5,7 @@ Fetches every release-notes page for the configured major versions from
 postgresql.org and persists two raw datasets:
 
 - data/raw/releases.csv       one row per release (version, date, item count)
-- data/raw/release_items.csv  one row per changelog item (summary, full text, CVEs)
+- data/raw/release_items.csv  one row per changelog item (summary, full text)
 
 Raw data only — categorization, wave grouping, and dedup live in the
 transform/ dbt project so the scrape never needs re-running to change
@@ -31,7 +31,6 @@ class Item(TypedDict):
 
     summary: str
     full: str
-    cves: list[str]
 
 
 class Page(TypedDict):
@@ -61,7 +60,6 @@ class ItemRow(TypedDict):
     item_index: int
     summary: str
     full: str
-    cves: str
 
 
 BASE_URL = "https://www.postgresql.org/docs/release/{}/"
@@ -114,8 +112,7 @@ def parse_page(version: str) -> Page | None:
             p = li.find("p")
             summary = re.sub(r"\s+", " ", (p or li).get_text(" ", strip=True))
             full = re.sub(r"\s+", " ", li.get_text(" ", strip=True))
-            cves: list[str] = sorted(set(re.findall(r"CVE-\d{4}-\d+", full)))
-            items.append(Item(summary=summary, full=full, cves=cves))
+            items.append(Item(summary=summary, full=full))
     return Page(version=version, date=date, items=items)
 
 
@@ -148,7 +145,6 @@ def main() -> None:
                     "item_index": i,
                     "summary": item["summary"],
                     "full": item["full"],
-                    "cves": ";".join(item["cves"]),
                 }
             )
         print(f"{version:>6}  {page['date']}  items={len(page['items'])}")
@@ -159,7 +155,7 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(releases)
     with open(DATA_DIR / "release_items.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["version", "major", "date", "item_index", "summary", "full", "cves"])
+        writer = csv.DictWriter(f, fieldnames=["version", "major", "date", "item_index", "summary", "full"])
         writer.writeheader()
         writer.writerows(item_rows)
     print(f"\nWrote {len(releases)} releases, {len(item_rows)} items -> {DATA_DIR}/")

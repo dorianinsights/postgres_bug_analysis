@@ -6,14 +6,16 @@ Maintains a metadata-only clone of postgres.git under .cache/ (treeless,
 
 - data/raw/git_commits.csv  one row per commit per branch (REL_15..18_STABLE +
                         master) since SINCE: hash, full ISO committer
-                        timestamp, subject, plumbing flag, and any AI-tool
-                        credit line found in the body
-- data/raw/git_tags.csv     every REL_1x_y minor-release tag with its full
-                        ISO creation timestamp (the wrap moments that bound
-                        release cycles)
+                        timestamp, subject, and full message body
+- data/raw/git_tags.csv     every REL_1x_* ref (release tags AND
+                        BETA/RC prereleases) with its full ISO creation
+                        timestamp
 
-Timestamps land raw at full fidelity (offset included); truncation to a
-calendar day happens downstream at the point of use, not here.
+Pure extraction: fields land raw verbatim and at full fidelity. All
+derivations live downstream in the transform/ dbt project — plumbing and
+AI-credit flags come from the subject/body there, release-tag filtering
+and major/minor parsing from the tag name, day-truncation at the point
+of use.
 
 Raw-ish data only — cross-branch dedup and windowing live in the
 transform/ dbt project and in the faces' SQL.
@@ -36,16 +38,13 @@ class CommitRow(TypedDict):
     hash: str
     commit_ts: str
     subject: str
-    is_plumbing: int
-    ai_credit: str
+    body: str
 
 
 class TagRow(TypedDict):
     "One minor-release tag."
 
     tag: str
-    major: int
-    minor: int
     tag_ts: str
 
 
@@ -54,21 +53,6 @@ CACHE = Path(__file__).parent / ".cache" / "postgres.git"
 DATA_DIR = Path(__file__).parent / "data" / "raw"
 BRANCHES = [*STABLE_BRANCHES, "master"]
 SINCE = GIT_HISTORY_SINCE
-
-# Release plumbing: not fixes, excluded downstream by the is_plumbing flag.
-PLUMBING = re.compile(
-    r"^(Stamp |Translation updates|Update time zone data|Update plpgsql\.po"
-    r"|First-draft release notes|Release notes for|Update release notes"
-    r"|Last-minute updates for release notes|Re-pgindent|pgindent )",
-    re.IGNORECASE,
-)
-
-# Explicit AI-tool credits in commit messages (fuzzers tracked separately in
-# the full-history analysis; here we keep the LLM signal only).
-AI_PATTERN = re.compile(
-    r"\b(Claude( Code)?|Anthropic|ChatGPT|GPT-[45]|OpenAI|Copilot|Big Sleep|large language model|LLM)\b",
-    re.IGNORECASE,
-)
 
 
 def git(*args: str) -> str:
@@ -86,17 +70,6 @@ def ensure_clone() -> None:
             ["git", "clone", "--bare", "--filter=tree:0", REPO_URL, str(CACHE)],
             check=True,
         )
-
-
-def ai_credit_line(subject: str, body: str) -> str:
-    """The first line of the commit message crediting an AI tool, or ''."""
-    match = AI_PATTERN.search(subject + "\n" + body)
-    if not match:
-        return ""
-    for line in (subject + "\n" + body).splitlines():
-        if AI_PATTERN.search(line):
-            return line.strip()[:200]
-    return match.group(0)
 
 
 def branch_commits(branch: str) -> list[CommitRow]:
@@ -122,8 +95,7 @@ def branch_commits(branch: str) -> list[CommitRow]:
                 hash=commit_hash,
                 commit_ts=date_iso,
                 subject=subject,
-                is_plumbing=int(bool(PLUMBING.match(subject))),
-                ai_credit=ai_credit_line(subject, body),
+                body=body.strip("\n"),
             )
         )
     return rows
@@ -134,11 +106,8 @@ def tag_rows() -> list[TagRow]:
     rows: list[TagRow] = []
     for line in out.splitlines():
         tag, _, tag_ts = line.partition("\t")
-        m = re.match(r"REL_(\d+)_(\d+)$", tag)
-        if not m:  # skip BETA/RC tags
-            continue
-        rows.append(TagRow(tag=tag, major=int(m.group(1)), minor=int(m.group(2)), tag_ts=tag_ts))
-    rows.sort(key=lambda r: (r["major"], r["minor"]))
+        rows.append(TagRow(tag=tag, tag_ts=tag_ts))
+    rows.sort(key=lambda r: r["tag"])
     return rows
 
 
@@ -153,13 +122,13 @@ def main() -> None:
         print(f"{branch:<15} {len(rows)} commits since {SINCE}")
 
     with open(DATA_DIR / "git_commits.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["branch", "hash", "commit_ts", "subject", "is_plumbing", "ai_credit"])
+        writer = csv.DictWriter(f, fieldnames=["branch", "hash", "commit_ts", "subject", "body"])
         writer.writeheader()
         writer.writerows(commit_rows)
 
     tags = tag_rows()
     with open(DATA_DIR / "git_tags.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["tag", "major", "minor", "tag_ts"])
+        writer = csv.DictWriter(f, fieldnames=["tag", "tag_ts"])
         writer.writeheader()
         writer.writerows(tags)
     print(f"\nWrote {len(commit_rows)} commit rows, {len(tags)} tags -> {DATA_DIR}/")

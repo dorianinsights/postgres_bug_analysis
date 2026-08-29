@@ -26,7 +26,10 @@ SELECT
   itm.item_index,
   itm.summary,
   itm.full_text,
-  itm.cves,
+  NULLIF(
+    ARRAY_TO_STRING(LIST_SORT(LIST_DISTINCT(REGEXP_EXTRACT_ALL(itm.full_text, 'CVE-\d{4}-\d+'))), ';'),
+    ''
+  ) AS cves,
   't:' || LOWER(TRIM(REGEXP_REPLACE(REPLACE(itm.summary, '§', ' '), '\s+', ' ', 'g'))) AS text_key,
   CASE WHEN ihs.hash_set IS NOT null THEN 'h:' || ihs.hash_set END AS hash_key
 FROM {{ ref('stg_release_items') }} AS itm

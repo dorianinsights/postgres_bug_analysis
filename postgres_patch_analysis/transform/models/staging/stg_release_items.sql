@@ -1,12 +1,10 @@
--- "full" is a reserved word (FULL JOIN); renamed full_text here. cves is
--- NULL when the item carries no CVEs (the raw CSV's empty string reads as
--- NULL, and staging keeps it that way — no empty strings in this layer).
+-- "full" is a reserved word (FULL JOIN); renamed full_text here. CVE ids
+-- are no longer a raw column — int_fix_items derives them from full_text.
 SELECT
   version,
   major::INTEGER AS major,
   date::DATE AS release_dt,
   item_index::INTEGER AS item_index,
   summary,
-  "full" AS full_text,
-  cves
+  "full" AS full_text
 FROM {{ source('scraped', 'release_items') }}

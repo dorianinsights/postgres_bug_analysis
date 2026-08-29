@@ -2,7 +2,10 @@ version: 2
 
 models:
   - name: stg_git_tags
-    description: One minor-release tag (wrap moment). Grain = tag.
+    description: >
+      One minor-release tag (wrap moment). Grain = tag. Raw carries every
+      REL_1x_* ref; staging filters out BETA/RC prereleases and derives
+      major/minor from the tag name.
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

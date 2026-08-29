@@ -61,7 +61,6 @@ class ParsedItem(TypedDict):
 
     summary: str
     full: str
-    cves: list[str]
     commits: list[CommitAnnotation]
 
 
@@ -118,8 +117,7 @@ def parse_item(li: Tag) -> ParsedItem:
     first_para = li.find("para")
     summary = normalize(first_para.get_text(" ")) if first_para else normalize(li.get_text(" "))
     full = normalize(li.get_text(" "))
-    cves: list[str] = sorted(set(re.findall(r"CVE-\d{4}-\d+", full)))
-    return ParsedItem(summary=summary, full=full, cves=cves, commits=commits)
+    return ParsedItem(summary=summary, full=full, commits=commits)
 
 
 def parse_section(sect: Tag) -> tuple[str | None, list[ParsedItem]]:
@@ -175,7 +173,6 @@ def main() -> None:
                         "item_index": i,
                         "summary": item["summary"],
                         "full": item["full"],
-                        "cves": ";".join(item["cves"]),
                     }
                 )
                 commit_rows.extend(
@@ -196,7 +193,7 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(releases)
     with open(DATA_DIR / "release_items.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["version", "major", "date", "item_index", "summary", "full", "cves"])
+        writer = csv.DictWriter(f, fieldnames=["version", "major", "date", "item_index", "summary", "full"])
         writer.writeheader()
         writer.writerows(item_rows)
     with open(DATA_DIR / "item_commits.csv", "w", newline="") as f:
