@@ -8,10 +8,12 @@ Three explicit stages, each re-runnable on its own:
 
 ```
 scrape_release_notes_sgml.py ──> data/raw/*.csv ──────┐
-                                 (scraper output)     ├─> transform/ (dbt+DuckDB) ──> data/derived/*.csv ──> faces/*.yml (dct)
-postgres_clone.py ──> .cache/postgres.git ────────────┘    (mart output)                                     (visualization)
-                      (full bare clone; the git side
-                       is read directly at build time)
+                                 (scraper output)     │
+postgres_clone.py ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> data/derived/*.csv ──> faces/*.yml (dct)
+                      (full bare clone)               │    (mart output)                                     (visualization)
+mailing_list_sync.py ──> .cache/mbox/ ────────────────┘
+                      (monthly mbox archives)
+                      (both caches are read directly at build time)
 ```
 
 ## Quickstart
@@ -26,6 +28,12 @@ python3.12 -m venv ../venv
 #    extract the release notes from it (no HTTP; the SGML extractor also
 #    syncs the clone itself, so this is one step)
 ../venv/bin/python scrape_release_notes_sgml.py
+
+#    Sync the pgsql-bugs mbox archives (full message bodies). Needs a free
+#    postgresql.org community account: put POSTGRES_COMM_USERNAME /
+#    POSTGRES_COMM_PASSWORD in .env (gitignored). Past months are cached
+#    forever; only the current month is re-fetched.
+../venv/bin/python mailing_list_sync.py
 
 # 2. Derive analysis datasets (dbt project; profiles.yml is local to the
 #    directory, so no ~/.dbt setup is needed; deps installs dbt_utils +
@@ -44,11 +52,16 @@ Two subdirectories, one per pipeline direction: `data/raw/` is written by the
 release-notes scraper and read by the dbt sources; `data/derived/` is written
 by the dbt external mart models and read by the faces (the changelog face
 also reads `raw/releases.csv` directly). Nothing writes and reads the same
-directory. **Git-side data has no CSV landing layer at all**: the clone at
-`.cache/postgres.git` is content-addressed and immutable — its own perfect
-raw store — so the transform's `models/raw_git/` Python models read it
-directly at build time, and every git-derived table shares one consistent
-snapshot of the clone.
+directory. **Git-side and mail-side data have no CSV landing layer at all**:
+the clone at `.cache/postgres.git` is content-addressed and immutable — its
+own perfect raw store — so the transform's `models/raw_git/` Python models
+read it directly at build time, and every git-derived table shares one
+consistent snapshot of the clone. Likewise the monthly mbox files at
+`.cache/mbox/` (immutable once a month is past) are decoded directly by
+`models/raw_mail/`. The mboxes replaced scraping the web archive's monthly
+index pages, which silently cap at 200 messages per page — the index route
+had lost ~28% of pgsql-bugs messages — and they carry full bodies and
+threading headers the indexes never had.
 
 Raw (`data/raw/`, from the release-notes scraper — rerun it to refresh):
 
@@ -72,6 +85,8 @@ models — rerun `dbt build` to change analysis rules without re-scraping):
 | `git_commits_enriched.csv` | one commit per branch | the commit-grain export the git face reads: UTC-day `commit_dt` plus the derived `is_plumbing` / `ai_credit` flags |
 | `fix_change_profiles.csv` | one distinct fix | what the fix's representative commit changed: files/lines, test + docs involvement, and the path-derived `dominant_subsystem` alongside the keyword category |
 | `category_vs_subsystem.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
+| `bug_report_outcomes.csv` | one BUG #NNNNN report | was the report acted upon (linked to a commit via its thread's Discussion: trailer or a bug-number mention), first linked commit day, report-to-fix latency |
+| `bug_reports_monthly.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
 
 ## Dashboards (`faces/`)
 
@@ -104,6 +119,13 @@ every object's name. Layers:
   `REL_1x_*` ref — verbatim strings, one consistent clone snapshot per
   build. Requires the clone (run `postgres_clone.py` or either scraper
   entry point first).
+- `models/raw_mail/` — Python model decoding the `.cache/mbox/` archives
+  via `transform/mailsource.py`: per message, the bare headers (RFC 2047
+  decoded), the Date header as an ISO string with its original offset,
+  and the first text body part. Splitting is on the archive's own
+  envelope line — stdlib `mailbox` oversplits on the `From <sha>` first
+  line of attached git patches. Requires the cache (run
+  `mailing_list_sync.py` first).
 - `models/staging/` — typed views over the raw CSVs and raw_git tables
   (`stg_*`). The CSV source reader restricts type-sniffing to
   BIGINT/DATE/VARCHAR so version strings like "15.10" can't collapse into
@@ -120,7 +142,7 @@ every object's name. Layers:
   order) and `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules).
 
-Every model is heavily tested — 245 data tests in all: column-level schema
+Every model is heavily tested — 294 data tests in all: column-level schema
 tests (uniqueness, not-null, relationships, accepted ranges on counts and
 dates, regex format checks) using `dbt_utils` and Metaplane's
 `dbt_expectations` (installed via `dbt deps`), plus seven singular
@@ -164,6 +186,12 @@ by the dbt tests themselves.
   staging (`_ts` columns, TIMESTAMPTZ); truncation to a calendar day
   (`_dt`) happens as far downstream as possible, at the point of use, and
   buckets by UTC day.
+- **Reports link to fixes exactly, not fuzzily**: commit messages carry
+  `Discussion: https://postgr.es/m/<message-id>` trailers (and sometimes
+  `Bug: #NNNNN`), extracted by `int_commit_discussions` /
+  `int_commit_bug_refs` from the bodies already in `raw`. A pgsql-bugs
+  report counts as acted upon when any message of its thread is cited by
+  a commit, or the bug number is mentioned.
 - **The scrapers are pure extraction** — fields land raw verbatim. Every
   derivation lives in the transform: plumbing/AI-credit flags
   (`int_git_commits`), CVE extraction (`int_fix_items`), release-tag

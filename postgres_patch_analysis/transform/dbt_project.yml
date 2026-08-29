@@ -21,6 +21,11 @@ models:
       # — the git side has no CSV landing layer; the clone is the raw store.
       +materialized: table
       +schema: raw
+    raw_mail:
+      # Python models decoding ../.cache/mbox mboxes at build time — the
+      # mail side has no CSV landing layer; the mbox cache is the raw store.
+      +materialized: table
+      +schema: raw
     staging:
       +materialized: view
       +schema: staging

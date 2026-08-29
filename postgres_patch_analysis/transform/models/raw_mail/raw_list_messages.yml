@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: raw_list_messages
+    description: >
+      One row per archived mailing-list message, decoded verbatim from the
+      monthly mbox cache at build time: message id (with angle brackets),
+      Date header as an ISO string with its original offset, RFC
+      2047-decoded from/subject headers, threading headers, and the first
+      text body part. All strings; typing happens in stg_list_messages.

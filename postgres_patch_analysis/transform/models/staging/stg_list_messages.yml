@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: stg_list_messages
+    description: >
+      One archived mailing-list message, typed from the mbox-decoded raw
+      layer: bare message id, TIMESTAMPTZ sent_ts from the Date header,
+      author name/email split, threading headers, full text body.
+      Grain = (list_name, message_id).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [list_name, message_id]
+    columns:
+      - name: list_name
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pgsql-bugs]
+      - name: message_id
+        tests: [not_null]
+      - name: sent_ts
+        description: >
+          The sender's own Date header — client clocks can be skewed, so
+          the accepted range is a loose sanity bound, not the archive
+          window.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "'2000-01-01'"
+                max_value: current_date + 2
+      - name: subject
+        description: >
+          NULL for the rare message sent with no Subject header (2 in the
+          corpus) — sender-controlled, so not tested not_null.
+      - name: body_text
+        description: >
+          NULL for the rare message with no text part (1 in the corpus) —
+          sender-controlled, so not tested not_null.
