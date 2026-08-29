@@ -4,8 +4,14 @@ models:
   - name: bug_report_outcomes
     description: >
       One row per numbered pgsql-bugs report ->
-      ../data/derived/bug_report_outcomes.csv: acted-upon flag, link kind,
-      first linked commit day, report-to-fix latency.
+      ../data/derived/bug_report_outcomes.csv: acted-upon flag + outcome
+      label, link kind, first linked commit day, report-to-fix latency,
+      and the shared classification windows the faces chart
+      (thread_size_window, days_to_commit_window).
+    tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (days_to_commit_window IS NOT NULL) = is_acted_upon
     columns:
       - name: bug_number
         tests: [unique, not_null]
@@ -14,3 +20,30 @@ models:
       - name: is_acted_upon
         tests:
           - not_null
+      - name: outcome
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [linked to a fix commit, no linked commit]
+      - name: thread_size_window
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "1: no replies"
+                  - "2: 2-3 messages"
+                  - "3: 4-10 messages"
+                  - "4: 11+ messages"
+      - name: days_to_commit_window
+        description: NULL when the report was never linked to a commit.
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - "1: same/next day"
+                  - "2: within a week"
+                  - "3: within a month"
+                  - "4: within 6 months"
+                  - "5: longer"
