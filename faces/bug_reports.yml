@@ -38,6 +38,64 @@ queries:
       FROM bug_reports_monthly
       ORDER BY 1
 
+  weekly_reports:
+    description: >
+      BUG #NNNNN reports opened per COMPLETE week over the last three
+      rolling months: the window starts at the first full week on or
+      after (today - 3 months) and ends with the last finished week, so
+      no partial week distorts the series. The week spine is generated so
+      a zero-report week still plots as 0.
+    source: warehouse
+    sql: |
+      SELECT
+        gsr.wk::DATE AS report_week,
+        'bug reports' AS series,
+        COUNT(bro.bug_number) AS report_cnt
+      FROM GENERATE_SERIES(
+        DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY,
+        DATE_TRUNC('week', CURRENT_DATE) - INTERVAL 7 DAY,
+        INTERVAL 7 DAY
+      ) AS gsr (wk)
+      LEFT JOIN bug_report_outcomes AS bro
+        ON DATE_TRUNC('week', bro.reported_dt) = gsr.wk
+      GROUP BY 1
+      ORDER BY 1
+
+  weekly_trend:
+    # both diagnostics are false positives here: the spine LEFT JOIN is
+    # aggregated to week grain, and AVG over the weekly COUNT is exactly
+    # what a rolling average is
+    ignore: ["WARN-FANOUT-RISK", "WARN-REAGGREGATION"]
+    description: >
+      Trailing 3-week average of complete-week report volume. The
+      underlying series starts two weeks before the displayed window so
+      every displayed point averages three real complete weeks.
+    source: warehouse
+    sql: |
+      WITH weekly AS (
+        SELECT
+          gsr.wk::DATE AS report_week,
+          COUNT(bro.bug_number) AS report_cnt
+        FROM GENERATE_SERIES(
+          DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) - INTERVAL 7 DAY,
+          DATE_TRUNC('week', CURRENT_DATE) - INTERVAL 7 DAY,
+          INTERVAL 7 DAY
+        ) AS gsr (wk)
+        LEFT JOIN bug_report_outcomes AS bro
+          ON DATE_TRUNC('week', bro.reported_dt) = gsr.wk
+        GROUP BY 1
+      )
+
+      SELECT
+        report_week,
+        '3-week average' AS series,
+        AVG(report_cnt) OVER (
+          ORDER BY report_week ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) AS avg_reports
+      FROM weekly
+      QUALIFY report_week >= (DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY)::DATE
+      ORDER BY 1
+
   monthly_acted:
     description: >
       Share of each month's reports later linked to a fix commit. The
@@ -137,6 +195,22 @@ charts:
         y: avg_reports
         color: series
 
+  weekly_reports:
+    type: bar
+    query: weekly_reports
+    title: "Bug reports per week"
+    subtitle: "Complete weeks only, last three rolling months, with a trailing 3-week average"
+    x: report_week
+    y: report_cnt
+    color: series
+    height: 300
+    layers:
+      - type: line
+        query: weekly_trend
+        x: report_week
+        y: avg_reports
+        color: series
+
   monthly_acted:
     type: line
     query: monthly_acted
@@ -195,6 +269,7 @@ charts:
 
 rows:
   - monthly_reports
+  - weekly_reports
   - monthly_acted
   - cols: [yearly_outcomes, yearly_latency]
   - cols: [fix_latency, thread_size]
