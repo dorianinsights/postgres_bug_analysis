@@ -9,6 +9,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path.cwd()))
 import pyarrow as pa
+
 from mailsource import list_message_records
 
 

@@ -3,3 +3,16 @@ venv/
 __pycache__/
 .DS_Store
 .env
+# postgres.git bare clone (recreated by postgres_clone.py) + mbox archives
+# (recreated by mailing_list_sync.py)
+.cache/
+# rendered dashboards (recreated by `dct render`) + dct serve state
+out/
+renders/
+.dft/
+.ruff_cache/
+*.duckdb
+# dbt scratch state (transform/ project)
+transform/target/
+transform/logs/
+transform/dbt_packages/

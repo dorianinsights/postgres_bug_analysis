@@ -1,5 +1,5 @@
-# Repo-wide lint / type-check config (no [project] section on purpose — this
-# repo is a collection of independent subprojects sharing one venv, not an
+# Repo-wide lint / type-check config (no [project] section on purpose — the
+# scrapers and transform helpers are scripts sharing one venv, not an
 # installable package). Mirrors the property_analysis setup: ruff for
 # format+lint and pyright for type checking, both enforced twice — a
 # post-edit hook per file (.claude/hooks/) and a blocking git pre-commit gate
@@ -13,14 +13,14 @@ typeCheckingMode = "strict"
 pythonVersion = "3.12"
 venvPath = "."
 venv = "venv"
-# Each subproject dir is its own script root (sibling imports like
-# scrape_release_notes_sgml -> scrape_git_commits resolve within it).
-extraPaths = ["postgres_patch_analysis", "postgres_patch_analysis/transform"]
+# transform/ scripts import corpus.py from the repo root; transform/ is its
+# own script root for the dbt Python models' sibling imports.
+extraPaths = [".", "transform"]
 
 [tool.ruff]
 target-version = "py312"
-# First-party roots (import sorting + first-party classification per subproject).
-src = ["postgres_patch_analysis"]
+# First-party roots (import sorting + first-party classification).
+src = [".", "transform"]
 extend-exclude = ["venv", "**/.cache", "**/out", "**/target", "**/dbt_packages"]
 # Apply excludes even to explicitly-passed paths (the post-edit hook passes
 # single files, which would otherwise bypass the exclusion).

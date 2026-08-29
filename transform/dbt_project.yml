@@ -1,6 +1,6 @@
-name: postgres_patch_analysis
+name: postgres_bug_analysis
 version: "1.0.0"
-profile: postgres_patch_analysis
+profile: postgres_bug_analysis
 
 flags:
   send_anonymous_usage_stats: false
@@ -15,7 +15,7 @@ clean-targets: [target]
 
 # One schema per layer (generate_schema_name.sql uses these names verbatim).
 models:
-  postgres_patch_analysis:
+  postgres_bug_analysis:
     raw_git:
       # Python models reading ../.cache/postgres.git directly at build time
       # — the git side has no CSV landing layer; the clone is the raw store.
@@ -46,5 +46,5 @@ models:
         auto_type_candidates: ["BIGINT", "DATE", "VARCHAR"]
 
 seeds:
-  postgres_patch_analysis:
+  postgres_bug_analysis:
     +schema: seeds

@@ -21,29 +21,29 @@ mailing_list_sync.py ──> .cache/mbox/ ────────────�
 ```bash
 # One-time setup (venv lives at the repo root; Python 3.10-3.13 — 3.14 not yet
 # supported by dbt-charts)
-python3.12 -m venv ../venv
-../venv/bin/pip install -r requirements.txt
+python3.12 -m venv venv
+./venv/bin/pip install -r requirements.txt
 
 # 1. Sync the postgres clone (first run: full bare clone, ~800MB) and
 #    extract the release notes from it (no HTTP; the SGML extractor also
 #    syncs the clone itself, so this is one step)
-../venv/bin/python scrape_release_notes_sgml.py
+./venv/bin/python scrape_release_notes_sgml.py
 
 #    Sync the pgsql-bugs mbox archives (full message bodies). Needs a free
 #    postgresql.org community account: put POSTGRES_COMM_USERNAME /
 #    POSTGRES_COMM_PASSWORD in .env (gitignored). Past months are cached
 #    forever; only the current month is re-fetched.
-../venv/bin/python mailing_list_sync.py
+./venv/bin/python mailing_list_sync.py
 
 # 2. Derive analysis datasets (dbt project; profiles.yml is local to the
 #    directory, so no ~/.dbt setup is needed; deps installs dbt_utils +
 #    dbt_expectations, one-time per clone)
-(cd transform && ../../venv/bin/dbt deps && ../../venv/bin/dbt build)
+(cd transform && ../venv/bin/dbt deps && ../venv/bin/dbt build)
 
 # 3. Visualize (run from this directory — dbt_charts.yml anchors the project)
-../venv/bin/dct validate faces/*.yml
-../venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html"
-../venv/bin/dct serve          # or: live preview in the browser
+./venv/bin/dct validate faces/*.yml
+./venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html"
+./venv/bin/dct serve          # or: live preview in the browser
 ```
 
 ## Data files (`data/`)

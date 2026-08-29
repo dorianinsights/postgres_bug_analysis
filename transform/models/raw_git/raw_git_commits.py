@@ -8,6 +8,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path.cwd()))
 import pyarrow as pa
+
 from gitsource import commit_records
 
 
