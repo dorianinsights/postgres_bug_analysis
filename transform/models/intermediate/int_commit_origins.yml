@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_commit_origins
+    description: >
+      One row per corpus commit hash with the origin its Discussion:
+      trailers resolve to — pgsql-bugs (bug-thread citation or Bug: #
+      trailer), pgsql-hackers, or unknown_or_internal (no trailer, an
+      uningested archive, or embargoed security work).
+    columns:
+      - name: commit_hash
+        tests: [unique, not_null]
+      - name: origin
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pgsql-bugs, pgsql-hackers, unknown_or_internal]

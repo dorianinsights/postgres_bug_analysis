@@ -30,10 +30,11 @@ python3.12 -m venv venv
 #    syncs the clone itself, so this is one step)
 ./venv/bin/python scrape_release_notes_sgml.py
 
-#    Sync the pgsql-bugs mbox archives (full message bodies). Needs a free
-#    postgresql.org community account: put POSTGRES_COMM_USERNAME /
-#    POSTGRES_COMM_PASSWORD in .env (gitignored). Past months are cached
-#    forever; only the current month is re-fetched.
+#    Sync the pgsql-bugs + pgsql-hackers mbox archives (full message
+#    bodies; hackers is ~3GB on first sync). Needs a free postgresql.org
+#    community account: put POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD
+#    in .env (gitignored). Past months are cached forever; only the
+#    current month is re-fetched.
 ./venv/bin/python mailing_list_sync.py
 
 # 2. Derive analysis datasets (dbt project; profiles.yml is local to the
@@ -64,7 +65,9 @@ consistent snapshot of the clone. Likewise the monthly mbox files at
 `models/raw_mail/`. The mboxes replaced scraping the web archive's monthly
 index pages, which silently cap at 200 messages per page — the index route
 had lost ~28% of pgsql-bugs messages — and they carry full bodies and
-threading headers the indexes never had.
+threading headers the indexes never had. pgsql-hackers joined pgsql-bugs
+in the sync so commit Discussion: trailers can be resolved to their
+source list (the origin-attribution models).
 
 Raw (`data/raw/`, from the release-notes scraper — rerun it to refresh):
 
@@ -91,6 +94,8 @@ rules without re-scraping; one `.csv` per mart, same name):
 | `category_vs_subsystem.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
 | `bug_report_outcomes.csv` | one BUG #NNNNN report | was the report acted upon (linked to a commit via its thread's Discussion: trailer or a bug-number mention), first linked commit day, report-to-fix latency |
 | `bug_reports_monthly.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
+| `fix_origins.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
+| `origin_activity_monthly.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
 
 ## Dashboards (`faces/`)
 
@@ -102,8 +107,13 @@ rules without re-scraping; one `.csv` per mart, same name):
   fixes, per-branch series, AI-credited commits (chart + full credit-line
   table), and the like-for-like release-cycle pace comparison.
 - `bug_reports.yml` — the pgsql-bugs view: monthly report volume with a
-  6-month average, acted-upon share, outcome and latency breakdowns,
-  discussion volume by outcome, and the most-discussed reports table.
+  6-month average, weekly volume with a 3-week average, acted-upon
+  share, outcome and latency breakdowns, discussion volume by outcome,
+  and the most-discussed reports table.
+- `origins.yml` — source attribution: fixes per wave by origin (counts
+  and share), cited discussion threads per month by source, AI-flagged
+  commits by origin — the grounding for report-volume -> fix-volume
+  projections.
 
 Rendered copies land in `out/` (gitignored; regenerate with `dct render`).
 

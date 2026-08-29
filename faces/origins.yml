@@ -1,0 +1,142 @@
+# Where PostgreSQL's fixes and development discussions actually come
+# from: filed pgsql-bugs reports vs pgsql-hackers threads vs work with no
+# public trail (embargoed security, uningested lists, no trailer).
+#
+# Wave bars use short "Mon YY" labels on a categorical axis with an
+# explicit chronological sort key (temporal bar axes label every bar with
+# wide two-line labels that collide at narrow widths). Monthly series use
+# areas — bars would label all ~58 months.
+title: "PostgreSQL Fix Origins"
+description: >
+  Source attribution for fixes and development activity: each fix and
+  master-branch commit is traced through its Discussion: trailers to
+  pgsql-bugs (or a Bug: # trailer), pgsql-hackers, or
+  unknown/other/internal when there is no public trail. Built to ground
+  projections of how bug-report volume translates into fix volume. Data
+  from the transform/ dbt project (fix_origins,
+  origin_activity_monthly).
+
+queries:
+  fix_origins:
+    ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the zero-fill spine is a deliberate cross join
+    description: >
+      Distinct fixes per scheduled wave by origin (out-of-band emergency
+      waves excluded — their tiny totals distort the shares). Short "Mon
+      YY" labels ride a categorical axis; wave_seq is the chronological
+      sort key.
+    source: warehouse
+    sql: |
+      -- zero-filled: every wave carries every origin so the chart sort
+      -- (which SUMS wave_seq over each wave's rows) stays chronological
+      -- regardless of how many origins a wave actually has
+      WITH waves AS (
+        SELECT DISTINCT wave_dt FROM fix_origins WHERE NOT is_out_of_band
+      ),
+      origins AS (
+        SELECT DISTINCT origin FROM fix_origins
+      )
+      SELECT
+        STRFTIME(wvs.wave_dt, '%b %y') AS wave,
+        EPOCH(wvs.wave_dt)::BIGINT AS wave_seq,
+        CASE org.origin
+          WHEN 'unknown_or_internal_security' THEN 'embargoed security'
+          WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
+          ELSE org.origin
+        END AS origin,
+        COALESCE(fxo.fix_cnt, 0) AS fix_cnt
+      FROM waves AS wvs
+      CROSS JOIN origins AS org
+      LEFT JOIN fix_origins AS fxo
+        ON fxo.wave_dt = wvs.wave_dt AND fxo.origin = org.origin
+      ORDER BY 2, 3
+
+  cited_threads:
+    description: Distinct discussion threads cited by master commits, per month by source.
+    source: warehouse
+    sql: |
+      SELECT
+        month_dt,
+        CASE origin
+          WHEN 'unknown_or_internal_security' THEN 'embargoed security'
+          WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
+          ELSE origin
+        END AS origin,
+        cited_thread_cnt
+      FROM origin_activity_monthly
+      ORDER BY 1, 2
+
+  ai_commits:
+    description: AI-flagged master commits per month by origin.
+    source: warehouse
+    sql: |
+      SELECT
+        month_dt,
+        CASE origin
+          WHEN 'unknown_or_internal_security' THEN 'embargoed security'
+          WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
+          ELSE origin
+        END AS origin,
+        ai_commit_cnt
+      FROM origin_activity_monthly
+      WHERE month_dt >= DATE '2026-01-01'
+      ORDER BY 1, 2
+
+charts:
+  fix_origin_counts:
+    type: bar
+    query: fix_origins
+    title: "Fix origins per wave"
+    subtitle: "Distinct fixes traced through Discussion: trailers to their source; out-of-band waves excluded"
+    x: wave
+    y: fix_cnt
+    color: origin
+    sort: { by: wave_seq, order: asc }
+    # string x would auto-flip horizontal; these are time series, keep vertical
+    style: { stack: zero, orientation: vertical }
+    height: 360
+
+  fix_origin_share:
+    type: bar
+    query: fix_origins
+    title: "Fix origin share per wave"
+    subtitle: "Same data, normalized; out-of-band waves excluded — pgsql-bugs supplies a quarter to a third"
+    x: wave
+    y: fix_cnt
+    color: origin
+    sort: { by: wave_seq, order: asc }
+    style:
+      orientation: vertical
+      stack: normalize
+      axis_y:
+        labels:
+          format: ".0%"
+    height: 360
+
+  cited_threads:
+    type: area
+    query: cited_threads
+    title: "Cited discussion threads per month, by source"
+    subtitle: "Distinct threads referenced by master commits' Discussion: trailers (UTC months)"
+    x: month_dt
+    y: cited_thread_cnt
+    color: origin
+    height: 340
+
+  ai_commits:
+    type: area
+    query: ai_commits
+    title: "AI-flagged commits per month, by origin"
+    subtitle: "Master commits crediting an AI tool; stacked, so the top edge is the monthly total"
+    x: month_dt
+    y: ai_commit_cnt
+    color: origin
+    # stacked (not the overlapping default) so the upper contour reads as
+    # the total AI-flagged count per month
+    style: { stack: zero }
+    height: 340
+
+rows:
+  - fix_origin_counts
+  - fix_origin_share
+  - cited_threads
+  - ai_commits

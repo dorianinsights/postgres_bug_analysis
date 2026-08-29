@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: fix_origins
+    description: >
+      Distinct fixes per wave split by origin (pgsql-bugs /
+      pgsql-hackers / unknown_or_internal) ->
+      ../data/derived/fix_origins.csv. Grain = (wave_dt, origin).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [wave_dt, origin]
+    columns:
+      - name: wave_dt
+        tests: [not_null]
+      - name: is_out_of_band
+        tests: [not_null]
+      - name: origin
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - pgsql-bugs
+                  - pgsql-hackers
+                  - unknown_or_internal_security
+                  - unknown_or_internal_not_security
+      - name: fix_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

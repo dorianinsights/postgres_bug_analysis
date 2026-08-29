@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: int_thread_sources
+    description: >
+      One row per distinct archived message id -> the mailing list that
+      claims it (pgsql-bugs wins over other lists for cross-posts).
+    columns:
+      - name: message_id
+        tests: [unique, not_null]
+      - name: source_list
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pgsql-bugs, pgsql-hackers]
