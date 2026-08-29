@@ -23,7 +23,7 @@ fit AS (
 latest AS (
   SELECT
     distinct_fix_cnt AS latest_fixes,
-    wave_dt + 91 AS projected_dt
+    wave_dt + {{ var('wave_cadence_days') }} AS projected_dt
   FROM fullq
   ORDER BY idx DESC
   LIMIT 1

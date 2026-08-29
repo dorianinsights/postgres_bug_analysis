@@ -1,0 +1,6 @@
+label,min_days,max_days
+1: same/next day,0,1
+2: within a week,2,7
+3: within a month,8,30
+4: within 6 months,31,180
+5: longer,181,

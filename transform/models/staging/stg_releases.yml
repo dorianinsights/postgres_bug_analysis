@@ -17,7 +17,7 @@ models:
           # The pipeline's version handling assumes one-part majors (PG 10+).
           - dbt_utils.accepted_range:
               arguments:
-                min_value: 10
+                min_value: "{{ var('test_floor_major') }}"
       - name: minor
         tests:
           - not_null
@@ -31,7 +31,7 @@ models:
           # can represent; ceiling: releases are historical facts.
           - dbt_utils.accepted_range:
               arguments:
-                min_value: "'2017-10-01'"
+                min_value: "{{ var('test_floor_release_dt') }}"
                 max_value: current_date
       - name: n_items
         tests:

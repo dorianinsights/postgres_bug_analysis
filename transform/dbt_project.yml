@@ -13,6 +13,26 @@ macro-paths: ["macros"]
 target-path: target
 clean-targets: [target]
 
+vars:
+  # -- Analysis parameters (change these and the results MEAN something
+  # different — treat edits like corpus.py changes: reviewed commits).
+  # A wave is out-of-band (emergency re-release) when its largest release
+  # has fewer items than this.
+  scheduled_wave_min_items: 20
+  # Quarterly wave cadence: where the projected next wave is placed.
+  wave_cadence_days: 91
+  # How many recent cycles the like-for-like pace comparison covers
+  # (the open cycle plus N-1 closed comparators).
+  pace_comparison_cycles: 3
+  # A wave's wrap tag is the latest tag within this many days before it.
+  wrap_tag_window_days: 7
+  # -- Loose sanity floors shared by the date/major range tests. These are
+  # deliberately NOT the corpus bounds (corpus.py owns those; a dbt copy
+  # could silently drift) — just "obviously wrong data" backstops.
+  test_floor_major: 10
+  test_floor_release_dt: "'2017-10-01'"
+  test_floor_git_ts: "'2016-10-01'"
+
 # One schema per layer (generate_schema_name.sql uses these names verbatim).
 models:
   postgres_bug_analysis:

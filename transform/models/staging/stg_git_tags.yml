@@ -23,7 +23,7 @@ models:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
-                min_value: 10
+                min_value: "{{ var('test_floor_major') }}"
       - name: minor
         tests:
           - not_null
@@ -35,5 +35,5 @@ models:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
-                min_value: "'2016-10-01'"
+                min_value: "{{ var('test_floor_git_ts') }}"
                 max_value: current_date + 2

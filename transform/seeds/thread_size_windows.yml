@@ -1,0 +1,22 @@
+version: 2
+
+seeds:
+  - name: thread_size_windows
+    description: >
+      Discussion-volume buckets for thread_size_window in
+      bug_report_outcomes — bounds and label defined together so they
+      cannot drift apart. Contiguous, non-overlapping message-count
+      ranges; max_messages NULL = unbounded. The numeric label prefix
+      makes a lexical sort the intended display order.
+    config:
+      column_types:
+        label: VARCHAR
+        min_messages: INTEGER
+        max_messages: INTEGER
+    columns:
+      - name: label
+        tests: [unique, not_null]
+      - name: min_messages
+        tests: [unique, not_null]
+      - name: max_messages
+        tests: [unique]

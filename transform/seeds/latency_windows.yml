@@ -1,0 +1,22 @@
+version: 2
+
+seeds:
+  - name: latency_windows
+    description: >
+      Report-to-first-commit latency buckets for days_to_commit_window in
+      bug_report_outcomes — bounds and label defined together so they
+      cannot drift apart. Contiguous, non-overlapping day ranges;
+      max_days NULL = unbounded. The numeric label prefix makes a lexical
+      sort the intended display order.
+    config:
+      column_types:
+        label: VARCHAR
+        min_days: INTEGER
+        max_days: INTEGER
+    columns:
+      - name: label
+        tests: [unique, not_null]
+      - name: min_days
+        tests: [unique, not_null]
+      - name: max_days
+        tests: [unique]

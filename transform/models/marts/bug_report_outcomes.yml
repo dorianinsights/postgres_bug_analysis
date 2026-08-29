@@ -6,8 +6,8 @@ models:
       One row per numbered pgsql-bugs report ->
       ../data/derived/bug_report_outcomes.csv: acted-upon flag + outcome
       label, link kind, first linked commit day, report-to-fix latency,
-      and the shared classification windows the faces chart
-      (thread_size_window, days_to_commit_window).
+      and the shared classification windows the faces chart (labels from
+      the thread_size_windows / latency_windows seeds).
     tests:
       - dbt_utils.expression_is_true:
           arguments:
@@ -29,21 +29,14 @@ models:
       - name: thread_size_window
         tests:
           - not_null
-          - accepted_values:
+          - relationships:
               arguments:
-                values:
-                  - "1: no replies"
-                  - "2: 2-3 messages"
-                  - "3: 4-10 messages"
-                  - "4: 11+ messages"
+                to: ref('thread_size_windows')
+                field: label
       - name: days_to_commit_window
         description: NULL when the report was never linked to a commit.
         tests:
-          - accepted_values:
+          - relationships:
               arguments:
-                values:
-                  - "1: same/next day"
-                  - "2: within a week"
-                  - "3: within a month"
-                  - "4: within 6 months"
-                  - "5: longer"
+                to: ref('latency_windows')
+                field: label

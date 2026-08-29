@@ -12,7 +12,7 @@ WITH sched_waves AS (
   FROM {{ ref('int_wave_summary') }}
   WHERE NOT is_out_of_band
   ORDER BY wave_dt DESC
-  LIMIT 3  -- n_cycles: the open cycle plus two closed comparators
+  LIMIT {{ var('pace_comparison_cycles') }}  -- the open cycle plus the closed comparators
 ),
 
 wraps AS (
@@ -21,7 +21,7 @@ wraps AS (
     MAX((tag.tag_ts AT TIME ZONE 'utc')::DATE) AS cycle_start_dt
   FROM sched_waves AS swv
   INNER JOIN {{ ref('stg_git_tags') }} AS tag
-    ON (tag.tag_ts AT TIME ZONE 'utc')::DATE BETWEEN swv.wave_dt - 7 AND swv.wave_dt
+    ON (tag.tag_ts AT TIME ZONE 'utc')::DATE BETWEEN swv.wave_dt - {{ var('wrap_tag_window_days') }} AND swv.wave_dt
   GROUP BY ALL
 ),
 

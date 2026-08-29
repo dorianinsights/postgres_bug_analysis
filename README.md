@@ -152,11 +152,22 @@ every object's name. Layers:
   marts. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
   which downstream writers silently turn into DOUBLE — cast count-like
   sums to `::BIGINT` at the aggregation site.
-- `seeds/` — the categorization taxonomy: `categories` (bucket + display
-  order) and `category_rules` (ordered case-insensitive RE2 patterns; lowest
-  matching `match_order` wins, CVE items bypass the rules).
+- `seeds/` — the classification data: `categories` (bucket + display
+  order), `category_rules` (ordered case-insensitive RE2 patterns; lowest
+  matching `match_order` wins, CVE items bypass the rules),
+  `subsystem_rules` (path patterns), and the range-bucket tables
+  `latency_windows` / `thread_size_windows` (each range and its label
+  defined together; the marts join them, and relationships tests replace
+  duplicated label lists).
 
-Every model is heavily tested — 279 data tests in all: column-level schema
+Analysis parameters live as dbt vars in `dbt_project.yml`
+(`scheduled_wave_min_items`, `wave_cadence_days`, `pace_comparison_cycles`,
+`wrap_tag_window_days`) plus the shared loose sanity floors the range tests
+use (`test_floor_major`, `test_floor_release_dt`, `test_floor_git_ts` —
+deliberately NOT the corpus bounds; `corpus.py` owns those). Editing a
+parameter changes what the results mean — treat it like a corpus change.
+
+Every model is heavily tested — 295 data tests in all: column-level schema
 tests (uniqueness, not-null, relationships, accepted ranges on counts and
 dates, regex format checks) using `dbt_utils` and Metaplane's
 `dbt_expectations` (installed via `dbt deps`), plus seven singular
