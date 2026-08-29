@@ -23,7 +23,7 @@ queries:
         'bug reports' AS series,
         report_cnt
       FROM bug_reports_monthly
-      ORDER BY report_month
+      ORDER BY 1
 
   monthly_trend:
     description: Six-month centered moving average of report volume.
@@ -36,7 +36,7 @@ queries:
           ORDER BY report_month_dt ROWS BETWEEN 3 PRECEDING AND 2 FOLLOWING
         ) AS avg_reports
       FROM bug_reports_monthly
-      ORDER BY report_month
+      ORDER BY 1
 
   monthly_acted:
     description: >
@@ -49,7 +49,7 @@ queries:
         'acted upon (%)' AS series,
         acted_upon_pct AS acted_upon_pct
       FROM bug_reports_monthly
-      ORDER BY report_month
+      ORDER BY 1
 
   yearly_outcomes:
     description: Reports vs acted-upon reports per calendar year.
@@ -59,35 +59,24 @@ queries:
         CAST(YEAR(reported_dt) AS VARCHAR) AS report_year,
         outcome,
         COUNT(*) AS reports
-      FROM (
-        SELECT
-          reported_dt,
-          CASE WHEN is_acted_upon THEN 'linked to a fix commit' ELSE 'no linked commit' END AS outcome
-        FROM bug_report_outcomes
-      ) AS bro
-      GROUP BY report_year, outcome
-      ORDER BY report_year, outcome
+      FROM bug_report_outcomes
+      GROUP BY 1, 2
+      ORDER BY 1, 2
 
   fix_latency:
     description: >
-      Report-to-first-commit latency for acted-upon reports (numbered
-      labels keep the buckets in order).
+      Report-to-first-commit latency for acted-upon reports, using the
+      mart's days_to_commit_window buckets.
     source: warehouse
     sql: |
       SELECT
-        CASE
-          WHEN days_to_commit <= 1 THEN '1: same/next day'
-          WHEN days_to_commit <= 7 THEN '2: within a week'
-          WHEN days_to_commit <= 30 THEN '3: within a month'
-          WHEN days_to_commit <= 180 THEN '4: within 6 months'
-          ELSE '5: longer'
-        END AS latency_bucket,
+        days_to_commit_window,
         'acted-upon reports' AS series,
         COUNT(*) AS reports
       FROM bug_report_outcomes
       WHERE is_acted_upon
-      GROUP BY latency_bucket
-      ORDER BY latency_bucket
+      GROUP BY 1
+      ORDER BY 1
 
   yearly_latency:
     description: Median days from report to first linked commit, per year.
@@ -99,8 +88,8 @@ queries:
         MEDIAN(days_to_commit) AS median_days
       FROM bug_report_outcomes
       WHERE is_acted_upon
-      GROUP BY report_year
-      ORDER BY report_year
+      GROUP BY 1
+      ORDER BY 1
 
   thread_size:
     description: >
@@ -109,17 +98,12 @@ queries:
     source: warehouse
     sql: |
       SELECT
-        CASE
-          WHEN thread_message_cnt = 1 THEN '1: no replies'
-          WHEN thread_message_cnt <= 3 THEN '2: 2-3 messages'
-          WHEN thread_message_cnt <= 10 THEN '3: 4-10 messages'
-          ELSE '4: 11+ messages'
-        END AS thread_bucket,
-        CASE WHEN is_acted_upon THEN 'linked to a fix commit' ELSE 'no linked commit' END AS outcome,
+        thread_size_window,
+        outcome,
         COUNT(*) AS reports
       FROM bug_report_outcomes
-      GROUP BY thread_bucket, outcome
-      ORDER BY thread_bucket, outcome
+      GROUP BY 1, 2
+      ORDER BY 1, 2
 
   most_discussed:
     description: The 15 most-discussed bug reports in the corpus.
@@ -132,7 +116,8 @@ queries:
         days_to_commit AS days_to_fix,
         SUBSTR(subject, 1, 90) AS subject
       FROM bug_report_outcomes
-      ORDER BY thread_message_cnt DESC, bug_number
+      -- bug_number (the tiebreak) is not in the select list, so it stays named
+      ORDER BY 2 DESC, bug_number
       LIMIT 15
 
 charts:
@@ -177,7 +162,7 @@ charts:
     query: fix_latency
     title: "How fast fixes land"
     subtitle: "Days from report to its first linked commit; most fixes land within a week"
-    x: latency_bucket
+    x: days_to_commit_window
     y: reports
     color: series
     height: 340
@@ -197,7 +182,7 @@ charts:
     query: thread_size
     title: "Discussion volume by outcome"
     subtitle: "Reports that get fixed draw longer threads"
-    x: thread_bucket
+    x: thread_size_window
     y: reports
     color: outcome
     style: { stack: none }

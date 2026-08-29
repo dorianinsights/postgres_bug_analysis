@@ -19,8 +19,8 @@ queries:
         COUNT(DISTINCT LOWER(TRIM(subject))) AS distinct_fix_cnt
       FROM git_commits_enriched
       WHERE branch != 'master' AND NOT is_plumbing
-      GROUP BY quarter
-      ORDER BY quarter
+      GROUP BY 1
+      ORDER BY 1
 
   quarter_pad:
     description: Invisible x-domain padding points for the quarterly bar chart.
@@ -44,8 +44,8 @@ queries:
         COUNT(*) AS fix_commits
       FROM git_commits_enriched
       WHERE branch != 'master' AND NOT is_plumbing
-      GROUP BY quarter, branch
-      ORDER BY quarter, branch
+      GROUP BY 1, 2
+      ORDER BY 1, 2
 
   ai_credited:
     description: >
@@ -59,8 +59,8 @@ queries:
         COUNT(DISTINCT LOWER(TRIM(subject))) AS ai_credited_commits
       FROM git_commits_enriched
       WHERE ai_credit IS NOT NULL
-      GROUP BY quarter
-      ORDER BY quarter
+      GROUP BY 1
+      ORDER BY 1
 
   ai_pad:
     description: Invisible x-domain padding points for the AI-credited bar chart.
@@ -82,8 +82,8 @@ queries:
         MIN(ai_credit) AS credit_line
       FROM git_commits_enriched
       WHERE ai_credit IS NOT NULL
-      GROUP BY subject
-      ORDER BY commit_dt DESC
+      GROUP BY 2
+      ORDER BY 1 DESC
 
   cycle_pace:
     description: >
@@ -98,7 +98,7 @@ queries:
       SELECT CAST(cycle_start_dt AS VARCHAR) AS cycle, 'full cycle' AS pace_window, full_distinct_fix_cnt AS fixes
       FROM git_cycle_pace
       WHERE NOT is_open_cycle
-      ORDER BY cycle, pace_window
+      ORDER BY 1, 2
 
 charts:
   quarterly_distinct:

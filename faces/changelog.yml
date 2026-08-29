@@ -21,7 +21,7 @@ queries:
     sql: |
       SELECT wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt
       FROM wave_summary
-      ORDER BY wave_dt DESC
+      ORDER BY 1 DESC
       LIMIT 1
 
   releases_by_branch:
@@ -36,7 +36,8 @@ queries:
         n_items
       FROM releases
       WHERE minor > 0 AND n_items >= 20
-      ORDER BY date, major
+      -- major (the tiebreak) is not in the select list, so it stays named
+      ORDER BY 1, major
 
   wave_categories:
     description: >
@@ -47,7 +48,7 @@ queries:
       SELECT wave_dt, category, category_order, fix_cnt
       FROM wave_categories
       WHERE NOT is_out_of_band
-      ORDER BY wave_dt, category_order
+      ORDER BY 1, 3
 
   wave_pad:
     description: Invisible x-domain padding points for the scheduled-wave bar charts.
@@ -66,7 +67,7 @@ queries:
       SELECT wave_dt, category, category_order, fix_cnt
       FROM wave_categories
       WHERE is_out_of_band
-      ORDER BY wave_dt, category_order
+      ORDER BY 1, 3
 
   oob_pad:
     description: Invisible x-domain padding points for the out-of-band bar chart.
@@ -98,7 +99,7 @@ queries:
       FROM wave_categories
       WHERE NOT is_out_of_band
         AND category IN ('Security (CVE)', 'Security hardening (no CVE)')
-      ORDER BY wave_dt, category_order
+      ORDER BY 1, 3
 
   contributors_by_wave:
     description: >
@@ -108,12 +109,12 @@ queries:
     sql: |
       SELECT
         wc.wave_dt,
-        CASE WHEN wc.is_first_wave = 1 THEN 'first-time' ELSE 'returning' END AS cohort,
+        CASE WHEN wc.is_first_wave THEN 'first-time' ELSE 'returning' END AS cohort,
         COUNT(DISTINCT wc.contributor) AS contributors
       FROM wave_contributors AS wc
       WHERE NOT wc.is_out_of_band
-      GROUP BY wave_dt, cohort
-      ORDER BY wave_dt, cohort DESC
+      GROUP BY 1, 2
+      ORDER BY 1, 2 DESC
 
   contrib_pad:
     description: Invisible x-domain padding points for the contributors bar chart.
@@ -151,7 +152,7 @@ queries:
              fit_all.a + fit_all.b * fullq.slot AS trend_all,
              fit_ex.a + fit_ex.b * fullq.slot AS trend_excl_latest
       FROM fullq, fit_all, fit_ex
-      ORDER BY fullq.wave_dt
+      ORDER BY 1
 
   security_trend:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]
@@ -176,7 +177,7 @@ queries:
              fit_all.a + fit_all.b * fullq.slot AS trend_all,
              fit_ex.a + fit_ex.b * fullq.slot AS trend_excl_latest
       FROM fullq, fit_all, fit_ex
-      ORDER BY fullq.wave_dt
+      ORDER BY 1
 
   branch_trend:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]
@@ -200,7 +201,7 @@ queries:
              fit_all.a + fit_all.b * sched.t AS trend_all,
              fit_ex.a + fit_ex.b * sched.t AS trend_excl_latest
       FROM sched, fit_all, fit_ex
-      ORDER BY sched.date
+      ORDER BY 1
 
   wave_totals:
     description: Distinct fixes per full-quarter wave (the projection base series).
@@ -209,7 +210,7 @@ queries:
       SELECT wave_dt, distinct_fix_cnt
       FROM wave_summary
       WHERE NOT is_out_of_band
-      ORDER BY wave_dt
+      ORDER BY 1
 
   projections:
     description: Next-wave scenario projections derived from the wave series.
@@ -217,6 +218,7 @@ queries:
     sql: |
       SELECT projected_dt, scenario, distinct_fix_cnt, assumption
       FROM projections
+      -- scenario_order is not in the select list, so it stays named
       ORDER BY scenario_order
 
   wave_table:
@@ -226,7 +228,7 @@ queries:
       SELECT wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt,
              CASE WHEN is_out_of_band THEN 'yes' ELSE '' END AS is_out_of_band
       FROM wave_summary
-      ORDER BY wave_dt DESC
+      ORDER BY 1 DESC
 
 charts:
   kpi_fixes:
