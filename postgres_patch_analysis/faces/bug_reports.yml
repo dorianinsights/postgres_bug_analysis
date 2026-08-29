@@ -1,0 +1,216 @@
+# pgsql-bugs report volume and outcomes.
+#
+# The monthly volume chart is an area, not a bar: bars on a temporal axis
+# label every bar (60 monthly labels collide into mush), while line/area
+# charts get sparse auto time ticks. Categorical bar charts are unaffected.
+title: "PostgreSQL Bug Reports"
+description: >
+  What arrives on the pgsql-bugs mailing list and what happens to it:
+  monthly report volume, how many reports get acted upon (linked to a fix
+  commit via the thread's Discussion: trailer or a Bug: #NNNNN mention),
+  and how fast. Data files are produced by mailing_list_sync.py + the
+  transform/ dbt project. Acted-upon is a LOWER BOUND (only exact links
+  count), and recent months are right-censored — fixes for fresh reports
+  haven't landed yet.
+
+queries:
+  monthly_reports:
+    description: BUG #NNNNN reports opened per month.
+    source: ../data/derived/bug_reports_monthly.csv
+    sql: |
+      SELECT
+        CAST(report_month_dt AS DATE) AS report_month,
+        'bug reports' AS series,
+        n_reports
+      FROM bug_reports_monthly
+      ORDER BY report_month
+
+  monthly_trend:
+    description: Six-month centered moving average of report volume.
+    source: ../data/derived/bug_reports_monthly.csv
+    sql: |
+      SELECT
+        CAST(report_month_dt AS DATE) AS report_month,
+        '6-month average' AS series,
+        AVG(n_reports) OVER (
+          ORDER BY report_month_dt ROWS BETWEEN 3 PRECEDING AND 2 FOLLOWING
+        ) AS avg_reports
+      FROM bug_reports_monthly
+      ORDER BY report_month
+
+  monthly_acted:
+    description: >
+      Share of each month's reports later linked to a fix commit. The
+      trailing months sag because their fixes haven't landed yet.
+    source: ../data/derived/bug_reports_monthly.csv
+    sql: |
+      SELECT
+        CAST(report_month_dt AS DATE) AS report_month,
+        'acted upon (%)' AS series,
+        CAST(pct_acted_upon AS DOUBLE) AS pct_acted_upon
+      FROM bug_reports_monthly
+      ORDER BY report_month
+
+  yearly_outcomes:
+    description: Reports vs acted-upon reports per calendar year.
+    source: ../data/derived/bug_report_outcomes.csv
+    sql: |
+      SELECT
+        CAST(YEAR(CAST(reported_dt AS DATE)) AS VARCHAR) AS report_year,
+        outcome,
+        COUNT(*) AS reports
+      FROM (
+        SELECT
+          reported_dt,
+          CASE WHEN acted_upon = 1 THEN 'linked to a fix commit' ELSE 'no linked commit' END AS outcome
+        FROM bug_report_outcomes
+      ) AS bro
+      GROUP BY report_year, outcome
+      ORDER BY report_year, outcome
+
+  fix_latency:
+    description: >
+      Report-to-first-commit latency for acted-upon reports (numbered
+      labels keep the buckets in order).
+    source: ../data/derived/bug_report_outcomes.csv
+    sql: |
+      SELECT
+        CASE
+          WHEN days_to_commit <= 1 THEN '1: same/next day'
+          WHEN days_to_commit <= 7 THEN '2: within a week'
+          WHEN days_to_commit <= 30 THEN '3: within a month'
+          WHEN days_to_commit <= 180 THEN '4: within 6 months'
+          ELSE '5: longer'
+        END AS latency_bucket,
+        'acted-upon reports' AS series,
+        COUNT(*) AS reports
+      FROM bug_report_outcomes
+      WHERE acted_upon = 1
+      GROUP BY latency_bucket
+      ORDER BY latency_bucket
+
+  yearly_latency:
+    description: Median days from report to first linked commit, per year.
+    source: ../data/derived/bug_report_outcomes.csv
+    sql: |
+      SELECT
+        CAST(YEAR(CAST(reported_dt AS DATE)) AS VARCHAR) AS report_year,
+        'median days to commit' AS series,
+        MEDIAN(days_to_commit) AS median_days
+      FROM bug_report_outcomes
+      WHERE acted_upon = 1
+      GROUP BY report_year
+      ORDER BY report_year
+
+  thread_size:
+    description: >
+      How much discussion a report draws, split by outcome — acted-upon
+      reports have longer threads.
+    source: ../data/derived/bug_report_outcomes.csv
+    sql: |
+      SELECT
+        CASE
+          WHEN n_thread_messages = 1 THEN '1: no replies'
+          WHEN n_thread_messages <= 3 THEN '2: 2-3 messages'
+          WHEN n_thread_messages <= 10 THEN '3: 4-10 messages'
+          ELSE '4: 11+ messages'
+        END AS thread_bucket,
+        CASE WHEN acted_upon = 1 THEN 'linked to a fix commit' ELSE 'no linked commit' END AS outcome,
+        COUNT(*) AS reports
+      FROM bug_report_outcomes
+      GROUP BY thread_bucket, outcome
+      ORDER BY thread_bucket, outcome
+
+  most_discussed:
+    description: The 15 most-discussed bug reports in the corpus.
+    source: ../data/derived/bug_report_outcomes.csv
+    sql: |
+      SELECT
+        CAST(reported_dt AS DATE) AS reported,
+        n_thread_messages AS messages,
+        CASE WHEN acted_upon = 1 THEN 'fixed' ELSE '-' END AS outcome,
+        days_to_commit AS days_to_fix,
+        SUBSTR(subject, 1, 90) AS subject
+      FROM bug_report_outcomes
+      ORDER BY n_thread_messages DESC, bug_number
+      LIMIT 15
+
+charts:
+  monthly_reports:
+    type: area
+    query: monthly_reports
+    title: "Bug reports per month"
+    subtitle: "One BUG #NNNNN form submission per report, pgsql-bugs since Oct 2021"
+    x: report_month
+    y: n_reports
+    color: series
+    height: 380
+    layers:
+      - type: line
+        query: monthly_trend
+        x: report_month
+        y: avg_reports
+        color: series
+
+  monthly_acted:
+    type: line
+    query: monthly_acted
+    title: "Reports acted upon, by month"
+    subtitle: "Lower bound (exact commit links only); trailing months right-censored"
+    x: report_month
+    y: pct_acted_upon
+    color: series
+    height: 340
+
+  yearly_outcomes:
+    type: bar
+    query: yearly_outcomes
+    title: "Report outcomes per year"
+    subtitle: "Roughly one in four reports ends up linked to a fix commit"
+    x: report_year
+    y: reports
+    color: outcome
+    height: 340
+
+  fix_latency:
+    type: bar
+    query: fix_latency
+    title: "How fast fixes land"
+    subtitle: "Days from report to its first linked commit; most fixes land within a week"
+    x: latency_bucket
+    y: reports
+    color: series
+    height: 340
+
+  yearly_latency:
+    type: bar
+    query: yearly_latency
+    title: "Median report-to-fix latency per year"
+    subtitle: "Acted-upon reports only"
+    x: report_year
+    y: median_days
+    color: series
+    height: 340
+
+  thread_size:
+    type: bar
+    query: thread_size
+    title: "Discussion volume by outcome"
+    subtitle: "Reports that get fixed draw longer threads"
+    x: thread_bucket
+    y: reports
+    color: outcome
+    style: { stack: none }
+    height: 340
+
+  most_discussed:
+    type: table
+    query: most_discussed
+    title: "Most-discussed bug reports"
+
+rows:
+  - monthly_reports
+  - monthly_acted
+  - cols: [yearly_outcomes, yearly_latency]
+  - cols: [fix_latency, thread_size]
+  - most_discussed
