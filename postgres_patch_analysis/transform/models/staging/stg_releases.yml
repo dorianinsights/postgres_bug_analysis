@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: stg_releases
+    description: One minor release, typed. Grain = version.
+    columns:
+      - name: version
+        tests: [unique, not_null]
+      - name: release_date
+        tests: [not_null]
+      - name: n_items
+        tests: [not_null]

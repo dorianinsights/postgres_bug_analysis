@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: git_cycle_pace
+    description: >
+      Distinct stable-branch fixes in each recent cycle's first N days
+      (N = the open cycle's age) -> ../data/derived/git_cycle_pace.csv.
+    columns:
+      - name: cycle_start
+        tests: [unique, not_null]
+      - name: distinct_fixes_early
+        tests: [not_null]

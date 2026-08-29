@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: wave_summary
+    description: >
+      One same-day release wave -> ../data/derived/wave_summary.csv. Distinct
+      fix count (backpatched duplicates collapsed across branches), CVE
+      count, security count, out-of-band + partial-window flags.
+    columns:
+      - name: wave_date
+        tests: [unique, not_null]
+      - name: distinct_fixes
+        tests: [not_null]
+      - name: out_of_band
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]

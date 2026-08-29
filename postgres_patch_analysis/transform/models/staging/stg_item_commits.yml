@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: stg_item_commits
+    description: >
+      One (item, branch-commit) annotation from the SGML comment blocks.
+      Grain = (version, item_index, branch, commit_hash) — an item can fold
+      several commits, including more than one on the same branch
+      (follow-up fixes).
+    tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [version, item_index, branch, commit_hash]
+    columns:
+      - name: commit_hash
+        tests: [not_null]

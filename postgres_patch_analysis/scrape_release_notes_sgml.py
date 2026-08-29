@@ -8,9 +8,9 @@ branch each fix landed on, with commit hash and timestamp. This scraper reads
 those files straight out of the local metadata clone (no HTTP at all) and
 persists:
 
-- data/releases.csv       same schema as scrape_release_notes.py
-- data/release_items.csv  same schema as scrape_release_notes.py
-- data/item_commits.csv   one row per (item, branch-commit): the ground-truth
+- data/raw/releases.csv       same schema as scrape_release_notes.py
+- data/raw/release_items.csv  same schema as scrape_release_notes.py
+- data/raw/item_commits.csv   one row per (item, branch-commit): the ground-truth
                           mapping from changelog items to git commits
 
 This is the primary release-notes source; the HTML scraper is retained as an
@@ -156,7 +156,7 @@ def parse_major(major: int) -> list[ParsedRelease]:
 
 
 def main() -> None:
-    DATA_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     ensure_clone()
 
     releases: list[ReleaseRow] = []

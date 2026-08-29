@@ -8,8 +8,8 @@ Three explicit stages, each re-runnable on its own:
 
 ```
 scrape_release_notes_sgml.py ─┐
-                              ├─> data/*.csv ──> build_datasets.py ──> data/*.csv ──> faces/*.yml (dct)
-scrape_git_commits.py ────────┘    (raw)                                (derived)      (visualization)
+                              ├─> data/raw/*.csv ──> transform/ (dbt+DuckDB) ──> data/derived/*.csv ──> faces/*.yml (dct)
+scrape_git_commits.py ────────┘    (scraper output)                              (mart output)          (visualization)
 ```
 
 ## Quickstart
@@ -25,8 +25,9 @@ python3.12 -m venv ../venv
 ../venv/bin/python scrape_git_commits.py
 ../venv/bin/python scrape_release_notes_sgml.py
 
-# 2. Derive analysis datasets
-../venv/bin/python build_datasets.py
+# 2. Derive analysis datasets (dbt project; profiles.yml is local to the
+#    directory, so no ~/.dbt setup is needed)
+(cd transform && ../../venv/bin/dbt build)
 
 # 3. Visualize (run from this directory — dbt_charts.yml anchors the project)
 ../venv/bin/dct validate faces/*.yml
@@ -36,7 +37,12 @@ python3.12 -m venv ../venv
 
 ## Data files (`data/`)
 
-Raw (from the scrapers — rerun the scraper to refresh):
+Two subdirectories, one per pipeline direction: `data/raw/` is written by the
+scrapers and read by the dbt sources; `data/derived/` is written by the dbt
+external mart models and read by the faces (which also read `raw/` directly
+for commit-level charts). Nothing writes and reads the same directory.
+
+Raw (`data/raw/`, from the scrapers — rerun the scraper to refresh):
 
 | File | Grain | Source |
 |---|---|---|
@@ -46,13 +52,14 @@ Raw (from the scrapers — rerun the scraper to refresh):
 | `git_commits.csv` | one commit per branch | postgres.git `REL_15..18_STABLE` (post-`.0` backpatches) + `master`, with plumbing flag and any AI-tool credit line from the message body |
 | `git_tags.csv` | one minor-release tag | postgres.git `REL_1x_y` tags (tag date = the wrap moment) |
 
-Derived (from `build_datasets.py` — rerun it to change analysis rules without
-re-scraping):
+Derived (`data/derived/`, written by the `transform/` dbt project's external
+models — rerun `dbt build` to change analysis rules without re-scraping):
 
 | File | Grain | Notes |
 |---|---|---|
+| `fix_items.csv` | one distinct fix per wave | the item-grain fact the wave rollups aggregate: the deduped representative item with category, CVEs, and backpatch breadth (`n_branch_items`) |
 | `wave_summary.csv` | one same-day release wave | distinct fixes (deduped across branches), CVEs, security count, out-of-band + partial-window flags |
-| `wave_categories.csv` | (wave, category) | keyword-rule buckets from categorize.py; CVE / hardening checked first |
+| `wave_categories.csv` | (wave, category) | keyword-rule buckets from the `category_rules` seed; CVE / hardening checked first |
 | `wave_contributors.csv` | (wave, contributor) | credits parsed from the notes' trailing "(Name, Name)" lists, with first-seen wave |
 | `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
 | `git_cycle_pace.csv` | one release cycle | distinct fixes in each cycle's first N days (N = the open cycle's age) vs full totals |
@@ -69,13 +76,45 @@ re-scraping):
 
 Rendered copies land in `out/` (gitignored; regenerate with `dct render`).
 
+## Transform (`transform/`)
+
+A dbt project targeting DuckDB (dbt-duckdb) — run `dbt build` from inside
+`transform/`. The raw CSVs are read in place as external sources (nothing is
+loaded into the scratch `.duckdb` file), and the derived CSVs are written by
+`external`-materialized mart models to `data/derived/` — the five files
+build_datasets.py used to produce (same columns, so the faces don't know the
+producer changed) plus the item-grain `fix_items.csv`. Layers:
+
+- `models/staging/` — typed views over the raw CSVs (`stg_*`). The source
+  reader restricts type-sniffing to BIGINT/DATE/VARCHAR so version strings
+  like "15.10" can't collapse into doubles.
+- `models/intermediate/` — the analysis steps as tables: `int_waves` (wave
+  grain + flags), `int_fix_items` (fix items + dedup keys), `int_fix_groups`
+  (cross-branch dedup as recursive-CTE connected components), `int_fix_reps`
+  (one categorized representative per distinct fix), `int_wave_summary`.
+- `models/marts/` — the external models, each a `-> data/derived/*.csv` writer:
+  the item-grain `fix_items` fact plus the five wave/projection/pace
+  rollups.
+- `seeds/` — the categorization taxonomy: `categories` (bucket + display
+  order) and `category_rules` (ordered case-insensitive RE2 patterns; lowest
+  matching `match_order` wins, CVE items bypass the rules).
+
+Every model carries schema tests (uniqueness, not-null, relationships,
+accepted values — 66 in all), so `dbt build` is also the validation pass.
+This project replaced `build_datasets.py` + `categorize.py` on 2026-08-28;
+at cutover every derived CSV was verified field-identical against the
+Python implementation's output (the only byte difference: the csv module
+wrote CRLF line endings, DuckDB writes LF).
+
 ## Linting & type checking
 
 Repo-wide (config in the repo-root `pyproject.toml`, mirroring
 property_analysis): `ruff` (format + lint) and `pyright` (strict mode, all files).
 Enforced twice — per-edit via `.claude/hooks/` and at commit time by the
 blocking pre-commit gate (`.pre-commit-config.yaml`; one-time setup:
-`./venv/bin/pre-commit install`).
+`./venv/bin/pre-commit install`). SQL style for the dbt models follows the
+repo-root `.sqlfluff` (duckdb dialect); correctness of the models is covered
+by the dbt tests themselves.
 
 ## Analysis conventions
 
@@ -87,9 +126,11 @@ blocking pre-commit gate (`.pre-commit-config.yaml`; one-time setup:
   routine refreshes — both excluded.
 - A wave is **out-of-band** (emergency re-release) when its largest release has
   fewer than 20 items; out-of-band waves are excluded from trend/pace series.
-- Cross-branch dedup key: item summary lowercased, whitespace collapsed, "§"
-  footnote markers stripped (per-branch link counts would otherwise
-  double-count the same fix).
+- Cross-branch dedup: two items in a wave are the same fix when EITHER their
+  normalized summary text (lowercased, whitespace collapsed, "§" markers
+  stripped) OR their exact annotated commit-hash set matches, transitively
+  (connected components in `int_fix_groups.sql` — its header comment
+  documents the four real-world cases behind the rule).
 - The corpus's first wave (15.1, Nov 2022) accumulated only ~4 weeks of fixes
   and is flagged `partial_window`; projection fits exclude it.
 - Stable-branch commit series count only post-`.0` commits (the backpatch
@@ -100,7 +141,7 @@ blocking pre-commit gate (`.pre-commit-config.yaml`; one-time setup:
   release-notes source; `scrape_release_notes.py` (HTML from postgresql.org)
   writes the same two CSVs and is kept as an independent cross-check.
   Validated 2026-08-28: identical version coverage, dates, and CVE sets,
-  and the commit-annotation dedup now used by build_datasets.py (match on
+  and the commit-annotation dedup now used by the transform models (match on
   summary text OR the exact annotation block) reproduces the pure-text
   counts exactly across all 19 waves (Aug 2026: 142 both ways). Known divergence: nested remediation
   sub-bullets (e.g. CVE-2024-4317's three steps) fold into their parent item

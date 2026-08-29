@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: int_fix_items
+    description: >
+      Every fix-counting changelog item with its dedup keys.
+      Grain = (version, item_index); item_ord is a dense file-order ordinal.
+    tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [version, item_index]
+    columns:
+      - name: item_ord
+        tests: [unique, not_null]
+      - name: text_key
+        tests: [not_null]

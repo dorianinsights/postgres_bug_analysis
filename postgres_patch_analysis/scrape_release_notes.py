@@ -4,12 +4,12 @@
 Fetches every release-notes page for the configured major versions from
 postgresql.org and persists two raw datasets:
 
-- data/releases.csv       one row per release (version, date, item count)
-- data/release_items.csv  one row per changelog item (summary, full text, CVEs)
+- data/raw/releases.csv       one row per release (version, date, item count)
+- data/raw/release_items.csv  one row per changelog item (summary, full text, CVEs)
 
-Raw data only — categorization, wave grouping, and dedup live in
-build_datasets.py so the scrape never needs re-running to change analysis
-rules. Re-running overwrites both files (the source pages are canonical).
+Raw data only — categorization, wave grouping, and dedup live in the
+transform/ dbt project so the scrape never needs re-running to change
+analysis rules. Re-running overwrites both files (the source pages are canonical).
 Takes no arguments; the majors scraped are defined in corpus.py.
 """
 
@@ -66,7 +66,7 @@ class ItemRow(TypedDict):
 
 BASE_URL = "https://www.postgresql.org/docs/release/{}/"
 INDEX_URL = "https://www.postgresql.org/docs/release/"
-DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR = Path(__file__).parent / "data" / "raw"
 
 
 def discover_versions(majors: tuple[int, ...]) -> list[tuple[int, int]]:
@@ -120,7 +120,7 @@ def parse_page(version: str) -> Page | None:
 
 
 def main() -> None:
-    DATA_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     releases: list[ReleaseRow] = []
     item_rows: list[ItemRow] = []

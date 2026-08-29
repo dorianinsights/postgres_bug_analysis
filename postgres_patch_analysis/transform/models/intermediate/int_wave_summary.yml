@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: int_wave_summary
+    description: Wave-grain rollup of the deduped fixes. Grain = wave_date.
+    columns:
+      - name: wave_date
+        tests: [unique, not_null]
+      - name: distinct_fixes
+        tests: [not_null]

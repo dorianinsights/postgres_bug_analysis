@@ -11,6 +11,11 @@ lxml==6.1.2
 # "not enough values to unpack", recover with:
 #   pip install --force-reinstall --no-deps dbt-charts==0.5.0
 dbt-charts==0.5.0
+# The transform layer (transform/ dbt project targeting DuckDB). Both arrive
+# as dependencies of dbt-charts anyway, but they're direct dependencies now —
+# `dbt build` runs from transform/ — so pin them explicitly.
+dbt-core==1.12.3
+dbt-duckdb==1.11.0
 # Dev tooling (repo-wide, mirrors property_analysis): config in the repo-root
 # pyproject.toml; enforced by .claude/hooks/ post-edit hooks and the blocking
 # git pre-commit gate (.pre-commit-config.yaml; one-time: ./venv/bin/pre-commit install).

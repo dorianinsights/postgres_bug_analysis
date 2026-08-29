@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: stg_git_tags
+    description: One minor-release tag (wrap moment). Grain = tag.
+    columns:
+      - name: tag
+        tests: [unique, not_null]
+      - name: tag_date
+        tests: [not_null]

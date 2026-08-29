@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: stg_git_commits
+    description: One commit per branch since the corpus history floor.
+    tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [branch, commit_hash]
+    columns:
+      - name: commit_date
+        tests: [not_null]
+      - name: subject
+        tests: [not_null]

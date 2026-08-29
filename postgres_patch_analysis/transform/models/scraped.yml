@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: scraped
+    description: >
+      Raw CSVs written by the scrape_*.py scripts. Read in place via a
+      dbt-duckdb external location ({name} is filled per table) — nothing is
+      loaded into the .duckdb file. auto_type_candidates deliberately omits
+      DOUBLE and TIMESTAMP: version strings ("15.1", "15.10") must stay
+      VARCHAR — DOUBLE sniffing would corrupt trailing zeros — and the raw
+      item-commit dates stay text. What remains: counts sniff BIGINT, date
+      columns sniff DATE, everything else VARCHAR. item_commits.csv is
+      required: it comes from the primary SGML scraper, and the dedup models
+      join on it.
+    meta:
+      external_location: "read_csv('../data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'DATE', 'VARCHAR'])"
+    tables:
+      - name: releases
+      - name: release_items
+      - name: item_commits
+      - name: git_commits
+      - name: git_tags

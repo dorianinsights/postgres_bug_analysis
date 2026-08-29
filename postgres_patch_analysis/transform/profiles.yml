@@ -1,0 +1,10 @@
+# Local profile, picked up automatically when dbt runs from this directory.
+# The .duckdb file is scratch state (gitignored); the durable outputs are the
+# external-materialized CSVs in ../data/.
+postgres_patch_analysis:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: transform.duckdb
+      threads: 4

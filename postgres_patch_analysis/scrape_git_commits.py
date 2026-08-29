@@ -4,15 +4,15 @@
 Maintains a metadata-only clone of postgres.git under .cache/ (treeless,
 ~140MB; first run clones, later runs fetch) and persists:
 
-- data/git_commits.csv  one row per commit per branch (REL_15..18_STABLE +
+- data/raw/git_commits.csv  one row per commit per branch (REL_15..18_STABLE +
                         master) since SINCE: hash, date, subject, plumbing
                         flag, and any AI-tool credit line found in the body
-- data/git_tags.csv     every REL_1x_y minor-release tag with its date
+- data/raw/git_tags.csv     every REL_1x_y minor-release tag with its date
                         (tag dates are the wrap moments that bound release
                         cycles)
 
-Raw-ish data only — cross-branch dedup and windowing live in
-build_datasets.py and in the faces' SQL.
+Raw-ish data only — cross-branch dedup and windowing live in the
+transform/ dbt project and in the faces' SQL.
 """
 
 import csv
@@ -47,7 +47,7 @@ class TagRow(TypedDict):
 
 REPO_URL = "https://github.com/postgres/postgres.git"
 CACHE = Path(__file__).parent / ".cache" / "postgres.git"
-DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR = Path(__file__).parent / "data" / "raw"
 BRANCHES = [*STABLE_BRANCHES, "master"]
 SINCE = GIT_HISTORY_SINCE
 
@@ -140,7 +140,7 @@ def tag_rows() -> list[TagRow]:
 
 def main() -> None:
     ensure_clone()
-    DATA_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     commit_rows: list[CommitRow] = []
     for branch in BRANCHES:

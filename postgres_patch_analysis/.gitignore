@@ -5,3 +5,6 @@ out/
 renders/
 __pycache__/
 *.duckdb
+# dbt scratch state (transform/ project)
+transform/target/
+transform/logs/

@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: wave_contributors
+    description: >
+      Tidy (wave, contributor) credit counts with each name's first-seen
+      wave -> ../data/derived/wave_contributors.csv.
+    tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [wave_date, contributor]
+    columns:
+      - name: credits
+        tests: [not_null]
+      - name: first_seen_wave
+        tests: [not_null]

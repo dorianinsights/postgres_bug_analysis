@@ -1,0 +1,18 @@
+version: 2
+
+seeds:
+  - name: categories
+    description: >
+      The fix-category taxonomy and its display order (formerly CATEGORY_ORDER
+      in categorize.py). "Security (CVE)" and "Other functionality" have no
+      rules — the first is decided by the item's CVE list, the second is the
+      fallback when nothing matches.
+    config:
+      column_types:
+        category: VARCHAR
+        category_order: INTEGER
+    columns:
+      - name: category
+        tests: [unique, not_null]
+      - name: category_order
+        tests: [unique, not_null]

@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_fix_groups
+    description: >
+      item_ord -> group_ord (the component's lowest item_ord) from the
+      connected-components dedup. Every fix item appears exactly once.
+    columns:
+      - name: item_ord
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_fix_items')
+                field: item_ord
+      - name: group_ord
+        tests: [not_null]

@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: projections
+    description: >
+      Next-wave scenario values -> ../data/derived/projections.csv.
+    columns:
+      - name: scenario
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [reversion, trend, regime repeat, escalation]
+      - name: distinct_fixes
+        tests: [not_null]

@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: fix_items
+    description: >
+      One distinct fix per wave (the deduped representative item),
+      categorized -> ../data/derived/fix_items.csv. The item-grain fact the
+      wave rollups aggregate; n_branch_items = per-branch changelog items
+      folded into the fix.
+    tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [version, item_index]
+    columns:
+      - name: summary
+        tests: [not_null]
+      - name: category
+        tests: [not_null]
+      - name: n_branch_items
+        tests: [not_null]

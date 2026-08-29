@@ -1,0 +1,151 @@
+wave_date,category,category_order,fixes,out_of_band
+2022-11-10,Crash & corruption,2,8,0
+2022-11-10,Wrong results & planner,3,1,0
+2022-11-10,Replication & recovery,4,4,0
+2022-11-10,Client tools,5,4,0
+2022-11-10,Extensions & contrib,6,1,0
+2022-11-10,Build & platform,8,4,0
+2022-11-10,Other functionality,9,3,0
+2023-02-09,Security (CVE),0,1,0
+2023-02-09,Crash & corruption,2,13,0
+2023-02-09,Wrong results & planner,3,3,0
+2023-02-09,Replication & recovery,4,11,0
+2023-02-09,Client tools,5,3,0
+2023-02-09,Extensions & contrib,6,4,0
+2023-02-09,Build & platform,8,2,0
+2023-02-09,Other functionality,9,20,0
+2023-05-11,Security (CVE),0,2,0
+2023-05-11,Security hardening (no CVE),1,2,0
+2023-05-11,Crash & corruption,2,37,0
+2023-05-11,Wrong results & planner,3,4,0
+2023-05-11,Replication & recovery,4,4,0
+2023-05-11,Client tools,5,4,0
+2023-05-11,Extensions & contrib,6,6,0
+2023-05-11,Build & platform,8,6,0
+2023-05-11,Other functionality,9,17,0
+2023-08-10,Security (CVE),0,2,0
+2023-08-10,Crash & corruption,2,19,0
+2023-08-10,Wrong results & planner,3,3,0
+2023-08-10,Replication & recovery,4,2,0
+2023-08-10,Client tools,5,3,0
+2023-08-10,Extensions & contrib,6,3,0
+2023-08-10,Build & platform,8,1,0
+2023-08-10,Other functionality,9,14,0
+2023-11-09,Security (CVE),0,3,0
+2023-11-09,Crash & corruption,2,16,0
+2023-11-09,Wrong results & planner,3,2,0
+2023-11-09,Replication & recovery,4,8,0
+2023-11-09,Client tools,5,5,0
+2023-11-09,Extensions & contrib,6,4,0
+2023-11-09,Build & platform,8,3,0
+2023-11-09,Other functionality,9,29,0
+2024-02-08,Security (CVE),0,1,0
+2024-02-08,Crash & corruption,2,14,0
+2024-02-08,Wrong results & planner,3,3,0
+2024-02-08,Replication & recovery,4,9,0
+2024-02-08,Client tools,5,10,0
+2024-02-08,Extensions & contrib,6,3,0
+2024-02-08,Performance,7,1,0
+2024-02-08,Build & platform,8,4,0
+2024-02-08,Other functionality,9,26,0
+2024-05-09,Security (CVE),0,1,0
+2024-05-09,Crash & corruption,2,16,0
+2024-05-09,Wrong results & planner,3,4,0
+2024-05-09,Replication & recovery,4,2,0
+2024-05-09,Client tools,5,6,0
+2024-05-09,Extensions & contrib,6,5,0
+2024-05-09,Performance,7,1,0
+2024-05-09,Build & platform,8,2,0
+2024-05-09,Other functionality,9,21,0
+2024-08-08,Security (CVE),0,2,0
+2024-08-08,Security hardening (no CVE),1,1,0
+2024-08-08,Crash & corruption,2,11,0
+2024-08-08,Wrong results & planner,3,4,0
+2024-08-08,Replication & recovery,4,4,0
+2024-08-08,Client tools,5,3,0
+2024-08-08,Extensions & contrib,6,5,0
+2024-08-08,Build & platform,8,4,0
+2024-08-08,Other functionality,9,21,0
+2024-11-14,Security (CVE),0,4,0
+2024-11-14,Security hardening (no CVE),1,1,0
+2024-11-14,Crash & corruption,2,16,0
+2024-11-14,Wrong results & planner,3,5,0
+2024-11-14,Replication & recovery,4,6,0
+2024-11-14,Client tools,5,6,0
+2024-11-14,Extensions & contrib,6,1,0
+2024-11-14,Performance,7,2,0
+2024-11-14,Build & platform,8,5,0
+2024-11-14,Other functionality,9,22,0
+2024-11-21,Security (CVE),0,1,1
+2024-11-21,Crash & corruption,2,3,1
+2024-11-21,Replication & recovery,4,2,1
+2024-11-21,Extensions & contrib,6,1,1
+2024-11-21,Other functionality,9,1,1
+2025-02-13,Security (CVE),0,1,0
+2025-02-13,Crash & corruption,2,25,0
+2025-02-13,Wrong results & planner,3,4,0
+2025-02-13,Replication & recovery,4,4,0
+2025-02-13,Client tools,5,8,0
+2025-02-13,Extensions & contrib,6,3,0
+2025-02-13,Build & platform,8,7,0
+2025-02-13,Other functionality,9,22,0
+2025-02-20,Security (CVE),0,1,1
+2025-02-20,Crash & corruption,2,1,1
+2025-02-20,Build & platform,8,1,1
+2025-05-08,Security (CVE),0,1,0
+2025-05-08,Crash & corruption,2,21,0
+2025-05-08,Wrong results & planner,3,4,0
+2025-05-08,Replication & recovery,4,8,0
+2025-05-08,Client tools,5,3,0
+2025-05-08,Extensions & contrib,6,1,0
+2025-05-08,Performance,7,1,0
+2025-05-08,Build & platform,8,1,0
+2025-05-08,Other functionality,9,22,0
+2025-08-14,Security (CVE),0,3,0
+2025-08-14,Crash & corruption,2,22,0
+2025-08-14,Replication & recovery,4,9,0
+2025-08-14,Client tools,5,12,0
+2025-08-14,Extensions & contrib,6,2,0
+2025-08-14,Performance,7,1,0
+2025-08-14,Build & platform,8,8,0
+2025-08-14,Other functionality,9,14,0
+2025-11-13,Security (CVE),0,2,0
+2025-11-13,Crash & corruption,2,25,0
+2025-11-13,Wrong results & planner,3,4,0
+2025-11-13,Replication & recovery,4,11,0
+2025-11-13,Client tools,5,9,0
+2025-11-13,Extensions & contrib,6,2,0
+2025-11-13,Build & platform,8,9,0
+2025-11-13,Other functionality,9,16,0
+2026-02-12,Security (CVE),0,5,0
+2026-02-12,Crash & corruption,2,14,0
+2026-02-12,Wrong results & planner,3,8,0
+2026-02-12,Replication & recovery,4,6,0
+2026-02-12,Client tools,5,5,0
+2026-02-12,Extensions & contrib,6,7,0
+2026-02-12,Performance,7,2,0
+2026-02-12,Build & platform,8,6,0
+2026-02-12,Other functionality,9,22,0
+2026-02-26,Security (CVE),0,2,1
+2026-02-26,Crash & corruption,2,1,1
+2026-02-26,Replication & recovery,4,1,1
+2026-02-26,Client tools,5,1,1
+2026-02-26,Other functionality,9,4,1
+2026-05-14,Security (CVE),0,14,0
+2026-05-14,Security hardening (no CVE),1,4,0
+2026-05-14,Crash & corruption,2,10,0
+2026-05-14,Wrong results & planner,3,5,0
+2026-05-14,Replication & recovery,4,8,0
+2026-05-14,Client tools,5,3,0
+2026-05-14,Extensions & contrib,6,3,0
+2026-05-14,Other functionality,9,26,0
+2026-08-13,Security (CVE),0,29,0
+2026-08-13,Security hardening (no CVE),1,5,0
+2026-08-13,Crash & corruption,2,32,0
+2026-08-13,Wrong results & planner,3,9,0
+2026-08-13,Replication & recovery,4,13,0
+2026-08-13,Client tools,5,12,0
+2026-08-13,Extensions & contrib,6,6,0
+2026-08-13,Performance,7,1,0
+2026-08-13,Build & platform,8,4,0
+2026-08-13,Other functionality,9,31,0

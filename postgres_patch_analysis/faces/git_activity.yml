@@ -3,7 +3,7 @@ description: >
   Commit-level view of the PostgreSQL stable branches (majors 15-18) plus
   master: quarterly backpatch volume, AI-tool-credited fixes, and the pace of
   the currently open release cycle. Data files are produced by
-  scrape_git_commits.py + build_datasets.py.
+  scrape_git_commits.py + the transform/ dbt project.
 
 queries:
   quarterly_distinct:
@@ -11,7 +11,7 @@ queries:
       Distinct fix commits across all stable branches per quarter (subjects
       deduplicated across branches; release plumbing excluded). The current
       quarter is partial.
-    source: ../data/git_commits.csv
+    source: ../data/raw/git_commits.csv
     sql: |
       SELECT
         DATE_TRUNC('quarter', CAST(commit_date AS DATE)) AS quarter,
@@ -24,7 +24,7 @@ queries:
 
   quarter_pad:
     description: Invisible x-domain padding points for the quarterly bar chart.
-    source: ../data/git_commits.csv
+    source: ../data/raw/git_commits.csv
     sql: |
       SELECT MIN(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) - INTERVAL 45 DAY AS quarter, 'distinct fixes' AS series, 0 AS pad_zero
       FROM git_commits
@@ -36,7 +36,7 @@ queries:
     description: >
       Fix commits per stable branch per quarter (each branch counts its own
       backpatches; plumbing excluded).
-    source: ../data/git_commits.csv
+    source: ../data/raw/git_commits.csv
     sql: |
       SELECT
         DATE_TRUNC('quarter', CAST(commit_date AS DATE)) AS quarter,
@@ -51,7 +51,7 @@ queries:
     description: >
       Distinct commits whose message credits an AI tool (Claude, ChatGPT,
       Copilot, ...), per quarter, across stable branches and master.
-    source: ../data/git_commits.csv
+    source: ../data/raw/git_commits.csv
     sql: |
       SELECT
         DATE_TRUNC('quarter', CAST(commit_date AS DATE)) AS quarter,
@@ -64,7 +64,7 @@ queries:
 
   ai_pad:
     description: Invisible x-domain padding points for the AI-credited bar chart.
-    source: ../data/git_commits.csv
+    source: ../data/raw/git_commits.csv
     sql: |
       SELECT MIN(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) - INTERVAL 45 DAY AS quarter, 'AI-credited commits' AS series, 0 AS pad_zero
       FROM git_commits WHERE ai_credit != ''
@@ -74,7 +74,7 @@ queries:
 
   ai_credit_lines:
     description: The AI-credited fix commits with their credit lines, newest first.
-    source: ../data/git_commits.csv
+    source: ../data/raw/git_commits.csv
     sql: |
       SELECT
         MIN(commit_date) AS commit_date,
@@ -90,7 +90,7 @@ queries:
       Like-for-like release-cycle pace: distinct stable-branch fixes committed
       in the first N days after each scheduled wrap, where N is the age of the
       currently open cycle, next to each closed cycle's full total.
-    source: ../data/git_cycle_pace.csv
+    source: ../data/derived/git_cycle_pace.csv
     sql: |
       SELECT CAST(cycle_start AS VARCHAR) AS cycle, 'first ' || window_days || ' days' AS pace_window, distinct_fixes_early AS fixes
       FROM git_cycle_pace

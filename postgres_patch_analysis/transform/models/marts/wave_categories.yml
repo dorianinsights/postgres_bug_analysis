@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: wave_categories
+    description: >
+      Tidy (wave, category) fix counts -> ../data/derived/wave_categories.csv.
+    tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [wave_date, category]
+    columns:
+      - name: fixes
+        tests: [not_null]
+      - name: category_order
+        tests: [not_null]

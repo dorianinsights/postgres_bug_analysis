@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: stg_release_items
+    description: One changelog item, typed. Grain = (version, item_index).
+    tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [version, item_index]
+    columns:
+      - name: version
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_releases')
+                field: version
+      - name: summary
+        tests: [not_null]
+      - name: full_text
+        tests: [not_null]

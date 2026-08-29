@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: int_fix_reps
+    description: >
+      One representative item per distinct fix, categorized.
+      Grain = item_ord (= its group's group_ord).
+    columns:
+      - name: item_ord
+        tests: [unique, not_null]
+      - name: category
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('categories')
+                field: category

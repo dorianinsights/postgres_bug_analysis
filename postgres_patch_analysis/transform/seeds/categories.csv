@@ -1,0 +1,11 @@
+category,category_order
+Security (CVE),0
+Security hardening (no CVE),1
+Crash & corruption,2
+Wrong results & planner,3
+Replication & recovery,4
+Client tools,5
+Extensions & contrib,6
+Performance,7
+Build & platform,8
+Other functionality,9

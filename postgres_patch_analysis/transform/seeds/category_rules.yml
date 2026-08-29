@@ -1,0 +1,30 @@
+version: 2
+
+seeds:
+  - name: category_rules
+    description: >
+      Ordered keyword rules (formerly HARDENING + RULES in categorize.py).
+      An item's category is the rule with the LOWEST match_order whose RE2
+      pattern matches the item's full text case-insensitively — so the
+      hardening block comes first, then each bucket's patterns as one block
+      (within a bucket, which pattern matches is irrelevant). Items with a
+      CVE bypass the rules entirely. The order is semantic: an item
+      mentioning both a crash and the planner is a crash fix. Change with
+      care and rerun dbt build afterwards.
+    config:
+      column_types:
+        match_order: INTEGER
+        category: VARCHAR
+        pattern: VARCHAR
+    columns:
+      - name: match_order
+        tests: [unique, not_null]
+      - name: category
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('categories')
+                field: category
+      - name: pattern
+        tests: [not_null]

@@ -3,8 +3,8 @@
 
 Single source of truth shared by all three scrapers, so the release-notes
 datasets and the git-commit dataset can never be built from different
-corpora (build_datasets.py joins them; a mismatch would corrupt the derived
-data silently). Deliberately plain constants, versioned in git: changing the
+corpora (the transform/ dbt models join them; a mismatch would corrupt the
+derived data silently). Deliberately plain constants, versioned in git: changing the
 corpus changes what every dataset and chart MEANS, so it should be a
 reviewed, dated commit — not an environment variable or a command-line flag.
 
