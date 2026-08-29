@@ -10,7 +10,7 @@ models:
       # categorization's first rule, encoded as an invariant.
       - dbt_utils.expression_is_true:
           arguments:
-            expression: "cves = '' OR category = 'Security (CVE)'"
+            expression: "cves IS NULL OR category = 'Security (CVE)'"
     columns:
       - name: item_ord
         tests:
@@ -20,13 +20,11 @@ models:
               arguments:
                 to: ref('int_fix_groups')
                 field: group_ord
-      - name: wave_date
+      - name: wave_dt
         tests: [not_null]
       - name: summary
         tests: [not_null]
       - name: full_text
-        tests: [not_null]
-      - name: cves
         tests: [not_null]
       - name: category
         tests:

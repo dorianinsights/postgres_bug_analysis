@@ -2,4 +2,4 @@
 
 SELECT *
 FROM {{ ref('int_wave_summary') }}
-ORDER BY wave_date
+ORDER BY wave_dt

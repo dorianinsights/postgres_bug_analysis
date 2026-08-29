@@ -8,14 +8,14 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [wave_date, contributor]
+            combination_of_columns: [wave_dt, contributor]
       # A contributor's first-seen wave can never postdate a wave they
       # appear in.
       - dbt_utils.expression_is_true:
           arguments:
-            expression: first_seen_wave <= wave_date
+            expression: first_seen_wave_dt <= wave_dt
     columns:
-      - name: wave_date
+      - name: wave_dt
         tests:
           - not_null
           - dbt_utils.accepted_range:
@@ -30,7 +30,7 @@ models:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: first_seen_wave
+      - name: first_seen_wave_dt
         tests: [not_null]
       - name: is_first_wave
         tests:

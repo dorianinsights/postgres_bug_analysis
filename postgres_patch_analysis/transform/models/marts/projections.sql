@@ -7,9 +7,9 @@
 -- standard-deviation band (stdev over everything but the latest wave).
 WITH fullq AS (
   SELECT
-    wave_date,
+    wave_dt,
     distinct_fixes,
-    ROW_NUMBER() OVER (ORDER BY wave_date) - 1 AS idx
+    ROW_NUMBER() OVER (ORDER BY wave_dt) - 1 AS idx
   FROM {{ ref('int_wave_summary') }}
   WHERE out_of_band = 0 AND partial_window = 0
 ),
@@ -25,7 +25,7 @@ fit AS (
 latest AS (
   SELECT
     distinct_fixes AS latest_fixes,
-    wave_date + 91 AS projected_date
+    wave_dt + 91 AS projected_dt
   FROM fullq
   ORDER BY idx DESC
   LIMIT 1
@@ -49,7 +49,7 @@ scenarios AS (
   SELECT
     'reversion' AS scenario,
     0 AS scenario_order,
-    latest.projected_date,
+    latest.projected_dt,
     ROUND(stats.baseline)::INTEGER AS distinct_fixes,
     ROUND(stats.baseline - stats.sdev)::INTEGER AS low,
     ROUND(stats.baseline + stats.sdev)::INTEGER AS high,
@@ -59,7 +59,7 @@ scenarios AS (
   SELECT
     'trend' AS scenario,
     1 AS scenario_order,
-    latest.projected_date,
+    latest.projected_dt,
     ROUND(fit.intercept + fit.slope * fit.n_waves)::INTEGER AS distinct_fixes,
     null AS low,
     null AS high,
@@ -69,7 +69,7 @@ scenarios AS (
   SELECT
     'regime repeat' AS scenario,
     2 AS scenario_order,
-    latest.projected_date,
+    latest.projected_dt,
     latest.latest_fixes AS distinct_fixes,
     null AS low,
     null AS high,
@@ -79,7 +79,7 @@ scenarios AS (
   SELECT
     'escalation' AS scenario,
     3 AS scenario_order,
-    latest.projected_date,
+    latest.projected_dt,
     ROUND(latest.latest_fixes + fit.slope)::INTEGER AS distinct_fixes,
     null AS low,
     null AS high,

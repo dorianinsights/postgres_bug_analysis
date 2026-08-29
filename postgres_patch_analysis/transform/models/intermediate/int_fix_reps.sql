@@ -26,7 +26,7 @@ first_matches AS (
 SELECT
   reps.*,
   CASE
-    WHEN reps.cves != '' THEN 'Security (CVE)'
+    WHEN reps.cves IS NOT null THEN 'Security (CVE)'
     ELSE COALESCE(rules.category, 'Other functionality')
   END AS category
 FROM reps

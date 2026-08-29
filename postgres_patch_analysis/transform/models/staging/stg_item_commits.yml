@@ -25,8 +25,14 @@ models:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 0
-      - name: author
+      - name: author_name
         tests: [not_null]
+      - name: author_email
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^\S+@\S+$'
       - name: branch
         tests:
           - not_null
@@ -42,11 +48,12 @@ models:
           - dbt_expectations.expect_column_values_to_match_regex:
               arguments:
                 regex: '^[0-9a-f]{7,40}$'
-      - name: commit_date
+      - name: commit_ts
         tests:
           - not_null
-          # Datetime + offset, occasionally followed by an author annotation
-          # ("... -0400 !! no live bug" occurs in real data) — hence the .*.
-          - dbt_expectations.expect_column_values_to_match_regex:
+          # A true TIMESTAMP WITH TIME ZONE (STRPTIME raises on malformed
+          # input, so a format break fails the build, not this test).
+          - dbt_utils.accepted_range:
               arguments:
-                regex: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}.*$'
+                min_value: "'2016-10-01'"
+                max_value: current_date + 2

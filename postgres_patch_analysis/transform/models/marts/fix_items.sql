@@ -14,7 +14,7 @@ WITH group_sizes AS (
 )
 
 SELECT
-  reps.wave_date,
+  reps.wave_dt,
   reps.version,
   reps.item_index,
   reps.summary,
@@ -27,5 +27,5 @@ SELECT
 FROM {{ ref('int_fix_reps') }} AS reps
 INNER JOIN group_sizes AS grp ON reps.item_ord = grp.group_ord
 INNER JOIN {{ ref('categories') }} AS cats ON reps.category = cats.category
-INNER JOIN {{ ref('int_waves') }} AS waves ON reps.wave_date = waves.wave_date
-ORDER BY reps.wave_date, reps.item_ord
+INNER JOIN {{ ref('int_waves') }} AS waves ON reps.wave_dt = waves.wave_dt
+ORDER BY reps.wave_dt, reps.item_ord

@@ -14,7 +14,7 @@ queries:
     source: ../data/raw/git_commits.csv
     sql: |
       SELECT
-        DATE_TRUNC('quarter', CAST(commit_date AS DATE)) AS quarter,
+        DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE)) AS quarter,
         'distinct fixes' AS series,
         COUNT(DISTINCT LOWER(TRIM(subject))) AS distinct_fixes
       FROM git_commits
@@ -26,10 +26,10 @@ queries:
     description: Invisible x-domain padding points for the quarterly bar chart.
     source: ../data/raw/git_commits.csv
     sql: |
-      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) - INTERVAL 45 DAY AS quarter, 'distinct fixes' AS series, 0 AS pad_zero
+      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE))) - INTERVAL 45 DAY AS quarter, 'distinct fixes' AS series, 0 AS pad_zero
       FROM git_commits
       UNION ALL
-      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) + INTERVAL 45 DAY, 'distinct fixes', 0
+      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE))) + INTERVAL 45 DAY, 'distinct fixes', 0
       FROM git_commits
 
   quarterly_by_branch:
@@ -39,7 +39,7 @@ queries:
     source: ../data/raw/git_commits.csv
     sql: |
       SELECT
-        DATE_TRUNC('quarter', CAST(commit_date AS DATE)) AS quarter,
+        DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE)) AS quarter,
         branch,
         COUNT(*) AS fix_commits
       FROM git_commits
@@ -54,11 +54,11 @@ queries:
     source: ../data/raw/git_commits.csv
     sql: |
       SELECT
-        DATE_TRUNC('quarter', CAST(commit_date AS DATE)) AS quarter,
+        DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE)) AS quarter,
         'AI-credited commits' AS series,
         COUNT(DISTINCT LOWER(TRIM(subject))) AS ai_credited_commits
       FROM git_commits
-      WHERE ai_credit != ''
+      WHERE ai_credit IS NOT NULL
       GROUP BY quarter
       ORDER BY quarter
 
@@ -66,24 +66,24 @@ queries:
     description: Invisible x-domain padding points for the AI-credited bar chart.
     source: ../data/raw/git_commits.csv
     sql: |
-      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) - INTERVAL 45 DAY AS quarter, 'AI-credited commits' AS series, 0 AS pad_zero
-      FROM git_commits WHERE ai_credit != ''
+      SELECT MIN(DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE))) - INTERVAL 45 DAY AS quarter, 'AI-credited commits' AS series, 0 AS pad_zero
+      FROM git_commits WHERE ai_credit IS NOT NULL
       UNION ALL
-      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_date AS DATE))) + INTERVAL 45 DAY, 'AI-credited commits', 0
-      FROM git_commits WHERE ai_credit != ''
+      SELECT MAX(DATE_TRUNC('quarter', CAST(commit_ts AT TIME ZONE 'utc' AS DATE))) + INTERVAL 45 DAY, 'AI-credited commits', 0
+      FROM git_commits WHERE ai_credit IS NOT NULL
 
   ai_credit_lines:
     description: The AI-credited fix commits with their credit lines, newest first.
     source: ../data/raw/git_commits.csv
     sql: |
       SELECT
-        MIN(commit_date) AS commit_date,
+        MIN(CAST(commit_ts AT TIME ZONE 'utc' AS DATE)) AS commit_dt,
         subject,
         MIN(ai_credit) AS credit_line
       FROM git_commits
-      WHERE ai_credit != ''
+      WHERE ai_credit IS NOT NULL
       GROUP BY subject
-      ORDER BY commit_date DESC
+      ORDER BY commit_dt DESC
 
   cycle_pace:
     description: >
@@ -92,10 +92,10 @@ queries:
       currently open cycle, next to each closed cycle's full total.
     source: ../data/derived/git_cycle_pace.csv
     sql: |
-      SELECT CAST(cycle_start AS VARCHAR) AS cycle, 'first ' || window_days || ' days' AS pace_window, distinct_fixes_early AS fixes
+      SELECT CAST(cycle_start_dt AS VARCHAR) AS cycle, 'first ' || window_days || ' days' AS pace_window, distinct_fixes_early AS fixes
       FROM git_cycle_pace
       UNION ALL
-      SELECT CAST(cycle_start AS VARCHAR) AS cycle, 'full cycle' AS pace_window, distinct_fixes_full AS fixes
+      SELECT CAST(cycle_start_dt AS VARCHAR) AS cycle, 'full cycle' AS pace_window, distinct_fixes_full AS fixes
       FROM git_cycle_pace
       WHERE is_open_cycle = 0
       ORDER BY cycle, pace_window

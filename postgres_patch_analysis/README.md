@@ -50,8 +50,8 @@ Raw (`data/raw/`, from the scrapers — rerun the scraper to refresh):
 | `releases.csv` | one minor release | release-notes SGML sources in postgres.git (`doc/src/sgml/release-NN.sgml` per stable branch), majors 15-18 |
 | `release_items.csv` | one changelog item | same sources: summary, full text, CVE ids |
 | `item_commits.csv` | one (item, branch-commit) | the SGML comment annotations: author + every branch each fix landed on, with commit hash — ground truth linking changelog items to git commits |
-| `git_commits.csv` | one commit per branch | postgres.git `REL_15..18_STABLE` (post-`.0` backpatches) + `master`, with plumbing flag and any AI-tool credit line from the message body |
-| `git_tags.csv` | one minor-release tag | postgres.git `REL_1x_y` tags (tag date = the wrap moment) |
+| `git_commits.csv` | one commit per branch | postgres.git `REL_15..18_STABLE` (post-`.0` backpatches) + `master`: full ISO committer timestamp (offset included), plumbing flag, any AI-tool credit line from the message body |
+| `git_tags.csv` | one minor-release tag | postgres.git `REL_1x_y` tags with full creation timestamps (the wrap moments) |
 
 Derived (`data/derived/`, written by the `transform/` dbt project's external
 models — rerun `dbt build` to change analysis rules without re-scraping):
@@ -100,7 +100,7 @@ producer changed) plus the item-grain `fix_items.csv`. Layers:
   order) and `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules).
 
-Every model is heavily tested — 211 data tests in all: column-level schema
+Every model is heavily tested — 209 data tests in all: column-level schema
 tests (uniqueness, not-null, relationships, accepted ranges on counts and
 dates, regex format checks) using `dbt_utils` and Metaplane's
 `dbt_expectations` (installed via `dbt deps`), plus seven singular
@@ -140,6 +140,10 @@ by the dbt tests themselves.
   documents the four real-world cases behind the rule).
 - The corpus's first wave (15.1, Nov 2022) accumulated only ~4 weeks of fixes
   and is flagged `partial_window`; projection fits exclude it.
+- Timestamps keep full fidelity (ISO 8601 with offset) through raw and
+  staging (`_ts` columns, TIMESTAMPTZ); truncation to a calendar day
+  (`_dt`) happens as far downstream as possible, at the point of use, and
+  buckets by UTC day.
 - Stable-branch commit series count only post-`.0` commits (the backpatch
   stream); shared pre-branch history belongs to `master`. Security fixes are
   embargoed and reach public git only on wrap day, so mid-cycle security

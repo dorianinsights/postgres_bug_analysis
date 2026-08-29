@@ -10,15 +10,15 @@ WITH fix_releases AS (
 
 grouped AS (
   SELECT
-    release_date AS wave_date,
+    release_dt AS wave_dt,
     STRING_AGG(version, ' / ' ORDER BY major, minor) AS versions,
     COUNT(*) AS n_releases,
     MAX(n_items) < 20 AS out_of_band
   FROM fix_releases
-  GROUP BY release_date
+  GROUP BY release_dt
 )
 
 SELECT
   *,
-  wave_date = MIN(wave_date) OVER () AS partial_window
+  wave_dt = MIN(wave_dt) OVER () AS partial_window
 FROM grouped

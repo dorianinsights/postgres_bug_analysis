@@ -32,7 +32,7 @@ models:
           - accepted_values:
               arguments:
                 values: [0, 1, 2, 3]
-      - name: projected_date
+      - name: projected_dt
         tests: [not_null]
       - name: distinct_fixes
         tests:

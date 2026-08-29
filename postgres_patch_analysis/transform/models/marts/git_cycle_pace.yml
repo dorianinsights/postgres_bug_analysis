@@ -9,16 +9,16 @@ models:
       # A closed cycle ends after it starts; the open cycle has no end.
       - dbt_utils.expression_is_true:
           arguments:
-            expression: cycle_end IS NULL OR cycle_end > cycle_start
+            expression: cycle_end_dt IS NULL OR cycle_end_dt > cycle_start_dt
       - dbt_utils.expression_is_true:
           arguments:
-            expression: is_open_cycle = CASE WHEN cycle_end IS NULL THEN 1 ELSE 0 END
+            expression: is_open_cycle = CASE WHEN cycle_end_dt IS NULL THEN 1 ELSE 0 END
       # The early window is a prefix of the full cycle.
       - dbt_utils.expression_is_true:
           arguments:
             expression: distinct_fixes_full IS NULL OR distinct_fixes_full >= distinct_fixes_early
     columns:
-      - name: cycle_start
+      - name: cycle_start_dt
         tests:
           - unique
           - not_null

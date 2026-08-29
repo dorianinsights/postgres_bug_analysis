@@ -1,4 +1,4 @@
-wave_date,contributor,credits,first_seen_wave,is_first_wave,out_of_band
+wave_dt,contributor,credits,first_seen_wave_dt,is_first_wave,out_of_band
 2022-11-10,Amit Kapila,1,2022-11-10,0,0
 2022-11-10,Andres Freund,1,2022-11-10,0,0
 2022-11-10,Anton Melnikov,1,2022-11-10,0,0

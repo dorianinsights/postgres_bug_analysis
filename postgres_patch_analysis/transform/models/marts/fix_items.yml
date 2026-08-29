@@ -6,15 +6,13 @@ models:
       One distinct fix per wave (the deduped representative item),
       categorized -> ../data/derived/fix_items.csv. The item-grain fact the
       wave rollups aggregate; n_branch_items = per-branch changelog items
-      folded into the fix. (cves has no not_null test here: the registered
-      view re-reads the written CSV, where the empty string round-trips to
-      NULL — the '' invariant is tested on int_fix_reps.)
+      folded into the fix. cves is NULL when the fix carries none.
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [version, item_index]
     columns:
-      - name: wave_date
+      - name: wave_dt
         tests:
           - not_null
           - dbt_utils.accepted_range:

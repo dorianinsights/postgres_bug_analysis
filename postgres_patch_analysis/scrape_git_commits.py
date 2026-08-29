@@ -5,11 +5,15 @@ Maintains a metadata-only clone of postgres.git under .cache/ (treeless,
 ~140MB; first run clones, later runs fetch) and persists:
 
 - data/raw/git_commits.csv  one row per commit per branch (REL_15..18_STABLE +
-                        master) since SINCE: hash, date, subject, plumbing
-                        flag, and any AI-tool credit line found in the body
-- data/raw/git_tags.csv     every REL_1x_y minor-release tag with its date
-                        (tag dates are the wrap moments that bound release
-                        cycles)
+                        master) since SINCE: hash, full ISO committer
+                        timestamp, subject, plumbing flag, and any AI-tool
+                        credit line found in the body
+- data/raw/git_tags.csv     every REL_1x_y minor-release tag with its full
+                        ISO creation timestamp (the wrap moments that bound
+                        release cycles)
+
+Timestamps land raw at full fidelity (offset included); truncation to a
+calendar day happens downstream at the point of use, not here.
 
 Raw-ish data only — cross-branch dedup and windowing live in the
 transform/ dbt project and in the faces' SQL.
@@ -30,7 +34,7 @@ class CommitRow(TypedDict):
 
     branch: str
     hash: str
-    commit_date: str
+    commit_ts: str
     subject: str
     is_plumbing: int
     ai_credit: str
@@ -42,7 +46,7 @@ class TagRow(TypedDict):
     tag: str
     major: int
     minor: int
-    date: str
+    tag_ts: str
 
 
 REPO_URL = "https://github.com/postgres/postgres.git"
@@ -116,7 +120,7 @@ def branch_commits(branch: str) -> list[CommitRow]:
             CommitRow(
                 branch=branch,
                 hash=commit_hash,
-                commit_date=date_iso[:10],
+                commit_ts=date_iso,
                 subject=subject,
                 is_plumbing=int(bool(PLUMBING.match(subject))),
                 ai_credit=ai_credit_line(subject, body),
@@ -126,14 +130,14 @@ def branch_commits(branch: str) -> list[CommitRow]:
 
 
 def tag_rows() -> list[TagRow]:
-    out = git("for-each-ref", "--format=%(refname:short)%09%(creatordate:short)", "refs/tags/REL_1[5-9]_*")
+    out = git("for-each-ref", "--format=%(refname:short)%09%(creatordate:iso-strict)", "refs/tags/REL_1[5-9]_*")
     rows: list[TagRow] = []
     for line in out.splitlines():
-        tag, _, date = line.partition("\t")
+        tag, _, tag_ts = line.partition("\t")
         m = re.match(r"REL_(\d+)_(\d+)$", tag)
         if not m:  # skip BETA/RC tags
             continue
-        rows.append(TagRow(tag=tag, major=int(m.group(1)), minor=int(m.group(2)), date=date))
+        rows.append(TagRow(tag=tag, major=int(m.group(1)), minor=int(m.group(2)), tag_ts=tag_ts))
     rows.sort(key=lambda r: (r["major"], r["minor"]))
     return rows
 
@@ -149,13 +153,13 @@ def main() -> None:
         print(f"{branch:<15} {len(rows)} commits since {SINCE}")
 
     with open(DATA_DIR / "git_commits.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["branch", "hash", "commit_date", "subject", "is_plumbing", "ai_credit"])
+        writer = csv.DictWriter(f, fieldnames=["branch", "hash", "commit_ts", "subject", "is_plumbing", "ai_credit"])
         writer.writeheader()
         writer.writerows(commit_rows)
 
     tags = tag_rows()
     with open(DATA_DIR / "git_tags.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["tag", "major", "minor", "date"])
+        writer = csv.DictWriter(f, fieldnames=["tag", "major", "minor", "tag_ts"])
         writer.writeheader()
         writer.writerows(tags)
     print(f"\nWrote {len(commit_rows)} commit rows, {len(tags)} tags -> {DATA_DIR}/")

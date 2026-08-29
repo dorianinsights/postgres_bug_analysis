@@ -1,4 +1,4 @@
-wave_date,versions,n_releases,distinct_fixes,distinct_cves,security_fixes,out_of_band,partial_window
+wave_dt,versions,n_releases,distinct_fixes,distinct_cves,security_fixes,out_of_band,partial_window
 2022-11-10,15.1,1,25,0,0,0,1
 2023-02-09,15.2,1,57,1,1,0,0
 2023-05-11,15.3,1,82,2,4,0,0

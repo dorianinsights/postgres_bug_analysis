@@ -2,9 +2,9 @@ version: 2
 
 models:
   - name: int_waves
-    description: One same-day release wave with its flags. Grain = wave_date.
+    description: One same-day release wave with its flags. Grain = wave_dt.
     columns:
-      - name: wave_date
+      - name: wave_dt
         tests:
           - unique
           - not_null

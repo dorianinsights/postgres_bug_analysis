@@ -20,13 +20,13 @@
 WITH RECURSIVE item_keys AS (
   SELECT
     item_ord,
-    wave_date,
+    wave_dt,
     text_key AS join_key
   FROM {{ ref('int_fix_items') }}
   UNION ALL
   SELECT
     item_ord,
-    wave_date,
+    wave_dt,
     hash_key AS join_key
   FROM {{ ref('int_fix_items') }}
   WHERE hash_key IS NOT null
@@ -38,7 +38,7 @@ edges AS (
     rhs.item_ord AS dst_ord
   FROM item_keys AS lhs
   INNER JOIN item_keys AS rhs
-    ON lhs.wave_date = rhs.wave_date AND lhs.join_key = rhs.join_key
+    ON lhs.wave_dt = rhs.wave_dt AND lhs.join_key = rhs.join_key
   WHERE lhs.item_ord != rhs.item_ord
 ),
 

@@ -1,4 +1,4 @@
-wave_date,category,category_order,fixes,out_of_band
+wave_dt,category,category_order,fixes,out_of_band
 2022-11-10,Crash & corruption,2,8,0
 2022-11-10,Wrong results & planner,3,1,0
 2022-11-10,Replication & recovery,4,4,0

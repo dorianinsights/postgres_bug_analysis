@@ -21,7 +21,7 @@ WITH item_hashes AS (
 
 SELECT
   ROW_NUMBER() OVER (ORDER BY rel.major, rel.minor, itm.item_index) AS item_ord,
-  rel.release_date AS wave_date,
+  rel.release_dt AS wave_dt,
   itm.version,
   itm.item_index,
   itm.summary,

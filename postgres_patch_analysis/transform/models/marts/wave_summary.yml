@@ -11,7 +11,7 @@ models:
           arguments:
             expression: security_fixes <= distinct_fixes
     columns:
-      - name: wave_date
+      - name: wave_dt
         tests:
           - unique
           - not_null
