@@ -25,6 +25,16 @@ from corpus import GIT_HISTORY_SINCE, STABLE_BRANCHES
 CACHE = Path.cwd().parent / ".cache" / "postgres.git"
 BRANCHES = [*STABLE_BRANCHES, "master"]
 
+# The history floor as an exact instant. Two git date gotchas make the bare
+# GIT_HISTORY_SINCE date nondeterministic: approxidate fills a missing
+# time-of-day with the CURRENT wall-clock time (so the cutoff moved with
+# every build — observed as boundary commits flapping in/out of
+# git_commits_enriched.csv), and plain --since is a walk-termination
+# heuristic rather than a filter. Pin midnight UTC and use
+# --since-as-filter (git >= 2.37), which walks everything and filters by
+# date exactly.
+SINCE_FILTER = f"--since-as-filter={GIT_HISTORY_SINCE}T00:00:00Z"
+
 
 class CommitRecord(NamedTuple):
     "One commit on one branch, verbatim (full ISO timestamp, full body)."
@@ -72,7 +82,7 @@ def commit_records() -> list[CommitRecord]:
     for branch in BRANCHES:
         log = git(
             "log",
-            f"--since={GIT_HISTORY_SINCE}",
+            SINCE_FILTER,
             "--format=%H%x00%cI%x00%s%x00%b%x01",
             branch_range(branch),
         )
@@ -97,7 +107,7 @@ def commit_file_records() -> list[CommitFileRecord]:
     """One record per (commit, file) from git log --numstat."""
     records: list[CommitFileRecord] = []
     for branch in BRANCHES:
-        log = git("log", f"--since={GIT_HISTORY_SINCE}", "--format=%x01%H", "--numstat", branch_range(branch))
+        log = git("log", SINCE_FILTER, "--format=%x01%H", "--numstat", branch_range(branch))
         commit_hash = ""
         for line in log.splitlines():
             if line.startswith("\x01"):
