@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: bug_report_outcomes
+    description: >
+      One row per numbered pgsql-bugs report ->
+      ../data/derived/bug_report_outcomes.csv: acted-upon flag, link kind,
+      first linked commit day, report-to-fix latency.
+    columns:
+      - name: bug_number
+        tests: [unique, not_null]
+      - name: reported_dt
+        tests: [not_null]
+      - name: acted_upon
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]

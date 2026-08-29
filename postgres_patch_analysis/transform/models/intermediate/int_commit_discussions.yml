@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: int_commit_discussions
+    description: >
+      (commit_hash, message_id) from Discussion: trailers in commit bodies
+      — the ground-truth link from fixes to mailing-list threads.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [commit_hash, message_id]
+    columns:
+      - name: commit_hash
+        tests: [not_null]
+      - name: message_id
+        tests: [not_null]

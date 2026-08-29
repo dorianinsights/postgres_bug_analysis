@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: bug_reports_monthly
+    description: >
+      Monthly pgsql-bugs report volume vs acted-upon rate ->
+      ../data/derived/bug_reports_monthly.csv (recent months
+      right-censored). Tested at int_bug_monthly; the decimal pct column
+      re-sniffs as text in this CSV-backed view.
+    columns:
+      - name: report_month_dt
+        tests: [unique, not_null]
+      - name: n_reports
+        tests: [not_null]

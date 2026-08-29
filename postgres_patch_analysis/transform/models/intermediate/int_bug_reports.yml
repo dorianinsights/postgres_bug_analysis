@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: int_bug_reports
+    description: >
+      One row per numbered pgsql-bugs report whose root message falls in
+      the corpus window. Grain = bug_number.
+    columns:
+      - name: bug_number
+        tests: [unique, not_null]
+      - name: reported_dt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "'2016-10-01'"
+                max_value: current_date + 2
+      - name: root_message_id
+        tests: [unique, not_null]
+      - name: n_thread_messages
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
