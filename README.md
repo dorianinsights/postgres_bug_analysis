@@ -102,7 +102,11 @@ rules without re-scraping; one `.csv` per mart, same name):
 | `fix_origins.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
 | `origin_activity_monthly.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
 | `pending_fix_origins.csv` | (ships_at, origin) | the in-progress next wave: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
-| `fix_impact.csv` | one distinct fix | impact profile: change size (files/line churn), CVE severity (worst CVSS v3 base score + band), backpatch breadth, and report-to-fix latency — the raw material for size/severity-vs-outcome analysis |
+| `fct_fixes.csv` | one distinct fix | the fix-grain star fact: change size (files/line churn), worst CVE severity, backpatch breadth, report-to-fix latency, `wave_key` (-> `dim_release_wave`) and the primary linked bug |
+| `dim_cve.csv` | one CVE | CVE dimension: CVSS v3 base score + band + vector + component for every CVE a corpus fix cites |
+| `dim_bug.csv` | one bug report | bug dimension: `bug_report_outcomes` conformed into the star, reporter -> `dim_person`, report day -> `dim_date` |
+| `bridge_fix_cve.csv` | (fix, CVE) | bridge for the fix<->CVE many-to-many |
+| `bridge_fix_bug.csv` | (fix, bug) | bridge for the fix<->bug many-to-many |
 | `dim_person.csv` | one person | the unified person/entity dimension: git patch authors, git committers, and list senders resolved (first-pass, on normalized email) to one row per person, with role flags and first/last-seen |
 | `dim_date.csv` | one calendar day | the date dimension spanning the corpus, keyed `YYYYMMDD` |
 | `dim_release_wave.csv` | one release wave | the wave dimension: scale (fixes/CVEs/security), flags, and wrap date |
@@ -184,11 +188,15 @@ every object's name. Layers:
     conformed star sits at the lowest grains: `dim_person` (git authors +
     committers + list senders unified to one person, keyed by the shared
     `person_key()` macro so the facts join without drift), `dim_date`,
-    `dim_release_wave`, and the two facts `fct_commits` (commit grain) and
-    `fct_messages` (message grain). Referential integrity is enforced by
-    `relationships` tests on every FK, and singular tests pin each fact's
-    row count to its staging grain. Added alongside the existing marts (not a
-    replacement) so consumers can migrate onto the dims over time.
+    `dim_release_wave`, `dim_cve` and `dim_bug`, with three facts —
+    `fct_commits` (commit grain), `fct_messages` (message grain) and
+    `fct_fixes` (fix grain). The fix<->CVE and fix<->bug many-to-manys go
+    through `bridge_fix_cve` / `bridge_fix_bug`; `fct_fixes` keeps only the
+    worst severity and primary bug denormalized. Referential integrity is
+    enforced by `relationships` tests on every FK, and singular tests pin
+    each fact's row count to its grain. Mostly added alongside the existing
+    marts so consumers can migrate over time — the one replacement so far is
+    `fct_fixes`, which supersedes the earlier `fix_impact`.
 - `seeds/` — the classification data: `categories` (bucket + display
   order), `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules),

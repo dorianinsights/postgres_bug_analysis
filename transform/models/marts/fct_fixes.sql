@@ -1,0 +1,65 @@
+-- Fix-grain fact: one row per distinct fix (replaces the Round A fix_impact).
+-- Change size (int_fix_changes), worst CVE severity denormalized from
+-- int_fix_severity, and the bug linkage from int_fix_bug_links, with a
+-- wave_key FK into dim_release_wave. The many-to-many CVE and bug detail lives
+-- in bridge_fix_cve / bridge_fix_bug; here we keep the worst severity and the
+-- primary (fastest-resolved) bug for convenient single-row analysis.
+-- Grain = item_ord. -> ../data/derived/fct_fixes.csv
+WITH group_sizes AS (
+  SELECT
+    group_ord,
+    COUNT(*) AS branch_item_cnt
+  FROM {{ ref('int_fix_groups') }}
+  GROUP BY ALL
+),
+
+bug_agg AS (
+  SELECT
+    fbl.item_ord,
+    COUNT(*)::BIGINT AS bug_link_cnt,
+    MIN(ibo.days_to_commit) AS days_to_fix_min
+  FROM {{ ref('int_fix_bug_links') }} AS fbl
+  LEFT JOIN {{ ref('int_bug_outcomes') }} AS ibo ON fbl.bug_number = ibo.bug_number
+  GROUP BY ALL
+),
+
+primary_bug AS (
+  SELECT
+    fbl.item_ord,
+    fbl.bug_number AS primary_bug_number
+  FROM {{ ref('int_fix_bug_links') }} AS fbl
+  LEFT JOIN {{ ref('int_bug_outcomes') }} AS ibo ON fbl.bug_number = ibo.bug_number
+  QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY fbl.item_ord ORDER BY ibo.days_to_commit ASC NULLS LAST, fbl.bug_number ASC
+  ) = 1
+)
+
+SELECT
+  chg.item_ord,
+  STRFTIME(chg.wave_dt, '%Y%m%d')::INTEGER AS wave_key,
+  chg.wave_dt,
+  chg.version,
+  chg.item_index,
+  chg.category,
+  chg.dominant_subsystem,
+  waves.is_out_of_band,
+  grp.branch_item_cnt,
+  chg.file_cnt,
+  chg.lines_added_sum,
+  chg.lines_deleted_sum,
+  chg.lines_added_sum + chg.lines_deleted_sum AS churn_sum,
+  chg.has_test_changes,
+  chg.is_docs_only,
+  sev.cve_cnt,
+  sev.scored_cve_cnt,
+  sev.max_cvss_base_score,
+  sev.severity_band,
+  COALESCE(bag.bug_link_cnt, 0) AS bug_link_cnt,
+  pbg.primary_bug_number,
+  bag.days_to_fix_min
+FROM {{ ref('int_fix_changes') }} AS chg
+INNER JOIN group_sizes AS grp ON chg.item_ord = grp.group_ord
+INNER JOIN {{ ref('int_waves') }} AS waves ON chg.wave_dt = waves.wave_dt
+LEFT JOIN {{ ref('int_fix_severity') }} AS sev ON chg.item_ord = sev.item_ord
+LEFT JOIN bug_agg AS bag ON chg.item_ord = bag.item_ord
+LEFT JOIN primary_bug AS pbg ON chg.item_ord = pbg.item_ord

@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: bridge_fix_bug
+    description: >
+      Fix<->bug bridge -> ../data/derived/bridge_fix_bug.csv: one row per
+      (fix, bug report). Grain = (item_ord, bug_number).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [item_ord, bug_number]
+    columns:
+      - name: item_ord
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_fixes')
+                field: item_ord
+      - name: bug_number
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_bug')
+                field: bug_number

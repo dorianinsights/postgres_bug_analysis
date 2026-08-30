@@ -2,7 +2,7 @@
 # outcomes — time to fix, backpatch breadth, emergency handling. Size comes
 # from the representative commit's diff (files + line churn); severity from
 # the CVSS v3 base score PostgreSQL publishes for each CVE. Data from the
-# transform/ dbt project (fix_impact, which joins int_fix_changes +
+# transform/ dbt project (fct_fixes, which joins int_fix_changes +
 # int_fix_severity + the bug-report latency link).
 #
 # Caveat worth stating up front: security fixes are reported through the
@@ -33,7 +33,7 @@ queries:
         )::BIGINT AS cve_latency_cnt,
         ROUND(MEDIAN(churn_sum) FILTER (WHERE severity_band IS NOT null), 0) AS cve_churn_median,
         ROUND(MEDIAN(churn_sum) FILTER (WHERE severity_band IS null), 0) AS other_churn_median
-      FROM fix_impact
+      FROM fct_fixes
 
   severity_distribution:
     description: CVE-bearing fixes by CVSS v3 severity band.
@@ -46,7 +46,7 @@ queries:
           WHEN 'HIGH' THEN 3 WHEN 'CRITICAL' THEN 4
         END AS band_order,
         COUNT(*)::BIGINT AS fix_cnt
-      FROM fix_impact
+      FROM fct_fixes
       WHERE severity_band IS NOT null
       GROUP BY ALL
       ORDER BY 2
@@ -63,7 +63,7 @@ queries:
         END AS band_order,
         ROUND(MEDIAN(churn_sum), 0) AS churn_median,
         COUNT(*)::BIGINT AS fix_cnt
-      FROM fix_impact
+      FROM fct_fixes
       WHERE severity_band IS NOT null AND churn_sum IS NOT null
       GROUP BY ALL
       ORDER BY 2
@@ -82,7 +82,7 @@ queries:
         END AS band_order,
         ROUND(MEDIAN(branch_item_cnt), 1) AS breadth_median,
         COUNT(*)::BIGINT AS fix_cnt
-      FROM fix_impact
+      FROM fct_fixes
       WHERE severity_band IS NOT null
       GROUP BY ALL
       ORDER BY 2
@@ -98,7 +98,7 @@ queries:
         churn_sum,
         days_to_fix_min,
         category
-      FROM fix_impact
+      FROM fct_fixes
       WHERE days_to_fix_min IS NOT null
         AND days_to_fix_min >= 0
         AND churn_sum IS NOT null
@@ -123,7 +123,7 @@ queries:
         END AS bucket_order,
         ROUND(MEDIAN(days_to_fix_min), 1) AS days_median,
         COUNT(*)::BIGINT AS fix_cnt
-      FROM fix_impact
+      FROM fct_fixes
       WHERE days_to_fix_min IS NOT null AND days_to_fix_min >= 0 AND churn_sum IS NOT null
       GROUP BY ALL
       ORDER BY 2

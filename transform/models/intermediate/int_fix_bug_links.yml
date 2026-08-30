@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: int_fix_bug_links
+    description: >
+      Which corpus bug reports each distinct fix traces back to, through its
+      annotated commits. Grain = (item_ord, bug_number). Feeds fct_fixes and
+      bridge_fix_bug.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [item_ord, bug_number]
+    columns:
+      - name: item_ord
+        tests: [not_null]
+      - name: bug_number
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_bug_reports')
+                field: bug_number

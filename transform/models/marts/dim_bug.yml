@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: dim_bug
+    description: >
+      Bug-report dimension -> ../data/derived/dim_bug.csv: one row per numbered
+      pgsql-bugs report (bug_report_outcomes conformed into the star), with the
+      reporter resolved into dim_person and the report day into dim_date.
+      Grain = bug_number.
+    columns:
+      - name: bug_number
+        tests: [not_null, unique]
+      - name: reporter_person_key
+        description: NULL when the root message's sender could not be resolved.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_person')
+                field: person_key
+      - name: reported_date_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: is_acted_upon
+        tests: [not_null]

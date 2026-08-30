@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: bridge_fix_cve
+    description: >
+      Fix<->CVE bridge -> ../data/derived/bridge_fix_cve.csv: one row per
+      (fix, CVE). Grain = (item_ord, cve_id).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [item_ord, cve_id]
+    columns:
+      - name: item_ord
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_fixes')
+                field: item_ord
+      - name: cve_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_cve')
+                field: cve_id
