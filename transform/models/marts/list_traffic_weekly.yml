@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: list_traffic_weekly
+    description: >
+      Weekly mailing-list activity per list ->
+      ../data/derived/list_traffic_weekly.csv: total messages, new
+      threads, BUG # form reports, and the fix-linked subset (messages /
+      thread starts whose thread a commit eventually cites — recent
+      weeks right-censored). Grain = (week_dt, list_name).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [week_dt, list_name]
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: fix_linked_message_cnt <= message_cnt
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: thread_start_cnt <= message_cnt
+    columns:
+      - name: week_dt
+        tests: [not_null]
+      - name: earliest_ship_release_dt
+        tests: [not_null]
+      - name: list_name
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pgsql-bugs, pgsql-hackers]
+      - name: message_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

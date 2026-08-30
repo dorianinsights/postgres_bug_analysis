@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: int_message_threads
+    description: >
+      Every archived message with its resolved thread root (References
+      header, then In-Reply-To, then itself), whether it starts a thread,
+      and whether its thread was eventually cited by a commit
+      Discussion: trailer. Grain = (list_name, message_id).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [list_name, message_id]
+    columns:
+      - name: message_id
+        tests: [not_null]
+      - name: root_id
+        tests: [not_null]
+      - name: is_thread_start
+        tests: [not_null]
+      - name: is_fix_linked
+        tests: [not_null]
+      - name: earliest_ship_release_dt
+        description: >
+          First scheduled minor whose wrap falls strictly after the send
+          date — the earliest release a fix for this message could ship
+          in.
+        tests: [not_null]

@@ -1,0 +1,186 @@
+# Forward-looking view: what the next scheduled minor is on track to
+# contain, from the three early-cycle signals and their historical
+# scaling. The estimates are deliberately naive linear scalings
+# (fix_projection_estimates) — transparent bands, not fitted models.
+title: "Projected Upcoming Fix Counts"
+description: >
+  How many fixes to expect in the next scheduled minor release: live
+  accrual counters since the last wrap (the content cutoff), three
+  simple linear estimates (each early signal times its historical
+  median shipped-per-early ratio, from every closed cycle replayed at
+  today's cycle age), and the ratio history that shows how trustworthy
+  each estimator has been. Demand-side estimators (reports, messages)
+  assume the historical signal-to-fix conversion; the supply-side one
+  (committed pace) is what caught the Aug 2026 surge.
+
+queries:
+  next_wrap:
+    description: Days until the next scheduled wrap (the content cutoff).
+    source: warehouse
+    sql: |
+      SELECT
+        MIN(wrap_dt) - CURRENT_DATE AS days_to_wrap,
+        MIN(scheduled_release_dt) AS release_dt
+      FROM intermediate.int_release_calendar
+      WHERE wrap_dt > CURRENT_DATE
+
+  next_minor_reports:
+    description: Bug reports that can only ship in the next minor.
+    source: warehouse
+    sql: |
+      SELECT
+        COUNT(*) AS report_cnt,
+        COUNT(*) FILTER (WHERE is_acted_upon) AS acted_cnt
+      FROM bug_report_outcomes
+      WHERE earliest_ship_release_dt > CURRENT_DATE
+
+  next_minor_messages:
+    description: List messages accrued toward the next minor (both lists).
+    source: warehouse
+    sql: |
+      SELECT
+        SUM(message_cnt) AS message_cnt,
+        SUM(fix_linked_message_cnt) AS fix_linked_cnt
+      FROM list_traffic_weekly
+      WHERE earliest_ship_release_dt > CURRENT_DATE
+
+  next_minor_fixes:
+    description: Distinct fixes already committed in the open cycle.
+    source: warehouse
+    sql: |
+      SELECT early_distinct_fix_cnt AS fix_cnt
+      FROM git_cycle_pace
+      WHERE is_open_cycle
+
+  blended_estimate:
+    description: The equal-weight blend of the three linear estimates.
+    source: warehouse
+    sql: |
+      SELECT projected_fix_cnt
+      FROM fix_projection_estimates
+      WHERE estimator_order = 4
+
+  estimates:
+    description: The three linear estimates plus the blend.
+    source: warehouse
+    sql: |
+      SELECT estimator, estimator_order, projected_fix_cnt
+      FROM fix_projection_estimates
+      ORDER BY 2
+
+  ratio_history:
+    description: >
+      Each closed cycle's shipped-per-early-signal ratios at today's
+      cycle age — how stable each estimator's scaling factor has been.
+    source: warehouse
+    sql: |
+      SELECT ships_at_dt, 'per bug report' AS estimator, ROUND(shipped_fix_cnt * 1.0 / early_report_cnt, 2) AS ratio
+      FROM fix_projection_cycles
+      UNION ALL
+      SELECT ships_at_dt, 'per 100 list messages', ROUND(shipped_fix_cnt * 100.0 / early_message_cnt, 2)
+      FROM fix_projection_cycles
+      UNION ALL
+      SELECT ships_at_dt, 'per committed fix', ROUND(shipped_fix_cnt * 1.0 / early_fix_cnt, 2)
+      FROM fix_projection_cycles
+      ORDER BY 1, 2
+
+  pace_history:
+    description: >
+      Early committed fixes (at today's cycle age) vs the wave's final
+      shipped count, per cycle — the open cycle's early bar is the one
+      being projected.
+    source: warehouse
+    sql: |
+      SELECT STRFTIME(ships_at_dt, '%b %y') AS wave, EPOCH(ships_at_dt)::BIGINT AS wave_seq, 'early committed (at this cycle age)' AS series, early_fix_cnt AS fixes
+      FROM fix_projection_cycles
+      UNION ALL
+      SELECT STRFTIME(ships_at_dt, '%b %y') AS wave, EPOCH(ships_at_dt)::BIGINT AS wave_seq, 'shipped in the wave' AS series, shipped_fix_cnt
+      FROM fix_projection_cycles
+      UNION ALL
+      -- the open cycle: early pace so far, plus a zero 'shipped' row so
+      -- every wave has two rows (the chart sort SUMS wave_seq per wave —
+      -- unequal row counts scramble the order)
+      SELECT STRFTIME(shp.ships_at_dt, '%b %y') AS wave, EPOCH(shp.ships_at_dt)::BIGINT AS wave_seq, ser.series, CASE WHEN ser.series LIKE 'early%' THEN gcp.early_distinct_fix_cnt ELSE 0 END
+      FROM git_cycle_pace AS gcp
+      CROSS JOIN (SELECT UNNEST(['early committed (at this cycle age)', 'shipped in the wave']) AS series) AS ser,
+        (SELECT MIN(scheduled_release_dt) AS ships_at_dt
+         FROM intermediate.int_release_calendar
+         WHERE scheduled_release_dt > CURRENT_DATE) AS shp
+      WHERE gcp.is_open_cycle
+      ORDER BY 2, 3
+
+charts:
+  kpi_wrap:
+    type: kpi
+    query: next_wrap
+    value: days_to_wrap
+    label: "Days until the next wrap (content cutoff)"
+
+  kpi_reports:
+    type: kpi
+    query: next_minor_reports
+    value: report_cnt
+    label: "Bug reports accrued toward the next minor"
+    support:
+      value: acted_cnt
+      label: "already linked to a fix commit"
+
+  kpi_messages:
+    type: kpi
+    query: next_minor_messages
+    value: message_cnt
+    label: "List messages accrued toward the next minor"
+    support:
+      value: fix_linked_cnt
+      label: "in fix-bound threads so far"
+
+  kpi_fixes:
+    type: kpi
+    query: next_minor_fixes
+    value: fix_cnt
+    label: "Distinct fixes already committed this cycle"
+
+  kpi_blend:
+    type: kpi
+    query: blended_estimate
+    value: projected_fix_cnt
+    label: "Blended estimate for the next minor's fixes"
+
+  estimates:
+    type: bar
+    query: estimates
+    title: "Linear estimates for the next minor"
+    subtitle: "Each early signal times its historical median ratio; the spread IS the message — supply-side pace says a big wave"
+    x: estimator
+    y: projected_fix_cnt
+    sort: { by: estimator_order, order: asc }
+    height: 320
+
+  ratio_history:
+    type: line
+    query: ratio_history
+    title: "How each estimator's ratio has behaved"
+    subtitle: "Shipped fixes per early signal, per closed cycle at today's cycle age; Aug 26 is the supply-surge outlier"
+    x: ships_at_dt
+    y: ratio
+    color: estimator
+    height: 340
+
+  pace_history:
+    type: bar
+    query: pace_history
+    title: "Early committed fixes vs final shipped, per cycle"
+    subtitle: "At today's cycle age; the rightmost early bar (the open cycle) is the highest ever observed"
+    x: wave
+    y: fixes
+    color: series
+    sort: { by: wave_seq, order: asc }
+    style: { stack: none, orientation: vertical }
+    height: 340
+
+rows:
+  - cols: [kpi_wrap, kpi_reports, kpi_messages, kpi_fixes]
+  - cols: [kpi_blend]
+  - estimates
+  - pace_history
+  - ratio_history

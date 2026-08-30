@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: fix_projection_estimates
+    description: >
+      Simple linear estimates of the upcoming minor's fix count ->
+      ../data/derived/fix_projection_estimates.csv: each early signal
+      scaled by its historical median ratio, plus an equal-weight blend.
+      Grain = estimator.
+    tests:
+      - dbt_expectations.expect_table_row_count_to_equal:
+          arguments:
+            value: 4
+    columns:
+      - name: estimator
+        tests: [unique, not_null]
+      - name: projected_fix_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

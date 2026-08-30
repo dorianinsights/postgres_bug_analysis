@@ -50,6 +50,21 @@ queries:
       WHERE NOT is_out_of_band
       ORDER BY 1, 3
 
+  wave_category_shares:
+    description: >
+      Per-wave category shares as true fractions (sum to 1 per wave) so
+      the percent format is honest in axis and tooltip alike.
+    source: warehouse
+    sql: |
+      SELECT
+        wave_dt,
+        category,
+        category_order,
+        ROUND(fix_cnt * 1.0 / SUM(fix_cnt) OVER (PARTITION BY wave_dt), 4) AS fix_share
+      FROM wave_categories
+      WHERE NOT is_out_of_band
+      ORDER BY 1, 3
+
   wave_pad:
     description: Invisible x-domain padding points for the scheduled-wave bar charts.
     source: warehouse
@@ -305,14 +320,16 @@ charts:
 
   category_share:
     type: bar
-    query: wave_categories
+    query: wave_category_shares
     title: "Same data as shares of each wave"
     subtitle: "100% stacked"
     x: wave_dt
-    y: fix_cnt
+    y: fix_share
     color: category
     style:
-      stack: normalize
+      # true fractions stacked to 1.0 (NOT stack:normalize over counts,
+      # which percent-formats the tooltip's raw rows)
+      stack: zero
       axis_y:
         labels:
           format: ".0%"

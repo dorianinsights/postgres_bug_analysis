@@ -33,6 +33,12 @@ models:
               arguments:
                 to: ref('thread_size_windows')
                 field: label
+      - name: earliest_ship_release_dt
+        description: >
+          First scheduled minor whose wrap falls strictly after
+          reported_dt — the earliest release this report's fix could
+          ship in.
+        tests: [not_null]
       - name: days_to_commit_window
         description: NULL when the report was never linked to a commit.
         tests:

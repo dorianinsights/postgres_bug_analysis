@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: int_release_calendar
+    description: >
+      Scheduled minor releases (second Thursday of Feb/May/Aug/Nov) and
+      their wrap Mondays (release - 3 days, the content cutoff), computed
+      from the rule so it extends one release past today. Out-of-band
+      releases are deliberately absent.
+    tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: ISODOW(scheduled_release_dt) = 4
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: ISODOW(wrap_dt) = 1
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: MONTH(scheduled_release_dt) IN (2, 5, 8, 11)
+    columns:
+      - name: scheduled_release_dt
+        tests: [unique, not_null]
+      - name: wrap_dt
+        tests: [unique, not_null]

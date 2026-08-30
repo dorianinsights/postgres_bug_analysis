@@ -20,11 +20,18 @@ SELECT
   ibo.linked_via,
   ibo.first_commit_dt,
   ibo.days_to_commit,
-  ltw.label AS days_to_commit_window
+  ltw.label AS days_to_commit_window,
+  -- first scheduled minor whose wrap comes strictly after the report:
+  -- the earliest release its fix could ship in
+  cal.scheduled_release_dt AS earliest_ship_release_dt
 FROM {{ ref('int_bug_outcomes') }} AS ibo
 LEFT JOIN {{ ref('thread_size_windows') }} AS tsw
-  ON ibo.thread_message_cnt >= tsw.min_messages
+  ON
+    ibo.thread_message_cnt >= tsw.min_messages
     AND ibo.thread_message_cnt <= COALESCE(tsw.max_messages, ibo.thread_message_cnt)
 LEFT JOIN {{ ref('latency_windows') }} AS ltw
-  ON ibo.days_to_commit >= ltw.min_days
+  ON
+    ibo.days_to_commit >= ltw.min_days
     AND ibo.days_to_commit <= COALESCE(ltw.max_days, ibo.days_to_commit)
+ASOF LEFT JOIN {{ ref('int_release_calendar') }} AS cal
+  ON ibo.reported_dt < cal.wrap_dt
