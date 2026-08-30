@@ -16,8 +16,9 @@ models:
       - name: bug_number
         tests: [not_null, unique]
       - name: reporter_person_key
-        description: NULL when the root message's sender could not be resolved.
+        description: The real reporter (parsed from the form body), resolved into dim_person.
         tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('dim_person')

@@ -12,6 +12,7 @@ WITH per_key AS (
     BOOL_OR(identity_role = 'git_author') AS is_git_author,
     BOOL_OR(identity_role = 'git_committer') AS is_git_committer,
     BOOL_OR(identity_role = 'list_sender') AS is_list_sender,
+    BOOL_OR(identity_role = 'bug_reporter') AS is_bug_reporter,
     MIN((seen_ts AT TIME ZONE 'utc')::DATE) AS first_seen_dt,
     MAX((seen_ts AT TIME ZONE 'utc')::DATE) AS last_seen_dt,
     COUNT(DISTINCT source_list)::BIGINT AS source_list_cnt
@@ -41,6 +42,7 @@ SELECT
   pky.is_git_author,
   pky.is_git_committer,
   pky.is_list_sender,
+  pky.is_bug_reporter,
   pky.first_seen_dt,
   pky.last_seen_dt,
   pky.source_list_cnt

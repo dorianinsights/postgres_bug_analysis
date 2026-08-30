@@ -6,10 +6,7 @@
 -- report day -> dim_date. Grain = bug_number. -> ../data/derived/dim_bug.csv
 SELECT
   ibo.bug_number,
-  CASE
-    WHEN slm.message_id IS NOT null
-      THEN {{ person_key('slm.author_email', 'slm.author_name') }}
-  END AS reporter_person_key,
+  {{ person_key('bre.reporter_email', 'bre.reporter_name') }} AS reporter_person_key,
   STRFTIME(ibo.reported_dt, '%Y%m%d')::INTEGER AS reported_date_key,
   ibo.reported_dt,
   ibo.subject,
@@ -28,9 +25,7 @@ SELECT
   -- the earliest release its fix could ship in
   cal.scheduled_release_dt AS earliest_ship_release_dt
 FROM {{ ref('int_bug_outcomes') }} AS ibo
-INNER JOIN {{ ref('int_bug_reports') }} AS rpt ON ibo.bug_number = rpt.bug_number
-LEFT JOIN {{ ref('stg_list_messages') }} AS slm
-  ON rpt.root_message_id = slm.message_id AND slm.list_name = 'pgsql-bugs'
+INNER JOIN {{ ref('int_bug_reporters') }} AS bre ON ibo.bug_number = bre.bug_number
 LEFT JOIN {{ ref('thread_size_windows') }} AS tsw
   ON
     ibo.thread_message_cnt >= tsw.min_messages

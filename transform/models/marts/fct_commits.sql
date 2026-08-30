@@ -17,8 +17,8 @@ WITH file_stats AS (
 SELECT
   gcm.branch,
   gcm.commit_hash,
-  {{ person_key('gcm.author_email', 'gcm.author_name') }} AS author_person_key,
-  {{ person_key('gcm.committer_email', 'gcm.committer_name') }} AS committer_person_key,
+  {{ person_key('igc.patch_author_email', 'igc.patch_author_name') }} AS author_person_key,
+  {{ person_key('igc.committer_email', 'igc.committer_name') }} AS committer_person_key,
   STRFTIME((gcm.commit_ts AT TIME ZONE 'utc')::DATE, '%Y%m%d')::INTEGER AS commit_date_key,
   (gcm.commit_ts AT TIME ZONE 'utc')::DATE AS commit_dt,
   org.origin,

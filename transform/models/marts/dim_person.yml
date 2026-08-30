@@ -19,6 +19,8 @@ models:
         tests: [not_null]
       - name: is_list_sender
         tests: [not_null]
+      - name: is_bug_reporter
+        tests: [not_null]
       - name: first_seen_dt
         tests: [not_null]
       - name: last_seen_dt

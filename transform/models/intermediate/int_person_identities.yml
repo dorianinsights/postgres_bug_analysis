@@ -14,6 +14,6 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: [git_author, git_committer, list_sender]
+                values: [git_author, git_committer, list_sender, bug_reporter]
       - name: seen_ts
         tests: [not_null]
