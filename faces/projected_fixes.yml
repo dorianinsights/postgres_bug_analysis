@@ -31,7 +31,7 @@ queries:
       SELECT
         COUNT(*) AS report_cnt,
         COUNT(*) FILTER (WHERE is_acted_upon) AS acted_cnt
-      FROM bug_report_outcomes
+      FROM dim_bug
       WHERE earliest_ship_release_dt > CURRENT_DATE
 
   next_minor_messages:

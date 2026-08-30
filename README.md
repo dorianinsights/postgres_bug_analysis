@@ -94,17 +94,14 @@ rules without re-scraping; one `.csv` per mart, same name):
 | `wave_contributors.csv` | (wave, contributor) | credits parsed from the notes' trailing "(Name, Name)" lists, with first-seen wave |
 | `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
 | `git_cycle_pace.csv` | one release cycle | distinct fixes in each cycle's first N days (N = the open cycle's age) vs full totals |
-| `git_commits_enriched.csv` | one commit per branch | the commit-grain export the git face reads: UTC-day `commit_dt` plus the derived `is_plumbing` / `ai_credit` flags |
-| `fix_change_profiles.csv` | one distinct fix | what the fix's representative commit changed: files/lines, test + docs involvement, and the path-derived `dominant_subsystem` alongside the keyword category |
 | `category_vs_subsystem.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
-| `bug_report_outcomes.csv` | one BUG #NNNNN report | was the report acted upon (linked to a commit via its thread's Discussion: trailer or a bug-number mention), first linked commit day, report-to-fix latency |
 | `bug_reports_monthly.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
 | `fix_origins.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
 | `origin_activity_monthly.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
 | `pending_fix_origins.csv` | (ships_at, origin) | the in-progress next wave: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
 | `fct_fixes.csv` | one distinct fix | the fix-grain star fact: change size (files/line churn), worst CVE severity, backpatch breadth, report-to-fix latency, `wave_key` (-> `dim_release_wave`) and the primary linked bug |
 | `dim_cve.csv` | one CVE | CVE dimension: CVSS v3 base score + band + vector + component for every CVE a corpus fix cites |
-| `dim_bug.csv` | one bug report | bug dimension: `bug_report_outcomes` conformed into the star, reporter -> `dim_person`, report day -> `dim_date` |
+| `dim_bug.csv` | one bug report | bug dimension: the bug-report grain conformed into the star (outcome, latency, windows), reporter -> `dim_person`, report day -> `dim_date` |
 | `bridge_fix_cve.csv` | (fix, CVE) | bridge for the fix<->CVE many-to-many |
 | `bridge_fix_bug.csv` | (fix, bug) | bridge for the fix<->bug many-to-many |
 | `dim_person.csv` | one person | the unified person/entity dimension: git patch authors, git committers, and list senders resolved (first-pass, on normalized email) to one row per person, with role flags and first/last-seen |
@@ -179,9 +176,9 @@ every object's name. Layers:
   components), `int_fix_reps` (one categorized representative per distinct
   fix), `int_wave_summary`, `int_git_commits` (plumbing/AI-credit flags).
 - `models/marts/` — the typed tables the faces and CSV exports read: the
-  item-grain `fix_items` fact, the commit-grain `git_commits_enriched`
-  export, the wave/projection/pace rollups, and the bug-report outcome
-  marts. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
+  item-grain `fix_items` fact, the commit-grain `fct_commits`
+  fact, the wave/projection/pace rollups, and the star (dims + facts)
+  described below. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
   which downstream writers silently turn into DOUBLE — cast count-like
   sums to `::BIGINT` at the aggregation site.
   - **Star schema (Kimball).** Alongside those analysis-shaped marts, a

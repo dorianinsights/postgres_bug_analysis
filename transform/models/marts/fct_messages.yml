@@ -29,6 +29,16 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_key
+      - name: bug_number
+        description: >
+          The corpus bug report this message belongs to (from its "BUG #NNNNN"
+          subject); NULL for pgsql-hackers messages and pgsql-bugs messages
+          that name no corpus bug.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_bug')
+                field: bug_number
       - name: is_thread_start
         tests: [not_null]
       - name: is_fix_linked

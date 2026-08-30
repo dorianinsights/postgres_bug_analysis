@@ -17,7 +17,7 @@ queries:
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
         'distinct fixes' AS series,
         COUNT(DISTINCT LOWER(TRIM(subject))) AS distinct_fix_cnt
-      FROM git_commits_enriched
+      FROM fct_commits
       WHERE branch != 'master' AND NOT is_plumbing
       GROUP BY 1
       ORDER BY 1
@@ -32,7 +32,7 @@ queries:
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
         branch,
         COUNT(*) AS fix_commits
-      FROM git_commits_enriched
+      FROM fct_commits
       WHERE branch != 'master' AND NOT is_plumbing
       GROUP BY 1, 2
       ORDER BY 1, 2
@@ -47,7 +47,7 @@ queries:
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
         'AI-credited commits' AS series,
         COUNT(DISTINCT LOWER(TRIM(subject))) AS ai_credited_commits
-      FROM git_commits_enriched
+      FROM fct_commits
       WHERE ai_credit IS NOT NULL
       GROUP BY 1
       ORDER BY 1
@@ -60,7 +60,7 @@ queries:
         MIN(commit_dt) AS commit_dt,
         subject,
         MIN(ai_credit) AS credit_line
-      FROM git_commits_enriched
+      FROM fct_commits
       WHERE ai_credit IS NOT NULL
       GROUP BY 2
       ORDER BY 1 DESC

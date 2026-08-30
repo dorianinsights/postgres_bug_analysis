@@ -4,9 +4,14 @@ models:
   - name: dim_bug
     description: >
       Bug-report dimension -> ../data/derived/dim_bug.csv: one row per numbered
-      pgsql-bugs report (bug_report_outcomes conformed into the star), with the
-      reporter resolved into dim_person and the report day into dim_date.
-      Grain = bug_number.
+      pgsql-bugs report, folding in the outcome/latency/window classification the
+      retired bug_report_outcomes mart used to compute, with the reporter
+      resolved into dim_person and the report day into dim_date. Grain =
+      bug_number.
+    tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (days_to_commit_window IS NOT NULL) = is_acted_upon
     columns:
       - name: bug_number
         tests: [not_null, unique]
@@ -24,5 +29,32 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_key
+      - name: reported_dt
+        tests: [not_null]
       - name: is_acted_upon
+        tests: [not_null]
+      - name: outcome
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [linked to a fix commit, no linked commit]
+      - name: thread_size_window
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('thread_size_windows')
+                field: label
+      - name: days_to_commit_window
+        description: NULL when the report was never linked to a commit.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('latency_windows')
+                field: label
+      - name: earliest_ship_release_dt
+        description: >
+          First scheduled minor whose wrap falls strictly after reported_dt —
+          the earliest release this report's fix could ship in.
         tests: [not_null]

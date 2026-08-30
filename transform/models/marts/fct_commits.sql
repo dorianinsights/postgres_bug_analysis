@@ -20,6 +20,7 @@ SELECT
   {{ person_key('gcm.author_email', 'gcm.author_name') }} AS author_person_key,
   {{ person_key('gcm.committer_email', 'gcm.committer_name') }} AS committer_person_key,
   STRFTIME((gcm.commit_ts AT TIME ZONE 'utc')::DATE, '%Y%m%d')::INTEGER AS commit_date_key,
+  (gcm.commit_ts AT TIME ZONE 'utc')::DATE AS commit_dt,
   org.origin,
   igc.is_plumbing,
   igc.ai_credit IS NOT null AS has_ai_credit,

@@ -56,7 +56,7 @@ queries:
         DATE_TRUNC('week', CURRENT_DATE) - INTERVAL 7 DAY,
         INTERVAL 7 DAY
       ) AS gsr (wk)
-      LEFT JOIN bug_report_outcomes AS bro
+      LEFT JOIN dim_bug AS bro
         ON DATE_TRUNC('week', bro.reported_dt) = gsr.wk
       GROUP BY 1
       ORDER BY 1
@@ -81,7 +81,7 @@ queries:
           DATE_TRUNC('week', CURRENT_DATE) - INTERVAL 7 DAY,
           INTERVAL 7 DAY
         ) AS gsr (wk)
-        LEFT JOIN bug_report_outcomes AS bro
+        LEFT JOIN dim_bug AS bro
           ON DATE_TRUNC('week', bro.reported_dt) = gsr.wk
         GROUP BY 1
       )
@@ -117,7 +117,7 @@ queries:
         CAST(YEAR(reported_dt) AS VARCHAR) AS report_year,
         outcome,
         COUNT(*) AS reports
-      FROM bug_report_outcomes
+      FROM dim_bug
       GROUP BY 1, 2
       ORDER BY 1, 2
 
@@ -131,7 +131,7 @@ queries:
         days_to_commit_window,
         'acted-upon reports' AS series,
         COUNT(*) AS reports
-      FROM bug_report_outcomes
+      FROM dim_bug
       WHERE is_acted_upon
       GROUP BY 1
       ORDER BY 1
@@ -144,7 +144,7 @@ queries:
         CAST(YEAR(reported_dt) AS VARCHAR) AS report_year,
         'median days to commit' AS series,
         MEDIAN(days_to_commit) AS median_days
-      FROM bug_report_outcomes
+      FROM dim_bug
       WHERE is_acted_upon
       GROUP BY 1
       ORDER BY 1
@@ -159,7 +159,7 @@ queries:
         thread_size_window,
         outcome,
         COUNT(*) AS reports
-      FROM bug_report_outcomes
+      FROM dim_bug
       GROUP BY 1, 2
       ORDER BY 1, 2
 
@@ -173,7 +173,7 @@ queries:
         CASE WHEN is_acted_upon THEN 'fixed' ELSE '-' END AS outcome,
         days_to_commit AS days_to_fix,
         SUBSTR(subject, 1, 90) AS subject
-      FROM bug_report_outcomes
+      FROM dim_bug
       -- bug_number (the tiebreak) is not in the select list, so it stays named
       ORDER BY 2 DESC, bug_number
       LIMIT 15
