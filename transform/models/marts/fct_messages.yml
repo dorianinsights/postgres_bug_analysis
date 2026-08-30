@@ -42,6 +42,15 @@ models:
       - name: sent_dt
         description: The message's UTC send day as a DATE (the period aggregates group on it).
         tests: [not_null]
+      - name: ship_release_key
+        description: >
+          The release the thread accrues toward (from earliest_ship_release_dt);
+          NULL for pre-corpus targets that have no dim_release row.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_release')
+                field: release_key
       - name: is_thread_start
         tests: [not_null]
       - name: is_fix_linked

@@ -9,9 +9,9 @@ WITH per_wave AS (
 )
 
 SELECT
-  wsm.wave_dt,
+  wsm.release_dt,
   wsm.distinct_fix_cnt,
   COALESCE(pwv.fix_cnt, 0) AS fix_cnt
-FROM {{ ref('dim_release_wave') }} AS wsm
-LEFT JOIN per_wave AS pwv ON wsm.wave_dt = pwv.wave_dt
-WHERE wsm.distinct_fix_cnt != COALESCE(pwv.fix_cnt, 0)
+FROM {{ ref('dim_release') }} AS wsm
+LEFT JOIN per_wave AS pwv ON wsm.release_dt = pwv.wave_dt
+WHERE wsm.status = 'shipped' AND wsm.distinct_fix_cnt != COALESCE(pwv.fix_cnt, 0)

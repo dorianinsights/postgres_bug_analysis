@@ -19,8 +19,9 @@ queries:
     description: The most recent release wave's headline numbers.
     source: warehouse
     sql: |
-      SELECT wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt
-      FROM dim_release_wave
+      SELECT release_dt AS wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt
+      FROM dim_release
+      WHERE status = 'shipped'
       ORDER BY 1 DESC
       LIMIT 1
 
@@ -150,11 +151,11 @@ queries:
     source: warehouse
     sql: |
       WITH fullq AS (
-        SELECT wave_dt,
-               ROW_NUMBER() OVER (ORDER BY wave_dt) - 1 AS slot,
+        SELECT release_dt AS wave_dt,
+               ROW_NUMBER() OVER (ORDER BY release_dt) - 1 AS slot,
                distinct_fix_cnt
-        FROM dim_release_wave
-        WHERE NOT is_out_of_band AND NOT is_partial_window
+        FROM dim_release
+        WHERE NOT is_out_of_band AND NOT is_partial_window AND status = 'shipped'
       ),
       fit_all AS (
         SELECT REGR_SLOPE(distinct_fix_cnt, slot) AS b, REGR_INTERCEPT(distinct_fix_cnt, slot) AS a FROM fullq
@@ -175,11 +176,11 @@ queries:
     source: warehouse
     sql: |
       WITH fullq AS (
-        SELECT wave_dt,
-               ROW_NUMBER() OVER (ORDER BY wave_dt) - 1 AS slot,
+        SELECT release_dt AS wave_dt,
+               ROW_NUMBER() OVER (ORDER BY release_dt) - 1 AS slot,
                security_fix_cnt
-        FROM dim_release_wave
-        WHERE NOT is_out_of_band AND NOT is_partial_window
+        FROM dim_release
+        WHERE NOT is_out_of_band AND NOT is_partial_window AND status = 'shipped'
       ),
       fit_all AS (
         SELECT REGR_SLOPE(security_fix_cnt, slot) AS b, REGR_INTERCEPT(security_fix_cnt, slot) AS a FROM fullq
@@ -222,9 +223,9 @@ queries:
     description: Distinct fixes per full-quarter wave (the projection base series).
     source: warehouse
     sql: |
-      SELECT wave_dt, distinct_fix_cnt
-      FROM dim_release_wave
-      WHERE NOT is_out_of_band
+      SELECT release_dt AS wave_dt, distinct_fix_cnt
+      FROM dim_release
+      WHERE NOT is_out_of_band AND status = 'shipped'
       ORDER BY 1
 
   projections:
@@ -240,9 +241,10 @@ queries:
     description: All waves with headline numbers, newest first.
     source: warehouse
     sql: |
-      SELECT wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt,
+      SELECT release_dt AS wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt,
              CASE WHEN is_out_of_band THEN 'yes' ELSE '' END AS is_out_of_band
-      FROM dim_release_wave
+      FROM dim_release
+      WHERE status = 'shipped'
       ORDER BY 1 DESC
 
 charts:

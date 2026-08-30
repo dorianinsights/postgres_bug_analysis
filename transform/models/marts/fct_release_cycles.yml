@@ -16,8 +16,8 @@ models:
           - unique
           - relationships:
               arguments:
-                to: ref('dim_release_cycle')
-                field: cycle_key
+                to: ref('dim_release')
+                field: release_key
       - name: window_days
         tests:
           - not_null

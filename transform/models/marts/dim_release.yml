@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: dim_release
+    description: >
+      Release dimension -> ../data/derived/dim_release.csv: one row per release,
+      unifying the former dim_release_wave (shipped waves, with measures) and
+      dim_release_cycle (all cycles incl. the open/future). status =
+      shipped/open/future; measures are NULL for non-shipped rows. A wave is a
+      shipped cycle. Grain = release_key (the release day's YYYYMMDD).
+    columns:
+      - name: release_key
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: release_dt
+        tests: [not_null, unique]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [shipped, open, future]
+      - name: is_out_of_band
+        tests: [not_null]
+      - name: is_partial_window
+        tests: [not_null]

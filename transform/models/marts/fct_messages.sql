@@ -29,6 +29,7 @@ SELECT
   imt.is_thread_start,
   imt.is_fix_linked,
   imt.earliest_ship_release_dt,
+  drl.release_key AS ship_release_key,
   imt.subject
 FROM {{ ref('int_message_threads') }} AS imt
 INNER JOIN {{ ref('stg_list_messages') }} AS slm
@@ -37,3 +38,6 @@ LEFT JOIN msg_bug AS mbg
   ON imt.message_id = mbg.message_id AND imt.list_name = 'pgsql-bugs'
 LEFT JOIN {{ ref('int_person_map') }} AS pmp
   ON pmp.node_id = {{ person_node('slm.author_email', 'slm.author_name') }}
+-- the release a thread accrues toward (NULL for pre-corpus targets, which have
+-- no dim_release row); the earliest_ship_release_dt degenerate date keeps those
+LEFT JOIN {{ ref('dim_release') }} AS drl ON imt.earliest_ship_release_dt = drl.release_dt
