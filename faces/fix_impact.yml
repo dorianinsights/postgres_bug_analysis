@@ -1,0 +1,226 @@
+# How big and how severe each fix was, and whether that shows up in the
+# outcomes — time to fix, backpatch breadth, emergency handling. Size comes
+# from the representative commit's diff (files + line churn); severity from
+# the CVSS v3 base score PostgreSQL publishes for each CVE. Data from the
+# transform/ dbt project (fix_impact, which joins int_fix_changes +
+# int_fix_severity + the bug-report latency link).
+#
+# Caveat worth stating up front: security fixes are reported through the
+# private security@ list and embargoed, so they almost never carry a public
+# pgsql-bugs report — the severity-vs-latency view is therefore sparse by
+# nature, and the load-bearing severity correlations are size and backpatch
+# breadth (both fully populated for every CVE fix).
+title: "PostgreSQL Fix Impact & Severity"
+description: >
+  Rating past fixes by size (files touched, lines added/removed from the
+  representative commit) and, for security fixes, CVE severity (CVSS v3
+  base score from postgresql.org/support/security), then correlating both
+  against outcomes: report-to-fix latency, backpatch breadth, and
+  out-of-band emergency waves.
+
+queries:
+
+  headline:
+    description: Corpus-wide impact counts, including the embargo gap in CVE latency coverage.
+    source: warehouse
+    sql: |
+      SELECT
+        COUNT(*)::BIGINT AS fix_cnt,
+        COUNT(*) FILTER (WHERE severity_band IS NOT null)::BIGINT AS cve_fix_cnt,
+        COUNT(*) FILTER (WHERE days_to_fix_min IS NOT null)::BIGINT AS latency_cnt,
+        COUNT(*) FILTER (
+          WHERE severity_band IS NOT null AND days_to_fix_min IS NOT null
+        )::BIGINT AS cve_latency_cnt,
+        ROUND(MEDIAN(churn_sum) FILTER (WHERE severity_band IS NOT null), 0) AS cve_churn_median,
+        ROUND(MEDIAN(churn_sum) FILTER (WHERE severity_band IS null), 0) AS other_churn_median
+      FROM fix_impact
+
+  severity_distribution:
+    description: CVE-bearing fixes by CVSS v3 severity band.
+    source: warehouse
+    sql: |
+      SELECT
+        severity_band,
+        CASE severity_band
+          WHEN 'NONE' THEN 0 WHEN 'LOW' THEN 1 WHEN 'MEDIUM' THEN 2
+          WHEN 'HIGH' THEN 3 WHEN 'CRITICAL' THEN 4
+        END AS band_order,
+        COUNT(*)::BIGINT AS fix_cnt
+      FROM fix_impact
+      WHERE severity_band IS NOT null
+      GROUP BY ALL
+      ORDER BY 2
+
+  churn_by_severity:
+    description: Median line churn (added + deleted) of the representative commit, by severity band.
+    source: warehouse
+    sql: |
+      SELECT
+        severity_band,
+        CASE severity_band
+          WHEN 'NONE' THEN 0 WHEN 'LOW' THEN 1 WHEN 'MEDIUM' THEN 2
+          WHEN 'HIGH' THEN 3 WHEN 'CRITICAL' THEN 4
+        END AS band_order,
+        ROUND(MEDIAN(churn_sum), 0) AS churn_median,
+        COUNT(*)::BIGINT AS fix_cnt
+      FROM fix_impact
+      WHERE severity_band IS NOT null AND churn_sum IS NOT null
+      GROUP BY ALL
+      ORDER BY 2
+
+  breadth_by_severity:
+    description: >
+      Median backpatch breadth (how many stable branches the fix landed on)
+      by severity band — do more severe fixes get carried to more releases?
+    source: warehouse
+    sql: |
+      SELECT
+        severity_band,
+        CASE severity_band
+          WHEN 'NONE' THEN 0 WHEN 'LOW' THEN 1 WHEN 'MEDIUM' THEN 2
+          WHEN 'HIGH' THEN 3 WHEN 'CRITICAL' THEN 4
+        END AS band_order,
+        ROUND(MEDIAN(branch_item_cnt), 1) AS breadth_median,
+        COUNT(*)::BIGINT AS fix_cnt
+      FROM fix_impact
+      WHERE severity_band IS NOT null
+      GROUP BY ALL
+      ORDER BY 2
+
+  size_vs_latency:
+    description: >
+      Every bug-linked fix: change size (line churn) vs report-to-fix days,
+      colored by category. The cloud is mostly non-security work — security
+      fixes rarely have a public report to measure latency from.
+    source: warehouse
+    sql: |
+      SELECT
+        churn_sum,
+        days_to_fix_min,
+        category
+      FROM fix_impact
+      WHERE days_to_fix_min IS NOT null
+        AND days_to_fix_min >= 0
+        AND churn_sum IS NOT null
+      ORDER BY 1
+
+  latency_by_size:
+    description: >
+      Median report-to-fix latency by fix-size bucket (line churn) — does a
+      bigger change take longer to land? Bug-linked fixes only.
+    source: warehouse
+    sql: |
+      SELECT
+        CASE
+          WHEN churn_sum < 20 THEN 'small (<20 lines)'
+          WHEN churn_sum < 100 THEN 'medium (20-99)'
+          ELSE 'large (100+)'
+        END AS size_bucket,
+        CASE
+          WHEN churn_sum < 20 THEN 0
+          WHEN churn_sum < 100 THEN 1
+          ELSE 2
+        END AS bucket_order,
+        ROUND(MEDIAN(days_to_fix_min), 1) AS days_median,
+        COUNT(*)::BIGINT AS fix_cnt
+      FROM fix_impact
+      WHERE days_to_fix_min IS NOT null AND days_to_fix_min >= 0 AND churn_sum IS NOT null
+      GROUP BY ALL
+      ORDER BY 2
+
+charts:
+
+  kpi_fixes:
+    type: kpi
+    query: headline
+    value: fix_cnt
+    label: "Distinct fixes profiled"
+
+  kpi_cve:
+    type: kpi
+    query: headline
+    value: cve_fix_cnt
+    label: "CVE-bearing fixes (with CVSS severity)"
+    support:
+      value: cve_latency_cnt
+      label: "of them with a public bug-report latency (the rest embargoed)"
+
+  kpi_churn:
+    type: kpi
+    query: headline
+    value: cve_churn_median
+    label: "Median line churn, CVE fixes"
+    support:
+      value: other_churn_median
+      label: "median churn, everything else"
+
+  kpi_latency:
+    type: kpi
+    query: headline
+    value: latency_cnt
+    label: "Fixes with a linked report-to-fix latency"
+
+  severity_distribution:
+    type: bar
+    query: severity_distribution
+    title: "Security fixes by CVSS v3 severity"
+    subtitle: "Distinct CVE-bearing fixes per base-score band (postgresql.org/support/security)"
+    x: severity_band
+    y: fix_cnt
+    color: severity_band
+    sort: { by: band_order, order: asc }
+    style: { orientation: vertical }
+    height: 320
+
+  churn_by_severity:
+    type: bar
+    query: churn_by_severity
+    title: "Fix size by severity"
+    subtitle: "Median line churn (added + deleted) of the representative commit; higher-severity CVEs are not necessarily larger changes"
+    x: severity_band
+    y: churn_median
+    color: severity_band
+    sort: { by: band_order, order: asc }
+    style: { orientation: vertical }
+    height: 320
+
+  breadth_by_severity:
+    type: bar
+    query: breadth_by_severity
+    title: "Backpatch breadth by severity"
+    subtitle: "Median number of stable branches a fix landed on, by severity band — 'inclusion across releases'"
+    x: severity_band
+    y: breadth_median
+    color: severity_band
+    sort: { by: band_order, order: asc }
+    style: { orientation: vertical }
+    height: 320
+
+  size_vs_latency:
+    type: scatter
+    query: size_vs_latency
+    title: "Fix size vs time to fix"
+    subtitle: "Each bug-linked fix: line churn (x) vs report-to-fix days (y), colored by category"
+    x: churn_sum
+    y: days_to_fix_min
+    color: category
+    height: 420
+
+  latency_by_size:
+    type: bar
+    query: latency_by_size
+    title: "Time to fix by change size"
+    subtitle: "Median report-to-fix latency per size bucket (bug-linked fixes) — does a bigger change take longer to land?"
+    x: size_bucket
+    y: days_median
+    sort: { by: bucket_order, order: asc }
+    style: { orientation: vertical }
+    height: 320
+
+rows:
+  - cols: [kpi_fixes, kpi_cve, kpi_churn, kpi_latency]
+  - severity_distribution
+  - churn_by_severity
+  - breadth_by_severity
+  - latency_by_size
+  - size_vs_latency

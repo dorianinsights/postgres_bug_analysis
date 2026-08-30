@@ -18,3 +18,4 @@ sources:
       - name: releases
       - name: release_items
       - name: item_commits
+      - name: cve_severity

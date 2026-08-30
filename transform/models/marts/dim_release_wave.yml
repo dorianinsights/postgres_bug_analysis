@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: dim_release_wave
+    description: >
+      Release-wave dimension -> ../data/derived/dim_release_wave.csv: one row
+      per same-day release wave with scale + flags and (for scheduled waves)
+      the wrap date. A conformed dimension; no fact keys it in this round
+      (a commit's or a future message's wave is deliberately fuzzy). Grain =
+      wave_key.
+    columns:
+      - name: wave_key
+        tests: [not_null, unique]
+      - name: wave_dt
+        tests: [not_null, unique]
+      - name: is_out_of_band
+        tests: [not_null]
+      - name: is_partial_window
+        tests: [not_null]

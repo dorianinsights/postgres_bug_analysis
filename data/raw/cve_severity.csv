@@ -1,0 +1,71 @@
+cve_id,component,cvss_base_score,cvss_vector
+CVE-2021-23214,core server,8.1,AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H
+CVE-2021-23222,client,3.7,AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N
+CVE-2022-1552,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2022-2625,core server,7.1,AV:N/AC:H/PR:L/UI:R/S:U/C:H/I:H/A:H
+CVE-2022-41862,client,3.7,AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N
+CVE-2023-2454,core server,7.2,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H
+CVE-2023-2455,core server,4.2,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N
+CVE-2023-39417,core server,7.5,AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2023-39418,core server,3.1,AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N
+CVE-2023-5868,core server,4.3,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N
+CVE-2023-5869,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2023-5870,core server,2.2,AV:N/AC:H/PR:H/UI:N/S:U/C:N/I:N/A:L
+CVE-2024-0985,core server,8.0,AV:N/AC:L/PR:L/UI:R/S:U/C:H/I:H/A:H
+CVE-2024-10976,core server,4.2,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N
+CVE-2024-10977,client,3.1,AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N
+CVE-2024-10978,core server,4.2,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N
+CVE-2024-10979,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2024-4317,core server,3.1,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:N/A:N
+CVE-2024-7348,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2025-1094,core server,8.1,AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H
+CVE-2025-12817,core server,3.1,AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L
+CVE-2025-12818,core server,5.9,AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H
+CVE-2025-4207,core server,5.9,AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H
+CVE-2025-8713,core server,3.1,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:N/A:N
+CVE-2025-8714,core server,8.8,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+CVE-2025-8715,core server,8.8,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+CVE-2026-14662,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-14663,contrib module,6.5,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N
+CVE-2026-14664,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-14666,core server,4.2,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N
+CVE-2026-14668,core server,8.1,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:H
+CVE-2026-14669,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-14670,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-14671,contrib module,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-14672,core server,5.3,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N
+CVE-2026-14673,contrib module,3.8,AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:N
+CVE-2026-14676,contrib module,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-14677,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-14678,contrib module,4.3,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N
+CVE-2026-14679,core server,8.2,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H
+CVE-2026-14680,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-14681,core server,4.2,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N
+CVE-2026-15741,core server,8.8,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+CVE-2026-15742,contrib module,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-16238,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-16239,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-16241,client,3.8,AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:L/A:L
+CVE-2026-18024,core server,4.3,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N
+CVE-2026-18408,client,8.8,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+CVE-2026-19385,client,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-2003,core server,4.3,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N
+CVE-2026-2004,contrib module,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-2005,contrib module,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-2006,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-2007,contrib module,8.2,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H
+CVE-2026-6464,client,8.1,AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-6469,core server,3.8,AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:L/A:L
+CVE-2026-6470,core server,4.3,AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L
+CVE-2026-6471,core server,7.2,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-6472,core server,5.4,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:N
+CVE-2026-6473,core server,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-6474,core server,4.3,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N
+CVE-2026-6475,client,8.8,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+CVE-2026-6476,client,7.2,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-6477,client,8.8,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+CVE-2026-6478,core server,6.5,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N
+CVE-2026-6479,core server,7.5,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+CVE-2026-6575,core server,4.3,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N
+CVE-2026-6637,contrib module,8.8,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+CVE-2026-6638,core server,3.7,AV:N/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:N

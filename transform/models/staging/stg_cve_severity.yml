@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: stg_cve_severity
+    description: >
+      Typed view over data/raw/cve_severity.csv (scrape_cve_severity.py):
+      one published PostgreSQL CVE per row with its CVSS v3 base score,
+      vector, affected component, and the derived NONE/LOW/MEDIUM/HIGH/
+      CRITICAL band. Grain = cve_id.
+    columns:
+      - name: cve_id
+        tests:
+          - not_null
+          - unique
+          - dbt_utils.not_empty_string
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^CVE-\d{4}-\d+$'
+      - name: cvss_base_score
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 10
+      - name: severity_band
+        tests:
+          - accepted_values:
+              arguments:
+                values: [NONE, LOW, MEDIUM, HIGH, CRITICAL]

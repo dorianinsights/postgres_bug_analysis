@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: int_fix_severity
+    description: >
+      CVE severity per distinct CVE-bearing fix: the worst (highest) CVSS
+      v3 base score and its band across the fix's CVEs, plus how many of
+      its CVEs the security page actually scores. Grain = item_ord.
+    columns:
+      - name: item_ord
+        tests: [not_null, unique]
+      - name: cve_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: max_cvss_base_score
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 10
+      - name: severity_band
+        tests:
+          - accepted_values:
+              arguments:
+                values: [NONE, LOW, MEDIUM, HIGH, CRITICAL]

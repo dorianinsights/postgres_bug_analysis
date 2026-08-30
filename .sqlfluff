@@ -9,6 +9,12 @@ max_line_length = 400
 # ON <left>.<col> = <right>.<col>.
 exclude_rules = ST06
 
+# Load the project macros so calls like {{ person_key(...) }} expand during
+# lint (the built-in dummy ref/source/config cover the rest). Pure-SQL
+# macros only — no dbt compile.
+[sqlfluff:templater:jinja]
+load_macros_from_path = transform/macros
+
 [sqlfluff:rules:layout.long_lines]
 ignore_comment_lines = True
 ignore_comment_clauses = True

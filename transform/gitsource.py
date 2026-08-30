@@ -42,6 +42,10 @@ class CommitRecord(NamedTuple):
     branch: str
     hash: str
     commit_ts: str
+    author_name: str
+    author_email: str
+    committer_name: str
+    committer_email: str
     subject: str
     body: str
 
@@ -83,19 +87,28 @@ def commit_records() -> list[CommitRecord]:
         log = git(
             "log",
             SINCE_FILTER,
-            "--format=%H%x00%cI%x00%s%x00%b%x01",
+            # author (%an/%ae) and committer (%cn/%ce) identities land before
+            # the subject; the multi-line body stays last so it can't be
+            # confused with a delimited field.
+            "--format=%H%x00%cI%x00%an%x00%ae%x00%cn%x00%ce%x00%s%x00%b%x01",
             branch_range(branch),
         )
         for record in log.split("\x01"):
             record = record.strip("\n")
             if not record.strip():
                 continue
-            commit_hash, date_iso, subject, body = (record.split("\x00") + ["", "", ""])[:4]
+            fields = (record.split("\x00") + [""] * 8)[:8]
+            commit_hash, date_iso, author_name, author_email = fields[:4]
+            committer_name, committer_email, subject, body = fields[4:]
             records.append(
                 CommitRecord(
                     branch=branch,
                     hash=commit_hash,
                     commit_ts=date_iso,
+                    author_name=author_name,
+                    author_email=author_email,
+                    committer_name=committer_name,
+                    committer_email=committer_email,
                     subject=subject,
                     body=body.strip("\n"),
                 )

@@ -13,6 +13,11 @@
             "type": "command",
             "command": ".claude/hooks/pyright-check.sh",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/sqlfluff-lint.sh",
+            "timeout": 60
           }
         ]
       }

@@ -8,7 +8,7 @@ Three explicit stages, each re-runnable on its own:
 
 ```
 scrape_release_notes_sgml.py ──> data/raw/*.csv ──────┐
-                                 (scraper output)     │
+scrape_cve_severity.py ─────────> (scraper output)    │
 postgres_clone.py ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> transform.duckdb marts ──> faces/*.yml (dct)
                       (full bare clone)               │        │ (typed tables — what the faces read)           (visualization)
                                                       │        └────> data/derived/*.csv (diffable audit export)
@@ -36,6 +36,10 @@ python3.12 -m venv venv
 #    in .env (gitignored). Past months are cached forever; only the
 #    current month is re-fetched.
 ./venv/bin/python mailing_list_sync.py
+
+#    Scrape the published CVSS severity ratings for PostgreSQL's CVEs
+#    (one small HTTP fetch; overwrites data/raw/cve_severity.csv).
+./venv/bin/python scrape_cve_severity.py
 
 # 2. Derive analysis datasets (dbt project; profiles.yml is local to the
 #    directory, so no ~/.dbt setup is needed; deps installs dbt_utils +
@@ -69,13 +73,14 @@ threading headers the indexes never had. pgsql-hackers joined pgsql-bugs
 in the sync so commit Discussion: trailers can be resolved to their
 source list (the origin-attribution models).
 
-Raw (`data/raw/`, from the release-notes scraper — rerun it to refresh):
+Raw (`data/raw/`, from the scrapers — rerun them to refresh):
 
 | File | Grain | Source |
 |---|---|---|
 | `releases.csv` | one minor release | release-notes SGML sources in postgres.git (`doc/src/sgml/release-NN.sgml` per stable branch), majors 15-18 |
 | `release_items.csv` | one changelog item | same sources: summary and full text (CVE ids are derived downstream) |
 | `item_commits.csv` | one (item, branch-commit) | the SGML comment annotations: author + every branch each fix landed on, with commit hash — ground truth linking changelog items to git commits |
+| `cve_severity.csv` | one published PostgreSQL CVE | `scrape_cve_severity.py` from postgresql.org/support/security: CVSS v3 base score + vector + component (the NONE/LOW/MEDIUM/HIGH/CRITICAL band is derived downstream) |
 
 Derived (`data/derived/`, the CSV audit exports of the mart tables, written
 by the transform's on-run-end hook — rerun `dbt build` to change analysis
@@ -96,6 +101,16 @@ rules without re-scraping; one `.csv` per mart, same name):
 | `bug_reports_monthly.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
 | `fix_origins.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
 | `origin_activity_monthly.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
+| `pending_fix_origins.csv` | (ships_at, origin) | the in-progress next wave: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
+| `fix_impact.csv` | one distinct fix | impact profile: change size (files/line churn), CVE severity (worst CVSS v3 base score + band), backpatch breadth, and report-to-fix latency — the raw material for size/severity-vs-outcome analysis |
+| `dim_person.csv` | one person | the unified person/entity dimension: git patch authors, git committers, and list senders resolved (first-pass, on normalized email) to one row per person, with role flags and first/last-seen |
+| `dim_date.csv` | one calendar day | the date dimension spanning the corpus, keyed `YYYYMMDD` |
+| `dim_release_wave.csv` | one release wave | the wave dimension: scale (fixes/CVEs/security), flags, and wrap date |
+| `fct_commits.csv` | one commit (per branch) | the commit-grain fact: FKs into `dim_person` (author + committer) and `dim_date`, diff-size measures, origin + plumbing/AI flags |
+
+(The message-grain `fct_messages` mart has **no** CSV twin — one row per
+archived message is too heavy to commit; its typed table in `transform.duckdb`
+is the interface, and `export_marts_csv` skips it.)
 
 ## Dashboards (`faces/`)
 
@@ -111,9 +126,12 @@ rules without re-scraping; one `.csv` per mart, same name):
   share, outcome and latency breakdowns, discussion volume by outcome,
   and the most-discussed reports table.
 - `origins.yml` — source attribution: fixes per wave by origin (counts
-  and share), cited discussion threads per month by source, AI-flagged
-  commits by origin — the grounding for report-volume -> fix-volume
-  projections.
+  and share, with an in-progress bar for the next wave's fixes committed so
+  far), cited discussion threads per month by source, AI-flagged commits by
+  origin — the grounding for report-volume -> fix-volume projections.
+- `fix_impact.yml` — impact & severity: security fixes by CVSS band, fix
+  size and backpatch breadth by severity, and time-to-fix vs change size —
+  how a fix's size and severity relate to its timeline and reach.
 
 Rendered copies land in `out/` (gitignored; regenerate with `dct render`).
 
@@ -162,6 +180,15 @@ every object's name. Layers:
   marts. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
   which downstream writers silently turn into DOUBLE — cast count-like
   sums to `::BIGINT` at the aggregation site.
+  - **Star schema (Kimball).** Alongside those analysis-shaped marts, a
+    conformed star sits at the lowest grains: `dim_person` (git authors +
+    committers + list senders unified to one person, keyed by the shared
+    `person_key()` macro so the facts join without drift), `dim_date`,
+    `dim_release_wave`, and the two facts `fct_commits` (commit grain) and
+    `fct_messages` (message grain). Referential integrity is enforced by
+    `relationships` tests on every FK, and singular tests pin each fact's
+    row count to its staging grain. Added alongside the existing marts (not a
+    replacement) so consumers can migrate onto the dims over time.
 - `seeds/` — the classification data: `categories` (bucket + display
   order), `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules),
@@ -221,11 +248,13 @@ wrote CRLF line endings, DuckDB writes LF).
 
 Repo-wide (config in the repo-root `pyproject.toml`, mirroring
 property_analysis): `ruff` (format + lint) and `pyright` (strict mode, all files).
-Enforced twice — per-edit via `.claude/hooks/` and at commit time by the
-blocking pre-commit gate (`.pre-commit-config.yaml`; one-time setup:
-`./venv/bin/pre-commit install`). SQL style for the dbt models follows the
-repo-root `.sqlfluff` (duckdb dialect); correctness of the models is covered
-by the dbt tests themselves.
+SQL style for the dbt models is linted by `sqlfluff` (duckdb dialect + jinja
+templater; config in the repo-root `.sqlfluff`); correctness of the models is
+covered by the dbt tests themselves. All three are enforced twice — per-edit
+via `.claude/hooks/` (`ruff-lint.sh`, `pyright-check.sh`, `sqlfluff-lint.sh`)
+and at commit time by the blocking pre-commit gate (`.pre-commit-config.yaml`;
+one-time setup: `./venv/bin/pre-commit install`). Auto-fix layout nits with
+`./venv/bin/sqlfluff fix <file>`.
 
 ## Analysis conventions
 

@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: >
+      Calendar dimension -> ../data/derived/dim_date.csv: one row per day from
+      the earliest corpus commit/message through the last scheduled release.
+      Grain = date_key (YYYYMMDD).
+    columns:
+      - name: date_key
+        tests: [not_null, unique]
+      - name: date_day
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "{{ var('test_floor_release_dt') }}"
+                max_value: current_date + 200
+      - name: is_weekday
+        tests: [not_null]

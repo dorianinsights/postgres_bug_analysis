@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: dim_person
+    description: >
+      Person/entity dimension -> ../data/derived/dim_person.csv: one row per
+      distinct person (git patch author, git committer, and/or list sender),
+      resolved first-pass on normalized email. Grain = person_key.
+    columns:
+      - name: person_key
+        tests: [not_null, unique]
+      - name: canonical_name
+        tests:
+          - not_null
+          - dbt_utils.not_empty_string
+      - name: is_git_author
+        tests: [not_null]
+      - name: is_git_committer
+        tests: [not_null]
+      - name: is_list_sender
+        tests: [not_null]
+      - name: first_seen_dt
+        tests: [not_null]
+      - name: last_seen_dt
+        tests: [not_null]
+      - name: source_list_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

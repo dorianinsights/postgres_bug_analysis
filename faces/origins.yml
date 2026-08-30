@@ -17,6 +17,59 @@ description: >
   origin_activity_monthly).
 
 queries:
+
+  fix_origin_shares:
+    ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the zero-fill spine is a deliberate cross join
+    description: >
+      True per-wave origin shares (fractions summing to 1) so the percent
+      format is honest in the axis AND the tooltip's value/Total rows —
+      feeding counts through stack:normalize left the tooltip's raw rows
+      percent-formatted ("2000%").
+    source: warehouse
+    sql: |
+      WITH waves AS (
+        SELECT DISTINCT wave_dt FROM fix_origins WHERE NOT is_out_of_band
+      ),
+      origins AS (
+        SELECT DISTINCT origin FROM fix_origins
+      )
+      SELECT
+        STRFTIME(wvs.wave_dt, '%b %y') AS wave,
+        EPOCH(wvs.wave_dt)::BIGINT AS wave_seq,
+        CASE org.origin
+          WHEN 'unknown_or_internal_security' THEN 'embargoed security'
+          WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
+          ELSE org.origin
+        END AS origin,
+        ROUND(
+          COALESCE(fxo.fix_cnt, 0)
+          * 1.0 / SUM(COALESCE(fxo.fix_cnt, 0)) OVER (PARTITION BY wvs.wave_dt),
+          4
+        ) AS fix_share
+      FROM waves AS wvs
+      CROSS JOIN origins AS org
+      LEFT JOIN fix_origins AS fxo
+        ON fxo.wave_dt = wvs.wave_dt AND fxo.origin = org.origin
+      UNION ALL
+      -- the in-progress next wave's origin shares (see fix_origins below)
+      SELECT
+        (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM pending_fix_origins),
+        (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM pending_fix_origins),
+        labels.origin,
+        ROUND(
+          COALESCE(pnd.fix_cnt, 0)
+          * 1.0 / (SELECT SUM(fix_cnt) FROM pending_fix_origins),
+          4
+        )
+      FROM (SELECT UNNEST(['pgsql-bugs', 'pgsql-hackers', 'embargoed security', 'unsourced']) AS origin) AS labels
+      LEFT JOIN (
+        SELECT
+          CASE origin WHEN 'unknown_or_internal' THEN 'unsourced' ELSE origin END AS origin,
+          fix_cnt
+        FROM pending_fix_origins
+      ) AS pnd ON pnd.origin = labels.origin
+      ORDER BY 2, 3
+
   fix_origins:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the zero-fill spine is a deliberate cross join
     description: >
@@ -48,6 +101,24 @@ queries:
       CROSS JOIN origins AS org
       LEFT JOIN fix_origins AS fxo
         ON fxo.wave_dt = wvs.wave_dt AND fxo.origin = org.origin
+      UNION ALL
+      -- the in-progress next wave: fixes already committed toward the next
+      -- minor (pending_fix_origins), zero-filled over the same four display
+      -- labels so the categorical sort (which SUMS wave_seq per wave) keeps
+      -- it last. 'embargoed security' is 0 by construction — that work only
+      -- reaches public git on wrap day.
+      SELECT
+        (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM pending_fix_origins),
+        (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM pending_fix_origins),
+        labels.origin,
+        COALESCE(pnd.fix_cnt, 0)
+      FROM (SELECT UNNEST(['pgsql-bugs', 'pgsql-hackers', 'embargoed security', 'unsourced']) AS origin) AS labels
+      LEFT JOIN (
+        SELECT
+          CASE origin WHEN 'unknown_or_internal' THEN 'unsourced' ELSE origin END AS origin,
+          fix_cnt
+        FROM pending_fix_origins
+      ) AS pnd ON pnd.origin = labels.origin
       ORDER BY 2, 3
 
   cited_threads:
@@ -81,12 +152,77 @@ queries:
       WHERE month_dt >= DATE '2026-01-01'
       ORDER BY 1, 2
 
+  monthly_traffic:
+    description: >
+      Monthly messages per list over the whole archive, split into all
+      traffic vs the fix-linked subset (messages whose thread a commit
+      eventually cites). Complete months only.
+    source: warehouse
+    sql: |
+      SELECT month_dt, list_name || ' (all)' AS series, message_cnt AS messages
+      FROM list_traffic_monthly
+      WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
+      UNION ALL
+      SELECT month_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
+      FROM list_traffic_monthly
+      WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
+      ORDER BY 1, 2
+
+  monthly_linked_share:
+    description: >
+      Share of each month's messages that belong to commit-cited threads.
+      The sag in recent months is right-censoring, not less fix work —
+      their threads haven't been cited YET.
+    source: warehouse
+    sql: |
+      SELECT
+        month_dt,
+        list_name,
+        ROUND(fix_linked_message_cnt * 1.0 / message_cnt, 3) AS fix_linked_share
+      FROM list_traffic_monthly
+      WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
+      ORDER BY 1, 2
+
+  recent_weekly_traffic:
+    description: >
+      The same traffic split per week over the last three rolling months,
+      complete weeks only — the near-term zoom of monthly_traffic.
+    source: warehouse
+    sql: |
+      SELECT week_dt, list_name || ' (all)' AS series, message_cnt AS messages
+      FROM list_traffic_weekly
+      WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
+        AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
+      UNION ALL
+      SELECT week_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
+      FROM list_traffic_weekly
+      WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
+        AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
+      ORDER BY 1, 2
+
+  recent_weekly_share:
+    description: >
+      Fix-linked share per week over the last three rolling months.
+      Heavily right-censored — these threads have had little time to be
+      cited by commits.
+    source: warehouse
+    sql: |
+      SELECT
+        week_dt,
+        list_name,
+        ROUND(fix_linked_message_cnt * 1.0 / message_cnt, 3) AS fix_linked_share
+      FROM list_traffic_weekly
+      WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
+        AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
+      ORDER BY 1, 2
+
 charts:
+
   fix_origin_counts:
     type: bar
     query: fix_origins
     title: "Fix origins per wave"
-    subtitle: "Distinct fixes traced through Discussion: trailers to their source; out-of-band waves excluded"
+    subtitle: "Distinct fixes by source; out-of-band waves excluded. The rightmost '(in progress)' bar is the next minor's fixes committed so far — right-censored and with no security yet (embargoed until wrap)"
     x: wave
     y: fix_cnt
     color: origin
@@ -97,16 +233,18 @@ charts:
 
   fix_origin_share:
     type: bar
-    query: fix_origins
+    query: fix_origin_shares
     title: "Fix origin share per wave"
-    subtitle: "Same data, normalized; out-of-band waves excluded — pgsql-bugs supplies a quarter to a third"
+    subtitle: "Same data as shares; out-of-band waves excluded — pgsql-bugs supplies a quarter to a third. The '(in progress)' bar skews to pgsql-hackers because embargoed security work has not landed yet"
     x: wave
-    y: fix_cnt
+    y: fix_share
     color: origin
     sort: { by: wave_seq, order: asc }
     style:
       orientation: vertical
-      stack: normalize
+      # true fractions stacked to 1.0 (NOT stack:normalize over counts,
+      # which percent-formats the tooltip's raw rows)
+      stack: zero
       axis_y:
         labels:
           format: ".0%"
@@ -135,8 +273,60 @@ charts:
     style: { stack: zero }
     height: 340
 
+  monthly_traffic:
+    type: line
+    query: monthly_traffic
+    title: "Monthly list traffic vs fix-linked traffic"
+    subtitle: "Messages per month, whole archive; fix-linked = the thread is eventually cited by a commit (recent months right-censored)"
+    x: month_dt
+    y: messages
+    color: series
+    height: 380
+
+  monthly_linked_share:
+    type: line
+    query: monthly_linked_share
+    title: "Fix-linked share of monthly traffic"
+    subtitle: "Percent of each month's messages in commit-cited threads; the recent sag is right-censoring, not less fix work"
+    x: month_dt
+    y: fix_linked_share
+    color: list_name
+    style:
+      axis_y:
+        labels:
+          format: ".0%"
+    height: 340
+
+  recent_weekly_traffic:
+    type: line
+    query: recent_weekly_traffic
+    title: "Weekly list traffic, last three months"
+    subtitle: "Near-term zoom: messages per complete week vs the fix-linked subset"
+    x: week_dt
+    y: messages
+    color: series
+    height: 340
+
+  recent_weekly_share:
+    type: line
+    query: recent_weekly_share
+    title: "Fix-linked share of weekly traffic, last three months"
+    subtitle: "Heavily right-censored — recent threads have had little time to be cited"
+    x: week_dt
+    y: fix_linked_share
+    color: list_name
+    style:
+      axis_y:
+        labels:
+          format: ".0%"
+    height: 340
+
 rows:
   - fix_origin_counts
   - fix_origin_share
+  - monthly_traffic
+  - monthly_linked_share
+  - recent_weekly_traffic
+  - recent_weekly_share
   - cited_threads
   - ai_commits

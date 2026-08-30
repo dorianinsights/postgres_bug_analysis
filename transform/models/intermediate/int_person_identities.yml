@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: int_person_identities
+    description: >
+      One row per identity occurrence — git patch authors, git committers, and
+      mailing-list senders — with the shared person_key. The raw material
+      dim_person rolls up. Grain = one occurrence.
+    columns:
+      - name: person_key
+        tests: [not_null]
+      - name: identity_role
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [git_author, git_committer, list_sender]
+      - name: seen_ts
+        tests: [not_null]

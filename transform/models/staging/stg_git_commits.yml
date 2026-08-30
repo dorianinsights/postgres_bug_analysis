@@ -32,6 +32,18 @@ models:
               arguments:
                 min_value: "{{ var('test_floor_git_ts') }}"
                 max_value: current_date + 2
+      - name: author_name
+        description: The patch author's display name (git %an).
+        tests: [not_null]
+      - name: author_email
+        description: The patch author's email (git %ae) — the person-dim key basis.
+        tests: [not_null]
+      - name: committer_name
+        description: Who pushed the commit (git %cn) — often a core committer, not the author.
+        tests: [not_null]
+      - name: committer_email
+        description: The committer's email (git %ce).
+        tests: [not_null]
       - name: subject
         tests: [not_null]
       # body is NULL when the commit message has no body — no not_null

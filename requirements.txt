@@ -26,3 +26,7 @@ pyarrow-stubs==20.0.0.20260819
 ruff==0.16.5
 pyright==1.1.411
 pre_commit==4.6.2
+# SQL linter for the dbt models (duckdb dialect + jinja templater; config in
+# the repo-root .sqlfluff). Enforced per-edit by .claude/hooks/sqlfluff-lint.sh
+# and at commit time by the pre-commit gate.
+sqlfluff==4.3.0

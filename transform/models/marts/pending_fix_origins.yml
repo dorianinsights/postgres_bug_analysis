@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: pending_fix_origins
+    description: >
+      Distinct fixes committed toward the next scheduled minor but not yet
+      released, by origin -> ../data/derived/pending_fix_origins.csv. The
+      source breakdown of the in-progress wave the origins face appends to
+      the historical fix-origins chart. Grain = (ships_at_dt, origin).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [ships_at_dt, origin]
+    columns:
+      - name: ships_at_dt
+        tests: [not_null]
+      - name: wrap_dt
+        tests: [not_null]
+      - name: as_of_dt
+        tests: [not_null]
+      - name: origin
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pgsql-bugs, pgsql-hackers, unknown_or_internal]
+      - name: fix_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

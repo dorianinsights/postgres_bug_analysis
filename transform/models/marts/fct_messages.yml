@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: fct_messages
+    description: >
+      Message-grain fact: FK into dim_person (sender) and dim_date (send
+      day), plus thread/fix-link attributes. Factless — the measure is the
+      row count. Grain = (list_name, message_id). Deliberately has NO
+      data/derived CSV twin (see export_marts_csv) — one row per archived
+      message is too heavy to commit; the typed table is the interface.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [list_name, message_id]
+    columns:
+      - name: sender_person_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_person')
+                field: person_key
+      - name: sent_date_key
+        description: >
+          NULL only when the message's Date header was unparseable; the
+          relationships test skips those rows.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: is_thread_start
+        tests: [not_null]
+      - name: is_fix_linked
+        tests: [not_null]
