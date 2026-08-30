@@ -2,47 +2,37 @@
 """Sync the local postgres.git clone (full bare clone under .cache/, ~800MB).
 
 This is the raw store for the entire git side of the pipeline — there is no
-CSV landing layer for git data. The transform's models/raw_git/ Python
-models (via transform/gitsource.py) and scrape_release_notes_sgml.py both
-read this clone directly, so a `dbt build` after one sync sees a single
-consistent snapshot.
+CSV landing layer for git data. The transform's models/raw_git/ Python models
+(via transform/gitsource.py) and scrape_release_notes_sgml.py both read this
+clone directly, so a `dbt build` after one sync sees a single consistent
+snapshot.
 
-First run clones (a treeless clone left by earlier pipeline versions is
-replaced automatically); later runs fetch.
+First run clones; later runs fetch. The fetch passes explicit heads+tags
+refspecs on purpose: the pipeline reads both branch heads (refs/heads/master +
+REL_1x_STABLE — gitsource commits) AND tags (refs/tags/REL_1x_* — gitsource
+release/prerelease records), and a plain `git fetch origin` on a bare clone
+(which configures no fetch refspec of its own) writes only FETCH_HEAD, leaving
+every ref the pipeline reads frozen at clone time. Heads and tags only —
+deliberately NOT `refs/*` (that would also pull GitHub's ~hundreds of
+refs/pull/* PR refs, which nothing here reads).
 """
 
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 REPO_URL = "https://github.com/postgres/postgres.git"
 CACHE = Path(__file__).parent / ".cache" / "postgres.git"
-
-
-def git(*args: str) -> str:
-    return subprocess.run(["git", "-C", str(CACHE), *args], capture_output=True, text=True, check=True).stdout
-
-
-def partial_clone_filter() -> str:
-    proc = subprocess.run(
-        ["git", "-C", str(CACHE), "config", "remote.origin.partialclonefilter"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    return proc.stdout.strip()
+REFSPECS = ["+refs/heads/*:refs/heads/*", "+refs/tags/*:refs/tags/*"]
 
 
 def ensure_clone() -> None:
-    if CACHE.exists() and partial_clone_filter():
-        # A treeless clone can't serve --numstat without lazy-fetching
-        # per diff; replace it with a full clone.
-        print("replacing partial clone with a full clone...")
-        shutil.rmtree(CACHE)
     if CACHE.exists():
-        print("fetching latest commits...")
-        subprocess.run(["git", "-C", str(CACHE), "fetch", "origin", "--quiet"], check=True)
+        print("fetching latest commits and tags...")
+        subprocess.run(
+            ["git", "-C", str(CACHE), "fetch", "--prune", "origin", *REFSPECS],
+            check=True,
+        )
     else:
         print(f"cloning {REPO_URL} (full bare clone, one-time ~800MB)...")
         CACHE.parent.mkdir(exist_ok=True)
