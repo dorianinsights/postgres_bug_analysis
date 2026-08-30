@@ -1,4 +1,8 @@
 date_key,date_day,year_num,quarter_num,month_num,month_name,day_of_month,iso_dow,weekday_name,is_weekday
+20210927,2021-09-27,2021,3,9,September,27,1,Monday,true
+20210928,2021-09-28,2021,3,9,September,28,2,Tuesday,true
+20210929,2021-09-29,2021,3,9,September,29,3,Wednesday,true
+20210930,2021-09-30,2021,3,9,September,30,4,Thursday,true
 20211001,2021-10-01,2021,4,10,October,1,5,Friday,true
 20211002,2021-10-02,2021,4,10,October,2,6,Saturday,false
 20211003,2021-10-03,2021,4,10,October,3,7,Sunday,false

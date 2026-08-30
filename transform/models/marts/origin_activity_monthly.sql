@@ -6,29 +6,25 @@
 -- hash, so counting every branch would multiply each fix by its
 -- backpatch breadth. UTC months.
 WITH security_fix_commits AS (
-  SELECT DISTINCT itc.commit_hash AS abbrev_hash
-  FROM {{ ref('stg_item_commits') }} AS itc
-  INNER JOIN {{ ref('int_fix_items') }} AS itm
-    ON itc.version = itm.version AND itc.item_index = itm.item_index
-  INNER JOIN {{ ref('int_fix_groups') }} AS grp ON itm.item_ord = grp.item_ord
-  INNER JOIN {{ ref('int_fix_reps') }} AS reps ON grp.group_ord = reps.item_ord
+  SELECT DISTINCT fcm.abbrev_hash
+  FROM {{ ref('int_fix_commits') }} AS fcm
+  INNER JOIN {{ ref('int_fix_reps') }} AS reps ON fcm.group_ord = reps.item_ord
   WHERE reps.category IN ('Security (CVE)', 'Security hardening (no CVE)')
 ),
 
 master_commits AS (
   SELECT
-    DATE_TRUNC('month', gcm.commit_ts AT TIME ZONE 'utc')::DATE AS month_dt,
+    DATE_TRUNC('month', fcm.commit_dt)::DATE AS month_dt,
     CASE
-      WHEN org.origin != 'unknown_or_internal' THEN org.origin
+      WHEN fcm.origin != 'unknown_or_internal' THEN fcm.origin
       WHEN sfc.abbrev_hash IS NOT null THEN 'unknown_or_internal_security'
       ELSE 'unknown_or_internal_not_security'
     END AS origin,
-    gcm.is_plumbing,
-    gcm.ai_credit
-  FROM {{ ref('int_git_commits') }} AS gcm
-  INNER JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
-  LEFT JOIN security_fix_commits AS sfc ON LEFT(gcm.commit_hash, 9) = sfc.abbrev_hash
-  WHERE gcm.branch = 'master'
+    fcm.is_plumbing,
+    fcm.ai_credit
+  FROM {{ ref('fct_commits') }} AS fcm
+  LEFT JOIN security_fix_commits AS sfc ON LEFT(fcm.commit_hash, 9) = sfc.abbrev_hash
+  WHERE fcm.branch = 'master'
 ),
 
 commit_rollup AS (
@@ -58,6 +54,7 @@ thread_rollup AS (
 
 SELECT
   COALESCE(cro.month_dt, tro.month_dt) AS month_dt,
+  STRFTIME(COALESCE(cro.month_dt, tro.month_dt), '%Y%m%d')::INTEGER AS month_date_key,
   COALESCE(cro.origin, tro.origin) AS origin,
   COALESCE(cro.commit_cnt, 0) AS commit_cnt,
   COALESCE(cro.ai_commit_cnt, 0) AS ai_commit_cnt,

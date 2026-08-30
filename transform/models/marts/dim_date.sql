@@ -4,10 +4,12 @@
 -- store it and join here. Grain = one day. -> ../data/derived/dim_date.csv
 WITH bounds AS (
   SELECT
-    LEAST(
+    -- floor to the Monday of the earliest data week so weekly/monthly period
+    -- aggregates (list_traffic_weekly's week_date_key etc.) always conform here
+    DATE_TRUNC('week', LEAST(
       (SELECT MIN((commit_ts AT TIME ZONE 'utc')::DATE) FROM {{ ref('stg_git_commits') }}),
       (SELECT MIN((sent_ts AT TIME ZONE 'utc')::DATE) FROM {{ ref('stg_list_messages') }})
-    ) AS min_dt,
+    ))::DATE AS min_dt,
     (SELECT MAX(scheduled_release_dt) FROM {{ ref('int_release_calendar') }}) AS max_dt
 ),
 

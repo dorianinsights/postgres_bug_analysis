@@ -1,14 +1,15 @@
--- Weekly mailing-list activity per list, with the fix linkage that makes
--- it a leading indicator: how much of each week's traffic belongs to
--- threads that a commit eventually cites. Right-censoring caveat: recent
--- weeks' threads may simply not have been cited YET — fixes land weeks
--- to months after the discussion — so the fix-linked series always sags
--- toward the present. UTC weeks.
+-- Weekly mailing-list activity per list, with the fix linkage that makes it a
+-- leading indicator — an aggregate fact rolled up from fct_messages and
+-- conformed on dim_date via week_date_key (the Monday week start). Right-
+-- censoring caveat: recent weeks' threads may simply not have been cited YET —
+-- fixes land weeks to months after the discussion — so the fix-linked series
+-- always sags toward the present. UTC weeks.
 SELECT
-  DATE_TRUNC('week', sent_ts AT TIME ZONE 'utc')::DATE AS week_dt,
+  DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
+  STRFTIME(DATE_TRUNC('week', sent_dt), '%Y%m%d')::INTEGER AS week_date_key,
   -- weeks start Monday and wraps ARE Mondays, so every week maps to one
-  -- earliest shippable release; the wrap-Monday week itself already
-  -- counts toward the next release (messages that day are post-cutoff)
+  -- earliest shippable release; the wrap-Monday week itself already counts
+  -- toward the next release (messages that day are post-cutoff)
   MIN(earliest_ship_release_dt) AS earliest_ship_release_dt,
   list_name,
   COUNT(*) AS message_cnt,
@@ -20,5 +21,5 @@ SELECT
   COUNT(*) FILTER (
     WHERE is_thread_start AND is_fix_linked
   ) AS fix_linked_thread_start_cnt
-FROM {{ ref('int_message_threads') }}
+FROM {{ ref('fct_messages') }}
 GROUP BY ALL

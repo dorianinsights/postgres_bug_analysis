@@ -39,6 +39,9 @@ models:
               arguments:
                 to: ref('dim_bug')
                 field: bug_number
+      - name: sent_dt
+        description: The message's UTC send day as a DATE (the period aggregates group on it).
+        tests: [not_null]
       - name: is_thread_start
         tests: [not_null]
       - name: is_fix_linked

@@ -23,6 +23,7 @@ SELECT
   imt.message_id,
   pmp.person_key AS sender_person_key,
   STRFTIME((imt.sent_ts AT TIME ZONE 'utc')::DATE, '%Y%m%d')::INTEGER AS sent_date_key,
+  (imt.sent_ts AT TIME ZONE 'utc')::DATE AS sent_dt,
   mbg.bug_number,
   imt.root_id,
   imt.is_thread_start,
