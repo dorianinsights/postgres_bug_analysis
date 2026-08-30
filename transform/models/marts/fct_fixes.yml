@@ -3,10 +3,11 @@ version: 2
 models:
   - name: fct_fixes
     description: >
-      Fix-grain fact -> ../data/derived/fct_fixes.csv (replaces fix_impact):
-      change size, worst CVE severity, bug linkage, and a wave_key FK into
-      dim_release_wave. Per-CVE and per-bug detail live in bridge_fix_cve /
-      bridge_fix_bug. Grain = item_ord (one distinct fix).
+      Fix-grain fact -> ../data/derived/fct_fixes.csv (supersedes fix_impact
+      AND the retired item-grain fix_items): fix identity (summary/full_text/
+      cves/category), change size, worst CVE severity, origin, bug linkage, and
+      a wave_key FK into dim_release_wave. Per-CVE and per-bug detail live in
+      bridge_fix_cve / bridge_fix_bug. Grain = item_ord (one distinct fix).
     columns:
       - name: item_ord
         tests: [not_null, unique]
@@ -19,6 +20,16 @@ models:
                 field: wave_key
       - name: category
         tests: [not_null]
+      - name: origin
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - pgsql-bugs
+                  - pgsql-hackers
+                  - unknown_or_internal_security
+                  - unknown_or_internal_not_security
       - name: is_out_of_band
         tests: [not_null]
       - name: branch_item_cnt

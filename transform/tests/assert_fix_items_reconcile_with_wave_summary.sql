@@ -1,10 +1,10 @@
--- The item-grain fact and the wave rollup must agree: fix_items rows per
+-- The fix-grain fact and the wave rollup must agree: fct_fixes rows per
 -- wave = wave_summary.distinct_fix_cnt.
 WITH per_wave AS (
   SELECT
     wave_dt,
     COUNT(*) AS fix_cnt
-  FROM {{ ref('fix_items') }}
+  FROM {{ ref('fct_fixes') }}
   GROUP BY wave_dt
 )
 

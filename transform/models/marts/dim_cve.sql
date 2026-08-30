@@ -5,10 +5,8 @@
 -- security page no longer lists stay here with NULL severity. Grain = cve_id.
 -- -> ../data/derived/dim_cve.csv
 WITH corpus_cves AS (
-  SELECT DISTINCT TRIM(cve.cve_id) AS cve_id
-  FROM {{ ref('int_fix_reps') }} AS reps,
-    UNNEST(STRING_SPLIT(reps.cves, ';')) AS cve (cve_id)
-  WHERE reps.cves IS NOT null
+  SELECT DISTINCT cve_id
+  FROM {{ ref('int_fix_cves') }}
 )
 
 SELECT

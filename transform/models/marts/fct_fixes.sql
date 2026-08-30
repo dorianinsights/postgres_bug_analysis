@@ -40,8 +40,13 @@ SELECT
   chg.wave_dt,
   chg.version,
   chg.item_index,
+  reps.summary,
+  reps.full_text,
+  reps.cves,
   chg.category,
+  cats.category_order,
   chg.dominant_subsystem,
+  fio.origin,
   waves.is_out_of_band,
   grp.branch_item_cnt,
   chg.file_cnt,
@@ -59,7 +64,10 @@ SELECT
   bag.days_to_fix_min
 FROM {{ ref('int_fix_changes') }} AS chg
 INNER JOIN group_sizes AS grp ON chg.item_ord = grp.group_ord
+INNER JOIN {{ ref('int_fix_reps') }} AS reps ON chg.item_ord = reps.item_ord
+INNER JOIN {{ ref('categories') }} AS cats ON chg.category = cats.category
 INNER JOIN {{ ref('int_waves') }} AS waves ON chg.wave_dt = waves.wave_dt
 LEFT JOIN {{ ref('int_fix_severity') }} AS sev ON chg.item_ord = sev.item_ord
+LEFT JOIN {{ ref('int_fix_origins') }} AS fio ON chg.item_ord = fio.group_ord
 LEFT JOIN bug_agg AS bag ON chg.item_ord = bag.item_ord
 LEFT JOIN primary_bug AS pbg ON chg.item_ord = pbg.item_ord

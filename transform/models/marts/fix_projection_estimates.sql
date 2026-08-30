@@ -7,13 +7,7 @@
 -- (reports, messages) assume the historical signal->fix conversion; the
 -- supply-side estimator (committed pace) is what caught the Aug 2026
 -- surge, where fixes grew without proportional inbound reports.
-WITH wrap AS (
-  SELECT MAX(wrap_dt) AS wrap_dt
-  FROM {{ ref('int_release_calendar') }}
-  WHERE wrap_dt <= CURRENT_DATE
-),
-
-ships AS (
+WITH ships AS (
   SELECT MIN(scheduled_release_dt) AS ships_at_dt
   FROM {{ ref('int_release_calendar') }}
   WHERE scheduled_release_dt > CURRENT_DATE
@@ -27,23 +21,14 @@ ratios AS (
   FROM {{ ref('fix_projection_cycles') }}
 ),
 
+-- the open cycle's live signals, from the same windowed source the ratios use
 current_signals AS (
   SELECT
-    (
-      SELECT COUNT(*) FROM {{ ref('int_bug_reports') }} AS rpt, wrap
-      WHERE rpt.reported_dt >= wrap.wrap_dt
-    ) AS report_cnt,
-    (
-      SELECT COUNT(*) FROM {{ ref('int_message_threads') }} AS imt, wrap
-      WHERE (imt.sent_ts AT TIME ZONE 'utc')::DATE >= wrap.wrap_dt
-    ) AS message_cnt,
-    (
-      SELECT COUNT(DISTINCT LOWER(TRIM(REGEXP_REPLACE(gcm.subject, '\s+', ' ', 'g'))))
-      FROM {{ ref('int_git_commits') }} AS gcm, wrap
-      WHERE
-        gcm.branch != 'master' AND NOT gcm.is_plumbing
-        AND (gcm.commit_ts AT TIME ZONE 'utc')::DATE > wrap.wrap_dt
-    ) AS early_fix_cnt
+    early_report_cnt AS report_cnt,
+    early_message_cnt AS message_cnt,
+    early_fix_cnt
+  FROM {{ ref('int_cycle_signals') }}
+  WHERE is_open_cycle
 ),
 
 estimates AS (

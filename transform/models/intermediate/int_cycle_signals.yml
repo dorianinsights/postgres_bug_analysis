@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: int_cycle_signals
+    description: >
+      Every started release cycle (closed + the open one) with its three early
+      signals over the open cycle's age-window, plus the shipped fix count for
+      closed cycles. Grain = cycle_start_dt. Feeds fix_projection_cycles (closed,
+      for the ratios) and fix_projection_estimates (the open cycle's live
+      signals).
+    columns:
+      - name: cycle_start_dt
+        tests: [not_null, unique]
+      - name: early_report_cnt
+        tests: [not_null]
+      - name: early_message_cnt
+        tests: [not_null]
+      - name: early_fix_cnt
+        tests: [not_null]
+      - name: is_open_cycle
+        tests: [not_null]

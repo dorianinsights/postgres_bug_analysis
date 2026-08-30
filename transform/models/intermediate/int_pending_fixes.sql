@@ -20,13 +20,10 @@ WITH last_wrap AS (
 
 pending_commits AS (
   SELECT
-    gcm.commit_hash,
-    LOWER(TRIM(REGEXP_REPLACE(gcm.subject, '\s+', ' ', 'g'))) AS fix_key
-  FROM {{ ref('int_git_commits') }} AS gcm, last_wrap
-  WHERE
-    gcm.branch != 'master'
-    AND NOT gcm.is_plumbing
-    AND (gcm.commit_ts AT TIME ZONE 'utc')::DATE > last_wrap.wrap_dt
+    bpf.commit_hash,
+    bpf.fix_key
+  FROM {{ ref('int_backpatch_fixes') }} AS bpf, last_wrap
+  WHERE bpf.commit_dt > last_wrap.wrap_dt
 ),
 
 commit_origins AS (

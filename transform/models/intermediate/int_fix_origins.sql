@@ -8,14 +8,10 @@
 -- genuinely unsourceable remainder.
 WITH fix_commit_origins AS (
   SELECT
-    grp.group_ord,
+    fcm.group_ord,
     org.origin
-  FROM {{ ref('int_fix_groups') }} AS grp
-  INNER JOIN {{ ref('int_fix_items') }} AS itm ON grp.item_ord = itm.item_ord
-  INNER JOIN {{ ref('stg_item_commits') }} AS itc
-    ON itm.version = itc.version AND itm.item_index = itc.item_index
-  INNER JOIN {{ ref('int_commit_origins') }} AS org
-    ON itc.commit_hash = LEFT(org.commit_hash, 9)
+  FROM {{ ref('int_fix_commits') }} AS fcm
+  INNER JOIN {{ ref('int_commit_origins') }} AS org ON fcm.commit_hash = org.commit_hash
 ),
 
 resolved AS (

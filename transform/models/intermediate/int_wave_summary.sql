@@ -15,15 +15,8 @@ WITH fix_counts AS (
 cve_counts AS (
   SELECT
     wave_dt,
-    COUNT(DISTINCT cve) AS distinct_cve_cnt
-  FROM (
-    SELECT
-      wave_dt,
-      UNNEST(STRING_SPLIT(cves, ';')) AS cve
-    FROM {{ ref('int_fix_reps') }}
-    WHERE cves IS NOT null
-  )
-  WHERE cve != ''
+    COUNT(DISTINCT cve_id) AS distinct_cve_cnt
+  FROM {{ ref('int_fix_cves') }}
   GROUP BY ALL
 )
 

@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: int_fix_cves
+    description: >
+      One row per (distinct fix, CVE) — the fix cves list exploded once. Grain =
+      (item_ord, cve_id). Reused by dim_cve, bridge_fix_cve, int_fix_severity,
+      int_wave_summary.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [item_ord, cve_id]
+    columns:
+      - name: item_ord
+        tests: [not_null]
+      - name: cve_id
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^CVE-\d{4}-\d+$'

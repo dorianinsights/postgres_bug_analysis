@@ -11,43 +11,12 @@
 -- longer, that test fails and this join key must follow). Annotated commits
 -- on pre-corpus branches (REL9_x era) legitimately match nothing;
 -- matched_commit_cnt < annotated_commit_cnt records the coverage.
-WITH fix_hashes AS (
-  SELECT DISTINCT
-    grp.group_ord,
-    itc.commit_hash AS abbrev_hash
-  FROM {{ ref('int_fix_groups') }} AS grp
-  INNER JOIN {{ ref('int_fix_items') }} AS itm ON grp.item_ord = itm.item_ord
-  INNER JOIN {{ ref('stg_item_commits') }} AS itc
-    ON itm.version = itc.version AND itm.item_index = itc.item_index
-),
-
-corpus_commits AS (
-  SELECT DISTINCT
-    commit_hash,
-    branch,
-    commit_ts
-  FROM {{ ref('stg_git_commits') }}
-),
-
-matched AS (
-  SELECT DISTINCT
-    fhs.group_ord,
-    fhs.abbrev_hash,
-    cmt.commit_hash,
-    cmt.branch,
-    cmt.commit_ts
-  FROM fix_hashes AS fhs
-  INNER JOIN corpus_commits AS cmt ON LEFT(cmt.commit_hash, 9) = fhs.abbrev_hash
-),
-
-coverage AS (
+WITH coverage AS (
   SELECT
-    fhs.group_ord,
-    COUNT(DISTINCT fhs.abbrev_hash) AS annotated_commit_cnt,
-    COUNT(DISTINCT mat.abbrev_hash) AS matched_commit_cnt
-  FROM fix_hashes AS fhs
-  LEFT JOIN matched AS mat
-    ON fhs.group_ord = mat.group_ord AND fhs.abbrev_hash = mat.abbrev_hash
+    group_ord,
+    COUNT(DISTINCT abbrev_hash) AS annotated_commit_cnt,
+    COUNT(DISTINCT abbrev_hash) FILTER (WHERE commit_hash IS NOT null) AS matched_commit_cnt
+  FROM {{ ref('int_fix_commits') }}
   GROUP BY ALL
 ),
 
@@ -55,7 +24,8 @@ rep_commit AS (
   SELECT
     group_ord,
     commit_hash
-  FROM matched
+  FROM {{ ref('int_fix_commits') }}
+  WHERE commit_hash IS NOT null
   QUALIFY ROW_NUMBER() OVER (
     PARTITION BY group_ord
     ORDER BY (branch = 'master') DESC, commit_ts DESC, commit_hash ASC

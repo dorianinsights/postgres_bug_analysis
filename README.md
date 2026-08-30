@@ -88,7 +88,6 @@ rules without re-scraping; one `.csv` per mart, same name):
 
 | File | Grain | Notes |
 |---|---|---|
-| `fix_items.csv` | one distinct fix per wave | the item-grain fact the wave rollups aggregate: the deduped representative item with category, CVEs, and backpatch breadth (`branch_item_cnt`) |
 | `wave_summary.csv` | one same-day release wave | distinct fixes (deduped across branches), CVEs, security count, out-of-band + partial-window flags |
 | `wave_categories.csv` | (wave, category) | keyword-rule buckets from the `category_rules` seed; CVE / hardening checked first |
 | `wave_contributors.csv` | (wave, contributor) | credits parsed from the notes' trailing "(Name, Name)" lists, with first-seen wave |
@@ -99,7 +98,7 @@ rules without re-scraping; one `.csv` per mart, same name):
 | `fix_origins.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
 | `origin_activity_monthly.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
 | `pending_fix_origins.csv` | (ships_at, origin) | the in-progress next wave: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
-| `fct_fixes.csv` | one distinct fix | the fix-grain star fact: change size (files/line churn), worst CVE severity, backpatch breadth, report-to-fix latency, `wave_key` (-> `dim_release_wave`) and the primary linked bug |
+| `fct_fixes.csv` | one distinct fix | the fix-grain star fact (supersedes the retired fix_items): identity (summary/full_text/cves/category), change size, worst CVE severity, origin, backpatch breadth, report-to-fix latency, `wave_key` (-> `dim_release_wave`) and the primary linked bug |
 | `dim_cve.csv` | one CVE | CVE dimension: CVSS v3 base score + band + vector + component for every CVE a corpus fix cites |
 | `dim_bug.csv` | one bug report | bug dimension: the bug-report grain conformed into the star (outcome, latency, windows), reporter -> `dim_person`, report day -> `dim_date` |
 | `bridge_fix_cve.csv` | (fix, CVE) | bridge for the fix<->CVE many-to-many |
