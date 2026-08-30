@@ -92,7 +92,8 @@ rules without re-scraping; one `.csv` per mart, same name):
 | `wave_categories.csv` | (wave, category) | keyword-rule buckets from the `category_rules` seed; CVE / hardening checked first |
 | `wave_contributors.csv` | (wave, contributor) | credits parsed from the notes' trailing "(Name, Name)" lists, with first-seen wave |
 | `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
-| `git_cycle_pace.csv` | one release cycle | distinct fixes in each cycle's first N days (N = the open cycle's age) vs full totals |
+| `fct_release_cycles.csv` | one release cycle | the cycle-grain fact (supersedes git_cycle_pace + fix_projection_cycles): early signals (reports/messages/fixes over the open cycle's age), like-for-like pace (early vs full distinct fixes), shipped fix count; `cycle_key` -> `dim_release_cycle` |
+| `dim_release_cycle.csv` | one release cycle | the cycle dimension: wrap -> shipped release, incl. the open/future cycles; a wave is the shipped form of a cycle |
 | `category_vs_subsystem.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
 | `bug_reports_monthly.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
 | `fix_origins.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
@@ -181,18 +182,22 @@ every object's name. Layers:
   which downstream writers silently turn into DOUBLE — cast count-like
   sums to `::BIGINT` at the aggregation site.
   - **Star schema (Kimball).** Alongside those analysis-shaped marts, a
-    conformed star sits at the lowest grains: `dim_person` (git authors +
-    committers + list senders unified to one person, keyed by the shared
-    `person_key()` macro so the facts join without drift), `dim_date`,
-    `dim_release_wave`, `dim_cve` and `dim_bug`, with three facts —
-    `fct_commits` (commit grain), `fct_messages` (message grain) and
-    `fct_fixes` (fix grain). The fix<->CVE and fix<->bug many-to-manys go
-    through `bridge_fix_cve` / `bridge_fix_bug`; `fct_fixes` keeps only the
-    worst severity and primary bug denormalized. Referential integrity is
-    enforced by `relationships` tests on every FK, and singular tests pin
-    each fact's row count to its grain. Mostly added alongside the existing
-    marts so consumers can migrate over time — the one replacement so far is
-    `fct_fixes`, which supersedes the earlier `fix_impact`.
+    conformed star sits at the lowest grains: the dimensions `dim_person` (git
+    authors + committers + list senders unified to one person, keyed by the
+    shared `person_node()` macro + `int_person_map` connected-component
+    resolution so several emails collapse to one person), `dim_date`,
+    `dim_release_wave`, `dim_release_cycle`, `dim_cve` and `dim_bug`, with the
+    facts `fct_commits` (commit grain), `fct_messages` (message grain),
+    `fct_fixes` (fix grain) and `fct_release_cycles` (cycle grain). The
+    fix<->CVE and fix<->bug many-to-manys go through `bridge_fix_cve` /
+    `bridge_fix_bug`. The period aggregates (`bug_reports_monthly`,
+    `list_traffic_monthly`/`weekly`, `origin_activity_monthly`) are aggregate
+    facts rolled up from those grains and conformed on `dim_date` via a
+    month/week date key. Referential integrity is enforced by `relationships`
+    tests on every FK, and singular tests pin each fact's row count to its
+    grain. Several older marts were superseded as the star grew —
+    `fct_fixes` replaced `fix_impact` and `fix_items`; `fct_release_cycles`
+    replaced `git_cycle_pace`, `fix_projection_cycles` and `int_cycle_signals`.
 - `seeds/` — the classification data: `categories` (bucket + display
   order), `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules),

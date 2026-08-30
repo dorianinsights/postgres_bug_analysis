@@ -1,5 +1,5 @@
 -- Wave-grain rollup of the deduped fixes. The wave_summary mart is a pure
--- ordered SELECT of this table; projections and git_cycle_pace also read it
+-- ordered SELECT of this table; projections and fct_release_cycles also read it
 -- (rather than the external mart, to avoid re-sniffing the written CSV).
 WITH fix_counts AS (
   SELECT

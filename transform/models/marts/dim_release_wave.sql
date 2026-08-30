@@ -6,6 +6,7 @@
 -- wave_key. -> ../data/derived/dim_release_wave.csv
 SELECT
   STRFTIME(wvs.wave_dt, '%Y%m%d')::INTEGER AS wave_key,
+  drc.cycle_key,
   wvs.wave_dt,
   cal.wrap_dt,
   wvs.versions,
@@ -18,3 +19,4 @@ SELECT
 FROM {{ ref('int_wave_summary') }} AS wvs
 LEFT JOIN {{ ref('int_release_calendar') }} AS cal
   ON wvs.wave_dt = cal.scheduled_release_dt
+LEFT JOIN {{ ref('dim_release_cycle') }} AS drc ON wvs.wave_dt = drc.ships_at_dt

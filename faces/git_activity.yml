@@ -74,11 +74,11 @@ queries:
     sql: |
       -- label leads with the ISO date so the band's alphabetical order IS
       -- chronological (the trailing word keeps dct from date-parsing it)
-      SELECT STRFTIME(cycle_start_dt, '%Y-%m-%d wrap') AS cycle, 'first ' || window_days || ' days' AS pace_window, early_distinct_fix_cnt AS fixes
-      FROM git_cycle_pace
+      SELECT STRFTIME(cycle_start_dt, '%Y-%m-%d wrap') AS cycle, 'first ' || window_days || ' days' AS pace_window, early_fix_cnt AS fixes
+      FROM fct_release_cycles
       UNION ALL
-      SELECT STRFTIME(cycle_start_dt, '%Y-%m-%d wrap') AS cycle, 'full cycle' AS pace_window, full_distinct_fix_cnt AS fixes
-      FROM git_cycle_pace
+      SELECT STRFTIME(cycle_start_dt, '%Y-%m-%d wrap') AS cycle, 'full cycle' AS pace_window, full_fix_cnt AS fixes
+      FROM fct_release_cycles
       WHERE NOT is_open_cycle
       ORDER BY 1, 2
 

@@ -48,8 +48,8 @@ queries:
     description: Distinct fixes already committed in the open cycle.
     source: warehouse
     sql: |
-      SELECT early_distinct_fix_cnt AS fix_cnt
-      FROM git_cycle_pace
+      SELECT early_fix_cnt AS fix_cnt
+      FROM fct_release_cycles
       WHERE is_open_cycle
 
   blended_estimate:
@@ -75,13 +75,16 @@ queries:
     source: warehouse
     sql: |
       SELECT ships_at_dt, 'per bug report' AS estimator, ROUND(shipped_fix_cnt * 1.0 / early_report_cnt, 2) AS ratio
-      FROM fix_projection_cycles
+      FROM fct_release_cycles
+      WHERE shipped_fix_cnt IS NOT NULL AND early_report_cnt > 0
       UNION ALL
       SELECT ships_at_dt, 'per 100 list messages', ROUND(shipped_fix_cnt * 100.0 / early_message_cnt, 2)
-      FROM fix_projection_cycles
+      FROM fct_release_cycles
+      WHERE shipped_fix_cnt IS NOT NULL AND early_message_cnt > 0
       UNION ALL
       SELECT ships_at_dt, 'per committed fix', ROUND(shipped_fix_cnt * 1.0 / early_fix_cnt, 2)
-      FROM fix_projection_cycles
+      FROM fct_release_cycles
+      WHERE shipped_fix_cnt IS NOT NULL AND early_fix_cnt > 0
       ORDER BY 1, 2
 
   pace_history:
@@ -92,21 +95,20 @@ queries:
     source: warehouse
     sql: |
       SELECT STRFTIME(ships_at_dt, '%b %y') AS wave, EPOCH(ships_at_dt)::BIGINT AS wave_seq, 'early committed (at this cycle age)' AS series, early_fix_cnt AS fixes
-      FROM fix_projection_cycles
+      FROM fct_release_cycles
+      WHERE shipped_fix_cnt IS NOT NULL
       UNION ALL
       SELECT STRFTIME(ships_at_dt, '%b %y') AS wave, EPOCH(ships_at_dt)::BIGINT AS wave_seq, 'shipped in the wave' AS series, shipped_fix_cnt
-      FROM fix_projection_cycles
+      FROM fct_release_cycles
+      WHERE shipped_fix_cnt IS NOT NULL
       UNION ALL
       -- the open cycle: early pace so far, plus a zero 'shipped' row so
       -- every wave has two rows (the chart sort SUMS wave_seq per wave —
       -- unequal row counts scramble the order)
-      SELECT STRFTIME(shp.ships_at_dt, '%b %y') AS wave, EPOCH(shp.ships_at_dt)::BIGINT AS wave_seq, ser.series, CASE WHEN ser.series LIKE 'early%' THEN gcp.early_distinct_fix_cnt ELSE 0 END
-      FROM git_cycle_pace AS gcp
-      CROSS JOIN (SELECT UNNEST(['early committed (at this cycle age)', 'shipped in the wave']) AS series) AS ser,
-        (SELECT MIN(scheduled_release_dt) AS ships_at_dt
-         FROM intermediate.int_release_calendar
-         WHERE scheduled_release_dt > CURRENT_DATE) AS shp
-      WHERE gcp.is_open_cycle
+      SELECT STRFTIME(frc.ships_at_dt, '%b %y') AS wave, EPOCH(frc.ships_at_dt)::BIGINT AS wave_seq, ser.series, CASE WHEN ser.series LIKE 'early%' THEN frc.early_fix_cnt ELSE 0 END
+      FROM fct_release_cycles AS frc
+      CROSS JOIN (SELECT UNNEST(['early committed (at this cycle age)', 'shipped in the wave']) AS series) AS ser
+      WHERE frc.is_open_cycle
       ORDER BY 2, 3
 
 charts:

@@ -13,12 +13,19 @@ WITH ships AS (
   WHERE scheduled_release_dt > CURRENT_DATE
 ),
 
+-- shipped-per-signal ratios over the closed cycles (with all three signals
+-- present, so the medians never divide by zero)
 ratios AS (
   SELECT
     MEDIAN(shipped_fix_cnt * 1.0 / early_report_cnt) AS per_report,
     MEDIAN(shipped_fix_cnt * 1.0 / early_message_cnt) AS per_message,
     MEDIAN(shipped_fix_cnt * 1.0 / early_fix_cnt) AS per_early_fix
-  FROM {{ ref('fix_projection_cycles') }}
+  FROM {{ ref('fct_release_cycles') }}
+  WHERE
+    shipped_fix_cnt IS NOT null
+    AND early_report_cnt > 0
+    AND early_message_cnt > 0
+    AND early_fix_cnt > 0
 ),
 
 -- the open cycle's live signals, from the same windowed source the ratios use
@@ -27,7 +34,7 @@ current_signals AS (
     early_report_cnt AS report_cnt,
     early_message_cnt AS message_cnt,
     early_fix_cnt
-  FROM {{ ref('int_cycle_signals') }}
+  FROM {{ ref('fct_release_cycles') }}
   WHERE is_open_cycle
 ),
 

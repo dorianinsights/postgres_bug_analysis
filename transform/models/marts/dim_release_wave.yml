@@ -11,6 +11,15 @@ models:
     columns:
       - name: wave_key
         tests: [not_null, unique]
+      - name: cycle_key
+        description: >
+          The cycle that shipped this wave; NULL for out-of-band waves and the
+          first (partial-window) wave, which no scheduled cycle produces.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_release_cycle')
+                field: cycle_key
       - name: wave_dt
         tests: [not_null, unique]
       - name: is_out_of_band
