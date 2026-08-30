@@ -16,18 +16,39 @@ per-session memories, which aren't committed to git.)
 - **DuckDB is single-writer.** `transform/transform.duckdb` may be held open by
   an interactive session (Harlequin, `duckdb` CLI); a `dbt build` (read-write)
   then fails with a lock error. Quit those before building. Harlequin should be
-  opened read-only (`harlequin -r transform/transform.duckdb`) from its own venv
-  (`~/.venvs/harlequin`, with `duckdb` pinned to the version that wrote the file
-  — currently 1.5.5). Do **not** kill the user's live Harlequin — ask them to
-  quit it; only terminate a leftover process they've confirmed is closed.
+  opened read-only from its own venv (`~/.venvs/harlequin`, with `duckdb` pinned
+  to the version that wrote the file — currently 1.5.5) and **from `transform/`**
+  (`cd transform && harlequin -r transform.duckdb`) — see the cwd gotcha below.
+  Do **not** kill the user's live Harlequin — ask them to quit it; only
+  terminate a leftover process they've confirmed is closed.
 - A full `dbt build` is ~4 min (re-reads the git clone + mbox cache). Use
   `dbt build --select <models>` while iterating; do one full build to confirm.
-- SQL is gated by sqlfluff (per-edit `.claude/hooks/sqlfluff-lint.sh` +
-  pre-commit). Recurring snags: macOS `sed` has no `\b`; rule ST09 wants a join
-  `ON` condition to lead with the earlier table (or an expression), not the
-  joined table's bare column; reserved words (`out`, `map`, `year`, `month`,
-  `quarter`) can't be bare aliases/columns; `GROUP BY ALL` can't combine with
-  `QUALIFY` (enumerate the columns there).
+- **Edit `.sql`/`.py` files with the Edit/Write tools — never `sed -i`, a `>`
+  redirect, or a `cat >` heredoc through Bash** (even in "auto mode", which
+  otherwise nudges toward `sed`). The per-edit linters below are `PostToolUse`
+  hooks matched on the `Write|Edit` tools, so a shell edit slips past them and
+  the violation isn't caught until the pre-commit gate. A `PreToolUse` Bash
+  guard (`.claude/hooks/bash-source-edit-guard.sh`) enforces this — it blocks
+  shell writes to `.sql`/`.py` (reads, `sqlfluff fix`/`ruff format`, and
+  `scratch/`|`/tmp/` targets pass). Edit does everything `sed` can (`replace_all`
+  for bulk). `.md`/`.yml`/`.csv`/`.sh` aren't gated, so Bash is fine there.
+- SQL/Python are gated per-edit AND at commit. The per-edit `.claude/hooks/`
+  (`sqlfluff-lint.sh`, `ruff-lint.sh`, `pyright-check.sh`) are now **blocking**
+  (exit 2 on a violation — fix it in the same turn, don't defer to commit); the
+  `.pre-commit-config.yaml` gate is the final backstop regardless of edit tool.
+  Recurring sqlfluff snags: macOS `sed`/BSD `grep` have no `\b`; rule ST09 wants
+  a join `ON` condition to lead with the earlier table (or an expression), not
+  the joined table's bare column; RF02 wants every column qualified once a
+  statement (incl. a scalar subquery) references more than one table; reserved
+  words (`out`, `map`, `year`, `month`, `quarter`) can't be bare aliases/columns;
+  `GROUP BY ALL` can't combine with `QUALIFY` (enumerate the columns there).
+- **Interactive DuckDB/Harlequin must be launched from `transform/`**, not the
+  repo root: the `staging.stg_*` models are *views* that read external CSVs by a
+  relative path (`../data/raw/*.csv`, resolved against the process cwd — dbt runs
+  from `transform/`). From the repo root they throw `IO Error: No files found`;
+  `intermediate`/`marts` are real tables baked into the file and query from
+  anywhere. So `cd transform && harlequin -r transform.duckdb` (or
+  `duckdb -readonly transform.duckdb`).
 
 ## Design decisions worth remembering
 - **Identity resolution is connected-components.** `macros/person_node.sql`

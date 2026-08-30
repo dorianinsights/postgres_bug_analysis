@@ -1,7 +1,8 @@
 #!/bin/bash
 # PostToolUse hook for Edit|Write: format then lint .py files with ruff from
-# the project venv. Surfaces lint violations back to Claude via
-# additionalContext; stays silent when the file is clean or isn't Python.
+# the project venv. Blocking (exit 2) — surfaces lint violations back to Claude
+# on stderr so the edit must be fixed before continuing; stays silent when the
+# file is clean or isn't Python.
 #
 # Assumes Claude Code's cwd is the project root (i.e. that ./venv/bin/ruff
 # and pyproject.toml [tool.ruff] resolve from here).
@@ -23,6 +24,7 @@ output=$(env -u FORCE_COLOR -u CLICOLOR_FORCE NO_COLOR=1 ./venv/bin/ruff check -
 status=$?
 
 if [ "$status" -ne 0 ]; then
-  jq -n --arg ctx "ruff violations in ${f}:
-${output}" '{hookSpecificOutput: {hookEventName: "PostToolUse", additionalContext: $ctx}}'
+  echo "ruff violations in ${f} — fix before continuing:
+${output}" >&2
+  exit 2
 fi

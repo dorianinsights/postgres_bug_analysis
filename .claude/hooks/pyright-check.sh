@@ -1,7 +1,7 @@
 #!/bin/bash
 # PostToolUse hook for Edit|Write: type-check .py files with pyright from the
-# project venv. Surfaces errors back to Claude via additionalContext; stays
-# silent when the file is clean or isn't Python.
+# project venv. Blocking (exit 2) — surfaces errors back to Claude on stderr so
+# the edit must be fixed before continuing; stays silent when clean or not .py.
 #
 # Assumes Claude Code's cwd is the project root (i.e. that ./venv/bin/pyright
 # and pyproject.toml [tool.pyright] resolve from here).
@@ -47,5 +47,6 @@ output=$(echo "$json" | jq -r '
   | "  \(.range.start.line + 1):\(.range.start.character + 1) \(.message | split("\n")[0])\(if .rule then " (\(.rule))" else "" end)"
 ')
 
-jq -n --arg ctx "pyright errors in ${f}:
-${output}" '{hookSpecificOutput: {hookEventName: "PostToolUse", additionalContext: $ctx}}'
+echo "pyright errors in ${f} — fix before continuing:
+${output}" >&2
+exit 2

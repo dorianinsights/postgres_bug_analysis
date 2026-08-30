@@ -1,8 +1,9 @@
 #!/bin/bash
 # PostToolUse hook for Edit|Write: lint .sql files with sqlfluff (duckdb
 # dialect + jinja templater, config in the repo-root .sqlfluff) from the
-# project venv. Report-only — surfaces violations back to Claude via
-# additionalContext; stays silent when the file is clean or isn't SQL.
+# project venv. Blocking (exit 2) — surfaces violations back to Claude on
+# stderr so the edit must be fixed before continuing; stays silent when the
+# file is clean or isn't SQL.
 #
 # Assumes Claude Code's cwd is the project root (i.e. ./venv/bin/sqlfluff and
 # .sqlfluff resolve from here). Mirrors ruff-lint.sh next to it; the matching
@@ -24,6 +25,7 @@ output=$(env -u FORCE_COLOR -u CLICOLOR_FORCE NO_COLOR=1 ./venv/bin/sqlfluff lin
 status=$?
 
 if [ "$status" -ne 0 ]; then
-  jq -n --arg ctx "sqlfluff violations in ${f}:
-${output}" '{hookSpecificOutput: {hookEventName: "PostToolUse", additionalContext: $ctx}}'
+  echo "sqlfluff violations in ${f} — fix before continuing:
+${output}" >&2
+  exit 2
 fi
