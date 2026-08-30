@@ -25,9 +25,9 @@ SELECT
   -- the earliest release its fix could ship in
   cal.scheduled_release_dt AS earliest_ship_release_dt
 FROM {{ ref('int_bug_outcomes') }} AS ibo
-INNER JOIN {{ ref('int_bug_reporters') }} AS bre ON ibo.bug_number = bre.bug_number
+INNER JOIN {{ ref('int_bug_reports') }} AS rpt ON ibo.bug_number = rpt.bug_number
 LEFT JOIN {{ ref('int_person_map') }} AS pmp
-  ON pmp.node_id = {{ person_node('bre.reporter_email', 'bre.reporter_name') }}
+  ON pmp.node_id = {{ person_node('rpt.reporter_email', 'rpt.reporter_name') }}
 LEFT JOIN {{ ref('thread_size_windows') }} AS tsw
   ON
     ibo.thread_message_cnt >= tsw.min_messages

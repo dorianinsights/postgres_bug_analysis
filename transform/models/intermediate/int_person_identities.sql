@@ -1,7 +1,7 @@
 -- Every occurrence of a person acting in a role: git patch authors and git
 -- committers (from int_git_commits, which resolves the real patch author from
 -- the body's "Author:" trailer), mailing-list senders (from stg_list_messages),
--- and the real bug reporters (from int_bug_reporters, parsed from the form
+-- and the real bug reporters (from int_bug_reports, parsed from the form
 -- body). One row per occurrence. node_id is the (email, name) identity node
 -- from the person_node() macro; int_person_map groups those nodes into people
 -- (shared email OR name) and the facts compute the same node_id to join. The
@@ -44,7 +44,7 @@ bug_reporters AS (
     'bug_reporter' AS identity_role,
     'pgsql-bugs' AS source_list,
     reported_ts AS seen_ts
-  FROM {{ ref('int_bug_reporters') }}
+  FROM {{ ref('int_bug_reports') }}
 ),
 
 occurrences AS (

@@ -4,10 +4,15 @@ models:
   - name: int_bug_reports
     description: >
       One row per numbered pgsql-bugs report whose root message falls in
-      the corpus window. Grain = bug_number.
+      the corpus window, with the real reporter parsed from the form body.
+      Grain = bug_number.
     columns:
       - name: bug_number
         tests: [unique, not_null]
+      - name: reporter_name
+        tests: [not_null]
+      - name: reported_ts
+        tests: [not_null]
       - name: reported_dt
         tests:
           - not_null
