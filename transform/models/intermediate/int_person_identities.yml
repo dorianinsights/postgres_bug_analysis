@@ -7,7 +7,7 @@ models:
       mailing-list senders — with the shared person_key. The raw material
       dim_person rolls up. Grain = one occurrence.
     columns:
-      - name: person_key
+      - name: node_id
         tests: [not_null]
       - name: identity_role
         tests:

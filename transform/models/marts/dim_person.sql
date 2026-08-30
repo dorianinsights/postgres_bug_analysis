@@ -1,11 +1,23 @@
 -- The person/entity dimension: one row per distinct person across the whole
--- pipeline, whether they show up as a git patch author, a git committer, or a
--- mailing-list sender (the roles are booleans, not separate rows — the same
--- human plays several). First-pass identity is the normalized email, with a
--- normalized-name fallback for message senders who gave no address; a curated
--- alias seed for people who use several emails is a documented later
--- refinement. Grain = person_key. -> ../data/derived/dim_person.csv
-WITH per_key AS (
+-- pipeline, whether they show up as a git patch author, a git committer, a
+-- mailing-list sender, or a bug reporter (the roles are booleans, not separate
+-- rows — the same human plays several). Identity is resolved by int_person_map
+-- (connected components over shared email OR name), so a person who uses
+-- several email addresses is one row. Grain = person_key.
+-- -> ../data/derived/dim_person.csv
+WITH resolved AS (
+  SELECT
+    pmp.person_key,
+    idn.person_email,
+    idn.person_name,
+    idn.identity_role,
+    idn.source_list,
+    idn.seen_ts
+  FROM {{ ref('int_person_identities') }} AS idn
+  INNER JOIN {{ ref('int_person_map') }} AS pmp ON idn.node_id = pmp.node_id
+),
+
+per_key AS (
   SELECT
     person_key,
     MAX(LOWER(TRIM(person_email))) AS canonical_email,
@@ -16,7 +28,7 @@ WITH per_key AS (
     MIN((seen_ts AT TIME ZONE 'utc')::DATE) AS first_seen_dt,
     MAX((seen_ts AT TIME ZONE 'utc')::DATE) AS last_seen_dt,
     COUNT(DISTINCT source_list)::BIGINT AS source_list_cnt
-  FROM {{ ref('int_person_identities') }}
+  FROM resolved
   GROUP BY ALL
 ),
 
@@ -25,7 +37,7 @@ name_votes AS (
   SELECT
     person_key,
     person_name
-  FROM {{ ref('int_person_identities') }}
+  FROM resolved
   WHERE person_name IS NOT null
   -- explicit GROUP BY (not GROUP BY ALL): DuckDB can't combine GROUP BY ALL
   -- with QUALIFY, and the tie-break counts occurrences per (key, name)

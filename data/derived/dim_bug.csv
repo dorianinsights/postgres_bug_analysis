@@ -25,7 +25,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17232,461e5ad3902c8183ba50fd31cb630b46,20211015,2021-10-15,"BUG #17232: DISTINCT ON does not allow AS",3,2: 2-3 messages,false,no linked commit,,,,,2021-11-11
 17233,ae2a893f4c51a7ce3c9584ecd9f17ba3,20211016,2021-10-16,"BUG #17233: Incorrect behavior of DELETE command with bad subquery in WHERE clause",16,4: 11+ messages,true,linked to a fix commit,both,2022-11-22,402,5: longer,2021-11-11
 17235,40cfb916bdb4270361d3436cf67e1b93,20211018,2021-10-18,"BUG #17235: PQsendQuery (with two sql) after PQenterPipelineMode cause ERROR",8,3: 4-10 messages,true,linked to a fix commit,discussion_link,2021-11-05,18,3: within a month,2021-11-11
-17236,bfd3151d15d37ec642473cc8d97af398,20211018,2021-10-18,"BUG #17236: Postgres core on pstate->p_multiassign_exprs",3,2: 2-3 messages,true,linked to a fix commit,both,2021-10-19,1,1: same/next day,2021-11-11
+17236,6804b85c0bdea54064907a852afb267c,20211018,2021-10-18,"BUG #17236: Postgres core on pstate->p_multiassign_exprs",3,2: 2-3 messages,true,linked to a fix commit,both,2021-10-19,1,1: same/next day,2021-11-11
 17237,acac6e20d4fd1aa8589d0467b0c6ba94,20211019,2021-10-19,"BUG #17237: set_config: Custom parameter names must be two or more simple identifiers separated by dots.",2,2: 2-3 messages,false,no linked commit,,,,,2021-11-11
 17238,f63c38ea4fdc4bb776ee39ade06722ce,20211019,2021-10-19,"BUG #17238: Link to ""Using EXPLAIN"" in the ""EXPLAIN"" documentation",2,2: 2-3 messages,false,no linked commit,,,,,2021-11-11
 17240,96edfb76e466483098c6d0de73b309cc,20211021,2021-10-21,"BUG #17240: <timestamptz> at time zone ... ; wrong result",5,3: 4-10 messages,false,no linked commit,,,,,2021-11-11
@@ -49,12 +49,12 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17258,c219520243e15135d8a92ec43df13970,20211029,2021-10-29,"BUG #17258: Unexpected results in CHAR(1) data type",19,4: 11+ messages,false,no linked commit,,,,,2021-11-11
 17259,3aae947404fd09733f2a2c3453e9ef87,20211031,2021-10-31,"BUG #17259: RETURN QUERY no longer accepts an UPDATE RETURNING",2,2: 2-3 messages,false,no linked commit,,,,,2021-11-11
 17260,14ffd49419c8d420c5785d265a0ade61,20211101,2021-11-01,"BUG #17260: Unable to Download Installer: Receiving Internal Server Error 500",2,2: 2-3 messages,false,no linked commit,,,,,2021-11-11
-17261,1fcc08b24a039578f161572d98015559,20211101,2021-11-01,"BUG #17261: FK ON UPDATE CASCADE can break referential integrity with columns of different types",8,3: 4-10 messages,false,no linked commit,,,,,2021-11-11
+17261,1c0877c161daf103c68dff6dbd09f234,20211101,2021-11-01,"BUG #17261: FK ON UPDATE CASCADE can break referential integrity with columns of different types",8,3: 4-10 messages,false,no linked commit,,,,,2021-11-11
 17262,33e01d5d2cf0980322a01247959a922c,20211102,2021-11-02,"BUG #17262: ""View manual"" button on postgres.org/docs is overflowing horizontally on mobile view",4,3: 4-10 messages,false,no linked commit,,,,,2021-11-11
 17265,83936b2b5f80343ae838d1801d1cae66,20211103,2021-11-03,"BUG #17265: Not able to download",2,2: 2-3 messages,false,no linked commit,,,,,2021-11-11
 17266,01dee442cb85e41229ff2a788389aa10,20211103,2021-11-03,"BUG #17266: could not truncate file ""base/126370/130666"" to 0 blocks: Permission denied",2,2: 2-3 messages,false,no linked commit,,,,,2021-11-11
 17267,e0d957209c3aaa8402c2aa6976219cf0,20211103,2021-11-03,"BUG #17267: cant able to install",2,2: 2-3 messages,false,no linked commit,,,,,2021-11-11
-17268,99539b4f55cc85d34dbcca1b6b27877e,20211103,2021-11-03,"BUG #17268: Possible corruption in toast index after reindex index concurrently",28,4: 11+ messages,true,linked to a fix commit,discussion_link,2021-12-08,35,4: within 6 months,2021-11-11
+17268,8106999e6bbb69e8f167f6ca5b049165,20211103,2021-11-03,"BUG #17268: Possible corruption in toast index after reindex index concurrently",28,4: 11+ messages,true,linked to a fix commit,discussion_link,2021-12-08,35,4: within 6 months,2021-11-11
 17269,1627a9b88f67fe9d8e6684a53aa8c3b1,20211103,2021-11-03,"BUG #17269: Why is virtual memory usage of PostgreSQL growing constantly?",6,3: 4-10 messages,false,no linked commit,,,,,2021-11-11
 17270,22fbef86fc7034aef607c20752f268b3,20211103,2021-11-03,"BUG #17270: Partitions are not prunned for generic plans when `ANY` construct is used.",1,1: no replies,false,no linked commit,,,,,2021-11-11
 17271,abd0435c58f3b8332d6ebd7e04d95fd4,20211104,2021-11-04,"BUG #17271: Updating enum columns type fails when constraints exist",6,3: 4-10 messages,false,no linked commit,,,,,2021-11-11
@@ -73,7 +73,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17288,a9ad0b503fb71580b1c0e6accdb48635,20211117,2021-11-17,"BUG #17288: PSQL bug with COPY command (Windows)",29,4: 11+ messages,true,linked to a fix commit,discussion_link,2021-11-25,8,3: within a month,2022-02-10
 17289,b70f188c0af69096bb61896a3a4eebf6,20211117,2021-11-17,"BUG #17289: Postgres 14.1 Windows installer fails with unknown error and terminates",12,4: 11+ messages,false,no linked commit,,,,,2022-02-10
 17290,db80fef3f39a6031958d238a042cea7e,20211117,2021-11-17,"BUG #17290: Error Installation",4,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
-17292,4861186401477aa629576e3b3318dd03,20211119,2021-11-19,"BUG #17292: view definition containing multiple joins on partitioned table returns invalid explain plan",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
+17292,4273f8a698aed8a5c7c8a34640340650,20211119,2021-11-19,"BUG #17292: view definition containing multiple joins on partitioned table returns invalid explain plan",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17294,cba1e4240678a5449a149ddb7d811b42,20211120,2021-11-20,"BUG #17294: spgist doesn't support varchar, only text type fields.",2,2: 2-3 messages,true,linked to a fix commit,both,2021-11-20,0,1: same/next day,2022-02-10
 17295,11bf6422b6a3bd943c3719ee920b2c64,20211120,2021-11-20,"BUG #17295: Different query plan with Index Only Scan and Bitmap Index Scan.",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17296,8cea4f2a7a7a948ab27e3f1965740deb,20211122,2021-11-22,"BUG #17296: replication slot self-removed after created",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
@@ -85,7 +85,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17303,40cfb916bdb4270361d3436cf67e1b93,20211129,2021-11-29,"BUG #17303: statement_timeout does not work always",4,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
 17304,7af2e8fac511f780d313d491e8845fdd,20211130,2021-11-30,"BUG #17304: Test failure with -fsanitize=undefined",1,1: no replies,false,no linked commit,,,,,2022-02-10
 17305,686bae2edad104b7b13f9c4a2fd1cc12,20211201,2021-12-01,"BUG #17305: to_timestamp accept dates rejected by timestamptz cast",3,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
-17307,f964b30f5c7690881101a84af9b6fc54,20211202,2021-12-02,"BUG #17307: Performance deviation between the multiple iterations (NOPM & TPM values).",3,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
+17307,8a67829c7a29400054ae946249694a9b,20211202,2021-12-02,"BUG #17307: Performance deviation between the multiple iterations (NOPM & TPM values).",3,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17309,44c4d851a08b09d758ccac3792fd3768,20211202,2021-12-02,"BUG #17309: Memory consumption",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17311,05d3bb173713abb68ffaa1e2041bb6a9,20211203,2021-12-03,"BUG #17311: Google search results: Outdated docs at the top",3,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17312,03a068b93b96dd368a9e1f3d34d50185,20211203,2021-12-03,"BUG #17312: MacOS User Account Postgres not deleting.",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
@@ -96,7 +96,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17321,a6adaf043192e738b73dc0987dd9d622,20211206,2021-12-06,"BUG #17321: count(*) on a 1,874,554,883 rows partitioned table takes several minutes.",3,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17323,54ab8866ae356b9603de2cb327b8ee44,20211206,2021-12-06,"BUG #17323: test_config_settings during postgres initialization does not read the parameter huge_pages",3,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17325,eb7c00ba104013426c559b3d2d838199,20211208,2021-12-08,"BUG #17325: Unexpected streaming replication protocol bytes for IDENTIFY_SYSTEM command",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
-17326,6855b3509eaa77a9583a30035cc3d859,20211208,2021-12-08,"BUG #17326: Postgres crashed when pg_reload_conf() with ssl certificate parameters",13,4: 11+ messages,false,no linked commit,,,,,2022-02-10
+17326,5c37b277174fe2593dad07cd6c472b1d,20211208,2021-12-08,"BUG #17326: Postgres crashed when pg_reload_conf() with ssl certificate parameters",13,4: 11+ messages,false,no linked commit,,,,,2022-02-10
 17327,5ec504b1325aebdd0442833a5bd03ff2,20211208,2021-12-08,"BUG #17327: Postgres server does not correctly emit error for max_slot_wal_keep_size being breached",7,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
 17328,b9b146bcb24ed0498859e619e4f581fe,20211208,2021-12-08,"BUG #17328: import foreign schema never reports errors",1,1: no replies,false,no linked commit,,,,,2022-02-10
 17329,aec3fb74254365f4315c3c8db90cdbd4,20211208,2021-12-08,"BUG #17329: Aggregate Functions Precision Error",3,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
@@ -108,7 +108,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17335,3d21a34f339c22a2e4f06b3e916ef272,20211213,2021-12-13,"BUG #17335: Duplicate result rows in Gather node when ""Suppress Append ... that have a single child"" applied",4,3: 4-10 messages,true,linked to a fix commit,bug_ref,2022-01-25,43,4: within 6 months,2022-02-10
 17336,1ed3cebb509e8d1d043509da557815f2,20211214,2021-12-14,"BUG #17336: logtape sort performance and overflow",2,2: 2-3 messages,true,linked to a fix commit,discussion_link,2021-12-14,0,1: same/next day,2022-02-10
 17337,cee19fae20ab77c9eb78abcd00525663,20211214,2021-12-14,"BUG #17337: Segmentation fault on updating row with ltree GIST index",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
-17338,6855b3509eaa77a9583a30035cc3d859,20211216,2021-12-16,"BUG #17338: pgaudit ddl audit logging show clear text password when create user mapping",1,1: no replies,false,no linked commit,,,,,2022-02-10
+17338,5c37b277174fe2593dad07cd6c472b1d,20211216,2021-12-16,"BUG #17338: pgaudit ddl audit logging show clear text password when create user mapping",1,1: no replies,false,no linked commit,,,,,2022-02-10
 17339,8d353a4c5a84c5049abfc94b13c17ae1,20211219,2021-12-19,"BUG #17339: Assert failed on attempt to detach a sequence concurrently",7,3: 4-10 messages,true,linked to a fix commit,discussion_link,2021-12-22,3,2: within a week,2022-02-10
 17340,8ed316a8c60362d4d311027061f449e7,20211220,2021-12-20,"BUG #17340: Unnest discards rows with empty or null arrays",5,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
 17341,3f913df07ee0996c74584774e3513f4d,20211221,2021-12-21,"BUG #17341: The comment of the source code is not correct",2,2: 2-3 messages,true,linked to a fix commit,discussion_link,2021-12-22,1,1: same/next day,2022-02-10
@@ -130,7 +130,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17358,affadb20b3bd612d9e4813765f36d667,20220107,2022-01-07,"BUG #17358: While using --with-uuid=bsd option, uuid_ossp test fails on NetBSD 9.2",13,4: 11+ messages,true,linked to a fix commit,discussion_link,2022-09-09,245,5: longer,2022-02-10
 17360,f58a16af659fcf0aa801d76aefe37784,20220110,2022-01-10,"BUG #17360: array_to_string should be immutable instead of stable",7,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
 17361,f74ef4803a5efcb963e551adc78df7ad,20220110,2022-01-10,"BUG #17361: Unique index constraint inconsistence",4,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
-17362,f2fb5c0a7315943d13a6c251d84cb7c1,20220111,2022-01-11,"BUG #17362: Error ""could not find block containing chunk"" when using index with icu collation on CentOS 7",8,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
+17362,c2cccb0a2f3cbf2cdd08a9dde9719a40,20220111,2022-01-11,"BUG #17362: Error ""could not find block containing chunk"" when using index with icu collation on CentOS 7",8,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
 17363,1744b15862933e61cce5d05090f86547,20220111,2022-01-11,"BUG #17363: 14 regression: ""could not identify a hash function for type record"" in a nested record in sublink",3,2: 2-3 messages,true,linked to a fix commit,both,2022-01-16,5,2: within a week,2022-02-10
 17364,739dcbc509154aa80afad7c832dd1790,20220112,2022-01-12,"BUG #17364: Errors caused by views",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17365,efc29db868e023019d58020b6ef3b501,20220113,2022-01-13,"BUG #17365: Error: redefinition of 'stat' in win32_port.h when including postgres.h",7,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
@@ -138,13 +138,13 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17368,8d353a4c5a84c5049abfc94b13c17ae1,20220115,2022-01-15,"BUG #17368: Assert failed in GetSafeSnapshot() for SERIALIZABLE READ ONLY DEFERRABLE transaction",12,4: 11+ messages,true,linked to a fix commit,bug_ref,2023-03-09,418,5: longer,2022-02-10
 17369,6cc58baafaf6746e56260d9e384b1b4b,20220118,2022-01-18,"BUG #17369: tmp files didn't deleted after oom killer killed process",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17370,40cfb916bdb4270361d3436cf67e1b93,20220119,2022-01-19,"BUG #17370: shmem lost on segfault",4,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
-17371,1fcc08b24a039578f161572d98015559,20220119,2022-01-19,"BUG #17371: Immutable INTERVAL to TEXT cast can cause incorrect query results",2,2: 2-3 messages,true,linked to a fix commit,both,2022-01-19,0,1: same/next day,2022-02-10
+17371,1c0877c161daf103c68dff6dbd09f234,20220119,2022-01-19,"BUG #17371: Immutable INTERVAL to TEXT cast can cause incorrect query results",2,2: 2-3 messages,true,linked to a fix commit,both,2022-01-19,0,1: same/next day,2022-02-10
 17372,8d353a4c5a84c5049abfc94b13c17ae1,20220120,2022-01-20,"BUG #17372: Altering statistics during concurrent drop can lead to a server crash",3,2: 2-3 messages,true,linked to a fix commit,discussion_link,2022-01-23,3,2: within a week,2022-02-10
 17373,9fd8cc0a5291889f3ff9f384b5032d92,20220120,2022-01-20,"BUG #17373: Missing rhel-8.3-x86_64 yum repository dir for postgresql 14",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17374,d06b0158dc23288dd6baa65ee3ee5860,20220120,2022-01-20,"BUG #17374: Bug in restore",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17375,89d7c27e0dec26e8bba6515a908725b1,20220120,2022-01-20,"BUG #17375: RECOVERY TARGET TIME RESTORE IS FAILING TO START SERVER",8,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
 17376,bd685bd6bcca02b4d01825b1c3a18644,20220121,2022-01-21,"BUG #17376: Adding unique column with a function() default results in ""could not read block 0 in file"" error",6,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
-17377,6855b3509eaa77a9583a30035cc3d859,20220122,2022-01-22,"BUG #17377: only superusers can query or manipulate replication origins",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
+17377,5c37b277174fe2593dad07cd6c472b1d,20220122,2022-01-22,"BUG #17377: only superusers can query or manipulate replication origins",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17378,b9d6feb25f863d3c97eaaae81573163f,20220123,2022-01-23,"BUG #17378: WRONG VALUE ON - A.2. Time Zones",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
 17379,eb7c00ba104013426c559b3d2d838199,20220124,2022-01-24,"BUG #17379: Cannot issue multi-command statements using a replication connection",3,2: 2-3 messages,true,linked to a fix commit,both,2022-01-24,0,1: same/next day,2022-02-10
 17381,e48cad7b90c04a336e29345fbe56fc2f,20220125,2022-01-25,"BUG #17381: psql: error: connection to server on socket ""/var/run/postgresql/.s.PGSQL.5432"" After installing",2,2: 2-3 messages,false,no linked commit,,,,,2022-02-10
@@ -162,7 +162,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17394,1cd5df1be2ac8c042a5fad9b23821f44,20220203,2022-02-03,"BUG #17394: pg_dump: query returned 0 rows instead of one:",5,3: 4-10 messages,false,no linked commit,,,,,2022-02-10
 17395,8d353a4c5a84c5049abfc94b13c17ae1,20220205,2022-02-05,"BUG #17395: Assert failed on merge join when foreign range partition contains out-of-range value",2,2: 2-3 messages,true,linked to a fix commit,both,2022-02-05,0,1: same/next day,2022-02-10
 17396,609a0dd050736c8bca60544e2e301d55,20220207,2022-02-07,"BUG #17396: Missing pckages to instal Patroni",1,1: no replies,false,no linked commit,,,,,2022-05-12
-17398,1fcc08b24a039578f161572d98015559,20220207,2022-02-07,"BUG #17398: Casts from BYTEA to TEXT and FLOAT4/8 to TEXT should not be immutable",1,1: no replies,false,no linked commit,,,,,2022-05-12
+17398,1c0877c161daf103c68dff6dbd09f234,20220207,2022-02-07,"BUG #17398: Casts from BYTEA to TEXT and FLOAT4/8 to TEXT should not be immutable",1,1: no replies,false,no linked commit,,,,,2022-05-12
 17399,49709b3e9cb441943045bb2332c8fb74,20220208,2022-02-08,"BUG #17399: Dead tuple number stats not updated on long running queries",6,3: 4-10 messages,false,no linked commit,,,,,2022-05-12
 17401,34ab53b070c17a5895965a0290a2999b,20220208,2022-02-08,"BUG #17401: REINDEX TABLE CONCURRENTLY creates a race condition on a streaming replica",25,4: 11+ messages,false,no linked commit,,,,,2022-05-12
 17402,d35c82f58e4dad8663c22bec5a65f0bd,20220210,2022-02-10,"BUG #17402: RPM packages are not signed",1,1: no replies,false,no linked commit,,,,,2022-05-12
@@ -175,7 +175,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17409,e0aa67ead722fd0c001d1d346b006614,20220216,2022-02-16,"BUG #17409: Unable to alter data type of clustered column which is referenced by foreign key",16,4: 11+ messages,true,linked to a fix commit,both,2022-03-11,23,3: within a month,2022-05-12
 17410,a2fb59aa3519768636e7aaceec87bb6e,20220218,2022-02-18,"BUG #17410: After upgrade to postgresql 12.9 from 12.6 , some of the statements having ”=” operator not returnin",3,2: 2-3 messages,false,no linked commit,,,,,2022-05-12
 17412,5187a8d44bb2e75b1fcc69a431d35b22,20220221,2022-02-21,"BUG #17412: CREATE INDEX on a partitioned table doesn't recognize existing partial indexes on partitions",1,1: no replies,false,no linked commit,,,,,2022-05-12
-17413,6b7d6b8e140611597c83fe0196959b14,20220222,2022-02-22,"BUG #17413: update of partitioned table via postgres_fdw updates to much rows",4,3: 4-10 messages,false,no linked commit,,,,,2022-05-12
+17413,18a6ab2c9714a90f063de999d8d8b687,20220222,2022-02-22,"BUG #17413: update of partitioned table via postgres_fdw updates to much rows",4,3: 4-10 messages,false,no linked commit,,,,,2022-05-12
 17414,cec4e71bd605b8ce6243a8651cab24dd,20220223,2022-02-23,"BUG #17414: install failed",1,1: no replies,false,no linked commit,,,,,2022-05-12
 17415,152e067a651adda30ff9626cb41c5f6f,20220223,2022-02-23,"BUG #17415: Unable to use underscore as first character in set_config custom parameter",3,2: 2-3 messages,true,linked to a fix commit,both,2022-02-23,0,1: same/next day,2022-05-12
 17416,8d353a4c5a84c5049abfc94b13c17ae1,20220223,2022-02-23,"BUG #17416: Server crashes due to python3 stack overflow on executing multiple plpy.rollback() calls",2,2: 2-3 messages,true,linked to a fix commit,discussion_link,2022-02-28,5,2: within a week,2022-05-12
@@ -199,7 +199,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17443,73467bd5a9698778b9a186c8e28df60f,20220321,2022-03-21,"BUG #17443: Select command does not use brin index when enable_seqscan = on",2,2: 2-3 messages,false,no linked commit,,,,,2022-05-12
 17444,427d3e1d104120f0b006d35ab9e60f25,20220321,2022-03-21,"BUG #17444: ERROR: found xmin 215633 from before relfrozenxid 1280585",2,2: 2-3 messages,false,no linked commit,,,,,2022-05-12
 17445,4fbca55ead9324b4300220d044132829,20220321,2022-03-21,"BUG #17445: ""ON CONFLICT"" has different behaviors when its param is passed with prepared stmt or hard coded",9,3: 4-10 messages,false,no linked commit,,,,,2022-05-12
-17446,47e1ed60993b305a1336975ba9105abf,20220322,2022-03-22,"BUG #17446: Suggest updating the section title ""Building Indexes Concurrently""",3,2: 2-3 messages,false,no linked commit,,,,,2022-05-12
+17446,2571f3ba6a243b66bf475239176b6c4b,20220322,2022-03-22,"BUG #17446: Suggest updating the section title ""Building Indexes Concurrently""",3,2: 2-3 messages,false,no linked commit,,,,,2022-05-12
 17447,7ed418e14959534d3ec6f193d15f8753,20220324,2022-03-24,"BUG #17447: uninstaller fails",2,2: 2-3 messages,false,no linked commit,,,,,2022-05-12
 17448,2cc6319600bff880dceb9d85cc7e1799,20220325,2022-03-25,"BUG #17448: In Windows 10, version 1703 and later, huge_pages doesn't work.",27,4: 11+ messages,true,linked to a fix commit,discussion_link,2022-09-17,176,4: within 6 months,2022-05-12
 17449,914d6b14feb64ae76b038553a4ee568d,20220325,2022-03-25,"BUG #17449: Disk space not released",8,3: 4-10 messages,false,no linked commit,,,,,2022-05-12
@@ -244,7 +244,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17501,2a59230ac83912eacf8ea43acc5eb0a5,20220528,2022-05-28,"BUG #17501: COPY is failing with ""ERROR: invalid byte sequence for encoding ""UTF8"": 0xe5""",5,3: 4-10 messages,true,linked to a fix commit,both,2022-05-29,1,1: same/next day,2022-08-11
 17502,6a2db85bcab183f6f0cb4c0f9070eb58,20220528,2022-05-28,"BUG #17502: View based on window functions returns wrong results when queried",18,4: 11+ messages,true,linked to a fix commit,both,2026-06-30,1494,5: longer,2022-08-11
 17503,37f64ece920f6bc9a5a8cd1b8b40dfd1,20220530,2022-05-30,"BUG #17503: Package postgresql-jdbc-42.3.6-1.rhel8.noarch.rpm is not signed",1,1: no replies,false,no linked commit,,,,,2022-08-11
-17504,c2443babc0c1fcdc629eed8eda09b9cc,20220530,2022-05-30,"BUG #17504: psql --single-transaction -vON_ERROR_STOP=1 still commits after client-side error",23,4: 11+ messages,true,linked to a fix commit,discussion_link,2022-06-06,7,2: within a week,2022-08-11
+17504,be95459132adc80fda341a7949666c65,20220530,2022-05-30,"BUG #17504: psql --single-transaction -vON_ERROR_STOP=1 still commits after client-side error",23,4: 11+ messages,true,linked to a fix commit,discussion_link,2022-06-06,7,2: within a week,2022-08-11
 17506,57eea656fce554d15a77218942e572f3,20220601,2022-06-01,"BUG #17506: Issue with the downloading site",2,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
 17507,c148b212e05e4033835e72393dfed1dc,20220601,2022-06-01,"BUG #17507: rpm packages provide wrong postgresql version",1,1: no replies,false,no linked commit,,,,,2022-08-11
 17508,dd2094e0ba61d3b35761518c68da8d6b,20220602,2022-06-02,"BUG #17508: ja.po for pg_ctl has an obvious mistake",4,3: 4-10 messages,false,no linked commit,,,,,2022-08-11
@@ -261,7 +261,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17523,de0b171ea2df56d10e9dd5327e2a111c,20220618,2022-06-18,"BUG #17523: Postgresql Kerberos PAM authentication",1,1: no replies,false,no linked commit,,,,,2022-08-11
 17524,74a5009e9cf3f393d0740dc8ff300254,20220620,2022-06-20,"BUG #17524: Increase in WAL size due to logical replication with publication contain a table with low activity.",3,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
 17525,d1f96443c84a5f79c19389e4e1328804,20220621,2022-06-21,"BUG #17525: Range partition by date won't allow the use of a date that is the upper bound",3,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
-17526,d45bc0e54c3a9998ae257339d0ec1a05,20220622,2022-06-22,"BUG #17526: PG_DUMP is not outputting ""CREATE SCHEMA"" statements when an extension is assigned to a schema",3,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
+17526,b8476671e9438b3acea4d5ea91d2c8c3,20220622,2022-06-22,"BUG #17526: PG_DUMP is not outputting ""CREATE SCHEMA"" statements when an extension is assigned to a schema",3,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
 17527,7d0c5a53ecc7ab154344f1affab92a93,20220622,2022-06-22,"BUG #17527: Timestamp bind variable using 0000-00-00, 0000/00/00",1,1: no replies,false,no linked commit,,,,,2022-08-11
 17528,4cb9f270793f08423962a046a589f8b7,20220622,2022-06-22,"BUG #17528: ERROR: could not access status of transaction 1997627701",2,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
 17529,637f333d47e6f69663d755b5ba5220c2,20220622,2022-06-22,"BUG #17529: SQL Error [57P01]: FATAL: terminating connection due to administrator command",7,3: 4-10 messages,false,no linked commit,,,,,2022-08-11
@@ -282,7 +282,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17545,b1a3c6c528e2d8dee6e2722900f8b955,20220711,2022-07-11,"BUG #17545: Incorrect selectivity for IS NOT DISTINCT FROM and NULLs",3,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
 17546,204f04c63aaa7346d2c58bb22caa01ac,20220711,2022-07-11,"BUG #17546: power() function - value is distorted via automatic type cast",4,3: 4-10 messages,false,no linked commit,,,,,2022-08-11
 17548,fb259c24508604617058aed07f9a7bed,20220712,2022-07-12,"BUG #17548: Aggregate queries on partitioned tables can cause OOM.",2,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
-17549,692ddb9675e2abbd1351f5f62979344a,20220713,2022-07-13,"BUG #17549: wrong index scan plan with RLS",2,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
+17549,595f05388fb2dbbc7200c587a80e2803,20220713,2022-07-13,"BUG #17549: wrong index scan plan with RLS",2,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
 17550,1be4433bd115c2ea87cbc2c81c4c269f,20220714,2022-07-14,"BUG #17550: inet type doesn't accept alternate notations of ipv4 addresses",4,3: 4-10 messages,false,no linked commit,,,,,2022-08-11
 17552,5bd73b780ffdfc39395663a82e653c99,20220717,2022-07-17,"BUG #17552: pg_stat_statements tracks internal FK check queries when COPY used to load data",9,3: 4-10 messages,true,linked to a fix commit,both,2023-11-08,479,5: longer,2022-08-11
 17553,09588c606676828c98cc934e00ddade3,20220718,2022-07-18,"BUG #17553: Unreleased file resources exist",1,1: no replies,false,no linked commit,,,,,2022-08-11
@@ -302,7 +302,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17568,ff7163eb9a902d9952f5a489c8e29751,20220803,2022-08-03,"BUG #17568: unexpected zero page at block 0 during REINDEX CONCURRENTLY",5,3: 4-10 messages,false,no linked commit,,,,,2022-08-11
 17569,b64d9af3497cc98766d663927018097d,20220803,2022-08-03,"BUG #17569: false negative / positive results when using <-> (followed by) and tsvector limit (16383) hit",1,1: no replies,false,no linked commit,,,,,2022-08-11
 17570,dd62e2ef2da8e7dc252efeb2d7a9d06a,20220804,2022-08-04,"BUG #17570: Unrecognized node type for query with statistics on expressions",10,3: 4-10 messages,true,linked to a fix commit,both,2022-08-05,1,1: same/next day,2022-08-11
-17571,aa4eed757447b2244fbeff34254932ec,20220804,2022-08-04,"BUG #17571: PostgreSQL 15b2 ICU collation defined at db level sorts differently in collate clause vs implicit",4,3: 4-10 messages,false,no linked commit,,,,,2022-08-11
+17571,2cdfd07a05d074420e15d99d8280f27b,20220804,2022-08-04,"BUG #17571: PostgreSQL 15b2 ICU collation defined at db level sorts differently in collate clause vs implicit",4,3: 4-10 messages,false,no linked commit,,,,,2022-08-11
 17572,c9b450707898b6e76b1458c226e86d75,20220804,2022-08-04,"BUG #17572: Different behaviour in different versions of postgresql details as in email",2,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
 17573,e20d47211282a145c1ad27e76ddb188c,20220804,2022-08-04,"BUG #17573: timestamptz casting precision goes down as the year goes up",2,2: 2-3 messages,false,no linked commit,,,,,2022-08-11
 17574,5bd73b780ffdfc39395663a82e653c99,20220804,2022-08-04,"BUG #17574: Attaching an invalid index to partition head make head index invalid forever",4,3: 4-10 messages,false,no linked commit,,,,,2022-08-11
@@ -377,7 +377,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17658,29e618d039daea6de7a3a3ffb1a0a42a,20221020,2022-10-20,"BUG #17658: Download release 15 without success",1,1: no replies,false,no linked commit,,,,,2022-11-10
 17659,6f6a485b26cb0a0fbb04170d1aea8574,20221021,2022-10-21,"BUG #17659: error in rpmbuild when compiling psql",1,1: no replies,false,no linked commit,,,,,2022-11-10
 17660,ae67fef019154f709ca23dd36e3b5e80,20221022,2022-10-22,"BUG #17660: JSONPATH issue using like_regex followed by the && operator",4,3: 4-10 messages,false,no linked commit,,,,,2022-11-10
-17661,8ac5829114399cac0279e43c4a0ceefe,20221022,2022-10-22,"BUG #17661: Nothing provides 'libselinux.so.1(LIBSELINUX_1.0)(64bit)",1,1: no replies,false,no linked commit,,,,,2022-11-10
+17661,2bc01a270e531b11cb916f79b78c343a,20221022,2022-10-22,"BUG #17661: Nothing provides 'libselinux.so.1(LIBSELINUX_1.0)(64bit)",1,1: no replies,false,no linked commit,,,,,2022-11-10
 17662,bab073db25dbde605454038434858350,20221024,2022-10-24,"BUG #17662: Error on UPDATE with ()",2,2: 2-3 messages,false,no linked commit,,,,,2022-11-10
 17663,cf668df181682e4207e108c131824a71,20221026,2022-10-26,"BUG #17663: Connect to the database through jdbc, call the stored procedure containing the rollback statement,",1,1: no replies,true,linked to a fix commit,discussion_link,2022-11-01,6,2: within a week,2022-11-10
 17664,7565d3b671c176138bedaf0fd93f3c3a,20221026,2022-10-26,"BUG #17664: The subsctring() function with the char() text type does not work correctly",2,2: 2-3 messages,false,no linked commit,,,,,2022-11-10
@@ -430,12 +430,12 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17713,792f72b59c0d05f18afc47fff7c7edce,20221212,2022-12-12,"BUG #17713: Assert with postgres_fdw in v12",5,3: 4-10 messages,false,no linked commit,,,,,2023-02-09
 17714,9b97ed4484fb1c12e35e53550705506f,20221212,2022-12-12,"BUG #17714: Refresh materialized view does not update all date",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17715,cc6015d501ac8cfec21f961fca792e39,20221212,2022-12-12,"BUG #17715: dumps file raise an error on restore if a materialized view use a function calling another function",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
-17716,fe5addff86d985cbeaa2c6d62c8ea795,20221213,2022-12-13,"BUG #17716: walsender process hang while decoding 'DROP PUBLICATION' XLOG",9,3: 4-10 messages,false,no linked commit,,,,,2023-02-09
+17716,74a973fba99bc19e818b1a2f14353fb4,20221213,2022-12-13,"BUG #17716: walsender process hang while decoding 'DROP PUBLICATION' XLOG",9,3: 4-10 messages,false,no linked commit,,,,,2023-02-09
 17717,d4a6a10f7f6b42dcb9d1f1818af87d9d,20221213,2022-12-13,"BUG #17717: Regression in vacuumdb (15 is slower than 10/11 and possible memory issue)",29,4: 11+ messages,true,linked to a fix commit,both,2023-01-06,24,3: within a month,2023-02-09
 17718,400fd0a6378c508f350591afaecc6e03,20221213,2022-12-13,"BUG #17718: Unexpected REVOKE ALL permissions in the backup script",1,1: no replies,false,no linked commit,,,,,2023-02-09
 17719,12853e6b9bdc36076dc9c9808262dab1,20221213,2022-12-13,"BUG #17719: scram-sha-256 is not working on PostgreSQL 11.18",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
-17720,4861186401477aa629576e3b3318dd03,20221214,2022-12-14,"BUG #17720: pg_dump creates a dump with primary key that cannot be restored, when specifying 'using index ...'",22,4: 11+ messages,true,linked to a fix commit,discussion_link,2023-02-24,72,4: within 6 months,2023-02-09
-17721,6d07370002b9b5d8e33c37db71df4b8d,20221214,2022-12-14,"BUG #17721: A completely unused CTE negatively affect Query Plan",6,3: 4-10 messages,false,no linked commit,,,,,2023-02-09
+17720,4273f8a698aed8a5c7c8a34640340650,20221214,2022-12-14,"BUG #17720: pg_dump creates a dump with primary key that cannot be restored, when specifying 'using index ...'",22,4: 11+ messages,true,linked to a fix commit,discussion_link,2023-02-24,72,4: within 6 months,2023-02-09
+17721,5c3fba161b6ec2374530942118cf0cb7,20221214,2022-12-14,"BUG #17721: A completely unused CTE negatively affect Query Plan",6,3: 4-10 messages,false,no linked commit,,,,,2023-02-09
 17723,c531d513427f8382eaa24c05901f3e1c,20221216,2022-12-16,"BUG #17723: cache lookup failed for type 0",3,2: 2-3 messages,true,linked to a fix commit,both,2022-12-16,0,1: same/next day,2023-02-09
 17724,ff247d99ee5751f10b7b1ef39228e06a,20221216,2022-12-16,"BUG #17724: All autovacuum workers operate on 1 db at a time",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17725,792f72b59c0d05f18afc47fff7c7edce,20221220,2022-12-20,"BUG #17725: Sefault when seg_in() called with a large argument",5,3: 4-10 messages,true,linked to a fix commit,both,2022-12-21,1,1: same/next day,2023-02-09
@@ -443,7 +443,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17728,fbdc7815a3ebf430b893973a539fe9d0,20221222,2022-12-22,"BUG #17728: When jdbc calls the stored procedure, portal->stmts in FillPortalStore is null, causing a processing",3,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17730,39a2df8607b8c94d589f871fd9730d56,20221223,2022-12-23,"BUG #17730: Trigger Issue",3,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17731,46fd412f40fd0c970c58fb3a3fcf536f,20221226,2022-12-26,"BUG #17731: Server doesn't start after abnormal shutdown while creating unlogged tables",7,3: 4-10 messages,false,no linked commit,,,,,2023-02-09
-17732,4bf9833b53fae2d47b3dc5d469f36bc0,20221227,2022-12-27,"BUG #17732: pg_restore fails with check constraint",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
+17732,1e5ca447bd2e4a964a2db013bde678f6,20221227,2022-12-27,"BUG #17732: pg_restore fails with check constraint",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17733,ca6b3e73c0b0641da8fae01bc75bba86,20221228,2022-12-28,"BUG #17733: ERROR: could not load library ""/Users/frank/postgres/postgresql-13.9/lib/postgresql/llvmjit.so"": dl",7,3: 4-10 messages,false,no linked commit,,,,,2023-02-09
 17734,e80db3bf9d74834f6c996411f02e61a1,20221229,2022-12-29,"BUG #17734: Doc bug: ""initial database user"" used where ""bootstrap superuser"" is meant",3,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17735,bae6442a4b46b7bb09903426bc3d59b7,20230102,2023-01-02,"BUG #17735: Uninstall of one version wipes out logs for all versions",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
@@ -455,14 +455,14 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17741,dd62e2ef2da8e7dc252efeb2d7a9d06a,20230109,2023-01-09,"BUG #17741: vacuum process hangs after pg_surgery manipulations",4,3: 4-10 messages,false,no linked commit,,,,,2023-02-09
 17742,9152504267f841a2b95154001134264f,20230109,2023-01-09,"BUG #17742: Postgres not generating the minidump after crash in Windows.",1,1: no replies,false,no linked commit,,,,,2023-02-09
 17743,a56c842372089c9095571f2504a12467,20230109,2023-01-09,"BUG #17743: Bad RIP VALUE",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
-17744,fe5addff86d985cbeaa2c6d62c8ea795,20230110,2023-01-10,"BUG #17744: Fail Assert while recoverying from pg_basebackup",17,4: 11+ messages,false,no linked commit,,,,,2023-02-09
+17744,74a973fba99bc19e818b1a2f14353fb4,20230110,2023-01-10,"BUG #17744: Fail Assert while recoverying from pg_basebackup",17,4: 11+ messages,false,no linked commit,,,,,2023-02-09
 17745,2b2cc9210aa97adf437ee32f830ac06c,20230111,2023-01-11,"BUG #17745: RETURNING after INSERT does not return the same structure of response",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17746,96600f3a2fb6b20ee6e9e74e39ccd4b2,20230111,2023-01-11,"BUG #17746: Partitioning by hash of a text depends on icu version when text collation is not deterministic",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
-17747,a800ca4750f4b11adee85c303b08649d,20230111,2023-01-11,"BUG #17747: Registry entry ""Base Directory"" is not populated if you only install Command-line tools",3,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
+17747,14511cf808b50aa2fa66499118e436fe,20230111,2023-01-11,"BUG #17747: Registry entry ""Base Directory"" is not populated if you only install Command-line tools",3,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17748,9d4138fce17b1e157a3434c57f11d7ce,20230112,2023-01-12,"BUG #17748: postres_raster extension missing in postgis packages for SLES",1,1: no replies,false,no linked commit,,,,,2023-02-09
 17749,76ed5c12a9eee9e1d1cb8569d4ea6124,20230112,2023-01-12,"BUG #17749: do repodata in online repos vor sles12 available",1,1: no replies,false,no linked commit,,,,,2023-02-09
 17750,de47966ec70fb65aeffb6bbe7f4ca89a,20230112,2023-01-12,"BUG #17750: Plugin_debugger not work when have pg_hint_plan on shared_preload_libraries",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
-17751,a0bb30b5f84ef5bea415f34324461464,20230114,2023-01-14,"BUG #17751: DDL CREATE statement accepts invalid default values for FOREIGN KEY constraint.",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
+17751,8fc29e2b422439574357cb41ae95e805,20230114,2023-01-14,"BUG #17751: DDL CREATE statement accepts invalid default values for FOREIGN KEY constraint.",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17753,91e1e8bc5e059d465d3f5da5de4d6c21,20230118,2023-01-18,"BUG #17753: pg_dump --if-exists bug",6,3: 4-10 messages,true,linked to a fix commit,discussion_link,2023-01-20,2,2: within a week,2023-02-09
 17754,e321e7ea3c2fc664013fe373fa5a0369,20230119,2023-01-19,"BUG #17754: Subquery IN clause returns row matches where subquery is invalid",2,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
 17755,e448c5ccbcabbc8692a24cbe776b08bd,20230120,2023-01-20,"BUG #17755: database queries get stuck for certain IDs",3,2: 2-3 messages,false,no linked commit,,,,,2023-02-09
@@ -541,7 +541,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17841,c220f0bff85324fde8adf4b4483ccd46,20230314,2023-03-14,"BUG #17841: COPY Command Invalid QUOTES",2,2: 2-3 messages,false,no linked commit,,,,,2023-05-11
 17842,b89f5b2bf7e32644503df93e31a4f826,20230314,2023-03-14,"BUG #17842: Adding a qual to a working query gets bogus syntax error",7,3: 4-10 messages,false,no linked commit,,,,,2023-05-11
 17843,8d353a4c5a84c5049abfc94b13c17ae1,20230314,2023-03-14,"BUG #17843: Writing uninitialised data in logtape/buffile",1,1: no replies,false,no linked commit,,,,,2023-05-11
-17844,99539b4f55cc85d34dbcca1b6b27877e,20230315,2023-03-15,"BUG #17844: Memory consumption for memoize node",7,3: 4-10 messages,true,linked to a fix commit,discussion_link,2023-03-20,5,2: within a week,2023-05-11
+17844,8106999e6bbb69e8f167f6ca5b049165,20230315,2023-03-15,"BUG #17844: Memory consumption for memoize node",7,3: 4-10 messages,true,linked to a fix commit,discussion_link,2023-03-20,5,2: within a week,2023-05-11
 17845,892a2d7dde43b83d5824161c4c17dd7a,20230316,2023-03-16,"BUG #17845: insert into on conflict bug .",9,3: 4-10 messages,false,no linked commit,,,,,2023-05-11
 17846,638ba03c5556d34fcc8c45a0639e3d23,20230316,2023-03-16,"BUG #17846: pg_dump doesn't properly dump with paused WAL replay",4,3: 4-10 messages,true,linked to a fix commit,both,2026-08-26,1259,5: longer,2023-05-11
 17847,8d353a4c5a84c5049abfc94b13c17ae1,20230316,2023-03-16,"BUG #17847: Unaligned memory access in ltree_gist",20,4: 11+ messages,true,linked to a fix commit,discussion_link,2023-04-23,38,4: within 6 months,2023-05-11
@@ -570,7 +570,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17870,5bd73b780ffdfc39395663a82e653c99,20230327,2023-03-27,"BUG #17870: Analyze on remote postgresql_fdw table never finish",3,2: 2-3 messages,false,no linked commit,,,,,2023-05-11
 17871,5bd73b780ffdfc39395663a82e653c99,20230327,2023-03-27,"BUG #17871: JIT during postgresql_fdw remote_estimates EXPLAIN have very negatively effect on planning time",18,4: 11+ messages,false,no linked commit,,,,,2023-05-11
 17872,8d353a4c5a84c5049abfc94b13c17ae1,20230327,2023-03-27,"BUG #17872: Dropping an attribute of a composite type breaks indexes over the type silently",9,3: 4-10 messages,true,linked to a fix commit,both,2023-03-27,0,1: same/next day,2023-05-11
-17873,1fcc08b24a039578f161572d98015559,20230327,2023-03-27,"BUG #17873: Empty JSONB array is ordered before all other JSONB values",1,1: no replies,false,no linked commit,,,,,2023-05-11
+17873,1c0877c161daf103c68dff6dbd09f234,20230327,2023-03-27,"BUG #17873: Empty JSONB array is ordered before all other JSONB values",1,1: no replies,false,no linked commit,,,,,2023-05-11
 17874,46fd412f40fd0c970c58fb3a3fcf536f,20230328,2023-03-28,"BUG #17874: Incorrect memory access at gistBuildCallback",5,3: 4-10 messages,true,linked to a fix commit,both,2023-03-29,1,1: same/next day,2023-05-11
 17875,8bc59018e8ef48452b3fa6b79bdc1f23,20230328,2023-03-28,"BUG #17875: Postgres common repo is missing gdal32-libs-3.2.3-6.rhel8.x86_64/proj80-8.0.1-1.rhel8.x86_64",1,1: no replies,false,no linked commit,,,,,2023-05-11
 17876,4f64d6d81307557aac05373562e562bb,20230329,2023-03-29,"BUG #17876: Function width_bucket() for float8 input returns value out of range",9,3: 4-10 messages,true,linked to a fix commit,discussion_link,2023-03-30,1,1: same/next day,2023-05-11
@@ -620,7 +620,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17923,b89f5b2bf7e32644503df93e31a4f826,20230507,2023-05-07,"BUG #17923: Excessive warnings of collation version mismatch in logs",6,3: 4-10 messages,false,no linked commit,,,,,2023-05-11
 17924,b89f5b2bf7e32644503df93e31a4f826,20230507,2023-05-07,"BUG #17924: Inverted behavior of ""Date"" and ""Reverse Date"" when searching a mailbox archive",3,2: 2-3 messages,false,no linked commit,,,,,2023-05-11
 17925,62ffe07669c2dcd5d0ab7ffe860e1828,20230508,2023-05-08,"BUG #17925: Incorrect select query result",4,3: 4-10 messages,false,no linked commit,,,,,2023-08-10
-17926,a478cf11bf3ac999de0825e734190e7e,20230508,2023-05-08,"BUG #17926: Segfault in SELECT",4,3: 4-10 messages,false,no linked commit,,,,,2023-08-10
+17926,05fbfbe333c438b75f0094b14d8260c0,20230508,2023-05-08,"BUG #17926: Segfault in SELECT",4,3: 4-10 messages,false,no linked commit,,,,,2023-08-10
 17927,40cfb916bdb4270361d3436cf67e1b93,20230510,2023-05-10,"BUG #17927: Postgres does not compile with LLVM-16",2,2: 2-3 messages,false,no linked commit,,,,,2023-08-10
 17928,8d353a4c5a84c5049abfc94b13c17ae1,20230511,2023-05-11,"BUG #17928: Standby fails to decode WAL on termination of primary",86,4: 11+ messages,true,linked to a fix commit,discussion_link,2023-09-22,134,4: within 6 months,2023-08-10
 17929,e6897b12956637236c8bcb4eb760bbd1,20230512,2023-05-12,"BUG #17929: LLVMBuildGEP: symbol not found",3,2: 2-3 messages,false,no linked commit,,,,,2023-08-10
@@ -630,7 +630,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 17933,89385a25aa263c741b82a26455bc57a1,20230515,2023-05-15,"BUG #17933: pgAgent - password doesn't work",1,1: no replies,false,no linked commit,,,,,2023-08-10
 17934,b84edadad39ef71ccfed8a9033ef6592,20230516,2023-05-16,"BUG #17934: Cannot run pgAdmin after upgrading from 15.2 to 15.3",3,2: 2-3 messages,false,no linked commit,,,,,2023-08-10
 17935,8d353a4c5a84c5049abfc94b13c17ae1,20230516,2023-05-16,"BUG #17935: Incorrect memory access in fuzzystrmatch/difference()",2,2: 2-3 messages,true,linked to a fix commit,both,2023-05-16,0,1: same/next day,2023-08-10
-17936,f4dbc732a1ff0a2e79267fa5f099bc25,20230516,2023-05-16,"BUG #17936: Memory Leak when OPERATOR FAMILY use LANGUAGE SQL function",2,2: 2-3 messages,false,no linked commit,,,,,2023-08-10
+17936,5e8733a52d60e0363f218e579aabac51,20230516,2023-05-16,"BUG #17936: Memory Leak when OPERATOR FAMILY use LANGUAGE SQL function",2,2: 2-3 messages,false,no linked commit,,,,,2023-08-10
 17937,7f619f00691703194f874767c0203600,20230517,2023-05-17,"BUG #17937: Corrupt Indexes after reusing DRBD Device on new VM",2,2: 2-3 messages,false,no linked commit,,,,,2023-08-10
 17938,c8a332144e976bfadf2f97c9a4310146,20230522,2023-05-22,"BUG #17938: could not open shared memory segment ""/PostgreSQL.615216676"": No such file or directory",6,3: 4-10 messages,false,no linked commit,,,,,2023-08-10
 17939,d8ab1770e80dbfab681ef009ccb80ef2,20230523,2023-05-23,"BUG #17939: CREATE EXTENSION pltcl; looks in the wrong folder",2,2: 2-3 messages,false,no linked commit,,,,,2023-08-10
@@ -731,7 +731,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18051,caf5e363765a86fd5eef56431d4f1b6d,20230809,2023-08-09,"BUG #18051: char(N) and varchar(N) behave opposite to the documentation",11,4: 11+ messages,false,no linked commit,,,,,2023-11-09
 18053,2add6446ee5d9ab3a35ec3e5794d3e51,20230810,2023-08-10,"BUG #18053: fastpath count per pid in pg_locks shows > 16 entries",1,1: no replies,false,no linked commit,,,,,2023-11-09
 18054,70163879ea2b7977b9b75610516a47f0,20230813,2023-08-13,"BUG #18054: Permission denied.",3,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
-18055,bfd3151d15d37ec642473cc8d97af398,20230814,2023-08-14,"BUG #18055: logical decoding core on AllocateSnapshotBuilder()",22,4: 11+ messages,true,linked to a fix commit,discussion_link,2023-09-12,29,3: within a month,2023-11-09
+18055,6804b85c0bdea54064907a852afb267c,20230814,2023-08-14,"BUG #18055: logical decoding core on AllocateSnapshotBuilder()",22,4: 11+ messages,true,linked to a fix commit,discussion_link,2023-09-12,29,3: within a month,2023-11-09
 18057,fa3c4e1d6ac327e95d504422e1533fcf,20230815,2023-08-15,"BUG #18057: unaccent removes intentional spaces",10,3: 4-10 messages,true,linked to a fix commit,both,2023-09-20,36,4: within 6 months,2023-11-09
 18058,8dcc7bcba9dca031609b496c7602eb6e,20230816,2023-08-16,"BUG #18058: Http Extension Postgres",1,1: no replies,false,no linked commit,,,,,2023-11-09
 18059,48c05e4b3bfdc5bfa562de0997d2b55a,20230817,2023-08-17,"BUG #18059: Unexpected error 25001 in stored procedure",5,3: 4-10 messages,true,linked to a fix commit,both,2023-08-24,7,2: within a week,2023-11-09
@@ -762,7 +762,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18090,2318bf9ad004fe812564271d84442ea2,20230905,2023-09-05,"BUG #18090: Encountering Toast Table Corruption and Missing Chunk Number Error During PostgreSQL Data Migration",2,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
 18091,dbba0738c250bbb37652f47f0c315e4a,20230907,2023-09-07,"BUG #18091: Unexpected Result by enable_material",3,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
 18092,dbba0738c250bbb37652f47f0c315e4a,20230907,2023-09-07,"BUG #18092: Unexpected Result by enable_seqscan",3,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
-18094,bf2509afaa4e951bf856a323ab5e6757,20230907,2023-09-07,"BUG #18094: max max_connections cannot be set",8,3: 4-10 messages,false,no linked commit,,,,,2023-11-09
+18094,03b4aebea11b0da7edc715cb07c0e35e,20230907,2023-09-07,"BUG #18094: max max_connections cannot be set",8,3: 4-10 messages,false,no linked commit,,,,,2023-11-09
 18095,6f04bd8c30334280e4a39302a3c00d26,20230907,2023-09-07,"BUG #18095: Unintended non-SSL connection attempt by psql cli command after a failed password authentication",3,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
 18096,40b580f68bc2cf5dae216eceabd4db74,20230908,2023-09-08,"BUG #18096: In edge-triggered epoll and kqueue, PQconsumeInput/PQisBusy are insufficient for correct async ops.",3,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
 18097,119ce0f57974ce59437f75dc3d878af8,20230908,2023-09-08,"BUG #18097: Immutable expression not allowed in generated at",16,4: 11+ messages,true,linked to a fix commit,both,2023-11-16,69,4: within 6 months,2023-11-09
@@ -807,7 +807,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18147,b89f5b2bf7e32644503df93e31a4f826,20231005,2023-10-05,"BUG #18147: ERROR: invalid perminfoindex 0 in RTE with relid xxxxx",26,4: 11+ messages,true,linked to a fix commit,both,2023-10-24,19,3: within a month,2023-11-09
 18148,93028d98ddaf4394e066d4f826f9441a,20231005,2023-10-05,"BUG #18148: Handle null in a date/time fields when passing empty arrays issue",2,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
 18149,2aea348daa969aae362752489fbd061f,20231005,2023-10-05,"BUG #18149: Incorrect lexeme for english token ""proxy""",6,3: 4-10 messages,false,no linked commit,,,,,2023-11-09
-18150,bfd3151d15d37ec642473cc8d97af398,20231008,2023-10-08,"BUG #18150: The results returned by index only scan using gist index of bpchar and seqscan have difference.",2,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
+18150,6804b85c0bdea54064907a852afb267c,20231008,2023-10-08,"BUG #18150: The results returned by index only scan using gist index of bpchar and seqscan have difference.",2,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
 18151,afdd7d5a7821785cdc35c79c33795c33,20231008,2023-10-08,"BUG #18151: pg_upgradecluster fails when column default refers to column",6,3: 4-10 messages,false,no linked commit,,,,,2023-11-09
 18152,872793ffb9beb0cf3abf88eeed8662bb,20231010,2023-10-10,"BUG #18152: Join condition is not pushed down to union all subquery",3,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
 18153,f15130848f701dd2cee55dc23d36e2bf,20231010,2023-10-10,"BUG #18153: Undefined Symbol creating postgis_raster extension",2,2: 2-3 messages,false,no linked commit,,,,,2023-11-09
@@ -826,7 +826,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18170,97603a5e4182e5a9c0c410338741f49d,20231026,2023-10-26,"BUG #18170: Unexpected error: no relation entry for relid 3",34,4: 11+ messages,true,linked to a fix commit,both,2023-11-04,9,3: within a month,2023-11-09
 18171,efceaa092472650d3f8cc56ab75046c0,20231026,2023-10-26,"BUG #18171: Dropping an index on a partitioned table drops all child indices even with a restrict",4,3: 4-10 messages,false,no linked commit,,,,,2023-11-09
 18172,ff7163eb9a902d9952f5a489c8e29751,20231027,2023-10-27,"BUG #18172: High memory usage in tSRF function context",5,3: 4-10 messages,true,linked to a fix commit,both,2023-10-28,1,1: same/next day,2023-11-09
-18173,1631259eff6ed69b926e70144ddab9e6,20231030,2023-10-30,"BUG #18173: ERROR: could not identify a comparison function for type unknown",5,3: 4-10 messages,false,no linked commit,,,,,2023-11-09
+18173,066ad9656e97ada1e4c4b8ccfa769492,20231030,2023-10-30,"BUG #18173: ERROR: could not identify a comparison function for type unknown",5,3: 4-10 messages,false,no linked commit,,,,,2023-11-09
 18177,b7ecdb5fa4d164072f4cb015b4566b23,20231101,2023-11-01,"BUG #18177: certain queries under certain contexts take multiple orders of magnitude longer compared to v10",11,4: 11+ messages,false,no linked commit,,,,,2023-11-09
 18178,9982fcc7eedb894fb9e02ce9259fec77,20231101,2023-11-01,"BUG #18178: New Restriction on ""ON SELECT"" rules on tables",8,3: 4-10 messages,true,linked to a fix commit,both,2023-11-03,2,2: within a week,2023-11-09
 18179,79bb0b08516a1e5d8c76e816953dba78,20231102,2023-11-02,"BUG #18179: Cluster History Error",8,3: 4-10 messages,false,no linked commit,,,,,2023-11-09
@@ -860,7 +860,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18211,a09c510b6f4352d8c825115da5ac6640,20231123,2023-11-23,"BUG #18211: pg_catcheck_16 RPM package mssing für RHEL8 and RHEL9 repo",1,1: no replies,false,no linked commit,,,,,2024-02-08
 18212,46fd412f40fd0c970c58fb3a3fcf536f,20231124,2023-11-24,"BUG #18212: Functions txid_status() and pg_xact_status() return invalid status of the specified transaction",10,3: 4-10 messages,true,linked to a fix commit,discussion_link,2024-02-08,76,4: within 6 months,2024-02-08
 18213,8fb2b55d908e3af493d8012e6fec8e12,20231124,2023-11-24,"BUG #18213: Standby's repeatable read isolation level transaction encountered a ""nonrepeatable read"" problem",6,3: 4-10 messages,false,no linked commit,,,,,2024-02-08
-18214,df932cae92683dda3d9811373e541631,20231124,2023-11-24,"BUG #18214: poly_contain (@>) hangs forever for input data with zeros and infinities",4,3: 4-10 messages,false,no linked commit,,,,,2024-02-08
+18214,626799e49a965544575bacfd907f2d5c,20231124,2023-11-24,"BUG #18214: poly_contain (@>) hangs forever for input data with zeros and infinities",4,3: 4-10 messages,false,no linked commit,,,,,2024-02-08
 18216,9792e6120524082df221e2b5eb73c0bf,20231128,2023-11-28,"BUG #18216: Unaccent function is unable to remove accents (diacritic signs) from Japanese character 'ド'",10,3: 4-10 messages,false,no linked commit,,,,,2024-02-08
 18217,110695538884b3721558570399352403,20231129,2023-11-29,"BUG #18217: ALTER TABLE IF EXISTS not being honored with DROP CONSTRAINT IF EXISTS",2,2: 2-3 messages,false,no linked commit,,,,,2024-02-08
 18218,3226c5c630a8d6b41929e03deda4887e,20231130,2023-11-30,"BUG #18218: NOT LIKE ANY returns same result as LIKE ANY when array items are wrapped into E''",4,3: 4-10 messages,false,no linked commit,,,,,2024-02-08
@@ -884,7 +884,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18239,e3944f7da5a9374e4b2cc22db0246928,20231210,2023-12-10,"BUG #18239: select position ('' in 'A') returns 1",3,2: 2-3 messages,false,no linked commit,,,,,2024-02-08
 18240,8d353a4c5a84c5049abfc94b13c17ae1,20231211,2023-12-11,"BUG #18240: Undefined behaviour in cash_mul_flt8() and friends",24,4: 11+ messages,true,linked to a fix commit,both,2024-01-15,35,4: within 6 months,2024-02-08
 18241,8fb2b55d908e3af493d8012e6fec8e12,20231211,2023-12-11,"BUG #18241: PushTransaction may cause Standby to execute ItemIdMarkDead",7,3: 4-10 messages,true,linked to a fix commit,discussion_link,2023-12-12,1,1: same/next day,2024-02-08
-18242,fba511e4fc71b81e3287adc83e1e02ba,20231212,2023-12-12,"BUG #18242: pg_dump with non-superuser from pg14 to pg15 fails on ALTER FUNCTION",7,3: 4-10 messages,false,no linked commit,,,,,2024-02-08
+18242,2ffcbe6e86b614064726ca7d4ab1557a,20231212,2023-12-12,"BUG #18242: pg_dump with non-superuser from pg14 to pg15 fails on ALTER FUNCTION",7,3: 4-10 messages,false,no linked commit,,,,,2024-02-08
 18243,52e92680168d11901d2f1a93a6a8ddc9,20231212,2023-12-12,"BUG #18243: Ability to log in json format to stdout",1,1: no replies,false,no linked commit,,,,,2024-02-08
 18244,03b4aebea11b0da7edc715cb07c0e35e,20231212,2023-12-12,"BUG #18244: Corruption in indexes involving whole-row expressions",8,3: 4-10 messages,false,no linked commit,,,,,2024-02-08
 18245,0243f785fcf2be56fec763c4dc023db3,20231213,2023-12-13,"BUG #18245: pg_restore accepts same output file name as input file name",4,3: 4-10 messages,false,no linked commit,,,,,2024-02-08
@@ -964,7 +964,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18330,9bbab3893ab4a51b211e529e98a6bf48,20240204,2024-02-04,"BUG #18330: The query planner chooses the wrong plan when using the parallel aggregation function",2,2: 2-3 messages,false,no linked commit,,,,,2024-02-08
 18331,fbdc7815a3ebf430b893973a539fe9d0,20240205,2024-02-05,"BUG #18331: Why is the session lock (DEFAULT_LOCKMETHOD) not automatically released during process exit?",2,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18332,d9f0718e09230f0564e884547deba88d,20240205,2024-02-05,"BUG #18332: The conditional lock cannot be granted even if the process holds a stronger lock",1,1: no replies,false,no linked commit,,,,,2024-05-09
-18333,c1e3c4b3cdaf542200a2687a1dc5d50b,20240205,2024-02-05,"BUG #18333: Postgres is crashing if we have special character in the query",4,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
+18333,9152504267f841a2b95154001134264f,20240205,2024-02-05,"BUG #18333: Postgres is crashing if we have special character in the query",4,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18334,4146a9d9ad4185251450244263ef18be,20240205,2024-02-05,"BUG #18334: Segfault when running a query with parallel workers",10,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18335,79d75d07a9f6b1e45d1787231055ed98,20240206,2024-02-06,"BUG #18335: JDBC Postgress Kerberos authentication does'nt work without JAAS",2,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18336,05ae32f7b5927bdbdfd07ad4765c53cd,20240207,2024-02-07,"BUG #18336: Inconsistency in PostgreSQL 16 Documentation for SHOW Command",7,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
@@ -972,7 +972,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18338,0b1570a9706c4765a55923319c5f2e06,20240212,2024-02-12,"BUG #18338: Memory leak in function 'dumpRule'",3,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18339,b89f5b2bf7e32644503df93e31a4f826,20240212,2024-02-12,"BUG #18339: Erroneous dependency references of Postgres 15.4 packages when installing 16.2 from GPDG repository",1,1: no replies,false,no linked commit,,,,,2024-05-09
 18340,8d353a4c5a84c5049abfc94b13c17ae1,20240213,2024-02-13,"BUG #18340: BitString may break nodetoString() conversion for a raw parse tree",2,2: 2-3 messages,true,linked to a fix commit,both,2024-02-13,0,1: same/next day,2024-05-09
-18341,487652d60a2e5a1bf265efe69bf15fb6,20240213,2024-02-13,"BUG #18341: SIGBUS with > 4GB DSM and 'dynamic_shared_memory_type = mmap'",1,1: no replies,true,linked to a fix commit,both,2024-02-13,0,1: same/next day,2024-05-09
+18341,1cb2f90e9d641f961a1a75b34b2fb079,20240213,2024-02-13,"BUG #18341: SIGBUS with > 4GB DSM and 'dynamic_shared_memory_type = mmap'",1,1: no replies,true,linked to a fix commit,both,2024-02-13,0,1: same/next day,2024-05-09
 18342,a38f82e45817bde0b191d902ebd5e0d6,20240214,2024-02-14,"BUG #18342: pg_rewind copy all files found in pg_wal source directory",1,1: no replies,false,no linked commit,,,,,2024-05-09
 18343,eab672ef3d8d4ee7420cfc734c650cf9,20240214,2024-02-14,"BUG #18343: Incorrect description in postgresql.conf for max_parallel_workers_per_gather",8,3: 4-10 messages,true,linked to a fix commit,both,2024-02-15,1,1: same/next day,2024-05-09
 18344,8d353a4c5a84c5049abfc94b13c17ae1,20240215,2024-02-15,"BUG #18344: Pruning tables partitioned by bool range fails with invalid strategy",12,4: 11+ messages,true,linked to a fix commit,both,2024-02-19,4,2: within a week,2024-05-09
@@ -980,7 +980,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18346,7154ce67be00cf14c6814d1670db6a0c,20240216,2024-02-16,"BUG #18346: pg restore issue with generated cloumn in Postgres v13.14",2,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18347,56ccfa5f2b943594f37fd4898455d81c,20240216,2024-02-16,"BUG #18347: problem with restore functional index",1,1: no replies,false,no linked commit,,,,,2024-05-09
 18348,4dbc85e20cf66a5328750cf191615c0a,20240216,2024-02-16,"BUG #18348: Inconsistency with EXTRACT([field] from INTERVAL);",31,4: 11+ messages,true,linked to a fix commit,both,2024-02-20,4,2: within a week,2024-05-09
-18349,99539b4f55cc85d34dbcca1b6b27877e,20240216,2024-02-16,"BUG #18349: ERROR: invalid DSA memory alloc request size 1811939328, CONTEXT: parallel worker",41,4: 11+ messages,true,linked to a fix commit,discussion_link,2024-10-17,244,5: longer,2024-05-09
+18349,8106999e6bbb69e8f167f6ca5b049165,20240216,2024-02-16,"BUG #18349: ERROR: invalid DSA memory alloc request size 1811939328, CONTEXT: parallel worker",41,4: 11+ messages,true,linked to a fix commit,discussion_link,2024-10-17,244,5: longer,2024-05-09
 18350,117a5b97e1c4d8bec95470848983344c,20240216,2024-02-16,"BUG #18350: Modifying predefined roles' unlimited connections for VA STIG cybersecurity checklist",5,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18351,8d353a4c5a84c5049abfc94b13c17ae1,20240217,2024-02-17,"BUG #18351: VACUUM FULL fails with error: missing chunk number 0 for toast value XXX",4,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18352,3ea775cf8bf9dede155af05a9cd19371,20240220,2024-02-20,"BUG #18352: signature could not be verified for pgdg-common",2,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
@@ -999,7 +999,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18366,705fb5f57ae88d6efa91d10b736f1b8e,20240226,2024-02-26,"BUG #18366: Not present at postgresql.org YUM repository",3,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18367,d58c73ba80072de184d42fe06b902932,20240227,2024-02-27,"BUG #18367: Cannot drop schema",3,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18368,3177ba7a06731b82cb45dc66008aaed7,20240227,2024-02-27,"BUG #18368: order by collation doesn't work as expected for the second column in the ORDER BY list",1,1: no replies,false,no linked commit,,,,,2024-05-09
-18369,bfd3151d15d37ec642473cc8d97af398,20240228,2024-02-28,"BUG #18369: logical decoding core on AssertTXNLsnOrder()",32,4: 11+ messages,false,no linked commit,,,,,2024-05-09
+18369,6804b85c0bdea54064907a852afb267c,20240228,2024-02-28,"BUG #18369: logical decoding core on AssertTXNLsnOrder()",32,4: 11+ messages,false,no linked commit,,,,,2024-05-09
 18370,728691403ec35f1e20cda9886ce11832,20240228,2024-02-28,"BUG #18370: Issue accessing pgadmin4 web gui",1,1: no replies,false,no linked commit,,,,,2024-05-09
 18371,8fb2b55d908e3af493d8012e6fec8e12,20240228,2024-02-28,"BUG #18371: There are wrong constraint residues when detach hash partiton concurrently",11,4: 11+ messages,true,linked to a fix commit,discussion_link,2025-10-11,591,5: longer,2024-05-09
 18372,4ea92ce239aa36653aba9100bc6419ee,20240229,2024-02-29,"BUG #18372: Timezone documentation and use of TZ and PGTZ environment variables missing since version 7.4",2,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
@@ -1018,7 +1018,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18386,739dcbc509154aa80afad7c832dd1790,20240311,2024-03-11,"BUG #18386: Slow connection access after 'vacuum full pg_attribute'",3,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18387,5bd73b780ffdfc39395663a82e653c99,20240311,2024-03-11,"BUG #18387: Erroneous permission checks and/or misleading error messages with refresh materialized view",11,4: 11+ messages,false,no linked commit,,,,,2024-05-09
 18388,deafd6825650c87c2230850f0dcca590,20240311,2024-03-11,"BUG #18388: Server freezes after AuthenticationSASLFinal message",1,1: no replies,false,no linked commit,,,,,2024-05-09
-18389,167917368b16038a728b7ed1e2074840,20240312,2024-03-12,"BUG #18389: pg_database_owner not recognized with alter default privileges",7,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
+18389,00823f119c809b5a442e8bec6ab94908,20240312,2024-03-12,"BUG #18389: pg_database_owner not recognized with alter default privileges",7,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18390,e91f8839995ece62eb6228b248be5a84,20240313,2024-03-13,"BUG #18390: exponentiation produces float datatype, but nth-root produces integer",3,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18391,fd59129a0bf37c40bf3a78e8f7541c0e,20240313,2024-03-13,"BUG #18391: not able to create a new cluster using init db on rocky linux.We are forced to download version 1 3",4,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18392,85fd0d37ca701c15e30cb514434b617c,20240314,2024-03-14,"BUG #18392: Can't restore database (using pg_restore) after latest Feb 8 update",6,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
@@ -1056,13 +1056,13 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18428,7a64ccba718b61d2509468129ce9399a,20240412,2024-04-12,"BUG #18428: Connection broken but DB service still alive.",3,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18429,55a324f28a704b783c13f5c1f5ec3aa3,20240412,2024-04-12,"BUG #18429: Inconsistent results on similar queries with join lateral",15,4: 11+ messages,true,linked to a fix commit,both,2024-04-16,4,2: within a week,2024-05-09
 18430,661b382a51ee4b795ad79402e45dc2c7,20240412,2024-04-12,"BUG #18430: syntax error when using aggregate function in where clause of subquery",6,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
-18432,4bb372b3963cd8e0f56dddb57e42a28f,20240414,2024-04-14,"BUG #18432: Polymorphic, table-returning PL/pgSQL function fails with an erroneous ""schema mismatch"" error",1,1: no replies,false,no linked commit,,,,,2024-05-09
+18432,2106acd7eecf7822370581e971af7c12,20240414,2024-04-14,"BUG #18432: Polymorphic, table-returning PL/pgSQL function fails with an erroneous ""schema mismatch"" error",1,1: no replies,false,no linked commit,,,,,2024-05-09
 18433,ca35a0e9a445c52c992a3c0b211176fd,20240414,2024-04-14,"BUG #18433: Logical replication timeout",12,4: 11+ messages,false,no linked commit,,,,,2024-05-09
 18437,739dcbc509154aa80afad7c832dd1790,20240415,2024-04-15,"BUG #18437: The index scan result is more than the full scan result, and the primary key index has duplicate val",3,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18438,e1be0c032ef0f75c2570aa85277303de,20240415,2024-04-15,"BUG #18438: regex isnt working for ""^"" , "".*""",2,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
 18439,48c05e4b3bfdc5bfa562de0997d2b55a,20240416,2024-04-16,"BUG #18439: No way to see national language error messages when running UTF8 scripts with psql.exe on Windows",1,1: no replies,false,no linked commit,,,,,2024-05-09
 18440,eb2469d8fe2a9c8da543ac73f8076f38,20240416,2024-04-16,"BUG #18440: Query does not prune partitions correctly or use index when prepared statements are used",2,2: 2-3 messages,false,no linked commit,,,,,2024-05-09
-18442,f4dbc732a1ff0a2e79267fa5f099bc25,20240419,2024-04-19,"BUG #18442: Unnecessary Sort operator in indexScan Plan",6,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
+18442,5e8733a52d60e0363f218e579aabac51,20240419,2024-04-19,"BUG #18442: Unnecessary Sort operator in indexScan Plan",6,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18443,b7ab9ebdd93afa571774bda4bcbaa89d,20240419,2024-04-19,"BUG #18443: jsonb_agg issue. Again.",5,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18445,db2793e6ded2f6f71eb54d6883e20c8d,20240423,2024-04-23,"BUG #18445: date_part / extract range for hours do not match documentation",7,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18446,a30c6605404741d9816b7c034ca4c423,20240423,2024-04-23,"BUG #18446: Postgres.exe crash observed while installing the application",1,1: no replies,false,no linked commit,,,,,2024-05-09
@@ -1075,7 +1075,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18455,035d784fb56f8d9738950239198e407e,20240502,2024-05-02,"BUG #18455: DST information is flagged wrongly",4,3: 4-10 messages,false,no linked commit,,,,,2024-05-09
 18456,e3f0e8ee20a468b8c919290183c36e4b,20240503,2024-05-03,"BUG #18456: Trigger data in plpython3u trigger-function changes in AFTER UPDATE OR INSERT trigger",5,3: 4-10 messages,true,linked to a fix commit,bug_ref,2024-05-07,4,2: within a week,2024-05-09
 18457,21e12ba7f86152ac67855352a48bf799,20240507,2024-05-07,"BUG #18457: Possible data loss needs to be evaluated",5,3: 4-10 messages,false,no linked commit,,,,,2024-08-08
-18458,6b7d6b8e140611597c83fe0196959b14,20240507,2024-05-07,"BUG #18458: SQL Error [XX000]: ERROR: cache lookup failed for type 0",3,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
+18458,18a6ab2c9714a90f063de999d8d8b687,20240507,2024-05-07,"BUG #18458: SQL Error [XX000]: ERROR: cache lookup failed for type 0",3,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
 18459,4bed1c2d31127297075db96a1ebf441d,20240509,2024-05-09,"BUG #18459: running pg_ctl.exe from inside a program running as a Windows service returns ""error code 6""",2,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
 18462,d8eea4efc4ba99733d9316358c61db24,20240514,2024-05-14,"BUG #18462: Wrong SELinux types of the binary files",1,1: no replies,false,no linked commit,,,,,2024-08-08
 18463,1137b938fdc2882a5c9d4a82b9668586,20240514,2024-05-14,"BUG #18463: Possible bug in stored procedures with polymorphic OUT parameters",10,3: 4-10 messages,true,linked to a fix commit,both,2024-05-15,1,1: same/next day,2024-08-08
@@ -1084,7 +1084,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18466,934e0a51657b5e4c84b6918049ce38f7,20240515,2024-05-15,"BUG #18466: Wrong row estimate for nested loop",3,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
 18467,c5c1ca61bba7ef5794c24287e4e257e8,20240515,2024-05-15,"BUG #18467: postgres_fdw (deparser) ignores LimitOption",28,4: 11+ messages,true,linked to a fix commit,both,2024-06-07,23,3: within a month,2024-08-08
 18468,8d353a4c5a84c5049abfc94b13c17ae1,20240515,2024-05-15,"BUG #18468: CREATE TABLE ... LIKE leaves orphaned column reference in extended statistics",7,3: 4-10 messages,true,linked to a fix commit,both,2024-05-22,7,2: within a week,2024-08-08
-18469,a06a99d8fab35ed4401a81f025ecb043,20240516,2024-05-16,"BUG #18469: OOM occurs and backend processes are kept in Zombie state.",2,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
+18469,17c5a44cd29d48b15535e4da461b6f51,20240516,2024-05-16,"BUG #18469: OOM occurs and backend processes are kept in Zombie state.",2,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
 18470,fc457680638a929e045dc7f77f472d3a,20240517,2024-05-17,"BUG #18470: Time literal accepted in Postgres 15 and below, not accepted in Postgres 16",5,3: 4-10 messages,true,linked to a fix commit,both,2024-05-22,5,2: within a week,2024-08-08
 18471,00f2d5e2f2a56026311850f40338238b,20240517,2024-05-17,"BUG #18471: Possible JIT memory leak resulting in signal 11: Segmentation fault on ARM",4,3: 4-10 messages,false,no linked commit,,,,,2024-08-08
 18472,053d7640a7c3364e34c4b9a1a7a84406,20240517,2024-05-17,"BUG #18472: SELECT FOR UPDATE locking more rows than expected",2,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
@@ -1098,7 +1098,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18481,1438ec42f8e652facd894281da56f266,20240527,2024-05-27,"BUG #18481: BIGINT Out of Range Error When Selecting Data",2,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
 18482,72a17363c8294f6732de0b6c300986f8,20240528,2024-05-28,"BUG #18482: The first data after paging is inconsistent with the actual first data",2,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
 18483,dd62e2ef2da8e7dc252efeb2d7a9d06a,20240528,2024-05-28,"BUG #18483: Segmentation fault in tests modules",16,4: 11+ messages,true,linked to a fix commit,both,2024-06-07,10,3: within a month,2024-08-08
-18484,94d5d75e3a28c2faa92770ad716274d8,20240528,2024-05-28,"BUG #18484: ""Cannot enlarge string buffer"" during parallel execution of prepared statement/partitioning",12,4: 11+ messages,true,linked to a fix commit,discussion_link,2024-07-01,34,4: within 6 months,2024-08-08
+18484,8584262d4d3da0dcf8e5a35a869206ee,20240528,2024-05-28,"BUG #18484: ""Cannot enlarge string buffer"" during parallel execution of prepared statement/partitioning",12,4: 11+ messages,true,linked to a fix commit,discussion_link,2024-07-01,34,4: within 6 months,2024-08-08
 18486,8315ae2325b916e36495bc9334be8cf6,20240529,2024-05-29,"BUG #18486: Is there something wrong with the calculation in ReorderBufferChangeSize()?",4,3: 4-10 messages,false,no linked commit,,,,,2024-08-08
 18487,59877a6701129464d9fea408ec0c449a,20240529,2024-05-29,"BUG #18487: libpq: Race condition in PQsetdbLogin/emitHostIdentityInfo/libpq_gettext",1,1: no replies,false,no linked commit,,,,,2024-08-08
 18488,2ecf9d83508f0f29773539d20b49261d,20240530,2024-05-30,"BUG #18488: Installation of postgis30_13 fails on Rocky 9",3,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
@@ -1157,7 +1157,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18552,cd78b9ff13fe7a14772be819d0be7544,20240725,2024-07-25,"BUG #18552: slow query, but using union is ok.",2,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
 18553,d2728a9d4c8605a538e50300031637ed,20240726,2024-07-26,"BUG #18553: Please seriously address the severe issue of database installation failures on Windows 10.",9,3: 4-10 messages,false,no linked commit,,,,,2024-08-08
 18554,49fa799fca12395cf39990ec134f4ac2,20240726,2024-07-26,"BUG #18554: pg_verifybackup is not work",2,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
-18556,823c3f9e5e48bd2e22877ad515aa4fb2,20240726,2024-07-26,"BUG #18556: Parallel operation error during CREATE TABLE AS statement",4,3: 4-10 messages,false,no linked commit,,,,,2024-08-08
+18556,057ac958f61e54d659eee5e213a06996,20240726,2024-07-26,"BUG #18556: Parallel operation error during CREATE TABLE AS statement",4,3: 4-10 messages,false,no linked commit,,,,,2024-08-08
 18557,2d1cc402f35bd2e5b73ba2d817f269a2,20240726,2024-07-26,"BUG #18557: Compatibility issue",2,2: 2-3 messages,false,no linked commit,,,,,2024-08-08
 18558,8d353a4c5a84c5049abfc94b13c17ae1,20240727,2024-07-27,"BUG #18558: ALTER PUBLICATION fails with unhelpful error on attempt to use system column",21,4: 11+ messages,true,linked to a fix commit,both,2024-08-15,19,3: within a month,2024-08-08
 18559,d8b05d9945d2e74afbf8a26362671c00,20240730,2024-07-30,"BUG #18559: Crash after detaching a partition concurrently from another session",12,4: 11+ messages,true,linked to a fix commit,both,2024-08-12,13,3: within a month,2024-08-08
@@ -1177,7 +1177,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18574,a2cfa5b89c4254c437c5a74682a5f2da,20240807,2024-08-07,"BUG #18574: procedure cache does not invalidate when output parameter type mismatch",2,2: 2-3 messages,true,linked to a fix commit,both,2024-08-07,0,1: same/next day,2024-11-14
 18575,8825ea6a2be9c7198e59eb28bc8f0c25,20240807,2024-08-07,"BUG #18575: Sometimes pg_rewind mistakenly assumes that nothing needs to be done.",11,4: 11+ messages,true,linked to a fix commit,both,2024-08-08,1,1: same/next day,2024-11-14
 18576,a7d72e2777018e36aea9ad66dff367de,20240807,2024-08-07,"BUG #18576: Using EXPLAIN (VERBOSE) in information_schema.element_types returns ERROR: failed to find plan for",13,4: 11+ messages,true,linked to a fix commit,both,2024-08-09,2,2: within a week,2024-11-14
-18577,bfd3151d15d37ec642473cc8d97af398,20240808,2024-08-08,"BUG #18577: Miss out part invalItems in saved plansource of one CallStmt",1,1: no replies,false,no linked commit,,,,,2024-11-14
+18577,6804b85c0bdea54064907a852afb267c,20240808,2024-08-08,"BUG #18577: Miss out part invalItems in saved plansource of one CallStmt",1,1: no replies,false,no linked commit,,,,,2024-11-14
 18578,bd08a796221986f713e0fbd7d50b1fdf,20240808,2024-08-08,"BUG #18578: Broken postgresql12-*-12.20-1 rpms",2,2: 2-3 messages,false,no linked commit,,,,,2024-11-14
 18580,813f76c8a1bbf21d7ab662cdcef14d2a,20240812,2024-08-12,"BUG #18580: The pg_similarity appears to be wrong",2,2: 2-3 messages,false,no linked commit,,,,,2024-11-14
 18581,7e70c3bea834eeb33fa913a9543c2d00,20240813,2024-08-13,"BUG #18581: psql symbol append_history not found when quitting",3,2: 2-3 messages,false,no linked commit,,,,,2024-11-14
@@ -1239,7 +1239,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18643,2f5b7f58a14518e26c2dd11dbc2f4c44,20241001,2024-10-01,"BUG #18643: EXPLAIN estimated rows mismatch",9,3: 4-10 messages,false,no linked commit,,,,,2024-11-14
 18644,5bd73b780ffdfc39395663a82e653c99,20241001,2024-10-01,"BUG #18644: ALTER PUBLICATION ... SET (publish_via_partition_root) wrong/undocumented behavior.",20,4: 11+ messages,true,linked to a fix commit,discussion_link,2024-10-25,24,3: within a month,2024-11-14
 18645,aea66dc5ea08c2b7636e17787e80dedf,20241003,2024-10-03,"BUG #18645: Change between 16 and 17 when attaching partitions and the root tbl has identity col",1,1: no replies,false,no linked commit,,,,,2024-11-14
-18646,b0e237d36bbcc90dcc215d7952157e4e,20241004,2024-10-04,"BUG #18646: The problem with the installer",5,3: 4-10 messages,false,no linked commit,,,,,2024-11-14
+18646,8d1a4510a069c6a85318886b1d281339,20241004,2024-10-04,"BUG #18646: The problem with the installer",5,3: 4-10 messages,false,no linked commit,,,,,2024-11-14
 18647,14eadce6fead4c54038568cef7ce3d56,20241008,2024-10-08,"BUG #18647: INSERT statements execute functions twice.",8,3: 4-10 messages,false,no linked commit,,,,,2024-11-14
 18648,2cf4ed7b328d703967a5a3139d76cf41,20241009,2024-10-09,"BUG #18648: When I restore the database on rockylinux9, I will use amcheck to check that there will be an abnorm",3,2: 2-3 messages,false,no linked commit,,,,,2024-11-14
 18649,dd2094e0ba61d3b35761518c68da8d6b,20241009,2024-10-09,"BUG #18649: PG17 release note bug for ""AS LOCAL""",2,2: 2-3 messages,true,linked to a fix commit,discussion_link,2024-10-09,0,1: same/next day,2024-11-14
@@ -1295,14 +1295,14 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18704,ee5d7b3ceeb11cd59334c3ab788dbf34,20241113,2024-11-13,"BUG #18704: Installing postgis fails due to depencies",2,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
 18705,a494444d1418ebac6f90bfd930f2f617,20241114,2024-11-14,"BUG #18705: Segmentation fault when create brin index on user-defined type.",5,3: 4-10 messages,false,no linked commit,,,,,2025-02-13
 18707,2a0d2f7af0c4f4ee6e7fb9456ee8b0e5,20241114,2024-11-14,"BUG #18707: Installation issue",9,3: 4-10 messages,false,no linked commit,,,,,2025-02-13
-18708,df932cae92683dda3d9811373e541631,20241114,2024-11-14,"BUG #18708: regex problem: (?:[^\d\D]){0} asserts with ""lp->nouts == 0 && rp->nins == 0""",16,4: 11+ messages,true,linked to a fix commit,both,2024-11-15,1,1: same/next day,2025-02-13
+18708,626799e49a965544575bacfd907f2d5c,20241114,2024-11-14,"BUG #18708: regex problem: (?:[^\d\D]){0} asserts with ""lp->nouts == 0 && rp->nins == 0""",16,4: 11+ messages,true,linked to a fix commit,both,2024-11-15,1,1: same/next day,2025-02-13
 18709,9c6127b6738ac419ebccaa8d7fb8db71,20241114,2024-11-14,"BUG #18709: Explicit tablespace pg_default not working when creating of indices in partitioned tables",1,1: no replies,false,no linked commit,,,,,2025-02-13
 18710,b718bbd9c674be281ec805fb6cb486d1,20241115,2024-11-15,"BUG #18710: ""pg_get_viewdef"" triggers assertions in special scenarios",4,3: 4-10 messages,false,no linked commit,,,,,2025-02-13
 18711,dd961613bde6bccd42db0dc18f43d9e0,20241116,2024-11-16,"BUG #18711: Attempting a connection with a database name longer than 63 characters now fails",67,4: 11+ messages,true,linked to a fix commit,both,2024-12-12,26,3: within a month,2025-02-13
-18712,efda75260671c531d0176a3efd7e35a3,20241116,2024-11-16,"BUG #18712: inet value ::2 handling goes not as expected",4,3: 4-10 messages,false,no linked commit,,,,,2025-02-13
+18712,a7cd3c70bad4e334e4885d5363094d43,20241116,2024-11-16,"BUG #18712: inet value ::2 handling goes not as expected",4,3: 4-10 messages,false,no linked commit,,,,,2025-02-13
 18713,237ab5fbfc7e47959784b5780f594eb0,20241118,2024-11-18,"BUG #18713: pg_upgrade fails when owner of an extension is changed or dropped",2,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
 18714,80d940023952adc468c18498ff2ec09e,20241118,2024-11-18,"BUG #18714: error during installation",1,1: no replies,false,no linked commit,,,,,2025-02-13
-18715,f2024b36cca28e8013cdd4b70a0aa19f,20241119,2024-11-19,"BUG #18715: replace() function silently fails if 3rd argument is null",8,3: 4-10 messages,false,no linked commit,,,,,2025-02-13
+18715,b8476671e9438b3acea4d5ea91d2c8c3,20241119,2024-11-19,"BUG #18715: replace() function silently fails if 3rd argument is null",8,3: 4-10 messages,false,no linked commit,,,,,2025-02-13
 18716,d22ad8cc17daa09214b8137719422926,20241120,2024-11-20,"BUG #18716: I wanted to upload/restore tar file data, While uploading file facing error, image attached.",2,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
 18717,41ec016d2215d6363541e47409c690e8,20241120,2024-11-20,"BUG #18717: ALTER ROLE SET ROLE functionality is broken",2,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
 18718,ab89b1f89987f27f37ea8586a2e2decc,20241121,2024-11-21,"BUG #18718: Incorrect Twitter/X Logo Displayed on PostgreSQL Documentation Page",5,3: 4-10 messages,false,no linked commit,,,,,2025-02-13
@@ -1320,7 +1320,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18732,35f0ec2631339701fa2677cb430adb7c,20241203,2024-12-03,"BUG #18732: Segfault in pgbench on max_connections starvation",3,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
 18733,6e98ead070c411aa3c40612294641c03,20241203,2024-12-03,"BUG #18733: Connection Timeout after upgrade",1,1: no replies,false,no linked commit,,,,,2025-02-13
 18734,fcf81070e6cf68f1a2e81991727a7520,20241204,2024-12-04,"BUG #18734: pg_terminate_backend was unresponsive for processes with the status ""active""",3,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
-18735,dd54ec308ec6ab25f56f19cc01e193e5,20241205,2024-12-05,"BUG #18735: Specific multibyte character in psql file path command parameter for Windows",24,4: 11+ messages,true,linked to a fix commit,both,2025-01-29,55,4: within 6 months,2025-02-13
+18735,4bdc6b4eb9e487a33dbb64366e32e508,20241205,2024-12-05,"BUG #18735: Specific multibyte character in psql file path command parameter for Windows",24,4: 11+ messages,true,linked to a fix commit,both,2025-01-29,55,4: within 6 months,2025-02-13
 18741,8d353a4c5a84c5049abfc94b13c17ae1,20241208,2024-12-08,"BUG #18741: Detaching a partition referencing a partitioned table fails with a trigger-related error",5,3: 4-10 messages,false,no linked commit,,,,,2025-02-13
 18742,0c8f392eb9e99cfdb23e5ea8592f6a41,20241209,2024-12-09,"BUG #18742: /src/backend/rewrite/rewriteHandler.c",2,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
 18743,0c8f392eb9e99cfdb23e5ea8592f6a41,20241209,2024-12-09,"BUG #18743: /src/backend/rewrite/rewriteHandler.c",2,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
@@ -1375,7 +1375,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18798,0c8f392eb9e99cfdb23e5ea8592f6a41,20250206,2025-02-06,"BUG #18798: /src/interfaces/ecpg/preproc/type.c possible NULL deref",1,1: no replies,false,no linked commit,,,,,2025-02-13
 18799,0c8f392eb9e99cfdb23e5ea8592f6a41,20250206,2025-02-06,"BUG #18799: /src/interfaces/ecpg/pgtypeslib/timestamp.c possible NULL deref",2,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
 18800,26e1965a9b31c3d0ed3aabecb27e57be,20250207,2025-02-07,"BUG #18800: Error while using pg_combinebackup",1,1: no replies,false,no linked commit,,,,,2025-02-13
-18801,cb776a4af6feeab2b0b3aa0c2cb03abc,20250209,2025-02-09,"BUG #18801: JIT recompiles function for each row if custom aggregation function is used",3,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
+18801,5be3b192b64aa40fc91fd10b8af2c9f8,20250209,2025-02-09,"BUG #18801: JIT recompiles function for each row if custom aggregation function is used",3,2: 2-3 messages,false,no linked commit,,,,,2025-02-13
 18802,8cf357247c68eec002350312632a2d35,20250211,2025-02-11,"BUG #18802: password field in log",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18803,99c80e7f65001e40abc9e125fe8d6ff2,20250211,2025-02-11,"BUG #18803: ERROR: wrong varnullingrels (b) (expected (b 4)) for Var 2/1",3,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18804,f8263bd43367edb69727d47c16f994c8,20250211,2025-02-11,"BUG #18804: LISTEN on channel fails with ""could not access status of transaction""",3,2: 2-3 messages,true,linked to a fix commit,discussion_link,2025-11-12,274,5: longer,2025-05-08
@@ -1395,11 +1395,11 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18819,8ddd6ba34f8f1d6d4a06a98c6c70460c,20250218,2025-02-18,"BUG #18819: Error installing Postgresql",3,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18820,03618b3328b788a3dd13f48e9cc36a5c,20250220,2025-02-20,"BUG #18820: Issue with Installation Due to Space in User Profile Path",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18821,7b771672c9513307cea9e3200954f404,20250220,2025-02-20,"BUG #18821: Need delete files in pg_wal, size is bigger overcome limit max_wal_size",3,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
-18822,ad775ca04ac57a86765c609f0f35a282,20250222,2025-02-22,"BUG #18822: mailing lists reject mails due to DKIM-signature",25,4: 11+ messages,false,no linked commit,,,,,2025-05-08
+18822,95a9dfcbddc8ba934995b0283a98859e,20250222,2025-02-22,"BUG #18822: mailing lists reject mails due to DKIM-signature",25,4: 11+ messages,false,no linked commit,,,,,2025-05-08
 18823,855e0a3af558b642d694d10f8304d891,20250222,2025-02-22,"BUG #18823: pg_restore not work",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18824,99dcfd95e3738907911e2d4133f7681f,20250225,2025-02-25,"BUG #18824: Inconsistent results for isolation level settings",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18825,d12b4a0e6b76d5b05907d9af1217f8e4,20250225,2025-02-25,"BUG #18825: Row value equality predicates do not use indices",3,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
-18826,8723cf046c04c39e98efcc26f42d8ad3,20250226,2025-02-26,"BUG #18826: Didn't receive a response",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
+18826,855e0a3af558b642d694d10f8304d891,20250226,2025-02-26,"BUG #18826: Didn't receive a response",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18827,75d82675b03434aa36a35724e0aa2a51,20250227,2025-02-27,"BUG #18827: PostgreSQL 17.4-1 Installation – Database Cluster Initialization Failed Due to Execution Policy",1,1: no replies,false,no linked commit,,,,,2025-05-08
 18828,792f72b59c0d05f18afc47fff7c7edce,20250301,2025-03-01,"BUG #18828: Crash when pg_get_logical_snapshot_meta() passed empty string",26,4: 11+ messages,true,linked to a fix commit,both,2025-03-11,10,3: within a month,2025-05-08
 18829,7fc704629586dba49da79823fbf56eda,20250302,2025-03-02,"BUG #18829: RAISE NOTICE appends 's' to string in PostgreSQL 17.2",4,3: 4-10 messages,false,no linked commit,,,,,2025-05-08
@@ -1413,10 +1413,10 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18837,7f29557b849061df91860b04b68a09d4,20250310,2025-03-10,"BUG #18837: YUM Repo URL throws HTTP 404",1,1: no replies,false,no linked commit,,,,,2025-05-08
 18838,965a6d7d520d70d120b429e1c501330f,20250310,2025-03-10,"BUG #18838: Missing characters in replication slot when bytea_output is set to ""escape""",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18839,5fdada893aecf361d226b53067e276ff,20250312,2025-03-12,"BUG #18839: ARMv7 builds fail due to missing __crc32cw and similar",11,4: 11+ messages,false,no linked commit,,,,,2025-05-08
-18840,b261704729f46db0f7707987a58dbd59,20250312,2025-03-12,"BUG #18840: Segmentation fault in executing select unnest(array(oidvector))",3,2: 2-3 messages,true,linked to a fix commit,both,2025-03-13,1,1: same/next day,2025-05-08
+18840,96c5718ede5f7ab777d2c879f0f45199,20250312,2025-03-12,"BUG #18840: Segmentation fault in executing select unnest(array(oidvector))",3,2: 2-3 messages,true,linked to a fix commit,both,2025-03-13,1,1: same/next day,2025-05-08
 18841,625ca7a4d8fe6d8146e3100688ba7012,20250313,2025-03-13,"BUG #18841: pgflex fails during build when Flex uses dynamic m4",1,1: no replies,false,no linked commit,,,,,2025-05-08
-18842,fe5addff86d985cbeaa2c6d62c8ea795,20250313,2025-03-13,"BUG #18842: Wrong state in pg_stat_replication?",1,1: no replies,false,no linked commit,,,,,2025-05-08
-18843,5357df79a368b722fc4ee84de1962bd0,20250313,2025-03-13,"BUG #18843: ERROR: Input of anonymous composite types is not implemented in array_agg function",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
+18842,74a973fba99bc19e818b1a2f14353fb4,20250313,2025-03-13,"BUG #18842: Wrong state in pg_stat_replication?",1,1: no replies,false,no linked commit,,,,,2025-05-08
+18843,1994bf8a0759d4064f5b33f5142d9203,20250313,2025-03-13,"BUG #18843: ERROR: Input of anonymous composite types is not implemented in array_agg function",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18845,a0417371ee64ca093d80e165e9631b01,20250314,2025-03-14,"BUG #18845: DEREF_OF_NULL.RET guc_malloc possibly returns NULL",10,3: 4-10 messages,true,linked to a fix commit,both,2025-03-27,13,3: within a month,2025-05-08
 18846,92adc1a99d661619533a66f8f810ce9f,20250314,2025-03-14,"BUG #18846: Incorrect Filtering Behavior with FULL OUTER JOIN and WHERE Condition",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18847,92adc1a99d661619533a66f8f810ce9f,20250314,2025-03-14,"BUG #18847: Different Query Results with and without a Primary Key Constraint",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
@@ -1435,8 +1435,8 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18860,40cfb916bdb4270361d3436cf67e1b93,20250321,2025-03-21,"BUG #18860: Test src/test/recovery/t/039_end_of_wal.pl is unstable",1,1: no replies,false,no linked commit,,,,,2025-05-08
 18861,343f93d9ff7133944163f63fc298fe48,20250321,2025-03-21,"BUG #18861: Not able to download rpm package",3,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18862,d6acd6e7c540169ede36a48491184b12,20250324,2025-03-24,"BUG #18862: using pg_autoctl node_2 cannot bring back from maintenance mode",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
-18863,e7b930254234a1495c712be97b9f6c23,20250324,2025-03-24,"BUG #18863: Multixact wraparound and pg_resetwal error ""multitransaction ID (-m) must not be 0""",1,1: no replies,true,linked to a fix commit,discussion_link,2025-11-12,233,5: longer,2025-05-08
-18865,e7b930254234a1495c712be97b9f6c23,20250325,2025-03-25,"BUG #18865: pg_resetwal error: multitransaction offset (-O) must not be -1",1,1: no replies,true,linked to a fix commit,discussion_link,2025-11-12,232,5: longer,2025-05-08
+18863,41865c3eb6a6f351c046d60a6d2377be,20250324,2025-03-24,"BUG #18863: Multixact wraparound and pg_resetwal error ""multitransaction ID (-m) must not be 0""",1,1: no replies,true,linked to a fix commit,discussion_link,2025-11-12,233,5: longer,2025-05-08
+18865,41865c3eb6a6f351c046d60a6d2377be,20250325,2025-03-25,"BUG #18865: pg_resetwal error: multitransaction offset (-O) must not be -1",1,1: no replies,true,linked to a fix commit,discussion_link,2025-11-12,232,5: longer,2025-05-08
 18866,792f72b59c0d05f18afc47fff7c7edce,20250325,2025-03-25,"BUG #18866: Running pg_freespace() on views triggers an Abort",14,4: 11+ messages,true,linked to a fix commit,both,2025-03-27,2,2: within a week,2025-05-08
 18867,0c8f392eb9e99cfdb23e5ea8592f6a41,20250326,2025-03-26,"BUG #18867: /src/interfaces/ecpg/preproc/descriptor.c usage of ECPGdump_a_type",1,1: no replies,false,no linked commit,,,,,2025-05-08
 18868,0c8f392eb9e99cfdb23e5ea8592f6a41,20250326,2025-03-26,"BUG #18868: /src/backend/optimizer/path/joinrels.c list_head can be NULL",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
@@ -1465,7 +1465,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18893,792f72b59c0d05f18afc47fff7c7edce,20250412,2025-04-12,"BUG #18893: Segfault during analyze pg_database",5,3: 4-10 messages,false,no linked commit,,,,,2025-05-08
 18894,9c84a8347562240bb8ba5a9ec68fb9e1,20250414,2025-04-14,"BUG #18894: values of JLC_COLLATE and LC_CTYPE in the database have changed from Japanese_Japan.932 to ja-jp",3,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18895,b89f5b2bf7e32644503df93e31a4f826,20250416,2025-04-16,"BUG #18895: Installation failure on Fedora 42 due to missing repos",4,3: 4-10 messages,false,no linked commit,,,,,2025-05-08
-18896,e7b930254234a1495c712be97b9f6c23,20250416,2025-04-16,"BUG #18896: A potential problem in heap_page_items (pageinspect, PG-17)",2,2: 2-3 messages,true,linked to a fix commit,both,2025-04-19,3,2: within a week,2025-05-08
+18896,41865c3eb6a6f351c046d60a6d2377be,20250416,2025-04-16,"BUG #18896: A potential problem in heap_page_items (pageinspect, PG-17)",2,2: 2-3 messages,true,linked to a fix commit,both,2025-04-19,3,2: within a week,2025-05-08
 18897,119a32560bb50b9a33a528d6a930c6c5,20250416,2025-04-16,"BUG #18897: Logical replication conflict after using pg_createsubscriber under heavy load",26,4: 11+ messages,true,linked to a fix commit,both,2025-07-24,99,4: within 6 months,2025-05-08
 18898,bc12239be40d70580614fa4a78b60087,20250417,2025-04-17,"BUG #18898: replication process not working... sometimes",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18899,598f66da1f3ded42b153c3667afbc9c6,20250418,2025-04-18,"BUG #18899: FreeBSD, assembly by means of GCC with ASAN ends with error: undef reference to backtrace_symbols_fd",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
@@ -1473,12 +1473,12 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18901,1eedf903bee1ca3bee39d3b5c5ac92e5,20250422,2025-04-22,"BUG #18901: Bug in Perl-Script ""src/backend/nodes/gen_node_support.pl""",2,2: 2-3 messages,true,linked to a fix commit,both,2025-04-22,0,1: same/next day,2025-05-08
 18902,c4ff1265bea2f571aa475fbb16435524,20250423,2025-04-23,"BUG #18902: TRAP:: failed Assert(""!is_sorted"") in File: ""createplan.c""",14,4: 11+ messages,true,linked to a fix commit,both,2025-05-08,15,3: within a month,2025-05-08
 18903,c4ff1265bea2f571aa475fbb16435524,20250425,2025-04-25,"BUG #18903: TRAP: failed Assert(""false"") in file: ""tuplesortvariants.c""",4,3: 4-10 messages,false,no linked commit,,,,,2025-05-08
-18904,ec3e50eb5df587357f20d55493cd985a,20250427,2025-04-27,"BUG #18904: INTERSECT with an impossible where should eliminate both from the query plan",7,3: 4-10 messages,false,no linked commit,,,,,2025-05-08
-18905,ec3e50eb5df587357f20d55493cd985a,20250427,2025-04-27,"BUG #18905: The opposite WHERE clause intersects and is always an empty set. It should perform no action.",4,3: 4-10 messages,false,no linked commit,,,,,2025-05-08
-18906,ec3e50eb5df587357f20d55493cd985a,20250427,2025-04-27,"BUG #18906: EXCEPT with identical left/right queries isn't eliminated",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
+18904,540fca44bb2f9a731fae180b9f3e5413,20250427,2025-04-27,"BUG #18904: INTERSECT with an impossible where should eliminate both from the query plan",7,3: 4-10 messages,false,no linked commit,,,,,2025-05-08
+18905,540fca44bb2f9a731fae180b9f3e5413,20250427,2025-04-27,"BUG #18905: The opposite WHERE clause intersects and is always an empty set. It should perform no action.",4,3: 4-10 messages,false,no linked commit,,,,,2025-05-08
+18906,540fca44bb2f9a731fae180b9f3e5413,20250427,2025-04-27,"BUG #18906: EXCEPT with identical left/right queries isn't eliminated",2,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
 18907,4c97abf790f20a4604ea284a04b67602,20250429,2025-04-29,"BUG #18907: SSL error: bad length failure during transfer data in pipeline mode with libpq",8,3: 4-10 messages,true,linked to a fix commit,both,2025-06-10,42,4: within 6 months,2025-05-08
 18908,5b564803d769f3afbc1cdc20bb3270d5,20250430,2025-04-30,"BUG #18908: DEREF_OF_NULL: After having been assigned to a NULL value at descriptor.c:203",3,2: 2-3 messages,false,no linked commit,,,,,2025-05-08
-18909,fb31594d90dfc815445133c3ae3ee210,20250502,2025-05-02,"BUG #18909: Query creates millions of temporary files and stalls",17,4: 11+ messages,true,linked to a fix commit,bug_ref,2026-03-19,321,5: longer,2025-05-08
+18909,480c8a6a224e8ff2ffebd00f8961bdc7,20250502,2025-05-02,"BUG #18909: Query creates millions of temporary files and stalls",17,4: 11+ messages,true,linked to a fix commit,bug_ref,2026-03-19,321,5: longer,2025-05-08
 18910,5b564803d769f3afbc1cdc20bb3270d5,20250505,2025-05-05,"BUG #18910: DEREF_OF_NULL.RET Pointer, returned from function 'palloc0' at simplehash.h:1080, may be NULL",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18911,27d2620e3742ed6d6926d92dd90dcc5b,20250505,2025-05-05,"BUG #18911: Bug in the command INHERITS.",7,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18912,2dddc2b8350f7316a73818978e6e29a5,20250505,2025-05-05,"BUG #18912: TRAP: failed Assert(""tag.spcOid != GLOBALTABLESPACE_OID""), File: ""bufmgr.c"", Line: 4165, PID: 2115",3,2: 2-3 messages,true,linked to a fix commit,both,2025-05-10,5,2: within a week,2025-08-14
@@ -1498,10 +1498,10 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18927,e3ab1e8b9852e01923cb189cf166a5ee,20250514,2025-05-14,"BUG #18927: Poor query plan - HashAggregate is more than twice as fast but at a higher cost",7,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18928,8f4a83b7d6d53a4d3a5757bc30b3ea5a,20250514,2025-05-14,"BUG #18928: postgres_fdw search_path not reset causing pgbouncer pool_mode=transaction using the wrong schema",5,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18929,c53f6c22a5f27ffb131e016f0a7db3d3,20250515,2025-05-15,"BUG #18929: After the view is created, executed query against the view definition, reported syntax error.",7,3: 4-10 messages,true,linked to a fix commit,discussion_link,2025-05-19,4,2: within a week,2025-08-14
-18930,ed0b343bf702c80688d736719e334a24,20250515,2025-05-15,"BUG #18930: PostgreSQL fails to handle INTERSECT operation involving Empty Table",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
+18930,540fca44bb2f9a731fae180b9f3e5413,20250515,2025-05-15,"BUG #18930: PostgreSQL fails to handle INTERSECT operation involving Empty Table",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18931,03a892a55aba8bb02fb2445b43fa2021,20250515,2025-05-15,"BUG #18931: Access to source rpms is not possible",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
-18932,ed0b343bf702c80688d736719e334a24,20250515,2025-05-15,"BUG #18932: PostgreSQL fails to handle EXCEPT operation when the left branch is an Empty Table",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
-18933,ed0b343bf702c80688d736719e334a24,20250515,2025-05-15,"BUG #18933: PostgreSQL fails to handle JOIN operation involving Empty Table",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
+18932,540fca44bb2f9a731fae180b9f3e5413,20250515,2025-05-15,"BUG #18932: PostgreSQL fails to handle EXCEPT operation when the left branch is an Empty Table",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
+18933,540fca44bb2f9a731fae180b9f3e5413,20250515,2025-05-15,"BUG #18933: PostgreSQL fails to handle JOIN operation involving Empty Table",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18934,b6b3e5f5d3173f7d8eb9ab5d77464025,20250519,2025-05-19,"BUG #18934: Even with WITH ADMIN OPTION, I Cannot Manage Role Memberships",4,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18935,e3ab1e8b9852e01923cb189cf166a5ee,20250519,2025-05-19,"BUG #18935: The optimiser's choice of sort doubles the execution time.",5,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18936,1ca8f7ddff6269c17af97ddf1181d38d,20250520,2025-05-20,"BUG #18936: Trigger enable users to modify the tables which he doesn't have privilege",4,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
@@ -1527,7 +1527,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18956,07b8a0687abd0c24035c28fe46e8399e,20250612,2025-06-12,"BUG #18956: Observing an issue in regexp_count()",4,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18958,40c03a42be16c196f6476279afce856c,20250613,2025-06-13,"BUG #18958: ""pg_ctl start"" allows subsequent CTRL-C key in cmd.exe to unexpectedly terminate cluster on Windows",6,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18959,7c3b165c3922385066febacfb3df5618,20250613,2025-06-13,"BUG #18959: Name collisions of expression indexes during parallel Index creations on a pratitioned table.",19,4: 11+ messages,true,linked to a fix commit,both,2025-06-20,7,2: within a week,2025-08-14
-18960,e7b930254234a1495c712be97b9f6c23,20250618,2025-06-18,"BUG #18960: Mistake in test test_simple_pipeline (libpq_pipeline.c)",9,3: 4-10 messages,true,linked to a fix commit,both,2025-09-03,77,4: within 6 months,2025-08-14
+18960,41865c3eb6a6f351c046d60a6d2377be,20250618,2025-06-18,"BUG #18960: Mistake in test test_simple_pipeline (libpq_pipeline.c)",9,3: 4-10 messages,true,linked to a fix commit,both,2025-09-03,77,4: within 6 months,2025-08-14
 18961,82dc2d8b993dc54d3a183e558888d439,20250619,2025-06-19,"BUG #18961: Race scenario where max_standby_streaming_delay is not honored",9,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18962,28a519a91aee5525a90e8ba587bce98a,20250619,2025-06-19,"BUG #18962: Type Conversion incorrect when performing UNION of queries.",4,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18963,d264e9dd3768e50e27aa3364cdfe3b6d,20250619,2025-06-19,"BUG #18963: Column confupdsetcols missing in pg_catalog.pg_constraint",3,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
@@ -1537,32 +1537,32 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 18968,a4897ed17b6ebeb8944264c5127e2bf0,20250624,2025-06-24,"BUG #18968: GiST Index Cost Estimation",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18969,dc42e724623ea52fd4ab7c16c40ab0ab,20250625,2025-06-25,"BUG #18969: security tests failures",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18970,8d353a4c5a84c5049abfc94b13c17ae1,20250628,2025-06-28,"BUG #18970: Atempt to alter type of table column used in row type with check leads to assertion failure",11,4: 11+ messages,true,linked to a fix commit,both,2025-06-29,1,1: same/next day,2025-08-14
-18971,e7b930254234a1495c712be97b9f6c23,20250628,2025-06-28,"BUG #18971: Server passes an invalid (indirect) path in PGDATA to the external program",6,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
-18973,73d8441e5290507caf01f16e2a6be541,20250630,2025-06-30,"BUG #18973: The default enable_material=ON affects the cost estimation of optimizer, resulting in 10968x slow",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
+18971,41865c3eb6a6f351c046d60a6d2377be,20250628,2025-06-28,"BUG #18971: Server passes an invalid (indirect) path in PGDATA to the external program",6,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
+18973,540fca44bb2f9a731fae180b9f3e5413,20250630,2025-06-30,"BUG #18973: The default enable_material=ON affects the cost estimation of optimizer, resulting in 10968x slow",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18974,5bd73b780ffdfc39395663a82e653c99,20250701,2025-07-01,"BUG #18974: Postgresql repeatable crash after pg_upgrade from 15 to 17.5 version in postgresql_fdw queries",6,3: 4-10 messages,true,linked to a fix commit,both,2025-07-02,1,1: same/next day,2025-08-14
 18975,e7ecd9cea23c5207290d395930fcbe14,20250701,2025-07-01,"BUG #18975: PostgreSQL server doesn't process SQL request correctly over Windows replica of Linux server",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18976,1ca8f7ddff6269c17af97ddf1181d38d,20250703,2025-07-03,"BUG #18976: -0.0 with float8 will be transformed to 0 in prepare statement but not in normal execution",5,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18977,1ca8f7ddff6269c17af97ddf1181d38d,20250703,2025-07-03,"BUG #18977: Unexpected result of function to_char",4,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
-18978,73d8441e5290507caf01f16e2a6be541,20250703,2025-07-03,"BUG #18978: Index does not work in aggregate function filter",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
+18978,540fca44bb2f9a731fae180b9f3e5413,20250703,2025-07-03,"BUG #18978: Index does not work in aggregate function filter",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18979,1aa38ab39a9a9e7ada1e8ea86442debe,20250706,2025-07-06,"BUG #18979: pg_upgrade to PG17 fails if max_slot_wal_keep_size is not set to -1",6,3: 4-10 messages,true,linked to a fix commit,discussion_link,2025-07-11,5,2: within a week,2025-08-14
 18980,4832bf885b336b8ae52c17b72669ba27,20250707,2025-07-07,"BUG #18980: Unable to perform make due to inability to resolve a variety of Undefined symbols arm64",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
-18981,e7b930254234a1495c712be97b9f6c23,20250708,2025-07-08,"BUG #18981: Fault tolerance and improvement for xmltotext_with_options (xml.c)",2,2: 2-3 messages,true,linked to a fix commit,both,2025-07-08,0,1: same/next day,2025-08-14
-18983,e7b930254234a1495c712be97b9f6c23,20250709,2025-07-09,"BUG #18983: Problems with Postgres ""make check"" under ASAN",4,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
+18981,41865c3eb6a6f351c046d60a6d2377be,20250708,2025-07-08,"BUG #18981: Fault tolerance and improvement for xmltotext_with_options (xml.c)",2,2: 2-3 messages,true,linked to a fix commit,both,2025-07-08,0,1: same/next day,2025-08-14
+18983,41865c3eb6a6f351c046d60a6d2377be,20250709,2025-07-09,"BUG #18983: Problems with Postgres ""make check"" under ASAN",4,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18984,8d353a4c5a84c5049abfc94b13c17ae1,20250714,2025-07-14,"BUG #18984: Empty prepared statement from psql \parse triggers assert in PortalRunMulti",21,4: 11+ messages,true,linked to a fix commit,both,2025-07-17,3,2: within a week,2025-08-14
 18985,19cf29c8fb1885d0bac8b905bfe20d08,20250715,2025-07-15,"BUG #18985: fast shutdown does not close connections from qlik data gateway data movement aka. replicate",13,4: 11+ messages,false,no linked commit,,,,,2025-08-14
 18986,068cfff569b15f93eaca3d89fc9972d7,20250715,2025-07-15,"BUG #18986: SIGSEGV in nodeModifyTable.c during Parallel Execution",12,4: 11+ messages,true,linked to a fix commit,both,2025-07-18,3,2: within a week,2025-08-14
 18987,bf5618bc4eb52757626e412e8750be86,20250716,2025-07-16,"BUG #18987: psqlodbc_setup.exe installs as Unknown Publisher",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18988,8d353a4c5a84c5049abfc94b13c17ae1,20250716,2025-07-16,"BUG #18988: DROP SUBSCRIPTION locks not-yet-accessed database",37,4: 11+ messages,true,linked to a fix commit,discussion_link,2025-08-19,34,4: within 6 months,2025-08-14
 18989,79ae91d66e3b07bb18102fb967e29585,20250717,2025-07-17,"BUG #18989: Output of \sf does not match original source for E quoted strings (unlike \df+ used to)",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
-18990,73d8441e5290507caf01f16e2a6be541,20250717,2025-07-17,"BUG #18990: The results of equivalent queries are inconsistent (one returns 0, another returns -0)",3,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
+18990,540fca44bb2f9a731fae180b9f3e5413,20250717,2025-07-17,"BUG #18990: The results of equivalent queries are inconsistent (one returns 0, another returns -0)",3,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18991,77258b8ffd80d61d311c2c966120996a,20250719,2025-07-19,"BUG #18991: NUMA test fails on machine with two NUMA nodes when building 18beta2",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18992,792f72b59c0d05f18afc47fff7c7edce,20250720,2025-07-20,"BUG #18992: Autovacuum triggering assert - LWLockAnyHeldByMe",5,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 18993,5b564803d769f3afbc1cdc20bb3270d5,20250721,2025-07-21,"BUG #18993: [BUG] Unreachable code in pg_next_dst_boundary()",3,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18995,a2a925b2b06527442bee1a8b6f6b3f05,20250723,2025-07-23,"BUG #18995: Building with GCC 14 fails: incompatible pointer struct pam_message",8,3: 4-10 messages,true,linked to a fix commit,both,2025-07-23,0,1: same/next day,2025-08-14
-18996,ab5cd93dbae310cb9f9a666fbbc64083,20250724,2025-07-24,"BUG #18996: Assertion fails in waiteventset.c when dropping database in single mode in PG18",3,2: 2-3 messages,true,linked to a fix commit,discussion_link,2025-07-25,1,1: same/next day,2025-08-14
-18997,73d8441e5290507caf01f16e2a6be541,20250724,2025-07-24,"BUG #18997: Two equivalent queries return different results",3,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
+18996,2f6fb86fbe13afda5209aaad2e28b2e3,20250724,2025-07-24,"BUG #18996: Assertion fails in waiteventset.c when dropping database in single mode in PG18",3,2: 2-3 messages,true,linked to a fix commit,discussion_link,2025-07-25,1,1: same/next day,2025-08-14
+18997,540fca44bb2f9a731fae180b9f3e5413,20250724,2025-07-24,"BUG #18997: Two equivalent queries return different results",3,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 18998,03fcb6fe5596b5568792253503fd716a,20250724,2025-07-24,"BUG #18998: No materialized views in INFORMATION_SCHEMA.TABLE_PRIVILEGES",2,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
-18999,73d8441e5290507caf01f16e2a6be541,20250725,2025-07-25,"BUG #18999: Equivalent queries processing WHERE IS NULL & WHERE IS NOT NULL produce mutually exclusive results",5,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
+18999,540fca44bb2f9a731fae180b9f3e5413,20250725,2025-07-25,"BUG #18999: Equivalent queries processing WHERE IS NULL & WHERE IS NOT NULL produce mutually exclusive results",5,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
 19000,8d353a4c5a84c5049abfc94b13c17ae1,20250727,2025-07-27,"BUG #19000: gist index returns inconsistent result with gist_inet_ops",12,4: 11+ messages,false,no linked commit,,,,,2025-08-14
 19001,0e9e52742fdebd701afa782064210ca5,20250729,2025-07-29,"BUG #19001: PostgreSQL 17: CREATE MATERIALIZED VIEW fails with STABLE function using JSONB LATERAL joins",3,2: 2-3 messages,false,no linked commit,,,,,2025-08-14
 19002,18c82d76080da8971b2471524ac71d85,20250729,2025-07-29,"BUG #19002: `pg_isready` unexpectedly succeeds on incorrect `--dbname` and/or `--username`",4,3: 4-10 messages,false,no linked commit,,,,,2025-08-14
@@ -1602,12 +1602,12 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19040,6804b85c0bdea54064907a852afb267c,20250902,2025-09-02,"BUG #19040: Memory leak in hashed subplan node due to missing hashtempcxt reset",20,4: 11+ messages,true,linked to a fix commit,both,2025-09-10,8,3: within a month,2025-11-13
 19041,9045aa754028c172ecc33a5750b509fa,20250903,2025-09-03,"BUG #19041: Logical replication locks wal processing",5,3: 4-10 messages,false,no linked commit,,,,,2025-11-13
 19042,fc2dd340d560f8016397505031c1ee69,20250903,2025-09-03,"BUG #19042: Option --help not recognized at the end of command line in pg_restore",20,4: 11+ messages,false,no linked commit,,,,,2025-11-13
-19043,167917368b16038a728b7ed1e2074840,20250905,2025-09-05,"BUG #19043: jdbc connection url is not case insensitive",5,3: 4-10 messages,false,no linked commit,,,,,2025-11-13
+19043,00823f119c809b5a442e8bec6ab94908,20250905,2025-09-05,"BUG #19043: jdbc connection url is not case insensitive",5,3: 4-10 messages,false,no linked commit,,,,,2025-11-13
 19045,d3d9a279f3f8f6ef23e7ccd61b7877e7,20250909,2025-09-09,"BUG #19045: Applying custom collation rules appears to erase existing rules",3,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
 19046,802372e7e5da48fd0b15ecb7cf0f53c4,20250910,2025-09-10,"BUG #19046: Incorrect result when using json_array() with column reference in subquery combined with RIGHT JOIN",11,4: 11+ messages,true,linked to a fix commit,both,2025-09-16,6,2: within a week,2025-11-13
 19047,faa9253efce3a301a8cb80a94d948b61,20250911,2025-09-11,"BUG #19047: pg_last_wal_replay_lsn() returns non-NULL after pg_promote()",2,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
 19048,1645e5c77b5b432df992bf0cc6d07405,20250911,2025-09-11,"BUG #19048: PostgreSQL Windows Turkish Search Problem",1,1: no replies,false,no linked commit,,,,,2025-11-13
-19049,ab7c889869fb2d1c0924fec24546bb9d,20250911,2025-09-11,"BUG #19049: Assert failure when using skip arrays on an index key with DESC order",7,3: 4-10 messages,true,linked to a fix commit,discussion_link,2025-09-12,1,1: same/next day,2025-11-13
+19049,464d820cc7eaff65b4225ff6370d2d0a,20250911,2025-09-11,"BUG #19049: Assert failure when using skip arrays on an index key with DESC order",7,3: 4-10 messages,true,linked to a fix commit,discussion_link,2025-09-12,1,1: same/next day,2025-11-13
 19050,37f64ece920f6bc9a5a8cd1b8b40dfd1,20250911,2025-09-11,"BUG #19050: psql: could not find digest for NID UNDEF",3,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
 19051,149fa7d01866ea3c62278adad5e24199,20250914,2025-09-14,"BUG #19051: Is it possible to move a TOAST table to a different tablespace than its parent table?",2,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
 19052,5e84c129239370ee750cc419fbefc110,20250915,2025-09-15,"BUG #19052: failing to install on Windows if user path contains Chineese/Korean characters",2,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
@@ -1630,7 +1630,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19070,6804b85c0bdea54064907a852afb267c,20251002,2025-10-02,"BUG #19070: issue with DETACH PARTITION CONCURRENTLY on a hash partition table",8,3: 4-10 messages,true,linked to a fix commit,discussion_link,2025-10-11,9,3: within a month,2025-11-13
 19071,b5de5166be0cdf96c73eb56a578ca1c0,20251003,2025-10-03,"BUG #19071: commit b448f1c8d broke LEFT JOIN pushdown",2,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
 19072,372d6dad3b0b22eb3fe7405213ae79a4,20251004,2025-10-04,"BUG #19072: New-style SQL language function referencing a temp table behaves oddly",3,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
-19073,d96d3809b60e2060f655d3620d37c7c6,20251005,2025-10-05,"BUG #19073: there are meaningless code in _SPI_execute_plan() when canSetTag is true",4,3: 4-10 messages,false,no linked commit,,,,,2025-11-13
+19073,b67bd925089a4d11d8a9c5a43788cbf8,20251005,2025-10-05,"BUG #19073: there are meaningless code in _SPI_execute_plan() when canSetTag is true",4,3: 4-10 messages,false,no linked commit,,,,,2025-11-13
 19074,96600f3a2fb6b20ee6e9e74e39ccd4b2,20251005,2025-10-05,"BUG #19074: pg_dump from v18 loses the NOT NULL flag in the inherited table field when dumping v17-databases",12,4: 11+ messages,true,linked to a fix commit,both,2025-10-18,13,3: within a month,2025-11-13
 19075,9045aa754028c172ecc33a5750b509fa,20251006,2025-10-06,"BUG #19075: pg_upgradecluster does not copy conf.d/* during cluster upgrade",2,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
 19076,25b5c22c2c9b76dae5bbdea0a8be038e,20251007,2025-10-07,"BUG #19076: Generic query plan is extremely slow",6,3: 4-10 messages,false,no linked commit,,,,,2025-11-13
@@ -1640,7 +1640,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19081,2bb036af1d0577aac48e6f6129f137ff,20251009,2025-10-09,"BUG #19081: Inconsistent target rows seen by the UPDATE and INSERT statements within the same transaction",3,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
 19082,f31a58fe1776f6e8de7c3e5c84a1899e,20251010,2025-10-10,"BUG #19082: Failing assert in index scan",8,3: 4-10 messages,true,linked to a fix commit,both,2025-10-10,0,1: same/next day,2025-11-13
 19083,b5de5166be0cdf96c73eb56a578ca1c0,20251013,2025-10-13,"BUG #19083: Foreign inner join is the case for char() keys but not for varchar()",1,1: no replies,false,no linked commit,,,,,2025-11-13
-19084,5f7d0e52caee37ba90cee8385b63bac0,20251013,2025-10-13,"BUG #19084: dump/restore table doesn't work with GENARETED column and custom type and cast in function",3,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
+19084,56ccfa5f2b943594f37fd4898455d81c,20251013,2025-10-13,"BUG #19084: dump/restore table doesn't work with GENARETED column and custom type and cast in function",3,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
 19085,1b47315f9bf4e0ec88e6c25988b73e91,20251014,2025-10-14,"BUG #19085: Using EXECUTE to run a multi-statement SQL string causes an assertion failure",2,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
 19086,96600f3a2fb6b20ee6e9e74e39ccd4b2,20251014,2025-10-14,"BUG #19086: pg_dump --data-only selects and do not uses index definitions for the dumped tables.",20,4: 11+ messages,false,no linked commit,,,,,2025-11-13
 19089,c6ea1af7628a687edf901f89039563dd,20251015,2025-10-15,"BUG #19089: Mounting Issue",3,2: 2-3 messages,false,no linked commit,,,,,2025-11-13
@@ -1677,7 +1677,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19335,2bec524cf7d7255d636ec0daa09cdb35,20251127,2025-11-27,"BUG #19335: the function encrypt does not work correct - ERROR: encrypt error: Key was too big",9,3: 4-10 messages,false,no linked commit,,,,,2026-02-12
 19336,c4ff1265bea2f571aa475fbb16435524,20251127,2025-11-27,"BUG #19336: TRAP: failed Assert(""!IsTransactionOrTransactionBlock()"")",2,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
 19337,617ad587cc0b80efcceaebc12515dba6,20251128,2025-11-28,"BUG #19337: Errors during downloading metadata for repository pgdg-rhel9-extras",2,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
-19338,e7b930254234a1495c712be97b9f6c23,20251201,2025-12-01,"BUG #19338: [PG15] Unstable SQL result in test regress/tablespace",3,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
+19338,41865c3eb6a6f351c046d60a6d2377be,20251201,2025-12-01,"BUG #19338: [PG15] Unstable SQL result in test regress/tablespace",3,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
 19339,644dde7331b4698d5027ac6962b9c28b,20251201,2025-12-01,"BUG #19339: odbc_fdw extension, Not able to read data from foreign tables",4,3: 4-10 messages,false,no linked commit,,,,,2026-02-12
 19340,c9a4a583014fc019d1cca8d84e4af529,20251202,2025-12-02,"BUG #19340: Wrong result from CORR() function",24,4: 11+ messages,true,linked to a fix commit,both,2025-12-06,4,2: within a week,2026-02-12
 19341,4662307959c91ca1ef0885339e588371,20251202,2025-12-02,"BUG #19341: REPLACE() fails to match final character when using nondeterministic ICU collation",16,4: 11+ messages,true,linked to a fix commit,both,2025-12-06,4,2: within a week,2026-02-12
@@ -1696,7 +1696,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19358,1ca8f7ddff6269c17af97ddf1181d38d,20251217,2025-12-17,"BUG #19358: Short circuit optimization exists in generic plan but missed in custom plan",2,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
 19359,f4f2d096d9345706508459f21957c286,20251218,2025-12-18,"BUG #19359: Row level security: Upserts require insert policies in the update path",3,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
 19360,a6d55fe77a33bd9d5d8498f5aa68ae0c,20251222,2025-12-22,"BUG #19360: Bug Report: Logical Replication initial sync fails with ""conflict=update_origin_differs"" PG12 toPG18",11,4: 11+ messages,false,no linked commit,,,,,2026-02-12
-19362,df932cae92683dda3d9811373e541631,20251223,2025-12-23,"BUG #19362: Extremely log processing of jsonb_path_exists_opr",3,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
+19362,626799e49a965544575bacfd907f2d5c,20251223,2025-12-23,"BUG #19362: Extremely log processing of jsonb_path_exists_opr",3,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
 19363,540fca44bb2f9a731fae180b9f3e5413,20251226,2025-12-26,"BUG #19363: PostgreSQL shared memory exhaustion during query execution involving views and parallel workers",4,3: 4-10 messages,true,linked to a fix commit,both,2025-12-29,3,2: within a week,2026-02-12
 19364,20e1c79a79bd2877eed589167fa4635d,20251226,2025-12-26,"BUG #19364: Repository not updating",2,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
 19365,29025f4e01799fb02ea3496cba813848,20251227,2025-12-27,"BUG #19365: postgres 18 pg_dump fails whan drop sequence concurrently",4,3: 4-10 messages,true,linked to a fix commit,both,2026-01-09,13,3: within a month,2026-02-12
@@ -1722,7 +1722,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19388,16d2aa57aac417a8269c72de56066182,20260123,2026-01-23,"BUG #19388: Failing to connect to postgres with EACCES error",4,3: 4-10 messages,false,no linked commit,,,,,2026-02-12
 19389,b6b3c3d23f4181308418df6c9586acba,20260125,2026-01-25,"BUG #19389: pg_dump output differs after setting schema comment to NULL",2,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
 19390,fd3faa1d18caa09fefad28bc942c83b4,20260128,2026-01-28,"BUG #19390: Defects in the test case partition_merge",1,1: no replies,false,no linked commit,,,,,2026-02-12
-19391,e7b930254234a1495c712be97b9f6c23,20260130,2026-01-30,"BUG #19391: pg_ctl: the PID file ""/xxxx/postmaster.pid"" is empty",5,3: 4-10 messages,false,no linked commit,,,,,2026-02-12
+19391,41865c3eb6a6f351c046d60a6d2377be,20260130,2026-01-30,"BUG #19391: pg_ctl: the PID file ""/xxxx/postmaster.pid"" is empty",5,3: 4-10 messages,false,no linked commit,,,,,2026-02-12
 19392,14511cf808b50aa2fa66499118e436fe,20260204,2026-02-04,"BUG #19392: PG_UPGRADE is non-functional on Windows",8,3: 4-10 messages,false,no linked commit,,,,,2026-02-12
 19393,4f9baedeecd0775126d59a63af55598d,20260204,2026-02-04,"BUG #19393: pg_upgrade fails with duplicate key violation when CHECK constraint named *_not_null exists",17,4: 11+ messages,true,linked to a fix commit,both,2026-02-21,17,3: within a month,2026-02-12
 19394,9b4d4e6e2d977a9bcd55ae1a68080d4c,20260205,2026-02-05,"BUG #19394: error in ecpg",2,2: 2-3 messages,false,no linked commit,,,,,2026-02-12
@@ -1758,7 +1758,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19425,d91686500d47bd0da0be04a1c85afc42,20260304,2026-03-04,"BUG #19425: Parametric settings in collation not working in rule syntax",2,2: 2-3 messages,true,linked to a fix commit,both,2026-03-18,14,3: within a month,2026-05-14
 19426,76e70d1e2afe667d1c56eb33ef2e7e52,20260307,2026-03-07,"BUG #19426: pgdump is stuck",2,2: 2-3 messages,false,no linked commit,,,,,2026-05-14
 19427,1f879cd13b75f9f492de248ac648a0ae,20260311,2026-03-11,"BUG #19427: TOAST Snapshot Assertion Failure",2,2: 2-3 messages,false,no linked commit,,,,,2026-05-14
-19428,ac62f14c922174576d483ce5ec8210b7,20260311,2026-03-11,"BUG #19428: Lazy evaluation of type checking in CASE in SQL functions including subqueries no longer works in 18",8,3: 4-10 messages,false,no linked commit,,,,,2026-05-14
+19428,8584262d4d3da0dcf8e5a35a869206ee,20260311,2026-03-11,"BUG #19428: Lazy evaluation of type checking in CASE in SQL functions including subqueries no longer works in 18",8,3: 4-10 messages,false,no linked commit,,,,,2026-05-14
 19429,fd3faa1d18caa09fefad28bc942c83b4,20260312,2026-03-12,"BUG #19429: An issue regarding the processing of Oid as an int type in ecpg",2,2: 2-3 messages,true,linked to a fix commit,both,2026-03-15,3,2: within a week,2026-05-14
 19430,8106999e6bbb69e8f167f6ca5b049165,20260312,2026-03-12,"BUG #19430: Autovacuums stopped working possible due to problem with vacuuming shared catalog pg_authid",2,2: 2-3 messages,false,no linked commit,,,,,2026-05-14
 19431,6e6faf8811f1e1415403a967a44e9522,20260312,2026-03-12,"BUG #19431: limitation of the data type jsonb equals 8Kb",4,3: 4-10 messages,false,no linked commit,,,,,2026-05-14
@@ -1786,7 +1786,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19455,f97029a2d0597cf0406f4750a7c7bafc,20260413,2026-04-13,"BUG #19455: ALTER TABLE RENAME will rename a sequence",3,2: 2-3 messages,false,no linked commit,,,,,2026-05-14
 19456,393fe35e90a2c747289d778b153b49c2,20260415,2026-04-15,"BUG #19456: # Unit-Labeling Issue: `pg_size_pretty()` Incorrectly Labels Binary Units as Decimal Units",2,2: 2-3 messages,false,no linked commit,,,,,2026-05-14
 19457,4cd4c1f890591b3c709254d2e02adb32,20260417,2026-04-17,"BUG #19457: RE: pgp_sym_encrypt silently accepts non-FIPS ciphers (bf, cast5, 3des) when OpenSSL is in FIPS mod",10,3: 4-10 messages,true,linked to a fix commit,both,2026-08-10,115,4: within 6 months,2026-05-14
-19458,bfecb83044dfcfdd5be75ca0f1b5b3be,20260417,2026-04-17,"BUG #19458: OOM killer in jsonb_path_exists_opr (@?) with malformed JSONPath containing non-existent variables",13,4: 11+ messages,true,linked to a fix commit,both,2026-06-18,62,4: within 6 months,2026-05-14
+19458,1923f18ee550c0d896cd79bd4981e6d9,20260417,2026-04-17,"BUG #19458: OOM killer in jsonb_path_exists_opr (@?) with malformed JSONPath containing non-existent variables",13,4: 11+ messages,true,linked to a fix commit,both,2026-06-18,62,4: within 6 months,2026-05-14
 19460,21d857bdfc0d9b4c9974985ccbc694e6,20260419,2026-04-19,"BUG #19460: FULL JOIN rewriting issue on empty queries",12,4: 11+ messages,true,linked to a fix commit,both,2026-04-20,1,1: same/next day,2026-05-14
 19461,1f879cd13b75f9f492de248ac648a0ae,20260420,2026-04-20,"BUG #19461: MERGE with EXISTS subquery referencing USING clause alias fails with ""variable not found in subplan",2,2: 2-3 messages,false,no linked commit,,,,,2026-05-14
 19462,1f879cd13b75f9f492de248ac648a0ae,20260420,2026-04-20,"BUG #19462: MERGE on partitioned table with INSERT DEFAULT VALUES fails with ""unknown action in MERGE WHEN clau",2,2: 2-3 messages,false,no linked commit,,,,,2026-05-14
@@ -1801,10 +1801,10 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19471,c2de2644b793abb8d9a22e97fca5b999,20260506,2026-05-06,"BUG #19471: Packaging problem with ogr_fdw_18",2,2: 2-3 messages,false,no linked commit,,,,,2026-05-14
 19472,784a709c47dea4149103ca10940c8c26,20260506,2026-05-06,"BUG #19472: CAST(-32768::SMALLINT AS REAL) fails with ""SMALLINT out of range"" but -32768 is valid SMALLINT value",3,2: 2-3 messages,false,no linked commit,,,,,2026-05-14
 19473,c9a4a583014fc019d1cca8d84e4af529,20260508,2026-05-08,"BUG #19473: regression error in dblink: another command is already in progress",6,3: 4-10 messages,false,no linked commit,,,,,2026-05-14
-19474,fe5addff86d985cbeaa2c6d62c8ea795,20260509,2026-05-09,"BUG #19474: LIKE with nondeterministic collations mis-handle literal backslashes in patterns containing escape",2,2: 2-3 messages,true,linked to a fix commit,both,2026-07-06,58,4: within 6 months,2026-05-14
+19474,74a973fba99bc19e818b1a2f14353fb4,20260509,2026-05-09,"BUG #19474: LIKE with nondeterministic collations mis-handle literal backslashes in patterns containing escape",2,2: 2-3 messages,true,linked to a fix commit,both,2026-07-06,58,4: within 6 months,2026-05-14
 19475,1ca8f7ddff6269c17af97ddf1181d38d,20260511,2026-05-11,"BUG #19475: VACUUM on a partition still warns after MAINTAIN is granted on the partitioned parent",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19476,c4ff1265bea2f571aa475fbb16435524,20260512,2026-05-12,"BUG #19476: Segmentation fault in contrib/spi",8,3: 4-10 messages,true,linked to a fix commit,discussion_link,2026-05-14,2,2: within a week,2026-08-13
-19477,9351fd700344a199c4f4995d23aa8d5f,20260514,2026-05-14,"BUG #19477: pg_rewind does not rewind a diverging timeline",1,1: no replies,false,no linked commit,,,,,2026-08-13
+19477,4f64d6d81307557aac05373562e562bb,20260514,2026-05-14,"BUG #19477: pg_rewind does not rewind a diverging timeline",1,1: no replies,false,no linked commit,,,,,2026-08-13
 19478,b718bbd9c674be281ec805fb6cb486d1,20260515,2026-05-15,"BUG #19478: `dblink_close` can be used for injection.",5,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
 19479,277d078434daf74af34f5d05a3ddcffa,20260515,2026-05-15,"BUG #19479: 04 is happening because your metadata is advertising a package version that is not actually present",1,1: no replies,false,no linked commit,,,,,2026-08-13
 19480,074a266273034abf0d98373f1dba5a9b,20260515,2026-05-15,"BUG #19480: PL/Python SRF crashes (SIGSEGV) when function is replaced mid-iteration: use-after-free in PLy_funct",17,4: 11+ messages,true,linked to a fix commit,both,2026-06-21,37,4: within 6 months,2026-08-13
@@ -1830,7 +1830,7 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19502,f0648ca3f3ce0b878317c7b7f04e3d64,20260531,2026-05-31,"BUG #19502: unix_socket_group doesn't work anymore",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19504,40cfb916bdb4270361d3436cf67e1b93,20260602,2026-06-02,"BUG #19504: Segmentation fault in plpython3u function (pg19)",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19505,5bd73b780ffdfc39395663a82e653c99,20260602,2026-06-02,"BUG #19505: Some weird spikes postgresql processes in database (up to 200k sometime) without apparent reasons.",4,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
-19506,29bc2e3837b26f1b29fe89dec704cd10,20260603,2026-06-03,"BUG #19506: LOAD '$libdir/...' inside extension scripts ignores dynamic_library_path with extension_control_path",8,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
+19506,25318ecf571a86cde99d599f99695ab1,20260603,2026-06-03,"BUG #19506: LOAD '$libdir/...' inside extension scripts ignores dynamic_library_path with extension_control_path",8,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
 19507,c1b6a11feeac84ae77a137448062e0d0,20260604,2026-06-04,"BUG #19507: Auto-named partition table constraint conflicts",7,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
 19508,c4ff1265bea2f571aa475fbb16435524,20260604,2026-06-04,"BUG #19508: pg_buffercache_pages() crashes the backend with an incompatible caller-supplied record definition",10,3: 4-10 messages,true,linked to a fix commit,both,2026-06-10,6,2: within a week,2026-08-13
 19509,2ddfefb416c8628de392c652f9a367ee,20260604,2026-06-04,"BUG #19509: Typo in 19 beta release notes (debug_print_parse)",4,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
@@ -1846,10 +1846,10 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19520,c239cd401435fb7eda9279e6deb6e4a2,20260614,2026-06-14,"BUG #19520: PANIC when concurrently manipulating stored procedures with pg_stat_statements and track_functions =",17,4: 11+ messages,true,linked to a fix commit,discussion_link,2026-06-18,4,2: within a week,2026-08-13
 19521,723902cc8997dc1d3b3f1442bbfc79b5,20260615,2026-06-15,"BUG #19521: After a minor PostgreSQL update from 14.22 to 14.23, the database goes into an infinite loop.",7,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
 19523,892a2d7dde43b83d5824161c4c17dd7a,20260618,2026-06-18,"BUG #19523: psql tab-completion shadows pg_db_role_setting",5,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
-19524,bae420d26742d3f7c700c9b71f3b1100,20260618,2026-06-18,"BUG #19524: In `contrib/btree_gist` float4/float8 GiST index operations, handling NaN values with raw C operator",16,4: 11+ messages,true,linked to a fix commit,both,2026-07-01,13,3: within a month,2026-08-13
-19525,bae420d26742d3f7c700c9b71f3b1100,20260618,2026-06-18,"BUG #19525: In `contrib/dict_int`, handling a token whose first byte is a null byte causes `pnstrdup()` .",4,3: 4-10 messages,true,linked to a fix commit,discussion_link,2026-07-05,17,3: within a month,2026-08-13
-19527,bae420d26742d3f7c700c9b71f3b1100,20260618,2026-06-18,"BUG #19527: Double-Abort Crash in `ResOwnerReleaseOSSLCipher` via `encrypt_iv` with Oversized Input",2,2: 2-3 messages,true,linked to a fix commit,both,2026-06-22,4,2: within a week,2026-08-13
-19528,bae420d26742d3f7c700c9b71f3b1100,20260619,2026-06-19,"BUG #19528: Assert failure in generate_normalized_query() via Squashed Array Literals",3,2: 2-3 messages,true,linked to a fix commit,discussion_link,2026-08-10,52,4: within 6 months,2026-08-13
+19524,0eb9a5c1a23b77f38380aa0c32501da4,20260618,2026-06-18,"BUG #19524: In `contrib/btree_gist` float4/float8 GiST index operations, handling NaN values with raw C operator",16,4: 11+ messages,true,linked to a fix commit,both,2026-07-01,13,3: within a month,2026-08-13
+19525,0eb9a5c1a23b77f38380aa0c32501da4,20260618,2026-06-18,"BUG #19525: In `contrib/dict_int`, handling a token whose first byte is a null byte causes `pnstrdup()` .",4,3: 4-10 messages,true,linked to a fix commit,discussion_link,2026-07-05,17,3: within a month,2026-08-13
+19527,0eb9a5c1a23b77f38380aa0c32501da4,20260618,2026-06-18,"BUG #19527: Double-Abort Crash in `ResOwnerReleaseOSSLCipher` via `encrypt_iv` with Oversized Input",2,2: 2-3 messages,true,linked to a fix commit,both,2026-06-22,4,2: within a week,2026-08-13
+19528,0eb9a5c1a23b77f38380aa0c32501da4,20260619,2026-06-19,"BUG #19528: Assert failure in generate_normalized_query() via Squashed Array Literals",3,2: 2-3 messages,true,linked to a fix commit,discussion_link,2026-08-10,52,4: within 6 months,2026-08-13
 19529,503b5fcf6b31d6556a778465dfcc497b,20260619,2026-06-19,"BUG #19529: Documentation appears inconsistent with pg_dump --statistics behavior for CREATE STATISTICS objects",3,2: 2-3 messages,true,linked to a fix commit,discussion_link,2026-06-22,3,2: within a week,2026-08-13
 19530,256eaa11db7c4dbb74dea8691295e412,20260621,2026-06-21,"BUG #19530: Crash (SIGSEGV/SIGBUS) in parallel B-tree index vacuum during plain VACUUM",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19531,dc59c87523f09593b2c033bd4f21f73c,20260624,2026-06-24,"BUG #19531: Inconsistent Error Messages for the Same SQL Query",3,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
@@ -1897,21 +1897,21 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19580,c9a4a583014fc019d1cca8d84e4af529,20260725,2026-07-25,"BUG #19580: Can not FINALIZE detach partition. Table in stuck",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19581,036aec1d8777a997950d6663a908c6e2,20260726,2026-07-26,"BUG #19581: Non-UTF8-encoded text in log file",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19582,914d6b14feb64ae76b038553a4ee568d,20260727,2026-07-27,"BUG #19582: Query fails on mixed IPv4 IPv6 data when index added",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
-19583,8875ee15644357654cc7225e80da7d66,20260729,2026-07-29,"BUG #19583: macaddr input accepts octet fields longer than 8 hex digits",6,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
-19584,8875ee15644357654cc7225e80da7d66,20260729,2026-07-29,"BUG #19584: tid input acceptance is platform-dependent: '(,5)'::tid yields (0,5) on glibc, errors on macOS",2,2: 2-3 messages,true,linked to a fix commit,discussion_link,2026-08-06,8,3: within a month,2026-08-13
+19583,2587b67431f9cc2a998a25e42e2d172d,20260729,2026-07-29,"BUG #19583: macaddr input accepts octet fields longer than 8 hex digits",6,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
+19584,2587b67431f9cc2a998a25e42e2d172d,20260729,2026-07-29,"BUG #19584: tid input acceptance is platform-dependent: '(,5)'::tid yields (0,5) on glibc, errors on macOS",2,2: 2-3 messages,true,linked to a fix commit,discussion_link,2026-08-06,8,3: within a month,2026-08-13
 19585,e712df7350a457eee4f04659e087280f,20260729,2026-07-29,"BUG #19585: Trivial bug - anchor tag points to wrong book",3,2: 2-3 messages,true,linked to a fix commit,bug_ref,2026-08-04,6,2: within a week,2026-08-13
-19586,8875ee15644357654cc7225e80da7d66,20260729,2026-07-29,"BUG #19586: money division overflow",6,3: 4-10 messages,true,linked to a fix commit,discussion_link,2026-08-04,6,2: within a week,2026-08-13
-19587,8875ee15644357654cc7225e80da7d66,20260729,2026-07-29,"BUG #19587: hashchar (internal ""char"" type) depends on platform char signedness",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
+19586,2587b67431f9cc2a998a25e42e2d172d,20260729,2026-07-29,"BUG #19586: money division overflow",6,3: 4-10 messages,true,linked to a fix commit,discussion_link,2026-08-04,6,2: within a week,2026-08-13
+19587,2587b67431f9cc2a998a25e42e2d172d,20260729,2026-07-29,"BUG #19587: hashchar (internal ""char"" type) depends on platform char signedness",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19588,40456fc9d6793f0838eb969c39e767d0,20260730,2026-07-30,"BUG #19588: Semantically equivalent DISTINCT ON query returns different result when wrapped in MATERIALIZED CTE.",3,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19589,40456fc9d6793f0838eb969c39e767d0,20260730,2026-07-30,"BUG #19589: JSON_QUERY rejects domain-over-bytea input when using FORMAT JSON ENCODING UTF8.",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
-19590,8875ee15644357654cc7225e80da7d66,20260731,2026-07-31,"BUG #19590: to_date/to_timestamp ""Y,YYY"" accepts out-of-range values",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
-19593,8875ee15644357654cc7225e80da7d66,20260801,2026-08-01,"BUG #19593: area(circle) silently returns Infinity instead of raising ""value out of range: overflow""",10,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
-19594,8875ee15644357654cc7225e80da7d66,20260801,2026-08-01,"BUG #19594: to_char/jsonpath format cache serves a format tree parsed in the wrong strict-mode",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
+19590,2587b67431f9cc2a998a25e42e2d172d,20260731,2026-07-31,"BUG #19590: to_date/to_timestamp ""Y,YYY"" accepts out-of-range values",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
+19593,2587b67431f9cc2a998a25e42e2d172d,20260801,2026-08-01,"BUG #19593: area(circle) silently returns Infinity instead of raising ""value out of range: overflow""",10,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
+19594,2587b67431f9cc2a998a25e42e2d172d,20260801,2026-08-01,"BUG #19594: to_char/jsonpath format cache serves a format tree parsed in the wrong strict-mode",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19595,2587b67431f9cc2a998a25e42e2d172d,20260802,2026-08-02,"BUG #19595: Three memory-safety defects in src/backend/tsearch/spell.c (dictionary loader), PG 18.3",7,3: 4-10 messages,true,linked to a fix commit,both,2026-08-02,0,1: same/next day,2026-08-13
-19597,8875ee15644357654cc7225e80da7d66,20260802,2026-08-02,"BUG #19597: getQuadrant: impossible case is reachable",4,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
-19598,8875ee15644357654cc7225e80da7d66,20260802,2026-08-02,"BUG #19598: pg_waldump: -s/-e accept out-of-range WAL locations and silently use the low 32 bits",13,4: 11+ messages,true,linked to a fix commit,both,2026-08-12,10,3: within a month,2026-08-13
-19599,8875ee15644357654cc7225e80da7d66,20260802,2026-08-02,"BUG #19599: RestoreBlockImage: the decode cross-checks never bound hole_offset + hole_length against BLCKSZ",1,1: no replies,false,no linked commit,,,,,2026-08-13
-19600,8875ee15644357654cc7225e80da7d66,20260803,2026-08-03,"BUG #19600: pgcrypto crypt() can return text with invalid encoding",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
+19597,2587b67431f9cc2a998a25e42e2d172d,20260802,2026-08-02,"BUG #19597: getQuadrant: impossible case is reachable",4,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
+19598,2587b67431f9cc2a998a25e42e2d172d,20260802,2026-08-02,"BUG #19598: pg_waldump: -s/-e accept out-of-range WAL locations and silently use the low 32 bits",13,4: 11+ messages,true,linked to a fix commit,both,2026-08-12,10,3: within a month,2026-08-13
+19599,2587b67431f9cc2a998a25e42e2d172d,20260802,2026-08-02,"BUG #19599: RestoreBlockImage: the decode cross-checks never bound hole_offset + hole_length against BLCKSZ",1,1: no replies,false,no linked commit,,,,,2026-08-13
+19600,2587b67431f9cc2a998a25e42e2d172d,20260803,2026-08-03,"BUG #19600: pgcrypto crypt() can return text with invalid encoding",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
 19601,0eb9a5c1a23b77f38380aa0c32501da4,20260803,2026-08-03,"BUG #19601: Vuln45: Unbounded recursion via self-retying Perl scalar in bool_plperl's SvTRUE call causes backend",4,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
 19602,0eb9a5c1a23b77f38380aa0c32501da4,20260803,2026-08-03,"BUG #19602: Vuln46: citext split_part silently returns NULL for a zero field position instead of raising core sp",1,1: no replies,false,no linked commit,,,,,2026-08-13
 19603,0eb9a5c1a23b77f38380aa0c32501da4,20260803,2026-08-03,"BUG #19603: Vuln47: distance_taxicab and distance_chebyshev silently return 0 instead of NaN when a cube coordin",2,2: 2-3 messages,false,no linked commit,,,,,2026-08-13
@@ -1924,9 +1924,9 @@ bug_number,reporter_person_key,reported_date_key,reported_dt,subject,thread_mess
 19613,6894038e07eb1a2f13f80abc5cf96066,20260807,2026-08-07,"BUG #19613: pg_restore: several SEGVs in ReadToc() in pg_backup_archiver.c",7,3: 4-10 messages,false,no linked commit,,,,,2026-08-13
 19615,6710ea30798233040ad33ee1fd20eef1,20260811,2026-08-11,"BUG #19615: COVAR_POP / COVAR_SAMP / REGR_SXY return 0.0 instead of NaN",4,3: 4-10 messages,true,linked to a fix commit,both,2026-08-12,1,1: same/next day,2026-11-12
 19616,38fb50d1c81b7a8ea1994bc02f695fef,20260811,2026-08-11,"BUG #19616: pgoutput sends stream abort ('A') to clients that did not enable streaming",15,4: 11+ messages,true,linked to a fix commit,both,2026-08-18,7,2: within a week,2026-11-12
-19617,8875ee15644357654cc7225e80da7d66,20260812,2026-08-12,"BUG #19617: Hash node can report incorrect actual rows number",2,2: 2-3 messages,false,no linked commit,,,,,2026-11-12
+19617,2587b67431f9cc2a998a25e42e2d172d,20260812,2026-08-12,"BUG #19617: Hash node can report incorrect actual rows number",2,2: 2-3 messages,false,no linked commit,,,,,2026-11-12
 19618,c91850db8c4574f7604408df2de818d3,20260813,2026-08-13,"BUG #19618: postgresql18 client package not found",1,1: no replies,false,no linked commit,,,,,2026-11-12
-19619,8875ee15644357654cc7225e80da7d66,20260814,2026-08-14,"BUG #19619: WHERE scale(n) = 1 pushed past GROUP BY / window PARTITION BY, wrong COUNT",3,2: 2-3 messages,false,no linked commit,,,,,2026-11-12
+19619,2587b67431f9cc2a998a25e42e2d172d,20260814,2026-08-14,"BUG #19619: WHERE scale(n) = 1 pushed past GROUP BY / window PARTITION BY, wrong COUNT",3,2: 2-3 messages,false,no linked commit,,,,,2026-11-12
 19620,a01217c83085b35c3250ed37b7cf9328,20260815,2026-08-15,"BUG #19620: pg_class index corruption caused by statement_timeout during VACUUM FULL",3,2: 2-3 messages,false,no linked commit,,,,,2026-11-12
 19621,bbc637340da4422ed3edc79fbc93d287,20260815,2026-08-15,"BUG #19621: Unexpected results of JSON_VALUE with DEFAULT ON EMPTY",4,3: 4-10 messages,false,no linked commit,,,,,2026-11-12
 19622,3dd3cc6b16a6cb09736585b8e92a6b6e,20260816,2026-08-16,"BUG #19622: io_method=worker retains file descriptors on dropped relations",1,1: no replies,false,no linked commit,,,,,2026-11-12

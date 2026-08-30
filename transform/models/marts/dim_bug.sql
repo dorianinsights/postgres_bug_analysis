@@ -6,7 +6,7 @@
 -- report day -> dim_date. Grain = bug_number. -> ../data/derived/dim_bug.csv
 SELECT
   ibo.bug_number,
-  {{ person_key('bre.reporter_email', 'bre.reporter_name') }} AS reporter_person_key,
+  pmp.person_key AS reporter_person_key,
   STRFTIME(ibo.reported_dt, '%Y%m%d')::INTEGER AS reported_date_key,
   ibo.reported_dt,
   ibo.subject,
@@ -26,6 +26,8 @@ SELECT
   cal.scheduled_release_dt AS earliest_ship_release_dt
 FROM {{ ref('int_bug_outcomes') }} AS ibo
 INNER JOIN {{ ref('int_bug_reporters') }} AS bre ON ibo.bug_number = bre.bug_number
+LEFT JOIN {{ ref('int_person_map') }} AS pmp
+  ON pmp.node_id = {{ person_node('bre.reporter_email', 'bre.reporter_name') }}
 LEFT JOIN {{ ref('thread_size_windows') }} AS tsw
   ON
     ibo.thread_message_cnt >= tsw.min_messages

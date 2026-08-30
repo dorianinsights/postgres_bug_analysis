@@ -21,7 +21,7 @@ WITH msg_bug AS (
 SELECT
   imt.list_name,
   imt.message_id,
-  {{ person_key('slm.author_email', 'slm.author_name') }} AS sender_person_key,
+  pmp.person_key AS sender_person_key,
   STRFTIME((imt.sent_ts AT TIME ZONE 'utc')::DATE, '%Y%m%d')::INTEGER AS sent_date_key,
   mbg.bug_number,
   imt.root_id,
@@ -34,3 +34,5 @@ INNER JOIN {{ ref('stg_list_messages') }} AS slm
   ON imt.list_name = slm.list_name AND imt.message_id = slm.message_id
 LEFT JOIN msg_bug AS mbg
   ON imt.message_id = mbg.message_id AND imt.list_name = 'pgsql-bugs'
+LEFT JOIN {{ ref('int_person_map') }} AS pmp
+  ON pmp.node_id = {{ person_node('slm.author_email', 'slm.author_name') }}

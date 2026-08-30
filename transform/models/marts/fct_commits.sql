@@ -1,8 +1,9 @@
 -- Commit-grain fact: one row per commit (per branch — a backpatch is its own
 -- commit). Foreign keys into dim_person (author and committer roles) and
 -- dim_date (commit day); measures are the representative diff size. Origin and
--- the plumbing/AI flags ride along as degenerate attributes. The person keys
--- are built with the same person_key() macro dim_person uses, so they join.
+-- the plumbing/AI flags ride along as degenerate attributes. Each person key is
+-- resolved by computing the identity node (person_node macro) and joining
+-- int_person_map, so it matches dim_person's connected-component resolution.
 -- Grain = (branch, commit_hash). -> ../data/derived/fct_commits.csv
 WITH file_stats AS (
   SELECT
@@ -17,8 +18,8 @@ WITH file_stats AS (
 SELECT
   gcm.branch,
   gcm.commit_hash,
-  {{ person_key('igc.patch_author_email', 'igc.patch_author_name') }} AS author_person_key,
-  {{ person_key('igc.committer_email', 'igc.committer_name') }} AS committer_person_key,
+  pmp_a.person_key AS author_person_key,
+  pmp_c.person_key AS committer_person_key,
   STRFTIME((gcm.commit_ts AT TIME ZONE 'utc')::DATE, '%Y%m%d')::INTEGER AS commit_date_key,
   (gcm.commit_ts AT TIME ZONE 'utc')::DATE AS commit_dt,
   org.origin,
@@ -34,3 +35,7 @@ INNER JOIN {{ ref('int_git_commits') }} AS igc
   ON gcm.branch = igc.branch AND gcm.commit_hash = igc.commit_hash
 LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
 LEFT JOIN file_stats AS fst ON gcm.commit_hash = fst.commit_hash
+LEFT JOIN {{ ref('int_person_map') }} AS pmp_a
+  ON pmp_a.node_id = {{ person_node('igc.patch_author_email', 'igc.patch_author_name') }}
+LEFT JOIN {{ ref('int_person_map') }} AS pmp_c
+  ON pmp_c.node_id = {{ person_node('igc.committer_email', 'igc.committer_name') }}
