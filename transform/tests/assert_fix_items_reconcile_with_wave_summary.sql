@@ -12,6 +12,6 @@ SELECT
   wsm.wave_dt,
   wsm.distinct_fix_cnt,
   COALESCE(pwv.fix_cnt, 0) AS fix_cnt
-FROM {{ ref('wave_summary') }} AS wsm
+FROM {{ ref('dim_release_wave') }} AS wsm
 LEFT JOIN per_wave AS pwv ON wsm.wave_dt = pwv.wave_dt
 WHERE wsm.distinct_fix_cnt != COALESCE(pwv.fix_cnt, 0)

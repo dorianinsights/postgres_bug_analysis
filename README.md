@@ -88,7 +88,6 @@ rules without re-scraping; one `.csv` per mart, same name):
 
 | File | Grain | Notes |
 |---|---|---|
-| `wave_summary.csv` | one same-day release wave | distinct fixes (deduped across branches), CVEs, security count, out-of-band + partial-window flags |
 | `wave_categories.csv` | (wave, category) | keyword-rule buckets from the `category_rules` seed; CVE / hardening checked first |
 | `wave_contributors.csv` | (wave, contributor) | credits parsed from the notes' trailing "(Name, Name)" lists, with first-seen wave |
 | `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
@@ -106,7 +105,7 @@ rules without re-scraping; one `.csv` per mart, same name):
 | `bridge_fix_bug.csv` | (fix, bug) | bridge for the fix<->bug many-to-many |
 | `dim_person.csv` | one person | the unified person/entity dimension: git patch authors, git committers, and list senders resolved (first-pass, on normalized email) to one row per person, with role flags and first/last-seen |
 | `dim_date.csv` | one calendar day | the date dimension spanning the corpus, keyed `YYYYMMDD` |
-| `dim_release_wave.csv` | one release wave | the wave dimension: scale (fixes/CVEs/security), flags, and wrap date |
+| `dim_release_wave.csv` | one release wave | the wave dimension (supersedes the retired wave_summary): scale (fixes/CVEs/security), flags, wrap date, and `cycle_key` -> `dim_release_cycle` |
 | `fct_commits.csv` | one commit (per branch) | the commit-grain fact: FKs into `dim_person` (author + committer) and `dim_date`, diff-size measures, origin + plumbing/AI flags |
 
 (The message-grain `fct_messages` mart has **no** CSV twin — one row per

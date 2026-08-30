@@ -20,7 +20,7 @@ queries:
     source: warehouse
     sql: |
       SELECT wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt
-      FROM wave_summary
+      FROM dim_release_wave
       ORDER BY 1 DESC
       LIMIT 1
 
@@ -153,7 +153,7 @@ queries:
         SELECT wave_dt,
                ROW_NUMBER() OVER (ORDER BY wave_dt) - 1 AS slot,
                distinct_fix_cnt
-        FROM wave_summary
+        FROM dim_release_wave
         WHERE NOT is_out_of_band AND NOT is_partial_window
       ),
       fit_all AS (
@@ -178,7 +178,7 @@ queries:
         SELECT wave_dt,
                ROW_NUMBER() OVER (ORDER BY wave_dt) - 1 AS slot,
                security_fix_cnt
-        FROM wave_summary
+        FROM dim_release_wave
         WHERE NOT is_out_of_band AND NOT is_partial_window
       ),
       fit_all AS (
@@ -223,7 +223,7 @@ queries:
     source: warehouse
     sql: |
       SELECT wave_dt, distinct_fix_cnt
-      FROM wave_summary
+      FROM dim_release_wave
       WHERE NOT is_out_of_band
       ORDER BY 1
 
@@ -242,7 +242,7 @@ queries:
     sql: |
       SELECT wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt,
              CASE WHEN is_out_of_band THEN 'yes' ELSE '' END AS is_out_of_band
-      FROM wave_summary
+      FROM dim_release_wave
       ORDER BY 1 DESC
 
 charts:
