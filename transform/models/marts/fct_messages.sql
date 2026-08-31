@@ -23,10 +23,7 @@ SELECT
   imt.message_id,
   pmp.person_key AS sender_dim_person_key,
   (imt.sent_ts AT TIME ZONE 'utc')::DATE AS sent_dt,
-  CASE
-    WHEN mbg.bug_number IS NOT null
-      THEN {{ dbt_utils.generate_surrogate_key(['mbg.bug_number']) }}
-  END AS dim_bug_key,
+  dbg.dim_bug_key,
   imt.root_id,
   imt.is_thread_start,
   imt.is_fix_linked,
@@ -38,6 +35,9 @@ INNER JOIN {{ ref('stg_list_messages') }} AS slm
   ON imt.list_name = slm.list_name AND imt.message_id = slm.message_id
 LEFT JOIN msg_bug AS mbg
   ON imt.message_id = mbg.message_id AND imt.list_name = 'pgsql-bugs'
+-- resolve dim_bug_key from the dimension (defined once, there) rather than
+-- recomputing the hash; NULL when the message names no corpus bug
+LEFT JOIN {{ ref('dim_bug') }} AS dbg ON mbg.bug_number = dbg.bug_number
 LEFT JOIN {{ ref('int_person_map') }} AS pmp
   ON pmp.node_id = {{ person_node('slm.author_email', 'slm.author_name') }}
 -- the release a thread accrues toward (NULL for pre-corpus targets, which have

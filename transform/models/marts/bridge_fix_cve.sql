@@ -3,6 +3,7 @@
 -- per-CVE rollups stay correct (fct_fixes keeps only the worst severity).
 -- Grain = (item_ord, dim_cve_key).
 SELECT
-  item_ord,
-  {{ dbt_utils.generate_surrogate_key(['cve_id']) }} AS dim_cve_key
-FROM {{ ref('int_fix_cves') }}
+  fcv.item_ord,
+  dcv.dim_cve_key
+FROM {{ ref('int_fix_cves') }} AS fcv
+INNER JOIN {{ ref('dim_cve') }} AS dcv ON fcv.cve_id = dcv.cve_id

@@ -3,6 +3,7 @@
 -- many-to-many between fct_fixes and dim_bug. Grain = (item_ord, dim_bug_key).
 -- -> ../data/derived/bridge_fix_bug.csv
 SELECT
-  item_ord,
-  {{ dbt_utils.generate_surrogate_key(['bug_number']) }} AS dim_bug_key
-FROM {{ ref('int_fix_bug_links') }}
+  fbl.item_ord,
+  dbg.dim_bug_key
+FROM {{ ref('int_fix_bug_links') }} AS fbl
+INNER JOIN {{ ref('dim_bug') }} AS dbg ON fbl.bug_number = dbg.bug_number

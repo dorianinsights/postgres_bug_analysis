@@ -2,7 +2,8 @@
 -- Change size (int_fix_changes), worst CVE severity denormalized from
 -- int_fix_severity, and the bug linkage from int_fix_bug_links, with a
 -- dim_release_key FK into dim_release and a dim_version_key FK into dim_version
--- (both generate_surrogate_key hashes). The many-to-many CVE and bug detail lives
+-- (both resolved by joining the dimension on its natural key, so the surrogate
+-- is defined only in the dim). The many-to-many CVE and bug detail lives
 -- in bridge_fix_cve / bridge_fix_bug; here we keep the worst severity and the
 -- primary (fastest-resolved) bug for convenient single-row analysis.
 -- Grain = item_ord. -> ../data/derived/fct_fixes.csv
@@ -37,9 +38,9 @@ primary_bug AS (
 
 SELECT
   chg.item_ord,
-  {{ dbt_utils.generate_surrogate_key(['chg.wave_dt']) }} AS dim_release_key,
+  drl.dim_release_key,
   chg.wave_dt,
-  {{ dbt_utils.generate_surrogate_key(['chg.version']) }} AS dim_version_key,
+  dvr.dim_version_key,
   chg.item_index,
   reps.summary,
   reps.full_text,
@@ -61,10 +62,7 @@ SELECT
   sev.max_cvss_base_score,
   sev.severity_band,
   COALESCE(bag.bug_link_cnt, 0) AS bug_link_cnt,
-  CASE
-    WHEN pbg.primary_bug_number IS NOT null
-      THEN {{ dbt_utils.generate_surrogate_key(['pbg.primary_bug_number']) }}
-  END AS primary_dim_bug_key,
+  dbg.dim_bug_key AS primary_dim_bug_key,
   bag.days_to_fix_min
 FROM {{ ref('int_fix_changes') }} AS chg
 INNER JOIN group_sizes AS grp ON chg.item_ord = grp.group_ord
@@ -75,3 +73,8 @@ LEFT JOIN {{ ref('int_fix_severity') }} AS sev ON chg.item_ord = sev.item_ord
 LEFT JOIN {{ ref('int_fix_origins') }} AS fio ON chg.item_ord = fio.group_ord
 LEFT JOIN bug_agg AS bag ON chg.item_ord = bag.item_ord
 LEFT JOIN primary_bug AS pbg ON chg.item_ord = pbg.item_ord
+-- resolve the surrogate keys from the dimensions (defined once, there) rather
+-- than recomputing the hashes here
+LEFT JOIN {{ ref('dim_release') }} AS drl ON chg.wave_dt = drl.release_dt
+LEFT JOIN {{ ref('dim_version') }} AS dvr ON chg.version = dvr.version
+LEFT JOIN {{ ref('dim_bug') }} AS dbg ON pbg.primary_bug_number = dbg.bug_number

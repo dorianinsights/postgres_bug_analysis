@@ -13,7 +13,7 @@ WITH item_counts AS (
 )
 
 SELECT
-  {{ dbt_utils.generate_surrogate_key(['rel.version']) }} AS dim_version_key,
+  dvr.dim_version_key,
   cnt.item_cnt
-FROM {{ ref('int_releases') }} AS rel
-INNER JOIN item_counts AS cnt ON rel.version = cnt.version
+FROM item_counts AS cnt
+INNER JOIN {{ ref('dim_version') }} AS dvr ON cnt.version = dvr.version
