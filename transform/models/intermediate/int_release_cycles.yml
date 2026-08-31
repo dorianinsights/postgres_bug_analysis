@@ -28,3 +28,5 @@ models:
         tests: [not_null]
       - name: full_fix_cnt
         tests: [not_null]
+      - name: first_window_fix_cnt
+        tests: [not_null]

@@ -8,9 +8,9 @@ models:
       dim_release_cycle (all cycles), and fct_release_cycles (the cycle signals,
       which were a fact 1:1 with this dimension). status = shipped/open/future;
       shipped measures are NULL for non-shipped rows, and the cycle signals
-      (cycle_start_dt, window_days, early_*_cnt, full_fix_cnt) are non-NULL only
-      for the started scheduled cycles. A wave is a shipped cycle. Grain =
-      release_key (the release day's YYYYMMDD).
+      (cycle_start_dt, window_days, early_*_cnt, full_fix_cnt, first_window_fix_cnt)
+      are non-NULL only for the started scheduled cycles. A wave is a shipped
+      cycle. Grain = release_key (the release day's YYYYMMDD).
     tests:
       # cycle signals are present for exactly the started scheduled cycles
       # (not out-of-band waves, not the not-yet-started future release)
@@ -50,3 +50,9 @@ models:
         description: >
           The cycle's start (the PRIOR quarter's wrap, ~3 months before ship),
           distinct from this release's own wrap_dt. NULL for non-cycle rows.
+      - name: first_window_fix_cnt
+        description: >
+          Distinct backpatched fixes in the FIXED first-N-day window after the
+          wrap (var seasonality_window_days) -- the stable metric for the
+          quarterly-seasonality view, vs early_fix_cnt's moving age window (used
+          by the projection). NULL for non-cycle rows.

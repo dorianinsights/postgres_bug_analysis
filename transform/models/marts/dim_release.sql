@@ -100,6 +100,10 @@ SELECT
   irc.early_report_cnt,
   irc.early_message_cnt,
   irc.early_fix_cnt,
-  irc.full_fix_cnt
+  irc.full_fix_cnt,
+  -- first_window_fix_cnt is the FIXED-window (seasonality_window_days) early
+  -- count for the stable quarterly-seasonality view, vs early_fix_cnt's moving
+  -- age window used by the projection
+  irc.first_window_fix_cnt
 FROM combined AS cmb
 LEFT JOIN {{ ref('int_release_cycles') }} AS irc ON cmb.release_dt = irc.ships_at_dt

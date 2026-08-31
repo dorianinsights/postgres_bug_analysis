@@ -116,12 +116,19 @@ queries:
       the fixed first-N-day window after the wrap vs the full cycle.
     source: warehouse
     sql: |
-      SELECT release_month, release_quarter, 'first ' || MIN(early_window_days) || ' days' AS series, ROUND(AVG(early_fix_cnt), 1) AS patches
-      FROM release_cycle_seasonality
+      WITH cyc AS (
+        SELECT STRFTIME(release_dt, '%b') AS release_month, QUARTER(release_dt) AS release_quarter,
+               first_window_fix_cnt, full_fix_cnt
+        FROM dim_release
+        WHERE cycle_start_dt IS NOT NULL AND status = 'shipped'
+          AND NOT is_out_of_band AND NOT is_partial_window
+      )
+      SELECT release_month, release_quarter, 'first 20 days' AS series, ROUND(AVG(first_window_fix_cnt), 1) AS patches
+      FROM cyc
       GROUP BY release_month, release_quarter
       UNION ALL
       SELECT release_month, release_quarter, 'full cycle' AS series, ROUND(AVG(full_fix_cnt), 1) AS patches
-      FROM release_cycle_seasonality
+      FROM cyc
       GROUP BY release_month, release_quarter
       ORDER BY release_quarter, series
 
@@ -131,8 +138,11 @@ queries:
       that land in the first N days after the wrap.
     source: warehouse
     sql: |
-      SELECT release_month, release_quarter, ROUND(AVG(early_fix_share), 4) AS early_share
-      FROM release_cycle_seasonality
+      SELECT STRFTIME(release_dt, '%b') AS release_month, QUARTER(release_dt) AS release_quarter,
+             ROUND(AVG(first_window_fix_cnt * 1.0 / full_fix_cnt), 4) AS early_share
+      FROM dim_release
+      WHERE cycle_start_dt IS NOT NULL AND status = 'shipped'
+        AND NOT is_out_of_band AND NOT is_partial_window
       GROUP BY release_month, release_quarter
       ORDER BY release_quarter
 

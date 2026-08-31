@@ -4,7 +4,9 @@
 -- cycle (closed + the open one); joins to dim_release on ships_at_dt =
 -- release_dt. Carries the three early signals over the open cycle's age-window
 -- (for the projections), the like-for-like pace (early vs full distinct
--- backpatched fixes), and the window itself. The shipped fix count is NOT here
+-- backpatched fixes), the window itself, and first_window_fix_cnt over a FIXED
+-- window (var seasonality_window_days) for the stable quarterly-seasonality
+-- view. The shipped fix count is NOT here
 -- -- it is dim_release.distinct_fix_cnt on the same row. All windows are
 -- half-open [start, start+N) at the open cycle's age N; the full window runs to
 -- the next cycle's wrap (or today). cycle_start_dt is the cycle's beginning
@@ -71,6 +73,21 @@ full_fixes AS (
       cyc.cycle_start_dt < bpf.commit_dt
       AND LEAST(COALESCE(cyc.next_cycle_start_dt, CURRENT_DATE), CURRENT_DATE) >= bpf.commit_dt
   GROUP BY ALL
+),
+
+-- the FIXED first-N-day window (var seasonality_window_days) for the quarterly
+-- seasonality view -- stable across builds, unlike the age-window early_fix_cnt
+-- above, which drifts out to the full cycle by release day
+first_window_fixes AS (
+  SELECT
+    cyc.cycle_start_dt,
+    COUNT(DISTINCT bpf.fix_key) AS first_window_fix_cnt
+  FROM cycles AS cyc
+  INNER JOIN {{ ref('int_backpatch_fixes') }} AS bpf
+    ON
+      cyc.cycle_start_dt < bpf.commit_dt
+      AND cyc.cycle_start_dt + {{ var('seasonality_window_days') }} >= bpf.commit_dt
+  GROUP BY ALL
 )
 
 SELECT
@@ -80,12 +97,14 @@ SELECT
   COALESCE(erp.early_report_cnt, 0) AS early_report_cnt,
   COALESCE(ems.early_message_cnt, 0) AS early_message_cnt,
   COALESCE(efx.early_fix_cnt, 0) AS early_fix_cnt,
-  COALESCE(ffx.full_fix_cnt, 0) AS full_fix_cnt
+  COALESCE(ffx.full_fix_cnt, 0) AS full_fix_cnt,
+  COALESCE(fwf.first_window_fix_cnt, 0) AS first_window_fix_cnt
 FROM cycles AS cyc
 LEFT JOIN early_reports AS erp ON cyc.cycle_start_dt = erp.cycle_start_dt
 LEFT JOIN early_messages AS ems ON cyc.cycle_start_dt = ems.cycle_start_dt
 LEFT JOIN early_fixes AS efx ON cyc.cycle_start_dt = efx.cycle_start_dt
 LEFT JOIN full_fixes AS ffx ON cyc.cycle_start_dt = ffx.cycle_start_dt
+LEFT JOIN first_window_fixes AS fwf ON cyc.cycle_start_dt = fwf.cycle_start_dt
 -- started cycles only, and only those shipping a corpus release (or still open)
 -- — cycles shipping a pre-corpus scheduled date have no wave and are noise
 WHERE
