@@ -1,0 +1,14 @@
+# Keep `sqlfluff lint` (run anywhere in the repo) focused on OUR SQL. Skip:
+#  - the installed dbt packages: they ship their own deprecated .sqlfluff
+#    configs (the tab_space_size / max_line_length / indent_unit warnings) and
+#    integration-test models that aren't part of this dbt project ("... was not
+#    found in dbt project"), and they're vendored, not ours to lint;
+#  - dbt's build artifacts (compiled SQL, run logs);
+#  - the Python venv, which vendors dbt-core's own global_project macros
+#    (site-packages/dbt/include/...) — thousands of .sql files, not ours.
+# The per-edit hooks and the pre-commit gate lint explicit file paths under
+# transform/models|tests|macros, so none of this affects them.
+venv/
+transform/dbt_packages/
+transform/target/
+transform/logs/
