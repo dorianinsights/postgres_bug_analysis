@@ -1,66 +1,45 @@
--- Contributor credits parsed from each representative item's trailing
--- "(Name, Name)" list. A candidate list is rejected wholesale when any part
--- looks like prose rather than a name (over 40 chars, or contains a digit).
--- is_first_wave marks a contributor's debut, except in the corpus's first
--- wave (everyone is trivially "new" there).
-WITH extracted AS (
+-- (release-wave, contributor) credit counts, aggregated from the
+-- fix<->contributor bridge joined to the fix-grain star (the "(Name, Name)"
+-- parse now lives in int_fix_contributors, not inline here). Conforms to
+-- dim_release via release_key. is_first_wave marks a contributor's debut, except
+-- in the corpus's first wave (everyone is trivially "new" there).
+-- Grain = (release_key, contributor).
+WITH credits AS (
   SELECT
-    wave_dt,
-    REGEXP_EXTRACT(summary, '\(([^()]{2,200})\)\s*(?:§+\s*)*$', 1) AS credit_blob
-  FROM {{ ref('int_fix_reps') }}
-),
-
-name_lists AS (
-  SELECT
-    wave_dt,
-    LIST_TRANSFORM(STRING_SPLIT(credit_blob, ','), part -> TRIM(part)) AS name_list
-  FROM extracted
-  WHERE credit_blob != ''
-),
-
-valid_lists AS (
-  SELECT
-    wave_dt,
-    name_list
-  FROM name_lists
-  WHERE LEN(LIST_FILTER(name_list, part -> LENGTH(part) > 40 OR REGEXP_MATCHES(part, '\d'))) = 0
-),
-
-unnested AS (
-  SELECT
-    wave_dt,
-    UNNEST(name_list) AS contributor
-  FROM valid_lists
-),
-
-credits AS (
-  SELECT
-    wave_dt,
-    contributor,
+    fix.wave_key AS release_key,
+    fix.wave_dt AS release_dt,
+    fix.is_out_of_band,
+    bfc.contributor,
     COUNT(*) AS credit_cnt
-  FROM unnested
-  WHERE contributor != ''
+  FROM {{ ref('fct_fixes') }} AS fix
+  INNER JOIN {{ ref('bridge_fix_contributor') }} AS bfc ON fix.item_ord = bfc.item_ord
   GROUP BY ALL
 ),
 
 first_seen AS (
   SELECT
     contributor,
-    MIN(wave_dt) AS first_seen_wave_dt
+    MIN(release_dt) AS first_seen_release_dt
   FROM credits
   GROUP BY ALL
+),
+
+first_wave AS (
+  SELECT MIN(release_dt) AS release_dt
+  FROM {{ ref('dim_release') }}
+  WHERE status = 'shipped'
 )
 
 SELECT
-  crd.wave_dt,
+  crd.release_key,
+  crd.release_dt,
   crd.contributor,
   crd.credit_cnt,
-  fst.first_seen_wave_dt,
+  fst.first_seen_release_dt,
   (
-    fst.first_seen_wave_dt = crd.wave_dt
-    AND crd.wave_dt != (SELECT MIN(wvs.wave_dt) FROM {{ ref('int_waves') }} AS wvs)
+    fst.first_seen_release_dt = crd.release_dt
+    AND crd.release_dt != (SELECT fwv.release_dt FROM first_wave AS fwv)
   ) AS is_first_wave,
-  waves.is_out_of_band
+  crd.is_out_of_band
 FROM credits AS crd
 INNER JOIN first_seen AS fst ON crd.contributor = fst.contributor
-INNER JOIN {{ ref('int_waves') }} AS waves ON crd.wave_dt = waves.wave_dt

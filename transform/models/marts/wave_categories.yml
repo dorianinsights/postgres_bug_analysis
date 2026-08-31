@@ -3,14 +3,23 @@ version: 2
 models:
   - name: wave_categories
     description: >
-      Tidy (wave, category) fix counts -> ../data/derived/wave_categories.csv.
+      Tidy (release-wave, category) fix counts -> ../data/derived/wave_categories.csv,
+      aggregated from fct_fixes and conformed to dim_release via release_key.
       Only categories present in a wave are written, so fix_cnt >= 1.
+      Grain = (release_key, category).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [wave_dt, category]
+            combination_of_columns: [release_key, category]
     columns:
-      - name: wave_dt
+      - name: release_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_release')
+                field: release_key
+      - name: release_dt
         tests:
           - not_null
           - dbt_utils.accepted_range:

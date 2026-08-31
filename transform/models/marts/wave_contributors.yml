@@ -3,19 +3,27 @@ version: 2
 models:
   - name: wave_contributors
     description: >
-      Tidy (wave, contributor) credit counts with each name's first-seen
-      wave -> ../data/derived/wave_contributors.csv.
+      Tidy (release-wave, contributor) credit counts with each name's first-seen
+      wave -> ../data/derived/wave_contributors.csv, aggregated from the
+      fix<->contributor bridge and conformed to dim_release via release_key.
+      Grain = (release_key, contributor).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [wave_dt, contributor]
-      # A contributor's first-seen wave can never postdate a wave they
-      # appear in.
+            combination_of_columns: [release_key, contributor]
+      # A contributor's first-seen wave can never postdate a wave they appear in.
       - dbt_utils.expression_is_true:
           arguments:
-            expression: first_seen_wave_dt <= wave_dt
+            expression: first_seen_release_dt <= release_dt
     columns:
-      - name: wave_dt
+      - name: release_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_release')
+                field: release_key
+      - name: release_dt
         tests:
           - not_null
           - dbt_utils.accepted_range:
@@ -30,11 +38,9 @@ models:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: first_seen_wave_dt
+      - name: first_seen_release_dt
         tests: [not_null]
       - name: is_first_wave
-        tests:
-          - not_null
+        tests: [not_null]
       - name: is_out_of_band
-        tests:
-          - not_null
+        tests: [not_null]

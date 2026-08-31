@@ -1,11 +1,13 @@
--- Tidy (wave, category) fix counts; only categories present in the wave.
+-- Tidy (release-wave, category) distinct-fix counts, aggregated straight from
+-- the fix-grain star (a fix has exactly one category, so no bridge needed).
+-- Conforms to dim_release via release_key. Only categories present in a wave
+-- appear, so fix_cnt >= 1. Grain = (release_key, category).
 SELECT
-  reps.wave_dt,
-  reps.category,
-  cats.category_order,
-  waves.is_out_of_band,
+  fix.wave_key AS release_key,
+  fix.wave_dt AS release_dt,
+  fix.category,
+  fix.category_order,
+  fix.is_out_of_band,
   COUNT(*) AS fix_cnt
-FROM {{ ref('int_fix_reps') }} AS reps
-INNER JOIN {{ ref('categories') }} AS cats ON reps.category = cats.category
-INNER JOIN {{ ref('int_waves') }} AS waves ON reps.wave_dt = waves.wave_dt
+FROM {{ ref('fct_fixes') }} AS fix
 GROUP BY ALL

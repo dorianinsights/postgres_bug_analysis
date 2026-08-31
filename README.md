@@ -83,12 +83,12 @@ by the transform's on-run-end hook — rerun `dbt build` to change analysis
 rules without re-scraping; one `.csv` per mart, same name). Only marts under
 `var('derived_csv_max_rows')` (1000) rows get a twin — the heavier ones
 (`fct_messages`, `fct_commits`, `dim_person`, `dim_date`, `dim_bug`,
-`fct_fixes`) live only as typed tables in the warehouse:
+`fct_fixes`, `bridge_fix_contributor`) live only as typed tables in the warehouse:
 
 | File | Grain | Notes |
 |---|---|---|
-| `wave_categories.csv` | (wave, category) | keyword-rule buckets from the `category_rules` seed; CVE / hardening checked first |
-| `wave_contributors.csv` | (wave, contributor) | credits parsed from the notes' trailing "(Name, Name)" lists, with first-seen wave |
+| `wave_categories.csv` | (release_key, category) | distinct-fix counts per category, aggregated from `fct_fixes`; conformed to `dim_release` via `release_key` |
+| `wave_contributors.csv` | (release_key, contributor) | credit counts via `bridge_fix_contributor` (the notes' "(Name, Name)" parse lives in `int_fix_contributors`), with first-seen wave; conformed to `dim_release` |
 | `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
 | `category_vs_subsystem.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
 | `bug_reports_monthly.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
@@ -181,8 +181,10 @@ every object's name. Layers:
     facts `fct_commits` (commit grain), `fct_messages` (message grain), and
     `fct_fixes` (fix grain). The cycle grain is not a separate fact: a cycle is
     a release earlier in its life, so its signals ride on `dim_release`. The
-    fix<->CVE and fix<->bug many-to-manys go through `bridge_fix_cve` /
-    `bridge_fix_bug`. The period aggregates (`bug_reports_monthly`,
+    fix<->CVE, fix<->bug, and fix<->contributor many-to-manys go through
+    `bridge_fix_cve` / `bridge_fix_bug` / `bridge_fix_contributor` (the last
+    fed by `int_fix_contributors`); `wave_categories` and `wave_contributors`
+    are conformed aggregates of `fct_fixes` (+ the contributor bridge). The period aggregates (`bug_reports_monthly`,
     `list_traffic_monthly`/`weekly`, `origin_activity_monthly`) are aggregate
     facts rolled up from those grains and conformed on `dim_date` via a
     month/week date key. Referential integrity is enforced by `relationships`

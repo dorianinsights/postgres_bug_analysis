@@ -2,10 +2,10 @@
 -- equal wave_summary.distinct_fix_cnt.
 WITH per_wave AS (
   SELECT
-    wave_dt,
+    release_key,
     SUM(fix_cnt) AS fix_cnt
   FROM {{ ref('wave_categories') }}
-  GROUP BY wave_dt
+  GROUP BY release_key
 )
 
 SELECT
@@ -13,5 +13,5 @@ SELECT
   wsm.distinct_fix_cnt,
   COALESCE(pwv.fix_cnt, 0) AS fix_cnt
 FROM {{ ref('dim_release') }} AS wsm
-LEFT JOIN per_wave AS pwv ON wsm.release_dt = pwv.wave_dt
+LEFT JOIN per_wave AS pwv ON wsm.release_key = pwv.release_key
 WHERE wsm.status = 'shipped' AND wsm.distinct_fix_cnt != COALESCE(pwv.fix_cnt, 0)
