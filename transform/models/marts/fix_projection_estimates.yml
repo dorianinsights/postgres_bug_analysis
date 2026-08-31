@@ -5,12 +5,13 @@ models:
     description: >
       Simple linear estimates of the upcoming minor's fix count ->
       ../data/derived/fix_projection_estimates.csv: each early signal
-      scaled by its historical median ratio, plus an equal-weight blend.
+      scaled by its historical median ratio, an equal-weight blend, and a
+      seasonal baseline (the open cycle's quarter's median shipped count).
       Grain = estimator.
     tests:
       - dbt_expectations.expect_table_row_count_to_equal:
           arguments:
-            value: 4
+            value: 5
     columns:
       - name: estimator
         tests: [unique, not_null]

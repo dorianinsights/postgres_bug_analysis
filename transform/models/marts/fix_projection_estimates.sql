@@ -1,12 +1,13 @@
--- Simple linear estimates for the upcoming minor's fix count: the
--- current cycle's three early signals scaled by each signal's historical
--- median shipped-per-early ratio (medians over fix_projection_cycles,
--- which replays every closed cycle at today's cycle age), plus an
--- equal-weight blend. Deliberately naive — the point is a transparent,
--- explainable band, not a fitted model. The demand-side estimators
--- (reports, messages) assume the historical signal->fix conversion; the
--- supply-side estimator (committed pace) is what caught the Aug 2026
--- surge, where fixes grew without proportional inbound reports.
+-- Simple linear estimates for the upcoming minor's fix count: the current
+-- cycle's three early signals scaled by each signal's historical median
+-- shipped-per-early ratio (medians over the closed cycles in dim_release, each
+-- at today's cycle age), plus an equal-weight blend and a seasonal baseline --
+-- the open cycle's own quarter's median shipped count. Deliberately naive: the
+-- point is a transparent, explainable band, not a fitted model. The demand-side
+-- estimators (reports, messages) assume the historical signal->fix conversion;
+-- the supply-side estimator (committed pace) is what caught the Aug 2026 surge;
+-- the seasonal baseline is the floor those surge estimators can overshoot --
+-- e.g. November has shipped ~70 fixes every year regardless of early activity.
 WITH ships AS (
   SELECT MIN(scheduled_release_dt) AS ships_at_dt
   FROM {{ ref('int_release_calendar') }}
@@ -38,6 +39,20 @@ current_signals AS (
     early_fix_cnt
   FROM {{ ref('dim_release') }}
   WHERE status = 'open'
+),
+
+-- seasonal baseline: the median shipped fix count of past cycles in the OPEN
+-- cycle's own quarter (Nov ships ~70 every year, steady regardless of the
+-- early-commit swings the signal estimators react to) — the band's floor
+seasonal AS (
+  SELECT MEDIAN(drl.distinct_fix_cnt) AS baseline_fix_cnt
+  FROM {{ ref('dim_release') }} AS drl, ships AS shp
+  WHERE
+    drl.cycle_start_dt IS NOT null
+    AND drl.status = 'shipped'
+    AND NOT drl.is_out_of_band
+    AND NOT drl.is_partial_window
+    AND QUARTER(drl.release_dt) = QUARTER(shp.ships_at_dt)
 ),
 
 estimates AS (
@@ -79,3 +94,11 @@ SELECT
   ROUND(AVG(est.projected_fix_cnt))::INTEGER AS projected_fix_cnt
 FROM estimates AS est, ships AS shp
 GROUP BY ALL
+UNION ALL
+SELECT
+  shp.ships_at_dt,
+  'seasonal baseline (' || STRFTIME(shp.ships_at_dt, '%b') || ' median)' AS estimator,
+  5 AS estimator_order,
+  null AS signal_value,
+  ROUND(sea.baseline_fix_cnt)::INTEGER AS projected_fix_cnt
+FROM seasonal AS sea, ships AS shp
