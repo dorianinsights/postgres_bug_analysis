@@ -1,10 +1,3 @@
-# Git pre-commit gate: ruff format + ruff check + pyright on staged Python
-# files, and sqlfluff lint on staged .sql files. Mirrors property_analysis:
-# `repo: local` with the repo venv's
-# binaries (language: system) so the gate runs the EXACT tool versions pinned
-# in requirements.txt against pyproject.toml's config — no second pinned
-# version to drift.
-#
 # Order matters and mirrors .claude/hooks/ruff-lint.sh: format first (it
 # auto-fixes; pre-commit fails the commit when files are modified — re-stage
 # and retry), then check (report-only; fix findings or noqa deliberately),
@@ -30,19 +23,12 @@ repos:
         language: system
         types: [python]
 
-      # Type check (blocking). Config in pyproject.toml [tool.pyright]:
-      # standard mode everywhere. Only staged files are passed, but pyright
-      # still loads the project config and dependency graph.
       - id: pyright
         name: pyright
         entry: ./venv/bin/pyright
         language: system
         types: [python]
 
-      # SQL style for the dbt models (duckdb dialect + jinja templater;
-      # config in the repo-root .sqlfluff). Report-only lint gate — blocks
-      # the commit on violations; fix them (or run `./venv/bin/sqlfluff fix`).
-      # Matches the per-edit .claude/hooks/sqlfluff-lint.sh.
       - id: sqlfluff-lint
         name: sqlfluff lint
         entry: ./venv/bin/sqlfluff lint

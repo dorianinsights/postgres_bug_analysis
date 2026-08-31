@@ -8,8 +8,7 @@ per-session memories, which aren't committed to git.)
 ## Commits
 - **Never `git commit` or push without asking first and getting explicit
   confirmation.** Finish and verify the work (dbt build / tests / lint), leave
-  it uncommitted, and propose a commit message — then wait. (Standing rule as of
-  2026-08-29; supersedes any earlier "commit the outstanding work" requests.)
+  it uncommitted, and propose a commit message — then wait.
 - Commit-message trailers this repo uses are set by the environment; keep them.
 
 ## Operational gotchas
@@ -20,7 +19,11 @@ per-session memories, which aren't committed to git.)
   to the version that wrote the file — currently 1.5.5) and **from `transform/`**
   (`cd transform && harlequin -r transform.duckdb`) — see the cwd gotcha below.
   Do **not** kill the user's live Harlequin — ask them to quit it; only
-  terminate a leftover process they've confirmed is closed.
+  terminate a leftover process they've confirmed is closed. Note the sqlfluff
+  lint now uses the **dbt templater** (so package macros like
+  `dbt_date.get_base_dates` expand) — it compiles the project per run, so a
+  write-locked DuckDB breaks *linting* too, not just builds. `requirements.txt`
+  pins `sqlfluff-templater-dbt` in lockstep with `sqlfluff`.
 - A full `dbt build` is ~4 min (re-reads the git clone + mbox cache). Use
   `dbt build --select <models>` while iterating; do one full build to confirm.
 - **Edit `.sql`/`.py` files with the Edit/Write tools — never `sed -i`, a `>`
@@ -78,13 +81,3 @@ per-session memories, which aren't committed to git.)
   `fct_fixes.wave_key` conforms to `dim_release.release_key`.
   `dim_release.release_dt` is the release day — the changelog aliases it back to
   `wave_dt` for its charts.
-
-## Known future work (not done)
-- **Person alias seed.** The automatic name/email merge can't unify identities
-  that use a different name AND a different email with no overlap. A curated
-  `seeds/person_aliases.csv` (auto-seeded from collisions, then hand-reviewed)
-  would catch those.
-- Bug-reporter display names are occasionally junk (~19 of 1,952) because
-  reporters typed non-name text into the form's "Logged by:" field — a
-  source-data quality issue, not a parse bug. Identity is email-keyed, so
-  resolution is unaffected; only the `canonical_name` is off for those.

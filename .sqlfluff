@@ -1,19 +1,12 @@
 [sqlfluff]
 dialect = duckdb
-# jinja (not dbt) templater: sqlfluff ships dummy ref/source/config builtins,
-# which is all these models need — no dbt project compile per lint.
-templater = jinja
+templater = dbt
 max_line_length = 400
-# ST06 (column order) excluded; ST07 (structure.using) deliberately stays
-# ENABLED — USING joins are forbidden, always spell out the join type and
-# ON <left>.<col> = <right>.<col>.
 exclude_rules = ST06
 
-# Load the project macros so calls like {{ person_key(...) }} expand during
-# lint (the built-in dummy ref/source/config cover the rest). Pure-SQL
-# macros only — no dbt compile.
-[sqlfluff:templater:jinja]
-load_macros_from_path = transform/macros
+[sqlfluff:templater:dbt]
+project_dir = transform
+profiles_dir = transform
 
 [sqlfluff:rules:layout.long_lines]
 ignore_comment_lines = True

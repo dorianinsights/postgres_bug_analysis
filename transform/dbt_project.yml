@@ -38,6 +38,17 @@ vars:
   test_floor_major: 10
   test_floor_release_dt: "'2017-10-01'"
   test_floor_git_ts: "'2016-10-01'"
+  # -- Calendar spine bounds for dim_date. FIXED on purpose so the date
+  # dimension builds without depending on any other model: the spine comes from
+  # dbt_date.get_base_dates(start, end) over these literals. Unlike the
+  # test_floor_* values above these are BARE dates (no embedded quotes) --
+  # get_base_dates wraps them in its own cast('...'). end_date is EXCLUSIVE
+  # (dbt_date's spine is [start, end)). start sits safely before the earliest
+  # corpus row; end runs a couple years past the last scheduled wave.
+  # assert_dim_date_covers_corpus fails the build if the corpus ever outgrows
+  # this span -- widen the var and rebuild when it does.
+  date_spine_start: "2021-09-01"
+  date_spine_end: "2029-01-01"
   # -- Build parameter (not an analysis knob). The on-run-end audit exporter
   # (macros/export_marts_csv.sql) writes a diffable data/derived/<mart>.csv
   # only for marts with FEWER than this many rows: bigger tables blow past

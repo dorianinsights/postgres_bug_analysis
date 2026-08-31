@@ -1,6 +1,6 @@
 #!/bin/bash
 # PostToolUse hook for Edit|Write: lint .sql files with sqlfluff (duckdb
-# dialect + jinja templater, config in the repo-root .sqlfluff) from the
+# dialect + dbt templater, config in the repo-root .sqlfluff) from the
 # project venv. Blocking (exit 2) — surfaces violations back to Claude on
 # stderr so the edit must be fixed before continuing; stays silent when the
 # file is clean or isn't SQL.

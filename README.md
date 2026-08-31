@@ -258,8 +258,11 @@ wrote CRLF line endings, DuckDB writes LF).
 
 Repo-wide (config in the repo-root `pyproject.toml`, mirroring
 property_analysis): `ruff` (format + lint) and `pyright` (strict mode, all files).
-SQL style for the dbt models is linted by `sqlfluff` (duckdb dialect + jinja
-templater; config in the repo-root `.sqlfluff`); correctness of the models is
+SQL style for the dbt models is linted by `sqlfluff` (duckdb dialect + the
+**dbt templater**, so package macros like `dbt_date.get_base_dates` expand to
+real SQL during lint — it compiles the `transform/` project per run, which
+needs the DuckDB file unlocked, same as a build; config in the repo-root
+`.sqlfluff`); correctness of the models is
 covered by the dbt tests themselves. All three are enforced twice — per-edit
 via `.claude/hooks/` (`ruff-lint.sh`, `pyright-check.sh`, `sqlfluff-lint.sh`)
 and at commit time by the blocking pre-commit gate (`.pre-commit-config.yaml`;
