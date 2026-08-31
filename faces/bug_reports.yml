@@ -105,7 +105,8 @@ queries:
       SELECT
         report_month_dt AS report_month,
         'acted upon (%)' AS series,
-        acted_upon_pct AS acted_upon_pct
+        -- as a 0-1 fraction so the y-axis can use a percent format (below)
+        acted_upon_pct / 100.0 AS acted_upon_pct
       FROM bug_reports_monthly
       ORDER BY 1
 
@@ -219,6 +220,7 @@ charts:
     x: report_month
     y: acted_upon_pct
     color: series
+    style: { axis_y: { labels: { format: ".0%" } } }
     height: 340
 
   yearly_outcomes:

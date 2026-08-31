@@ -80,20 +80,13 @@ queries:
     description: The out-of-band emergency waves' fixes by category.
     source: warehouse
     sql: |
-      SELECT wave_dt, category, category_order, fix_cnt
+      -- categorical x: an ISO-prefixed label sorts chronologically, and the
+      -- suffix keeps dct from date-parsing it onto a (sparse) temporal axis —
+      -- only 3 emergencies, so adjacent labelled bars beat 3 scattered ones
+      SELECT STRFTIME(wave_dt, '%Y-%m') || ' re-release' AS wave, category, category_order, fix_cnt
       FROM wave_categories
       WHERE is_out_of_band
       ORDER BY 1, 3
-
-  oob_pad:
-    description: Invisible x-domain padding points for the out-of-band bar chart.
-    source: warehouse
-    sql: |
-      SELECT MIN(wave_dt) - 45 AS wave_dt, 'Crash & corruption' AS category, 0 AS pad_zero
-      FROM wave_categories WHERE is_out_of_band
-      UNION ALL
-      SELECT MAX(wave_dt) + 45, 'Crash & corruption', 0
-      FROM wave_categories WHERE is_out_of_band
 
   security_pad:
     description: Invisible x-domain padding points for the security bar chart.
@@ -349,18 +342,11 @@ charts:
     query: oob_categories
     title: "The out-of-band emergency waves"
     subtitle: "Re-releases shipped one or two weeks after a scheduled wave"
-    x: wave_dt
+    x: wave
     y: fix_cnt
     color: category
     style: { stack: zero }
     height: 340
-    layers:
-      - type: scatter
-        query: oob_pad
-        x: wave_dt
-        y: pad_zero
-        color: category
-        style: { marks: { point: { opacity: 0 } } }
 
   security:
     type: bar
