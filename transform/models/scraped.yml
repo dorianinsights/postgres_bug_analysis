@@ -15,7 +15,6 @@ sources:
     meta:
       external_location: "read_csv('../data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'DATE', 'VARCHAR'])"
     tables:
-      - name: releases
       - name: release_items
       - name: item_commits
       - name: cve_severity

@@ -2,14 +2,15 @@
 """Scrape PostgreSQL minor-release notes into local CSVs.
 
 Fetches every release-notes page for the configured major versions from
-postgresql.org and persists two raw datasets:
+postgresql.org and persists:
 
-- data/raw/releases.csv       one row per release (version, date, item count)
 - data/raw/release_items.csv  one row per changelog item (summary, full text)
 
 Raw data only — categorization, wave grouping, and dedup live in the
 transform/ dbt project so the scrape never needs re-running to change
-analysis rules. Re-running overwrites both files (the source pages are canonical).
+analysis rules. (Release existence and dates come from git tags via the
+int_releases dbt model, not a releases.csv.) Re-running overwrites the file
+(the source pages are canonical).
 Takes no arguments; the majors scraped are defined in corpus.py.
 """
 
@@ -150,10 +151,6 @@ def main() -> None:
         print(f"{version:>6}  {page['date']}  items={len(page['items'])}")
         time.sleep(0.3)
 
-    with open(DATA_DIR / "releases.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["version", "major", "minor", "date", "n_items"])
-        writer.writeheader()
-        writer.writerows(releases)
     with open(DATA_DIR / "release_items.csv", "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["version", "major", "date", "item_index", "summary", "full"])
         writer.writeheader()

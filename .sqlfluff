@@ -38,3 +38,9 @@ extended_capitalisation_policy = upper
 
 [sqlfluff:rules:convention.not_equal]
 preferred_not_equal_style = c_style
+
+# "version" is a core domain identifier (a PostgreSQL release version, e.g.
+# "18.6") used as a column name throughout the pipeline. Let RF04 allow it so a
+# model can alias an expression to it (int_releases builds it from major.minor).
+[sqlfluff:rules:references.keywords]
+ignore_words = version

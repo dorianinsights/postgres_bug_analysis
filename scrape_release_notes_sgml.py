@@ -8,10 +8,13 @@ branch each fix landed on, with commit hash and timestamp. This scraper reads
 those files straight out of the local metadata clone (no HTTP at all) and
 persists:
 
-- data/raw/releases.csv       same schema as scrape_release_notes.py
-- data/raw/release_items.csv  same schema as scrape_release_notes.py
+- data/raw/release_items.csv  one row per changelog item (same schema as
+                          scrape_release_notes.py)
 - data/raw/item_commits.csv   one row per (item, branch-commit): the ground-truth
                           mapping from changelog items to git commits
+
+(Release existence and dates now come from git tags via the int_releases dbt
+model, not a releases.csv — see the dbt transform.)
 
 This is the primary release-notes source; the HTML scraper is retained as an
 independent cross-check.
@@ -188,10 +191,6 @@ def main() -> None:
                 )
             print(f"{version:>6}  {date}  items={len(items)}")
 
-    with open(DATA_DIR / "releases.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["version", "major", "minor", "date", "n_items"])
-        writer.writeheader()
-        writer.writerows(releases)
     with open(DATA_DIR / "release_items.csv", "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["version", "major", "date", "item_index", "summary", "full"])
         writer.writeheader()

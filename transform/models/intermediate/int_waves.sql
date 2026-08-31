@@ -21,7 +21,7 @@ fix_releases AS (
     rel.minor,
     rel.release_dt,
     cnt.parsed_item_cnt
-  FROM {{ ref('stg_releases') }} AS rel
+  FROM {{ ref('int_releases') }} AS rel
   INNER JOIN item_counts AS cnt ON rel.version = cnt.version
   WHERE rel.minor > 0
 ),

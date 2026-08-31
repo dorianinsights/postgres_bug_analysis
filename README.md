@@ -59,8 +59,7 @@ release-notes scraper and read by the dbt sources; `data/derived/` holds the
 CSV **audit exports** of the mart tables — committed and line-diffable in
 review, but read back by nothing (the faces read the typed mart tables in
 `transform/transform.duckdb` instead, so DATE/DOUBLE/BIGINT typing survives
-end to end with no re-casting; the changelog face still reads
-`raw/releases.csv` directly). Nothing writes and reads the same directory. **Git-side and mail-side data have no CSV landing layer at all**:
+end to end with no re-casting). Nothing writes and reads the same directory. **Git-side and mail-side data have no CSV landing layer at all**:
 the clone at `.cache/postgres.git` is content-addressed and immutable — its
 own perfect raw store — so the transform's `models/raw_git/` Python models
 read it directly at build time, and every git-derived table shares one
@@ -77,8 +76,7 @@ Raw (`data/raw/`, from the scrapers — rerun them to refresh):
 
 | File | Grain | Source |
 |---|---|---|
-| `releases.csv` | one minor release | release-notes SGML sources in postgres.git (`doc/src/sgml/release-NN.sgml` per stable branch), majors 15-18 |
-| `release_items.csv` | one changelog item | same sources: summary and full text (CVE ids are derived downstream) |
+| `release_items.csv` | one changelog item | release-notes SGML sources in postgres.git (`doc/src/sgml/release-NN.sgml` per stable branch), majors 15-18: summary and full text (CVE ids are derived downstream); release existence and dates come from git tags via `int_releases`, not a `releases.csv` |
 | `item_commits.csv` | one (item, branch-commit) | the SGML comment annotations: author + every branch each fix landed on, with commit hash — ground truth linking changelog items to git commits |
 | `cve_severity.csv` | one published PostgreSQL CVE | `scrape_cve_severity.py` from postgresql.org/support/security: CVSS v3 base score + vector + component (the NONE/LOW/MEDIUM/HIGH/CRITICAL band is derived downstream) |
 

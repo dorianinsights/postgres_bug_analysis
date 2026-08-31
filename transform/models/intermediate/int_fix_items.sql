@@ -33,7 +33,7 @@ SELECT
   't:' || LOWER(TRIM(REGEXP_REPLACE(REPLACE(itm.summary, '§', ' '), '\s+', ' ', 'g'))) AS text_key,
   CASE WHEN ihs.hash_set IS NOT null THEN 'h:' || ihs.hash_set END AS hash_key
 FROM {{ ref('stg_release_items') }} AS itm
-INNER JOIN {{ ref('stg_releases') }} AS rel ON itm.version = rel.version
+INNER JOIN {{ ref('int_releases') }} AS rel ON itm.version = rel.version
 LEFT JOIN item_hashes AS ihs
   ON itm.version = ihs.version AND itm.item_index = ihs.item_index
 WHERE

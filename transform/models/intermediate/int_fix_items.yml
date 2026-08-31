@@ -24,7 +24,7 @@ models:
           - not_null
           - relationships:
               arguments:
-                to: ref('stg_releases')
+                to: ref('int_releases')
                 field: version
       - name: item_index
         tests:

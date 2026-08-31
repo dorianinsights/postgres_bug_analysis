@@ -29,14 +29,14 @@ queries:
     description: >
       Fix items per scheduled minor release, one series per major version.
       Out-of-band emergency re-releases (< 20 items) are excluded.
-    source: ../data/raw/releases.csv
+    source: warehouse
     sql: |
       SELECT
-        date,
+        release_dt AS date,
         'PG' || major AS branch,
-        n_items
-      FROM releases
-      WHERE minor > 0 AND n_items >= 20
+        item_cnt AS n_items
+      FROM release_item_counts
+      WHERE minor > 0 AND item_cnt >= 20
       -- major (the tiebreak) is not in the select list, so it stays named
       ORDER BY 1, major
 
@@ -200,13 +200,13 @@ queries:
     description: >
       Pooled trendlines over scheduled per-release fix counts (all branches
       together; 15.1's partial window excluded), against calendar time.
-    source: ../data/raw/releases.csv
+    source: warehouse
     sql: |
       WITH sched AS (
-        SELECT CAST(date AS DATE) AS date, n_items,
-               DATE_DIFF('day', DATE '2022-01-01', CAST(date AS DATE)) AS t
-        FROM releases
-        WHERE minor > 0 AND n_items >= 20 AND NOT (major = 15 AND minor = 1)
+        SELECT CAST(release_dt AS DATE) AS date, item_cnt AS n_items,
+               DATE_DIFF('day', DATE '2022-01-01', CAST(release_dt AS DATE)) AS t
+        FROM release_item_counts
+        WHERE minor > 0 AND item_cnt >= 20 AND NOT (major = 15 AND minor = 1)
       ),
       fit_all AS (SELECT REGR_SLOPE(n_items, t) AS b, REGR_INTERCEPT(n_items, t) AS a FROM sched),
       fit_ex AS (
