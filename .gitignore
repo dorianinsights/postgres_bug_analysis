@@ -18,3 +18,4 @@ renders/
 transform/target/
 transform/logs/
 transform/dbt_packages/
+/logs/
