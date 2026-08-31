@@ -3,8 +3,8 @@ description: >
   Every minor release of PostgreSQL majors 15-18, scraped from the official
   release notes: fix volume per quarterly release wave, fix categories,
   security fixes, contributors, and next-wave projection scenarios.
-  Data files are produced by scrape_release_notes_sgml.py + the transform/
-  dbt project.
+  Data are produced by the transform/ dbt project (release notes parsed from
+  the clone's SGML at build time).
 
 # NOTE on the *_pad queries and invisible scatter layers: dataface 0.4.0
 # renders bars on a temporal x-axis centered on their date with the scale

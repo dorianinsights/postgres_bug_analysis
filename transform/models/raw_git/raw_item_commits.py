@@ -1,0 +1,18 @@
+"""Per-item commit annotations (author + every branch each fix landed on, with
+commit hash and timestamp), parsed from the release-notes SGML comment blocks in
+the postgres.git clone at build time -- no CSV landing layer. Typing and
+filtering happen in stg_item_commits.
+"""
+
+import sys
+from pathlib import Path
+from typing import Any
+
+sys.path.insert(0, str(Path.cwd()))
+import pyarrow as pa
+
+from sgmlsource import item_commit_records
+
+
+def model(dbt: Any, session: Any) -> pa.Table:
+    return pa.Table.from_pylist([record._asdict() for record in item_commit_records()])

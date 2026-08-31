@@ -3,9 +3,9 @@
 
 This is the raw store for the entire git side of the pipeline — there is no
 CSV landing layer for git data. The transform's models/raw_git/ Python models
-(via transform/gitsource.py) and scrape_release_notes_sgml.py both read this
-clone directly, so a `dbt build` after one sync sees a single consistent
-snapshot.
+read this clone directly at build time -- commits/tags via transform/gitsource.py
+and the release-notes SGML via transform/sgmlsource.py -- so a `dbt build` after
+one sync sees a single consistent snapshot.
 
 First run clones; later runs fetch. The fetch passes explicit heads+tags
 refspecs on purpose: the pipeline reads both branch heads (refs/heads/master +
@@ -24,12 +24,6 @@ from pathlib import Path
 REPO_URL = "https://github.com/postgres/postgres.git"
 CACHE = Path(__file__).parent / ".cache" / "postgres.git"
 REFSPECS = ["+refs/heads/*:refs/heads/*", "+refs/tags/*:refs/tags/*"]
-
-
-def git(*args: str) -> str:
-    """Run git inside the clone and return stdout. Used by the release-notes
-    SGML scraper to `git show` release-NN.sgml straight out of the clone."""
-    return subprocess.run(["git", "-C", str(CACHE), *args], capture_output=True, text=True, check=True).stdout
 
 
 def ensure_clone() -> None:

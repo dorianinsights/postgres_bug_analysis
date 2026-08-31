@@ -7,14 +7,13 @@ the analysis as [dataface / dbt charts](https://docs.dbtcharts.com/) dashboards.
 Three explicit stages, each re-runnable on its own:
 
 ```
-scrape_release_notes_sgml.py ──> data/raw/*.csv ──────┐
-scrape_cve_severity.py ─────────> (scraper output)    │
+scrape_cve_severity.py ──> data/raw/cve_severity.csv ─┐
 postgres_clone.py ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> transform.duckdb marts ──> faces/*.yml (dct)
-                      (full bare clone)               │        │ (typed tables — what the faces read)           (visualization)
-                                                      │        └────> data/derived/*.csv (diffable audit export)
+                      (full bare clone: commits,       │        │ (typed tables — what the faces read)           (visualization)
+                       tags, AND release-notes SGML)   │        └────> data/derived/*.csv (diffable audit export)
 mailing_list_sync.py ──> .cache/mbox/ ────────────────┘
                       (monthly mbox archives)
-                      (both caches are read directly at build time)
+                      (all read directly at build time)
 ```
 
 ## Quickstart
@@ -25,10 +24,10 @@ mailing_list_sync.py ──> .cache/mbox/ ────────────�
 python3.12 -m venv venv
 ./venv/bin/pip install -r requirements.txt
 
-# 1. Sync the postgres clone (first run: full bare clone, ~800MB) and
-#    extract the release notes from it (no HTTP; the SGML extractor also
-#    syncs the clone itself, so this is one step)
-./venv/bin/python scrape_release_notes_sgml.py
+# 1. Sync the postgres clone (first run: full bare clone, ~800MB). The
+#    release notes are parsed straight from its SGML at dbt build time
+#    (step 2) — no separate extraction step, no HTTP.
+./venv/bin/python postgres_clone.py
 
 #    Sync the pgsql-bugs + pgsql-hackers mbox archives (full message
 #    bodies; hackers is ~3GB on first sync). Needs a free postgresql.org
@@ -54,14 +53,15 @@ python3.12 -m venv venv
 
 ## Data files (`data/`)
 
-Two subdirectories, one per pipeline direction: `data/raw/` is written by the
-release-notes scraper and read by the dbt sources; `data/derived/` holds the
+Two subdirectories, one per pipeline direction: `data/raw/` holds the one
+external CSV (`cve_severity.csv`) read by a dbt source; `data/derived/` holds the
 CSV **audit exports** of the mart tables — committed and line-diffable in
 review, but read back by nothing (the faces read the typed mart tables in
 `transform/transform.duckdb` instead, so DATE/DOUBLE/BIGINT typing survives
 end to end with no re-casting). Nothing writes and reads the same directory. **Git-side and mail-side data have no CSV landing layer at all**:
 the clone at `.cache/postgres.git` is content-addressed and immutable — its
 own perfect raw store — so the transform's `models/raw_git/` Python models
+(commits, tags, AND the release-notes SGML, via `gitsource` / `sgmlsource`)
 read it directly at build time, and every git-derived table shares one
 consistent snapshot of the clone. Likewise the monthly mbox files at
 `.cache/mbox/` (immutable once a month is past) are decoded directly by
@@ -72,12 +72,10 @@ threading headers the indexes never had. pgsql-hackers joined pgsql-bugs
 in the sync so commit Discussion: trailers can be resolved to their
 source list (the origin-attribution models).
 
-Raw (`data/raw/`, from the scrapers — rerun them to refresh):
+Raw (`data/raw/`, the one external CSV — rerun `scrape_cve_severity.py` to refresh):
 
 | File | Grain | Source |
 |---|---|---|
-| `release_items.csv` | one changelog item | release-notes SGML sources in postgres.git (`doc/src/sgml/release-NN.sgml` per stable branch), majors 15-18: summary and full text (CVE ids are derived downstream); release existence and dates come from git tags via `int_releases`, not a `releases.csv` |
-| `item_commits.csv` | one (item, branch-commit) | the SGML comment annotations: author + every branch each fix landed on, with commit hash — ground truth linking changelog items to git commits |
 | `cve_severity.csv` | one published PostgreSQL CVE | `scrape_cve_severity.py` from postgresql.org/support/security: CVSS v3 base score + vector + component (the NONE/LOW/MEDIUM/HIGH/CRITICAL band is derived downstream) |
 
 Derived (`data/derived/`, the CSV audit exports of the mart tables, written
@@ -291,17 +289,17 @@ one-time setup: `./venv/bin/pre-commit install`). Auto-fix layout nits with
   derivation lives in the transform: plumbing/AI-credit flags
   (`int_git_commits`), CVE extraction (`int_fix_items`), release-tag
   filtering and major/minor parsing (`stg_git_tags`), per-release item
-  counts for the out-of-band rule (`int_waves`). The scraper's `n_items`
-  column survives in raw only as a scrape-consistency checksum, enforced
-  by `assert_release_items_match_n_items`.
+  counts for the out-of-band rule (`int_waves`).
 - Stable-branch commit series count only post-`.0` commits (the backpatch
   stream); shared pre-branch history belongs to `master`. Security fixes are
   embargoed and reach public git only on wrap day, so mid-cycle security
   volume is structurally invisible.
-- `scrape_release_notes_sgml.py` (SGML from the git clone) is the primary
-  release-notes source; `scrape_release_notes.py` (HTML from postgresql.org)
-  writes the same two CSVs and is kept as an independent cross-check.
-  Validated 2026-08-28: identical version coverage, dates, and CVE sets,
+- The release notes are parsed from the clone's SGML at build time
+  (`sgmlsource` -> `raw_release_items` / `raw_item_commits`), the primary
+  source. `scrape_release_notes.py` (HTML from postgresql.org) parses the same
+  notes and is kept as an independent manual cross-check (its output is not
+  wired into the build). Validated 2026-08-28: identical version coverage,
+  dates, and CVE sets,
   and the commit-annotation dedup now used by the transform models (match on
   summary text OR the exact annotation block) reproduces the pure-text
   counts exactly across all 19 waves (Aug 2026: 142 both ways). Known divergence: nested remediation

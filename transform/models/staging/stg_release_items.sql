@@ -7,4 +7,4 @@ SELECT
   item_index::INTEGER AS item_index,
   summary,
   "full" AS full_text
-FROM {{ source('scraped', 'release_items') }}
+FROM {{ ref('raw_release_items') }}

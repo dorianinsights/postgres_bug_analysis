@@ -14,4 +14,4 @@ SELECT
   branch,
   commit_hash,
   STRPTIME(commit_date[1:25], '%Y-%m-%d %H:%M:%S %z') AS commit_ts
-FROM {{ source('scraped', 'item_commits') }}
+FROM {{ ref('raw_item_commits') }}

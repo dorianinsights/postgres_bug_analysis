@@ -3,18 +3,15 @@ version: 2
 sources:
   - name: scraped
     description: >
-      Raw CSVs written by the scrape_*.py scripts. Read in place via a
-      dbt-duckdb external location ({name} is filled per table) — nothing is
-      loaded into the .duckdb file. auto_type_candidates deliberately omits
-      DOUBLE and TIMESTAMP: version strings ("15.1", "15.10") must stay
-      VARCHAR — DOUBLE sniffing would corrupt trailing zeros — and the raw
-      item-commit dates stay text. What remains: counts sniff BIGINT, date
-      columns sniff DATE, everything else VARCHAR. item_commits.csv is
-      required: it comes from the primary SGML scraper, and the dedup models
-      join on it.
+      The one genuinely external raw CSV: cve_severity.csv, scraped from
+      postgresql.org/support/security by scrape_cve_severity.py (not derivable
+      from the clone). Read in place via a dbt-duckdb external location -- nothing
+      is loaded into the .duckdb file. auto_type_candidates omits DOUBLE (the
+      CVSS base score must stay VARCHAR until stg_cve_severity casts it) and
+      TIMESTAMP. The release notes (release_items, item_commits) used to live
+      here too, but are now parsed from the clone at build time by the
+      raw_release_items / raw_item_commits Python models (via sgmlsource).
     meta:
       external_location: "read_csv('../data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'DATE', 'VARCHAR'])"
     tables:
-      - name: release_items
-      - name: item_commits
       - name: cve_severity
