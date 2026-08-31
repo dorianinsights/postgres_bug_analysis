@@ -116,4 +116,4 @@ month_dt,month_date_key,list_name,message_cnt,thread_start_cnt,form_report_cnt,f
 2026-07-01,20260701,pgsql-bugs,285,58,42,133,19
 2026-07-01,20260701,pgsql-hackers,2770,252,0,1220,104
 2026-08-01,20260801,pgsql-bugs,345,58,46,167,15
-2026-08-01,20260801,pgsql-hackers,2542,263,1,866,73
+2026-08-01,20260801,pgsql-hackers,2542,263,1,870,74

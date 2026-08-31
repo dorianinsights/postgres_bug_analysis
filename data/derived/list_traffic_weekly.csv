@@ -512,4 +512,4 @@ week_dt,week_date_key,earliest_ship_release_dt,list_name,message_cnt,thread_star
 2026-08-17,20260817,2026-11-12,pgsql-bugs,94,22,17,49,6
 2026-08-17,20260817,2026-11-12,pgsql-hackers,628,68,0,242,25
 2026-08-24,20260824,2026-11-12,pgsql-bugs,81,4,4,34,0
-2026-08-24,20260824,2026-11-12,pgsql-hackers,680,65,0,177,5
+2026-08-24,20260824,2026-11-12,pgsql-hackers,680,65,0,181,6

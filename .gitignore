@@ -12,6 +12,8 @@ renders/
 .dft/
 .ruff_cache/
 *.duckdb
+# Temporary working files for duckdb
+*.wal
 # dbt scratch state (transform/ project)
 transform/target/
 transform/logs/
