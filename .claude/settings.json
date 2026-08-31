@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/bash-source-edit-guard.sh",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/bash-source-edit-guard.sh\"",
             "timeout": 10
           }
         ]
@@ -18,17 +18,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/ruff-lint.sh",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/ruff-lint.sh\"",
             "timeout": 60
           },
           {
             "type": "command",
-            "command": ".claude/hooks/pyright-check.sh",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/pyright-check.sh\"",
             "timeout": 60
           },
           {
             "type": "command",
-            "command": ".claude/hooks/sqlfluff-lint.sh",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/sqlfluff-lint.sh\"",
             "timeout": 60
           }
         ]

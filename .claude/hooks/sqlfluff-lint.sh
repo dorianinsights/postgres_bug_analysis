@@ -11,6 +11,10 @@
 
 set -u
 
+# cd to the repo root (resolved from this script's own path) so ./venv,
+# .sqlfluff, and its macro path resolve regardless of the invoking cwd
+cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 0
+
 f=$(jq -r '.tool_input.file_path // empty')
 
 case "$f" in
