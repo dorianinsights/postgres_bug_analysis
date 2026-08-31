@@ -1,11 +1,15 @@
--- Cycle-grain fact: one row per started release cycle (closed + the open one),
--- unifying the three former cycle tables (int_cycle_signals, git_cycle_pace,
--- fix_projection_cycles). Carries the three early signals over the open cycle's
--- age-window (for the projections), the like-for-like pace (early vs full
--- distinct backpatched fixes), and the shipped fix count for closed cycles.
--- Conforms to dim_release_cycle via cycle_key. All windows are half-open
--- [start, start+N) at the open cycle's age N; the full window runs to the next
--- cycle's wrap (or today). Grain = cycle_key. -> ../data/derived/fct_release_cycles.csv
+-- Cycle-grain signals for each started release cycle, folded into dim_release
+-- (a cycle IS a release at an earlier lifecycle stage, so these ride on the
+-- release row rather than a separate 1:1 fact). One row per started scheduled
+-- cycle (closed + the open one); joins to dim_release on ships_at_dt =
+-- release_dt. Carries the three early signals over the open cycle's age-window
+-- (for the projections), the like-for-like pace (early vs full distinct
+-- backpatched fixes), and the window itself. The shipped fix count is NOT here
+-- -- it is dim_release.distinct_fix_cnt on the same row. All windows are
+-- half-open [start, start+N) at the open cycle's age N; the full window runs to
+-- the next cycle's wrap (or today). cycle_start_dt is the cycle's beginning
+-- (the PRIOR quarter's wrap), distinct from the release's own wrap_dt.
+-- Grain = ships_at_dt.
 WITH cycles AS (
   SELECT
     wrap_dt AS cycle_start_dt,
@@ -18,16 +22,6 @@ age AS (
   SELECT (CURRENT_DATE - MAX(cycle_start_dt))::INTEGER AS window_days
   FROM cycles
   WHERE cycle_start_dt <= CURRENT_DATE
-),
-
-shipped AS (
-  SELECT
-    cyc.cycle_start_dt,
-    wvs.distinct_fix_cnt AS shipped_fix_cnt
-  FROM cycles AS cyc
-  INNER JOIN {{ ref('int_wave_summary') }} AS wvs
-    ON wvs.wave_dt BETWEEN cyc.ships_at_dt - 3 AND cyc.ships_at_dt + 3
-  WHERE NOT wvs.is_out_of_band AND NOT wvs.is_partial_window
 ),
 
 early_reports AS (
@@ -80,18 +74,14 @@ full_fixes AS (
 )
 
 SELECT
-  STRFTIME(cyc.ships_at_dt, '%Y%m%d')::INTEGER AS cycle_key,
-  cyc.cycle_start_dt,
   cyc.ships_at_dt,
+  cyc.cycle_start_dt,
   (SELECT age.window_days FROM age) AS window_days,
-  cyc.ships_at_dt > CURRENT_DATE AS is_open_cycle,
-  shp.shipped_fix_cnt,
   COALESCE(erp.early_report_cnt, 0) AS early_report_cnt,
   COALESCE(ems.early_message_cnt, 0) AS early_message_cnt,
   COALESCE(efx.early_fix_cnt, 0) AS early_fix_cnt,
   COALESCE(ffx.full_fix_cnt, 0) AS full_fix_cnt
 FROM cycles AS cyc
-LEFT JOIN shipped AS shp ON cyc.cycle_start_dt = shp.cycle_start_dt
 LEFT JOIN early_reports AS erp ON cyc.cycle_start_dt = erp.cycle_start_dt
 LEFT JOIN early_messages AS ems ON cyc.cycle_start_dt = ems.cycle_start_dt
 LEFT JOIN early_fixes AS efx ON cyc.cycle_start_dt = efx.cycle_start_dt

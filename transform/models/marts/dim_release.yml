@@ -4,10 +4,19 @@ models:
   - name: dim_release
     description: >
       Release dimension -> ../data/derived/dim_release.csv: one row per release,
-      unifying the former dim_release_wave (shipped waves, with measures) and
-      dim_release_cycle (all cycles incl. the open/future). status =
-      shipped/open/future; measures are NULL for non-shipped rows. A wave is a
-      shipped cycle. Grain = release_key (the release day's YYYYMMDD).
+      unifying the former dim_release_wave (shipped waves, with measures),
+      dim_release_cycle (all cycles), and fct_release_cycles (the cycle signals,
+      which were a fact 1:1 with this dimension). status = shipped/open/future;
+      shipped measures are NULL for non-shipped rows, and the cycle signals
+      (cycle_start_dt, window_days, early_*_cnt, full_fix_cnt) are non-NULL only
+      for the started scheduled cycles. A wave is a shipped cycle. Grain =
+      release_key (the release day's YYYYMMDD).
+    tests:
+      # cycle signals are present for exactly the started scheduled cycles
+      # (not out-of-band waves, not the not-yet-started future release)
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(cycle_start_dt IS NOT NULL) = (NOT is_out_of_band AND status <> 'future')"
     columns:
       - name: release_key
         tests:
@@ -29,3 +38,15 @@ models:
         tests: [not_null]
       - name: is_partial_window
         tests: [not_null]
+      - name: window_days
+        description: >
+          The open cycle's current age in days, the window every cycle's
+          early_*_cnt is measured over. NULL for non-cycle rows.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: cycle_start_dt
+        description: >
+          The cycle's start (the PRIOR quarter's wrap, ~3 months before ship),
+          distinct from this release's own wrap_dt. NULL for non-cycle rows.

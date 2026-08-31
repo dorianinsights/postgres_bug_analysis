@@ -75,11 +75,12 @@ queries:
       -- label leads with the ISO date so the band's alphabetical order IS
       -- chronological (the trailing word keeps dct from date-parsing it)
       SELECT STRFTIME(cycle_start_dt, '%Y-%m-%d wrap') AS cycle, 'first ' || window_days || ' days' AS pace_window, early_fix_cnt AS fixes
-      FROM fct_release_cycles
+      FROM dim_release
+      WHERE cycle_start_dt IS NOT NULL
       UNION ALL
       SELECT STRFTIME(cycle_start_dt, '%Y-%m-%d wrap') AS cycle, 'full cycle' AS pace_window, full_fix_cnt AS fixes
-      FROM fct_release_cycles
-      WHERE NOT is_open_cycle
+      FROM dim_release
+      WHERE cycle_start_dt IS NOT NULL AND status <> 'open'
       ORDER BY 1, 2
 
 charts:

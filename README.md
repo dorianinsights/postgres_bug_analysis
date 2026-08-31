@@ -82,28 +82,25 @@ Raw (`data/raw/`, from the scrapers — rerun them to refresh):
 
 Derived (`data/derived/`, the CSV audit exports of the mart tables, written
 by the transform's on-run-end hook — rerun `dbt build` to change analysis
-rules without re-scraping; one `.csv` per mart, same name):
+rules without re-scraping; one `.csv` per mart, same name). Only marts under
+`var('derived_csv_max_rows')` (1000) rows get a twin — the heavier ones
+(`fct_messages`, `fct_commits`, `dim_person`, `dim_date`, `dim_bug`,
+`fct_fixes`) live only as typed tables in the warehouse:
 
 | File | Grain | Notes |
 |---|---|---|
 | `wave_categories.csv` | (wave, category) | keyword-rule buckets from the `category_rules` seed; CVE / hardening checked first |
 | `wave_contributors.csv` | (wave, contributor) | credits parsed from the notes' trailing "(Name, Name)" lists, with first-seen wave |
 | `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
-| `fct_release_cycles.csv` | one release cycle | the cycle-grain fact (supersedes git_cycle_pace + fix_projection_cycles): early signals (reports/messages/fixes over the open cycle's age), like-for-like pace (early vs full distinct fixes), shipped fix count; `cycle_key` -> `dim_release` |
 | `category_vs_subsystem.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
 | `bug_reports_monthly.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
 | `fix_origins.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
 | `origin_activity_monthly.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
 | `pending_fix_origins.csv` | (ships_at, origin) | the in-progress next wave: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
-| `fct_fixes.csv` | one distinct fix | the fix-grain star fact (supersedes the retired fix_items): identity (summary/full_text/cves/category), change size, worst CVE severity, origin, backpatch breadth, report-to-fix latency, `wave_key` (-> `dim_release`) and the primary linked bug |
 | `dim_cve.csv` | one CVE | CVE dimension: CVSS v3 base score + band + vector + component for every CVE a corpus fix cites |
-| `dim_bug.csv` | one bug report | bug dimension: the bug-report grain conformed into the star (outcome, latency, windows), reporter -> `dim_person`, report day -> `dim_date` |
 | `bridge_fix_cve.csv` | (fix, CVE) | bridge for the fix<->CVE many-to-many |
 | `bridge_fix_bug.csv` | (fix, bug) | bridge for the fix<->bug many-to-many |
-| `dim_person.csv` | one person | the unified person/entity dimension: git patch authors, git committers, and list senders resolved (first-pass, on normalized email) to one row per person, with role flags and first/last-seen |
-| `dim_date.csv` | one calendar day | the date dimension spanning the corpus, keyed `YYYYMMDD` |
-| `dim_release.csv` | one release | the release dimension (unifies the retired dim_release_wave + dim_release_cycle): `status` = shipped/open/future, wave scale (fixes/CVEs/security) + flags for shipped rows, wrap date; keyed `release_key` |
-| `fct_commits.csv` | one commit (per branch) | the commit-grain fact: FKs into `dim_person` (author + committer) and `dim_date`, diff-size measures, origin + plumbing/AI flags |
+| `dim_release.csv` | one release | the release dimension (unifies the retired dim_release_wave, dim_release_cycle, and fct_release_cycles): `status` = shipped/open/future, wave scale (fixes/CVEs/security) + flags for shipped rows, wrap date, plus the cycle signals (early reports/messages/fixes, pace, window) folded onto the started scheduled cycles; keyed `release_key` |
 
 (The message-grain `fct_messages` mart has **no** CSV twin — one row per
 archived message is too heavy to commit; its typed table in `transform.duckdb`
@@ -183,8 +180,9 @@ every object's name. Layers:
     shared `person_node()` macro + `int_person_map` connected-component
     resolution so several emails collapse to one person), `dim_date`,
     `dim_release` (shipped waves + open/future cycles, status-flagged), `dim_cve` and `dim_bug`, with the
-    facts `fct_commits` (commit grain), `fct_messages` (message grain),
-    `fct_fixes` (fix grain) and `fct_release_cycles` (cycle grain). The
+    facts `fct_commits` (commit grain), `fct_messages` (message grain), and
+    `fct_fixes` (fix grain). The cycle grain is not a separate fact: a cycle is
+    a release earlier in its life, so its signals ride on `dim_release`. The
     fix<->CVE and fix<->bug many-to-manys go through `bridge_fix_cve` /
     `bridge_fix_bug`. The period aggregates (`bug_reports_monthly`,
     `list_traffic_monthly`/`weekly`, `origin_activity_monthly`) are aggregate
@@ -192,8 +190,9 @@ every object's name. Layers:
     month/week date key. Referential integrity is enforced by `relationships`
     tests on every FK, and singular tests pin each fact's row count to its
     grain. Several older marts were superseded as the star grew —
-    `fct_fixes` replaced `fix_impact` and `fix_items`; `fct_release_cycles`
-    replaced `git_cycle_pace`, `fix_projection_cycles` and `int_cycle_signals`.
+    `fct_fixes` replaced `fix_impact` and `fix_items`; the cycle signals
+    (`git_cycle_pace`, `fix_projection_cycles`, `int_cycle_signals`) were unified
+    as `fct_release_cycles` and then folded into `dim_release` (`int_release_cycles`).
 - `seeds/` — the classification data: `categories` (bucket + display
   order), `category_rules` (ordered case-insensitive RE2 patterns; lowest
   matching `match_order` wins, CVE items bypass the rules),

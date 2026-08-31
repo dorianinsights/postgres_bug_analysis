@@ -17,12 +17,14 @@ WITH ships AS (
 -- present, so the medians never divide by zero)
 ratios AS (
   SELECT
-    MEDIAN(shipped_fix_cnt * 1.0 / early_report_cnt) AS per_report,
-    MEDIAN(shipped_fix_cnt * 1.0 / early_message_cnt) AS per_message,
-    MEDIAN(shipped_fix_cnt * 1.0 / early_fix_cnt) AS per_early_fix
-  FROM {{ ref('fct_release_cycles') }}
+    MEDIAN(distinct_fix_cnt * 1.0 / early_report_cnt) AS per_report,
+    MEDIAN(distinct_fix_cnt * 1.0 / early_message_cnt) AS per_message,
+    MEDIAN(distinct_fix_cnt * 1.0 / early_fix_cnt) AS per_early_fix
+  FROM {{ ref('dim_release') }}
   WHERE
-    shipped_fix_cnt IS NOT null
+    NOT is_out_of_band
+    AND NOT is_partial_window
+    AND distinct_fix_cnt IS NOT null
     AND early_report_cnt > 0
     AND early_message_cnt > 0
     AND early_fix_cnt > 0
@@ -34,8 +36,8 @@ current_signals AS (
     early_report_cnt AS report_cnt,
     early_message_cnt AS message_cnt,
     early_fix_cnt
-  FROM {{ ref('fct_release_cycles') }}
-  WHERE is_open_cycle
+  FROM {{ ref('dim_release') }}
+  WHERE status = 'open'
 ),
 
 estimates AS (

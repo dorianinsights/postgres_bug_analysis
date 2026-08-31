@@ -70,10 +70,14 @@ per-session memories, which aren't committed to git.)
   "fix" `fct_*` to singular.
 - A **release cycle** and a **wave** are the same entity at two lifecycle stages
   (a wave is a shipped cycle), unified in **`dim_release`** (`status` =
-  shipped/open/future; measures NULL for non-shipped). `fct_release_cycles` is
-  the cycle-grain fact and `fct_fixes.wave_key` both conform to
-  `dim_release.release_key`. `dim_release.release_dt` is the release day — the
-  changelog aliases it back to `wave_dt` for its charts.
+  shipped/open/future; shipped measures NULL for non-shipped). The cycle signals
+  (`cycle_start_dt`, `window_days`, `early_*_cnt`, `full_fix_cnt`, from
+  `int_release_cycles`) are **folded onto the same row** — a cycle was a fact 1:1
+  with this dimension, so `fct_release_cycles` was retired into it; they're
+  non-NULL only for the started scheduled cycles (`cycle_start_dt IS NOT NULL`).
+  `fct_fixes.wave_key` conforms to `dim_release.release_key`.
+  `dim_release.release_dt` is the release day — the changelog aliases it back to
+  `wave_dt` for its charts.
 
 ## Known future work (not done)
 - **Person alias seed.** The automatic name/email merge can't unify identities

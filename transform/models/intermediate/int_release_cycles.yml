@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: int_release_cycles
+    description: >
+      Cycle-grain signals for each started release cycle, joined into dim_release
+      on ships_at_dt = release_dt (a cycle is a release at an earlier lifecycle
+      stage). Early-signal counts over the open cycle's age-window, the
+      like-for-like pace (early vs full distinct backpatched fixes), and the
+      window. Replaces the standalone fct_release_cycles fact. Grain =
+      ships_at_dt.
+    columns:
+      - name: ships_at_dt
+        tests: [not_null, unique]
+      - name: cycle_start_dt
+        tests: [not_null]
+      - name: window_days
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: early_report_cnt
+        tests: [not_null]
+      - name: early_message_cnt
+        tests: [not_null]
+      - name: early_fix_cnt
+        tests: [not_null]
+      - name: full_fix_cnt
+        tests: [not_null]
