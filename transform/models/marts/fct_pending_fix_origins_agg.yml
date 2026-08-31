@@ -1,10 +1,10 @@
 version: 2
 
 models:
-  - name: pending_fix_origins
+  - name: fct_pending_fix_origins_agg
     description: >
       Distinct fixes committed toward the next scheduled minor but not yet
-      released, by origin -> ../data/derived/pending_fix_origins.csv. The
+      released, by origin -> ../data/derived/fct_pending_fix_origins_agg.csv. The
       source breakdown of the in-progress wave the origins face appends to
       the historical fix-origins chart. Grain = (ships_at_dt, origin).
     tests:

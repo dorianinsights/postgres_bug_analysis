@@ -5,7 +5,7 @@
 WITH bounds AS (
   SELECT
     -- floor to the Monday of the earliest data week so weekly/monthly period
-    -- aggregates (list_traffic_weekly's week_date_key etc.) always conform here
+    -- aggregates (fct_list_traffic_weekly_agg's week_date_key etc.) always conform here
     DATE_TRUNC('week', LEAST(
       (SELECT MIN((commit_ts AT TIME ZONE 'utc')::DATE) FROM {{ ref('stg_git_commits') }}),
       (SELECT MIN((sent_ts AT TIME ZONE 'utc')::DATE) FROM {{ ref('stg_list_messages') }})

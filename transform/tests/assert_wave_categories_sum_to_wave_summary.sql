@@ -4,7 +4,7 @@ WITH per_wave AS (
   SELECT
     release_key,
     SUM(fix_cnt) AS fix_cnt
-  FROM {{ ref('wave_categories') }}
+  FROM {{ ref('fct_wave_categories_agg') }}
   GROUP BY release_key
 )
 

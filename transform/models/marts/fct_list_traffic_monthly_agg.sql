@@ -1,7 +1,7 @@
 -- Monthly mailing-list activity per list, with the fix linkage that makes it a
 -- leading indicator — an aggregate fact rolled up from fct_messages (the atomic
 -- message grain) and conformed on dim_date via month_date_key. The full-history
--- companion to list_traffic_weekly. Right-censoring caveat: recent months'
+-- companion to fct_list_traffic_weekly_agg. Right-censoring caveat: recent months'
 -- threads may not have been cited YET. UTC months.
 SELECT
   DATE_TRUNC('month', sent_dt)::DATE AS month_dt,

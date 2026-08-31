@@ -1,10 +1,10 @@
 version: 2
 
 models:
-  - name: wave_contributors
+  - name: fct_wave_contributors_agg
     description: >
       Tidy (release-wave, contributor) credit counts with each name's first-seen
-      wave -> ../data/derived/wave_contributors.csv, aggregated from the
+      wave -> ../data/derived/fct_wave_contributors_agg.csv, aggregated from the
       fix<->contributor bridge and conformed to dim_release via release_key.
       Grain = (release_key, contributor).
     tests:

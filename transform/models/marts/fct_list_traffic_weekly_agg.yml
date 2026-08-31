@@ -1,10 +1,10 @@
 version: 2
 
 models:
-  - name: list_traffic_weekly
+  - name: fct_list_traffic_weekly_agg
     description: >
       Weekly mailing-list activity per list ->
-      ../data/derived/list_traffic_weekly.csv: total messages, new
+      ../data/derived/fct_list_traffic_weekly_agg.csv: total messages, new
       threads, BUG # form reports, and the fix-linked subset (messages /
       thread starts whose thread a commit eventually cites — recent
       weeks right-censored). Grain = (week_dt, list_name).

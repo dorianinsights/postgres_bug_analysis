@@ -87,18 +87,20 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 
 | File | Grain | Notes |
 |---|---|---|
-| `wave_categories.csv` | (release_key, category) | distinct-fix counts per category, aggregated from `fct_fixes`; conformed to `dim_release` via `release_key` |
-| `wave_contributors.csv` | (release_key, contributor) | credit counts via `bridge_fix_contributor` (the notes' "(Name, Name)" parse lives in `int_fix_contributors`), with first-seen wave; conformed to `dim_release` |
+| `fct_wave_categories_agg.csv` | (release_key, category) | distinct-fix counts per category, aggregated from `fct_fixes`; conformed to `dim_release` via `release_key` |
+| `fct_wave_contributors_agg.csv` | (release_key, contributor) | credit counts via `bridge_fix_contributor` (the notes' "(Name, Name)" parse lives in `int_fix_contributors`), with first-seen wave; conformed to `dim_release` |
 | `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
-| `category_vs_subsystem.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
-| `bug_reports_monthly.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
-| `fix_origins.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
-| `origin_activity_monthly.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
-| `pending_fix_origins.csv` | (ships_at, origin) | the in-progress next wave: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
+| `fct_category_vs_subsystem_agg.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
+| `fct_bug_reports_monthly_agg.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
+| `fct_fix_origins_agg.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
+| `fct_origin_activity_monthly_agg.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
+| `fct_pending_fix_origins_agg.csv` | (ships_at, origin) | the in-progress next wave: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
+| `dim_version.csv` | one version | version dimension: one row per individual minor (e.g. `18.6`) below the wave — major/minor, wrap + announced date, `wave_key` → `dim_release` (NULL for `.0` majors), `release_date_key` → `dim_date` |
+| `fct_version_items_agg.csv` | one version | aggregate fact: changelog item count per minor, conformed to `dim_version` (the date/major/minor attributes live in the dimension) |
 | `dim_cve.csv` | one CVE | CVE dimension: CVSS v3 base score + band + vector + component for every CVE a corpus fix cites |
 | `bridge_fix_cve.csv` | (fix, CVE) | bridge for the fix<->CVE many-to-many |
 | `bridge_fix_bug.csv` | (fix, bug) | bridge for the fix<->bug many-to-many |
-| `dim_release.csv` | one release | the release dimension (unifies the retired dim_release_wave, dim_release_cycle, and fct_release_cycles): `status` = shipped/open/future, wave scale (fixes/CVEs/security) + flags for shipped rows, wrap date, plus the cycle signals (early reports/messages/fixes, pace, window) folded onto the started scheduled cycles; keyed `release_key` |
+| `dim_release.csv` | one wave | the release dimension (unifies the retired dim_release_wave, dim_release_cycle, and fct_release_cycles): `status` = shipped/open/future, wave scale (fixes/CVEs/security) + flags for shipped rows, wrap date, plus the cycle signals (early reports/messages/fixes, pace, window) folded onto the started scheduled cycles; keyed `release_key` |
 
 (The message-grain `fct_messages` mart has **no** CSV twin — one row per
 archived message is too heavy to commit; its typed table in `transform.duckdb`
@@ -179,13 +181,17 @@ every object's name. Layers:
     resolution so several emails collapse to one person), `dim_date`,
     `dim_release` (shipped waves + open/future cycles, status-flagged), `dim_cve` and `dim_bug`, with the
     facts `fct_commits` (commit grain), `fct_messages` (message grain), and
-    `fct_fixes` (fix grain). The cycle grain is not a separate fact: a cycle is
-    a release earlier in its life, so its signals ride on `dim_release`. The
+    `fct_fixes` (fix grain). `dim_version` sits one grain below `dim_release`:
+    one row per individual minor (e.g. `18.6`), conformed up to its wave via
+    `wave_key` (NULL for the `.0` majors that ship alone); `fct_fixes` and
+    `fct_version_items_agg` carry a `version` FK to it. The cycle grain is not a
+    separate fact: a cycle is a release earlier in its life, so its signals ride
+    on `dim_release`. The
     fix<->CVE, fix<->bug, and fix<->contributor many-to-manys go through
     `bridge_fix_cve` / `bridge_fix_bug` / `bridge_fix_contributor` (the last
-    fed by `int_fix_contributors`); `wave_categories` and `wave_contributors`
-    are conformed aggregates of `fct_fixes` (+ the contributor bridge). The period aggregates (`bug_reports_monthly`,
-    `list_traffic_monthly`/`weekly`, `origin_activity_monthly`) are aggregate
+    fed by `int_fix_contributors`); `fct_wave_categories_agg` and `fct_wave_contributors_agg`
+    are conformed aggregates of `fct_fixes` (+ the contributor bridge). The period aggregates (`fct_bug_reports_monthly_agg`,
+    `fct_list_traffic_monthly_agg`/`weekly`, `fct_origin_activity_monthly_agg`) are aggregate
     facts rolled up from those grains and conformed on `dim_date` via a
     month/week date key. Referential integrity is enforced by `relationships`
     tests on every FK, and singular tests pin each fact's row count to its

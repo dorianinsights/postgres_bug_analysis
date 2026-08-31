@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: fct_version_items_agg
+    description: >
+      Aggregate fact: changelog item count per individual release (version
+      grain) -> ../data/derived/fct_version_items_agg.csv. Conforms to
+      dim_version on `version`; the release's date/major/minor attributes live
+      in the dimension. item_cnt is the parsed SGML changelog-item count.
+      (Formerly release_item_counts, which carried those attributes inline.)
+      Grain = version.
+    columns:
+      - name: version
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('dim_version')
+                field: version
+      - name: item_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

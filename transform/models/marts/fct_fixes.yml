@@ -6,7 +6,7 @@ models:
       Fix-grain fact -> ../data/derived/fct_fixes.csv (supersedes fix_impact
       AND the retired item-grain fix_items): fix identity (summary/full_text/
       cves/category), change size, worst CVE severity, origin, bug linkage, and
-      a wave_key FK into dim_release_wave. Per-CVE and per-bug detail live in
+      a wave_key FK into dim_release (and a version FK into dim_version). Per-CVE and per-bug detail live in
       bridge_fix_cve / bridge_fix_bug. Grain = item_ord (one distinct fix).
     columns:
       - name: item_ord
@@ -18,6 +18,15 @@ models:
               arguments:
                 to: ref('dim_release')
                 field: release_key
+      # The representative minor of the deduped fix (the fix is backpatched
+      # across a wave's branches; this is one member version) -> dim_version.
+      - name: version
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_version')
+                field: version
       - name: category
         tests: [not_null]
       - name: origin

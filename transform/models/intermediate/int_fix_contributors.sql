@@ -1,6 +1,6 @@
 -- One row per (fix, contributor) credited in the fix's release-notes item: the
 -- trailing "(Name, Name)" list on the representative item, parsed here (formerly
--- inline in wave_contributors) so the wave rollup and the fix<->contributor
+-- inline in fct_wave_contributors_agg) so the wave rollup and the fix<->contributor
 -- bridge share one parse. A candidate list is rejected wholesale when any part
 -- looks like prose rather than a name (over 40 chars, or contains a digit).
 -- Grain = (item_ord, contributor).

@@ -1,10 +1,10 @@
 version: 2
 
 models:
-  - name: bug_reports_monthly
+  - name: fct_bug_reports_monthly_agg
     description: >
       Monthly pgsql-bugs report volume vs acted-upon rate ->
-      ../data/derived/bug_reports_monthly.csv (recent months
+      ../data/derived/fct_bug_reports_monthly_agg.csv (recent months
       right-censored). Grain = report_month_dt.
     columns:
       - name: report_month_dt

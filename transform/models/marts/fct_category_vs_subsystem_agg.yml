@@ -1,10 +1,10 @@
 version: 2
 
 models:
-  - name: category_vs_subsystem
+  - name: fct_category_vs_subsystem_agg
     description: >
       Agreement matrix keyword category x path-derived subsystem ->
-      ../data/derived/category_vs_subsystem.csv, over fixes with at least
+      ../data/derived/fct_category_vs_subsystem_agg.csv, over fixes with at least
       one corpus-matched commit.
     tests:
       - dbt_utils.unique_combination_of_columns:

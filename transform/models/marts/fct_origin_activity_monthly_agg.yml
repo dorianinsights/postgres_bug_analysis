@@ -1,10 +1,10 @@
 version: 2
 
 models:
-  - name: origin_activity_monthly
+  - name: fct_origin_activity_monthly_agg
     description: >
       Monthly master-branch activity split by origin ->
-      ../data/derived/origin_activity_monthly.csv: non-plumbing commit
+      ../data/derived/fct_origin_activity_monthly_agg.csv: non-plumbing commit
       count, AI-flagged commit count, and distinct cited discussion
       threads. Grain = (month_dt, origin).
     tests:

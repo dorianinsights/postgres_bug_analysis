@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: dim_version
+    description: >
+      Version dimension -> ../data/derived/dim_version.csv. One row per
+      individual PostgreSQL release (e.g. 18.6) -- the grain below a release
+      wave (dim_release). Sourced from the git-tag registry (int_releases).
+      Conforms to dim_release via wave_key (the wave a minor shipped in; NULL
+      for the .0 majors that ship alone) and to dim_date via release_date_key.
+      Grain = version.
+    tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: ISODOW(release_dt) = 4
+    columns:
+      - name: version
+        tests: [not_null, unique]
+      - name: major
+        tests: [not_null]
+      - name: minor
+        tests: [not_null]
+      - name: is_major_release
+        tests: [not_null]
+      - name: wrap_dt
+        tests: [not_null]
+      - name: release_dt
+        tests: [not_null]
+      - name: release_date_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      # NULL only for the .0 majors (they ship alone, not in a minor wave);
+      # the built-in relationships test ignores those NULLs.
+      - name: wave_key
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_release')
+                field: release_key

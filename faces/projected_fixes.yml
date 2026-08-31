@@ -41,7 +41,7 @@ queries:
       SELECT
         SUM(message_cnt) AS message_cnt,
         SUM(fix_linked_message_cnt) AS fix_linked_cnt
-      FROM list_traffic_weekly
+      FROM fct_list_traffic_weekly_agg
       WHERE earliest_ship_release_dt > CURRENT_DATE
 
   next_minor_fixes:

@@ -22,7 +22,7 @@ queries:
         report_month_dt AS report_month,
         'bug reports' AS series,
         report_cnt
-      FROM bug_reports_monthly
+      FROM fct_bug_reports_monthly_agg
       ORDER BY 1
 
   monthly_trend:
@@ -35,7 +35,7 @@ queries:
         AVG(report_cnt) OVER (
           ORDER BY report_month_dt ROWS BETWEEN 3 PRECEDING AND 2 FOLLOWING
         ) AS avg_reports
-      FROM bug_reports_monthly
+      FROM fct_bug_reports_monthly_agg
       ORDER BY 1
 
   weekly_reports:
@@ -107,7 +107,7 @@ queries:
         'acted upon (%)' AS series,
         -- as a 0-1 fraction so the y-axis can use a percent format (below)
         acted_upon_pct / 100.0 AS acted_upon_pct
-      FROM bug_reports_monthly
+      FROM fct_bug_reports_monthly_agg
       ORDER BY 1
 
   seasonality_counts:

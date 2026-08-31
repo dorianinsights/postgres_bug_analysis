@@ -13,8 +13,8 @@ description: >
   pgsql-bugs (or a Bug: # trailer), pgsql-hackers, or
   unknown/other/internal when there is no public trail. Built to ground
   projections of how bug-report volume translates into fix volume. Data
-  from the transform/ dbt project (fix_origins,
-  origin_activity_monthly).
+  from the transform/ dbt project (fct_fix_origins_agg,
+  fct_origin_activity_monthly_agg).
 
 queries:
 
@@ -28,10 +28,10 @@ queries:
     source: warehouse
     sql: |
       WITH waves AS (
-        SELECT DISTINCT wave_dt FROM fix_origins WHERE NOT is_out_of_band
+        SELECT DISTINCT wave_dt FROM fct_fix_origins_agg WHERE NOT is_out_of_band
       ),
       origins AS (
-        SELECT DISTINCT origin FROM fix_origins
+        SELECT DISTINCT origin FROM fct_fix_origins_agg
       )
       SELECT
         STRFTIME(wvs.wave_dt, '%b %y') AS wave,
@@ -48,17 +48,17 @@ queries:
         ) AS fix_share
       FROM waves AS wvs
       CROSS JOIN origins AS org
-      LEFT JOIN fix_origins AS fxo
+      LEFT JOIN fct_fix_origins_agg AS fxo
         ON fxo.wave_dt = wvs.wave_dt AND fxo.origin = org.origin
       UNION ALL
-      -- the in-progress next wave's origin shares (see fix_origins below)
+      -- the in-progress next wave's origin shares (see fct_fix_origins_agg below)
       SELECT
-        (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM pending_fix_origins),
-        (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM pending_fix_origins),
+        (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM fct_pending_fix_origins_agg),
+        (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM fct_pending_fix_origins_agg),
         labels.origin,
         ROUND(
           COALESCE(pnd.fix_cnt, 0)
-          * 1.0 / (SELECT SUM(fix_cnt) FROM pending_fix_origins),
+          * 1.0 / (SELECT SUM(fix_cnt) FROM fct_pending_fix_origins_agg),
           4
         )
       FROM (SELECT UNNEST(['pgsql-bugs', 'pgsql-hackers', 'embargoed security', 'unsourced']) AS origin) AS labels
@@ -66,11 +66,11 @@ queries:
         SELECT
           CASE origin WHEN 'unknown_or_internal' THEN 'unsourced' ELSE origin END AS origin,
           fix_cnt
-        FROM pending_fix_origins
+        FROM fct_pending_fix_origins_agg
       ) AS pnd ON pnd.origin = labels.origin
       ORDER BY 2, 3
 
-  fix_origins:
+  fct_fix_origins_agg:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the zero-fill spine is a deliberate cross join
     description: >
       Distinct fixes per scheduled wave by origin (out-of-band emergency
@@ -83,10 +83,10 @@ queries:
       -- (which SUMS wave_seq over each wave's rows) stays chronological
       -- regardless of how many origins a wave actually has
       WITH waves AS (
-        SELECT DISTINCT wave_dt FROM fix_origins WHERE NOT is_out_of_band
+        SELECT DISTINCT wave_dt FROM fct_fix_origins_agg WHERE NOT is_out_of_band
       ),
       origins AS (
-        SELECT DISTINCT origin FROM fix_origins
+        SELECT DISTINCT origin FROM fct_fix_origins_agg
       )
       SELECT
         STRFTIME(wvs.wave_dt, '%b %y') AS wave,
@@ -99,17 +99,17 @@ queries:
         COALESCE(fxo.fix_cnt, 0) AS fix_cnt
       FROM waves AS wvs
       CROSS JOIN origins AS org
-      LEFT JOIN fix_origins AS fxo
+      LEFT JOIN fct_fix_origins_agg AS fxo
         ON fxo.wave_dt = wvs.wave_dt AND fxo.origin = org.origin
       UNION ALL
       -- the in-progress next wave: fixes already committed toward the next
-      -- minor (pending_fix_origins), zero-filled over the same four display
+      -- minor (fct_pending_fix_origins_agg), zero-filled over the same four display
       -- labels so the categorical sort (which SUMS wave_seq per wave) keeps
       -- it last. 'embargoed security' is 0 by construction — that work only
       -- reaches public git on wrap day.
       SELECT
-        (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM pending_fix_origins),
-        (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM pending_fix_origins),
+        (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM fct_pending_fix_origins_agg),
+        (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM fct_pending_fix_origins_agg),
         labels.origin,
         COALESCE(pnd.fix_cnt, 0)
       FROM (SELECT UNNEST(['pgsql-bugs', 'pgsql-hackers', 'embargoed security', 'unsourced']) AS origin) AS labels
@@ -117,7 +117,7 @@ queries:
         SELECT
           CASE origin WHEN 'unknown_or_internal' THEN 'unsourced' ELSE origin END AS origin,
           fix_cnt
-        FROM pending_fix_origins
+        FROM fct_pending_fix_origins_agg
       ) AS pnd ON pnd.origin = labels.origin
       ORDER BY 2, 3
 
@@ -133,7 +133,7 @@ queries:
           ELSE origin
         END AS origin,
         cited_thread_cnt
-      FROM origin_activity_monthly
+      FROM fct_origin_activity_monthly_agg
       ORDER BY 1, 2
 
   ai_commits:
@@ -148,7 +148,7 @@ queries:
           ELSE origin
         END AS origin,
         ai_commit_cnt
-      FROM origin_activity_monthly
+      FROM fct_origin_activity_monthly_agg
       WHERE month_dt >= DATE '2026-01-01'
       ORDER BY 1, 2
 
@@ -160,11 +160,11 @@ queries:
     source: warehouse
     sql: |
       SELECT month_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM list_traffic_monthly
+      FROM fct_list_traffic_monthly_agg
       WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
       UNION ALL
       SELECT month_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM list_traffic_monthly
+      FROM fct_list_traffic_monthly_agg
       WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
       ORDER BY 1, 2
 
@@ -179,7 +179,7 @@ queries:
         month_dt,
         list_name,
         ROUND(fix_linked_message_cnt * 1.0 / message_cnt, 3) AS fix_linked_share
-      FROM list_traffic_monthly
+      FROM fct_list_traffic_monthly_agg
       WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
       ORDER BY 1, 2
 
@@ -190,12 +190,12 @@ queries:
     source: warehouse
     sql: |
       SELECT week_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM list_traffic_weekly
+      FROM fct_list_traffic_weekly_agg
       WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
         AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
       UNION ALL
       SELECT week_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM list_traffic_weekly
+      FROM fct_list_traffic_weekly_agg
       WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
         AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
       ORDER BY 1, 2
@@ -211,7 +211,7 @@ queries:
         week_dt,
         list_name,
         ROUND(fix_linked_message_cnt * 1.0 / message_cnt, 3) AS fix_linked_share
-      FROM list_traffic_weekly
+      FROM fct_list_traffic_weekly_agg
       WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
         AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
       ORDER BY 1, 2
@@ -220,7 +220,7 @@ charts:
 
   fix_origin_counts:
     type: bar
-    query: fix_origins
+    query: fct_fix_origins_agg
     title: "Fix origins per wave"
     subtitle: "Distinct fixes by source; out-of-band waves excluded. The rightmost '(in progress)' bar is the next minor's fixes committed so far — right-censored and with no security yet (embargoed until wrap)"
     x: wave

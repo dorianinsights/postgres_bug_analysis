@@ -5,7 +5,7 @@ models:
     description: >
       One row per (fix, contributor) credited in the fix's release-notes item,
       parsed from the trailing "(Name, Name)" list (extracted from the inline
-      wave_contributors logic so the wave rollup and the fix<->contributor bridge
+      fct_wave_contributors_agg logic so the wave rollup and the fix<->contributor bridge
       share one parse). Grain = (item_ord, contributor).
     tests:
       - dbt_utils.unique_combination_of_columns:
