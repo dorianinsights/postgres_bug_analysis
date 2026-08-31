@@ -6,32 +6,38 @@ models:
       Bug-report dimension -> ../data/derived/dim_bug.csv: one row per numbered
       pgsql-bugs report, folding in the outcome/latency/window classification the
       retired bug_report_outcomes mart used to compute, with the reporter
-      resolved into dim_person and the report day into dim_date. Grain =
-      bug_number.
+      resolved into dim_person and the report day into dim_date. Grain = dim_bug_key.
     tests:
       - dbt_utils.expression_is_true:
           arguments:
             expression: (days_to_commit_window IS NOT NULL) = is_acted_upon
     columns:
+      - name: dim_bug_key
+        tests: [not_null, unique]
       - name: bug_number
         tests: [not_null, unique]
-      - name: reporter_person_key
+      - name: reporter_dim_person_key
         description: The real reporter (parsed from the form body), resolved into dim_person.
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_person')
-                field: person_key
-      - name: reported_date_key
+                field: dim_person_key
+      - name: reported_dt
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_date')
-                field: date_key
-      - name: reported_dt
-        tests: [not_null]
+                field: date_day
+      - name: first_commit_dt
+        description: The report's first linked fix-commit day; NULL when never fixed.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: is_acted_upon
         tests: [not_null]
       - name: outcome
@@ -58,4 +64,9 @@ models:
         description: >
           First scheduled minor whose wrap falls strictly after reported_dt —
           the earliest release this report's fix could ship in.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day

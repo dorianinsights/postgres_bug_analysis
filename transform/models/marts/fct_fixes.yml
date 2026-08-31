@@ -6,27 +6,35 @@ models:
       Fix-grain fact -> ../data/derived/fct_fixes.csv (supersedes fix_impact
       AND the retired item-grain fix_items): fix identity (summary/full_text/
       cves/category), change size, worst CVE severity, origin, bug linkage, and
-      a wave_key FK into dim_release (and a version FK into dim_version). Per-CVE and per-bug detail live in
+      a dim_release_key FK into dim_release (and a dim_version_key FK into dim_version). Per-CVE and per-bug detail live in
       bridge_fix_cve / bridge_fix_bug. Grain = item_ord (one distinct fix).
     columns:
       - name: item_ord
         tests: [not_null, unique]
-      - name: wave_key
+      - name: dim_release_key
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_release')
-                field: release_key
+                field: dim_release_key
+      - name: wave_dt
+        description: The wave's release day (denormalized from dim_release for date joins).
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       # The representative minor of the deduped fix (the fix is backpatched
       # across a wave's branches; this is one member version) -> dim_version.
-      - name: version
+      - name: dim_version_key
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_version')
-                field: version
+                field: dim_version_key
       - name: category
         tests: [not_null]
       - name: origin
@@ -64,10 +72,10 @@ models:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 0
-      - name: primary_bug_number
+      - name: primary_dim_bug_key
         description: The fastest-resolved linked bug; NULL when the fix links to no report.
         tests:
           - relationships:
               arguments:
                 to: ref('dim_bug')
-                field: bug_number
+                field: dim_bug_key

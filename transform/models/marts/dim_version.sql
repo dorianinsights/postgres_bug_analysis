@@ -4,23 +4,22 @@
 -- it. Sourced from the git-tag registry (int_releases), which covers every
 -- REL_MAJOR_MINOR incl. the .0 majors that ship alone (not in a minor wave).
 --
---   is_major_release  the .0 tag that opens a major line (minor = 0)
---   wave_key          the wave this minor shipped in (dim_release.release_key);
---                     NULL for the .0 majors, which ship by themselves
---   release_date_key  the announced release day -> dim_date
+--   is_major_release   the .0 tag that opens a major line (minor = 0)
+--   dim_release_key    the wave this minor shipped in (dim_release's PK);
+--                      NULL for the .0 majors, which ship by themselves
 --
--- Facts conform here on `version`: fct_fixes (the representative minor of a
--- deduped fix) and fct_version_items_agg (changelog item count per minor).
+-- dim_version_key is a generate_surrogate_key hash of `version`, the PK facts
+-- conform on: fct_fixes (the representative minor of a deduped fix) and
+-- fct_version_items_agg (changelog item count per minor).
 -- Grain = version. -> ../data/derived/dim_version.csv
 SELECT
+  {{ dbt_utils.generate_surrogate_key(['rel.version']) }} AS dim_version_key,
   rel.version,
   rel.major,
   rel.minor,
   rel.minor = 0 AS is_major_release,
   rel.wrap_dt,
   rel.release_dt,
-  STRFTIME(rel.release_dt, '%Y%m%d')::INTEGER AS release_date_key,
-  drl.release_key AS wave_key
+  drl.dim_release_key
 FROM {{ ref('int_releases') }} AS rel
-LEFT JOIN {{ ref('dim_release') }} AS drl
-  ON STRFTIME(rel.release_dt, '%Y%m%d')::INTEGER = drl.release_key
+LEFT JOIN {{ ref('dim_release') }} AS drl ON rel.release_dt = drl.release_dt

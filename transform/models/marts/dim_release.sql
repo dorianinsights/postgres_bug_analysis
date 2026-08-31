@@ -10,9 +10,10 @@
 -- estimators, not a single measure. The cycle signals (int_release_cycles,
 -- once a standalone fct_release_cycles) are folded in on the same row: a cycle
 -- IS a release earlier in its life, so it was a fact 1:1 with this dimension.
--- They are non-NULL only for the started scheduled cycles. release_key is the
--- release day's YYYYMMDD; fct_fixes (wave_key) conforms to it.
--- Grain = release_key. -> ../data/derived/dim_release.csv
+-- They are non-NULL only for the started scheduled cycles. dim_release_key is a
+-- dbt_utils.generate_surrogate_key hash of the release day; facts conform to it
+-- via a dim_release_key column of the same type.
+-- Grain = dim_release_key. -> ../data/derived/dim_release.csv
 WITH next_release AS (
   SELECT MIN(scheduled_release_dt) AS release_dt
   FROM {{ ref('int_release_calendar') }}
@@ -81,7 +82,7 @@ combined AS (
 )
 
 SELECT
-  STRFTIME(cmb.release_dt, '%Y%m%d')::INTEGER AS release_key,
+  {{ dbt_utils.generate_surrogate_key(['cmb.release_dt']) }} AS dim_release_key,
   cmb.release_dt,
   cmb.wrap_dt,
   cmb.status,

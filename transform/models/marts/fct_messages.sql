@@ -1,5 +1,5 @@
 -- Message-grain fact: one row per archived mailing-list message. Foreign keys
--- into dim_person (sender role), dim_date (send day), and dim_bug (bug_number,
+-- into dim_person (sender role), dim_date (send day), and dim_bug (dim_bug_key,
 -- for pgsql-bugs messages whose "BUG #NNNNN" subject names a corpus report —
 -- NULL otherwise); the thread/fix-link attributes ride along. There is
 -- deliberately NO CVE FK: CVEs are embargoed on the private security@ list and
@@ -21,15 +21,17 @@ WITH msg_bug AS (
 SELECT
   imt.list_name,
   imt.message_id,
-  pmp.person_key AS sender_person_key,
-  STRFTIME((imt.sent_ts AT TIME ZONE 'utc')::DATE, '%Y%m%d')::INTEGER AS sent_date_key,
+  pmp.person_key AS sender_dim_person_key,
   (imt.sent_ts AT TIME ZONE 'utc')::DATE AS sent_dt,
-  mbg.bug_number,
+  CASE
+    WHEN mbg.bug_number IS NOT null
+      THEN {{ dbt_utils.generate_surrogate_key(['mbg.bug_number']) }}
+  END AS dim_bug_key,
   imt.root_id,
   imt.is_thread_start,
   imt.is_fix_linked,
   imt.earliest_ship_release_dt,
-  drl.release_key AS ship_release_key,
+  drl.dim_release_key AS ship_dim_release_key,
   imt.subject
 FROM {{ ref('int_message_threads') }} AS imt
 INNER JOIN {{ ref('stg_list_messages') }} AS slm

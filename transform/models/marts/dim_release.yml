@@ -10,7 +10,7 @@ models:
       shipped measures are NULL for non-shipped rows, and the cycle signals
       (cycle_start_dt, window_days, early_*_cnt, full_fix_cnt, first_window_fix_cnt)
       are non-NULL only for the started scheduled cycles. A wave is a shipped
-      cycle. Grain = release_key (the release day's YYYYMMDD).
+      cycle. Grain = dim_release_key (a generate_surrogate_key hash of the release day).
     tests:
       # cycle signals are present for exactly the started scheduled cycles
       # (not out-of-band waves, not the not-yet-started future release)
@@ -18,16 +18,16 @@ models:
           arguments:
             expression: "(cycle_start_dt IS NOT NULL) = (NOT is_out_of_band AND status <> 'future')"
     columns:
-      - name: release_key
+      - name: dim_release_key
+        tests: [not_null, unique]
+      - name: release_dt
         tests:
           - not_null
           - unique
           - relationships:
               arguments:
                 to: ref('dim_date')
-                field: date_key
-      - name: release_dt
-        tests: [not_null, unique]
+                field: date_day
       - name: status
         tests:
           - not_null
@@ -50,6 +50,18 @@ models:
         description: >
           The cycle's start (the PRIOR quarter's wrap, ~3 months before ship),
           distinct from this release's own wrap_dt. NULL for non-cycle rows.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: wrap_dt
+        description: This release's own wrap day; NULL for the not-yet-wrapped future row.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: first_window_fix_cnt
         description: >
           Distinct backpatched fixes in the FIXED first-N-day window after the

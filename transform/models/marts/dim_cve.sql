@@ -10,6 +10,7 @@ WITH corpus_cves AS (
 )
 
 SELECT
+  {{ dbt_utils.generate_surrogate_key(['cvs.cve_id']) }} AS dim_cve_key,
   cvs.cve_id,
   sev.cvss_base_score,
   sev.severity_band,

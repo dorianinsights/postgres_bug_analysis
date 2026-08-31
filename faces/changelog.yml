@@ -36,7 +36,7 @@ queries:
         'PG' || dv.major AS branch,
         vi.item_cnt AS n_items
       FROM fct_version_items_agg AS vi
-      INNER JOIN dim_version AS dv ON vi.version = dv.version
+      INNER JOIN dim_version AS dv ON vi.dim_version_key = dv.dim_version_key
       WHERE dv.minor > 0 AND vi.item_cnt >= 20
       ORDER BY 1, dv.major
 
@@ -199,7 +199,7 @@ queries:
         SELECT CAST(dv.release_dt AS DATE) AS date, vi.item_cnt AS n_items,
                DATE_DIFF('day', DATE '2022-01-01', CAST(dv.release_dt AS DATE)) AS t
         FROM fct_version_items_agg AS vi
-        INNER JOIN dim_version AS dv ON vi.version = dv.version
+        INNER JOIN dim_version AS dv ON vi.dim_version_key = dv.dim_version_key
         WHERE dv.minor > 0 AND vi.item_cnt >= 20 AND NOT (dv.major = 15 AND dv.minor = 1)
       ),
       fit_all AS (SELECT REGR_SLOPE(n_items, t) AS b, REGR_INTERCEPT(n_items, t) AS a FROM sched),

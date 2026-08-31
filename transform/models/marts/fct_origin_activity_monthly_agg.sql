@@ -54,7 +54,6 @@ thread_rollup AS (
 
 SELECT
   COALESCE(cro.month_dt, tro.month_dt) AS month_dt,
-  STRFTIME(COALESCE(cro.month_dt, tro.month_dt), '%Y%m%d')::INTEGER AS month_date_key,
   COALESCE(cro.origin, tro.origin) AS origin,
   COALESCE(cro.commit_cnt, 0) AS commit_cnt,
   COALESCE(cro.ai_commit_cnt, 0) AS ai_commit_cnt,

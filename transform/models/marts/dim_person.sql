@@ -3,8 +3,10 @@
 -- mailing-list sender, or a bug reporter (the roles are booleans, not separate
 -- rows — the same human plays several). Identity is resolved by int_person_map
 -- (connected components over shared email OR name), so a person who uses
--- several email addresses is one row. Grain = person_key.
--- -> ../data/derived/dim_person.csv
+-- several email addresses is one row. dim_person_key is the resolved person
+-- key (int_person_map's connected-component id) surfaced as this dimension's
+-- PK; facts conform on it via <role>_dim_person_key columns.
+-- Grain = dim_person_key. -> ../data/derived/dim_person.csv
 WITH resolved AS (
   SELECT
     pmp.person_key,
@@ -48,7 +50,7 @@ name_votes AS (
 )
 
 SELECT
-  pky.person_key,
+  pky.person_key AS dim_person_key,
   pky.canonical_email,
   COALESCE(nvt.person_name, pky.canonical_email, '(unknown)') AS canonical_name,
   pky.is_git_author,

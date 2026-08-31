@@ -3,11 +3,10 @@
 -- dbt_date.get_base_dates, so this dimension depends on no other model to build
 -- -- the corpus-coverage guarantee it used to derive its own bounds from now
 -- lives in assert_dim_date_covers_corpus, which fails the build if the data
--- ever outgrows the fixed span (widen the var when it does). date_key is a
--- smart YYYYMMDD integer -- the facts store it and join here.
--- Grain = one day. -> ../data/derived/dim_date.csv
+-- ever outgrows the fixed span (widen the var when it does). Facts store the
+-- calendar DATE and join on date_day -- there is no separate integer date key.
+-- Grain = date_day (one row per day). -> ../data/derived/dim_date.csv
 SELECT
-  STRFTIME(base.date_day, '%Y%m%d')::INTEGER AS date_key,
   base.date_day::DATE AS date_day,
   YEAR(base.date_day) AS year_num,
   QUARTER(base.date_day) AS quarter_num,

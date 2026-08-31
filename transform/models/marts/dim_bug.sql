@@ -5,9 +5,9 @@
 -- this one table. reporter -> dim_person (the root message's sender),
 -- report day -> dim_date. Grain = bug_number. -> ../data/derived/dim_bug.csv
 SELECT
+  {{ dbt_utils.generate_surrogate_key(['ibo.bug_number']) }} AS dim_bug_key,
   ibo.bug_number,
-  pmp.person_key AS reporter_person_key,
-  STRFTIME(ibo.reported_dt, '%Y%m%d')::INTEGER AS reported_date_key,
+  pmp.person_key AS reporter_dim_person_key,
   ibo.reported_dt,
   ibo.subject,
   ibo.thread_message_cnt,

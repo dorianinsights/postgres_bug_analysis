@@ -5,9 +5,9 @@ models:
     description: >
       Person/entity dimension -> ../data/derived/dim_person.csv: one row per
       distinct person (git patch author, git committer, and/or list sender),
-      resolved first-pass on normalized email. Grain = person_key.
+      resolved first-pass on normalized email. Grain = dim_person_key.
     columns:
-      - name: person_key
+      - name: dim_person_key
         tests: [not_null, unique]
       - name: canonical_name
         tests:
@@ -22,9 +22,19 @@ models:
       - name: is_bug_reporter
         tests: [not_null]
       - name: first_seen_dt
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: last_seen_dt
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: source_list_cnt
         tests:
           - not_null

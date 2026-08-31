@@ -1,9 +1,9 @@
 -- Tidy (release-wave, category) distinct-fix counts, aggregated straight from
 -- the fix-grain star (a fix has exactly one category, so no bridge needed).
--- Conforms to dim_release via release_key. Only categories present in a wave
--- appear, so fix_cnt >= 1. Grain = (release_key, category).
+-- Conforms to dim_release via dim_release_key. Only categories present in a wave
+-- appear, so fix_cnt >= 1. Grain = (dim_release_key, category).
 SELECT
-  fix.wave_key AS release_key,
+  fix.dim_release_key,
   fix.wave_dt AS release_dt,
   fix.category,
   fix.category_order,

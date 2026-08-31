@@ -1,7 +1,8 @@
 -- Fix-grain fact: one row per distinct fix (replaces the Round A fix_impact).
 -- Change size (int_fix_changes), worst CVE severity denormalized from
 -- int_fix_severity, and the bug linkage from int_fix_bug_links, with a
--- wave_key FK into dim_release_wave. The many-to-many CVE and bug detail lives
+-- dim_release_key FK into dim_release and a dim_version_key FK into dim_version
+-- (both generate_surrogate_key hashes). The many-to-many CVE and bug detail lives
 -- in bridge_fix_cve / bridge_fix_bug; here we keep the worst severity and the
 -- primary (fastest-resolved) bug for convenient single-row analysis.
 -- Grain = item_ord. -> ../data/derived/fct_fixes.csv
@@ -36,9 +37,9 @@ primary_bug AS (
 
 SELECT
   chg.item_ord,
-  STRFTIME(chg.wave_dt, '%Y%m%d')::INTEGER AS wave_key,
+  {{ dbt_utils.generate_surrogate_key(['chg.wave_dt']) }} AS dim_release_key,
   chg.wave_dt,
-  chg.version,
+  {{ dbt_utils.generate_surrogate_key(['chg.version']) }} AS dim_version_key,
   chg.item_index,
   reps.summary,
   reps.full_text,
@@ -60,7 +61,10 @@ SELECT
   sev.max_cvss_base_score,
   sev.severity_band,
   COALESCE(bag.bug_link_cnt, 0) AS bug_link_cnt,
-  pbg.primary_bug_number,
+  CASE
+    WHEN pbg.primary_bug_number IS NOT null
+      THEN {{ dbt_utils.generate_surrogate_key(['pbg.primary_bug_number']) }}
+  END AS primary_dim_bug_key,
   bag.days_to_fix_min
 FROM {{ ref('int_fix_changes') }} AS chg
 INNER JOIN group_sizes AS grp ON chg.item_ord = grp.group_ord

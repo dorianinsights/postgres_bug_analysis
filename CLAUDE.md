@@ -71,6 +71,19 @@ per-session memories, which aren't committed to git.)
   so if a mart grows past the threshold, `git rm` its now-stale CSV once.
 - **Naming: dimensions singular, facts plural** is intentional (Kimball). Don't
   "fix" `fct_*` to singular.
+- **Surrogate keys: every non-date dimension's PK is its first column, named
+  `<table>_key`** (`dim_release_key`, `dim_version_key`, `dim_bug_key`,
+  `dim_cve_key`, `dim_person_key`) and a `dbt_utils.generate_surrogate_key` hash
+  (uniform VARCHAR). Facts/bridges link with a matching `<table>_key`, role-
+  prefixed where a fact references one dim twice (`author_dim_person_key`,
+  `primary_dim_bug_key`, `ship_dim_release_key`). The dims keep their natural key
+  as a plain attribute (`version`, `bug_number`, `cve_id`). A fact computes the
+  FK by hashing the SAME natural value the dim hashed — guard nullable FKs
+  (`CASE WHEN x IS NOT null THEN generate_surrogate_key([...]) END`) so a NULL
+  isn't hashed into a bogus key. `dim_person_key` is `int_person_map`'s
+  connected-component id surfaced under the convention (NOT a fresh hash — that
+  would break identity resolution). **`dim_date` is the deliberate exception:**
+  no surrogate — facts store the DATE and join on `dim_date.date_day`.
 - A **release cycle** and a **wave** are the same entity at two lifecycle stages
   (a wave is a shipped cycle), unified in **`dim_release`** (`status` =
   shipped/open/future; shipped measures NULL for non-shipped). The cycle signals
@@ -78,6 +91,6 @@ per-session memories, which aren't committed to git.)
   `int_release_cycles`) are **folded onto the same row** — a cycle was a fact 1:1
   with this dimension, so `fct_release_cycles` was retired into it; they're
   non-NULL only for the started scheduled cycles (`cycle_start_dt IS NOT NULL`).
-  `fct_fixes.wave_key` conforms to `dim_release.release_key`.
+  `fct_fixes.dim_release_key` conforms to `dim_release.dim_release_key`.
   `dim_release.release_dt` is the release day — the changelog aliases it back to
   `wave_dt` for its charts.

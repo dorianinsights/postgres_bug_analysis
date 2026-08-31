@@ -4,21 +4,21 @@ models:
   - name: fct_wave_categories_agg
     description: >
       Tidy (release-wave, category) fix counts -> ../data/derived/fct_wave_categories_agg.csv,
-      aggregated from fct_fixes and conformed to dim_release via release_key.
+      aggregated from fct_fixes and conformed to dim_release via dim_release_key.
       Only categories present in a wave are written, so fix_cnt >= 1.
-      Grain = (release_key, category).
+      Grain = (dim_release_key, category).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [release_key, category]
+            combination_of_columns: [dim_release_key, category]
     columns:
-      - name: release_key
+      - name: dim_release_key
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_release')
-                field: release_key
+                field: dim_release_key
       - name: release_dt
         tests:
           - not_null
@@ -26,6 +26,10 @@ models:
               arguments:
                 min_value: "{{ var('test_floor_release_dt') }}"
                 max_value: current_date
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: category
         tests:
           - not_null

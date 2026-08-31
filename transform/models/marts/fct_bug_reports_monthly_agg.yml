@@ -8,15 +8,13 @@ models:
       right-censored). Grain = report_month_dt.
     columns:
       - name: report_month_dt
-        tests: [unique, not_null]
-      - name: month_date_key
-        description: First-of-month date_key conforming this aggregate on dim_date.
         tests:
+          - unique
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_date')
-                field: date_key
+                field: date_day
       - name: report_cnt
         tests:
           - not_null

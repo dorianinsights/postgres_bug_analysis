@@ -1,7 +1,7 @@
 -- dim_date is built over a FIXED span (var date_spine_start .. date_spine_end)
 -- so it depends on no other model. This test is the guard that keeps those
 -- static bounds honest: it fails the build if the corpus ever reaches outside
--- the span, so a silent date_key FK gap can't happen -- widen the var and
+-- the span, so a silent date FK gap can't happen -- widen the var and
 -- rebuild when it fires. The low bound is week-floored because the weekly
 -- aggregates conform on DATE_TRUNC('week', ...) (the Monday must be present);
 -- the high bound covers every date the facts and the release calendar reference.

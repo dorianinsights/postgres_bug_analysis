@@ -1,69 +1,69 @@
-cve_id,cvss_base_score,severity_band,cvss_vector,component,is_severity_unlisted
-CVE-2012-0868,,,,,true
-CVE-2017-7484,,,,,true
-CVE-2022-41862,3.7,LOW,AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N,client,false
-CVE-2023-2454,7.2,HIGH,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2023-2455,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
-CVE-2023-39417,7.5,HIGH,AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2023-39418,3.1,LOW,AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N,core server,false
-CVE-2023-5868,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
-CVE-2023-5869,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2023-5870,2.2,LOW,AV:N/AC:H/PR:H/UI:N/S:U/C:N/I:N/A:L,core server,false
-CVE-2024-0985,8.0,HIGH,AV:N/AC:L/PR:L/UI:R/S:U/C:H/I:H/A:H,core server,false
-CVE-2024-10976,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
-CVE-2024-10977,3.1,LOW,AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N,client,false
-CVE-2024-10978,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
-CVE-2024-10979,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2024-4317,3.1,LOW,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
-CVE-2024-7348,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2025-1094,8.1,HIGH,AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2025-12817,3.1,LOW,AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L,core server,false
-CVE-2025-12818,5.9,MEDIUM,AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H,core server,false
-CVE-2025-4207,5.9,MEDIUM,AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H,core server,false
-CVE-2025-8713,3.1,LOW,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
-CVE-2025-8714,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,core server,false
-CVE-2025-8715,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-14662,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-14663,6.5,MEDIUM,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N,contrib module,false
-CVE-2026-14664,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-14666,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
-CVE-2026-14668,8.1,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:H,core server,false
-CVE-2026-14669,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-14670,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-14671,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
-CVE-2026-14672,5.3,MEDIUM,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N,core server,false
-CVE-2026-14673,3.8,LOW,AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:N,contrib module,false
-CVE-2026-14676,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
-CVE-2026-14677,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-14678,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,contrib module,false
-CVE-2026-14679,8.2,HIGH,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H,core server,false
-CVE-2026-14680,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-14681,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
-CVE-2026-15741,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-15742,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
-CVE-2026-16238,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-16239,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-16241,3.8,LOW,AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:L/A:L,client,false
-CVE-2026-18024,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
-CVE-2026-18408,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,client,false
-CVE-2026-19385,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,client,false
-CVE-2026-2003,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
-CVE-2026-2004,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
-CVE-2026-2005,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
-CVE-2026-2006,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-2007,8.2,HIGH,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H,contrib module,false
-CVE-2026-6464,8.1,HIGH,AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H,client,false
-CVE-2026-6469,3.8,LOW,AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:L/A:L,core server,false
-CVE-2026-6470,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L,core server,false
-CVE-2026-6471,7.2,HIGH,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-6472,5.4,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
-CVE-2026-6473,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
-CVE-2026-6474,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
-CVE-2026-6475,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,client,false
-CVE-2026-6476,7.2,HIGH,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H,client,false
-CVE-2026-6477,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,client,false
-CVE-2026-6478,6.5,MEDIUM,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N,core server,false
-CVE-2026-6479,7.5,HIGH,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H,core server,false
-CVE-2026-6575,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
-CVE-2026-6637,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
-CVE-2026-6638,3.7,LOW,AV:N/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:N,core server,false
+dim_cve_key,cve_id,cvss_base_score,severity_band,cvss_vector,component,is_severity_unlisted
+049951abf17cbb4416b4730b765b9630,CVE-2026-2007,8.2,HIGH,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H,contrib module,false
+05cd79e3d2de6eeacbaf13fffd56b97a,CVE-2023-2454,7.2,HIGH,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H,core server,false
+068931a4d1fe76df88c5d16ff0208588,CVE-2024-10978,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
+09b67e1b5eb9cad52ab3e12e048c1423,CVE-2023-39418,3.1,LOW,AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N,core server,false
+0ea6c1a89686becf900f2e0177e0285a,CVE-2026-14680,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+0ec0d8d9f63c1028e5a6952899e73126,CVE-2026-19385,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,client,false
+107d919442eb6717f3031044f759d79a,CVE-2026-6575,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
+11b08b34ebe839a84b39f3044993f1b7,CVE-2026-16239,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+12a36c945bb4c8ef3caa9659cf477c60,CVE-2022-41862,3.7,LOW,AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N,client,false
+1488f0961f732472b55213f1382d38f9,CVE-2026-14669,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+162faeb8eac9237985df214175da67f2,CVE-2026-2006,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+16b8fecf251709d2495bf11c95f00bb3,CVE-2026-6474,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
+1babeb2995efd3b75635d81d807fecd7,CVE-2026-14663,6.5,MEDIUM,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N,contrib module,false
+22de8cfd14b555ee6bdbfe7e5684ec28,CVE-2026-2005,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
+230247c47e7b21d53eb0777005acc0f9,CVE-2025-1094,8.1,HIGH,AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H,core server,false
+23ee051029b8108cb9a9bf45fb2b547f,CVE-2026-14681,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
+2598390ebf8ff5035be4c9d9a5fa8c71,CVE-2026-6477,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,client,false
+291b099a0d95bf77f847c76585cef01c,CVE-2026-14672,5.3,MEDIUM,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N,core server,false
+2b6a557a6eccfe5ccb7da0d9bd921a57,CVE-2026-18408,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,client,false
+33c9b8a5ecc703d6e2d593cf25c89950,CVE-2025-4207,5.9,MEDIUM,AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H,core server,false
+363a952a0f34c5651d3344502a356566,CVE-2026-2004,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
+3c55a44125b795b7624ce457152b72ec,CVE-2026-6472,5.4,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
+42e519e4b8dcaca632d3f1f537268785,CVE-2026-14678,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,contrib module,false
+47045a6bac926783210b6257e0d909b3,CVE-2026-6475,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,client,false
+5443b2328327ac31ba58b0744beba23a,CVE-2026-15741,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,core server,false
+55238d312c5e4c12f30044da45231fa0,CVE-2024-7348,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+56f6f74233d26f01278d18c29e8d5d97,CVE-2026-6464,8.1,HIGH,AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H,client,false
+575e8560f9cb102cf2de080182788480,CVE-2026-15742,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
+59a47b5a6afb5f26478b7f23e3511096,CVE-2026-14671,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
+5b69cf8a895b085e4e3f25201096eacb,CVE-2023-5869,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+5e3fedc9f7496281744d79789c103059,CVE-2026-14677,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+677104e447ed036a67e50efc922653e3,CVE-2026-6473,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+68c3777bcdab005450ba10c4f57a63a3,CVE-2026-6476,7.2,HIGH,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H,client,false
+6ee08edeecdf54f26dce717a9c4afafb,CVE-2023-5868,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
+73b652c1b2864d1bf0dfd5b7f628d018,CVE-2026-14662,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+762a46523bcb117a6e9d36638d16a08d,CVE-2024-10979,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+785d6941a9846e7b879fb1c133288fb3,CVE-2025-8713,3.1,LOW,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
+8029c87eff00ba3b6af4a7c705c85bb3,CVE-2026-2003,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
+832d10d379faffa85293e8ed63734b3b,CVE-2026-6638,3.7,LOW,AV:N/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:N,core server,false
+84d2f3e04f3158d172f5645f54c8e081,CVE-2026-14673,3.8,LOW,AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:N,contrib module,false
+8667f101288f51be6c4d2c49a0adf48f,CVE-2024-10977,3.1,LOW,AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N,client,false
+9392fda0c6d761aad3bad37089676d4a,CVE-2026-14676,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
+974c10353b4f39101842d78d2632b7e6,CVE-2026-6471,7.2,HIGH,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H,core server,false
+9aaa4b86b928946e5d2538940fd38ac2,CVE-2025-12818,5.9,MEDIUM,AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H,core server,false
+9ab901b9e07a77b46f32c5df8e9b0eca,CVE-2026-6478,6.5,MEDIUM,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N,core server,false
+a6ddf2a004fe163c6a3515a21c32b0e3,CVE-2026-16241,3.8,LOW,AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:L/A:L,client,false
+a8e2f7cfa881256ee5d261f1dcf01d4b,CVE-2026-18024,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
+aaba8e7456cedaf696f5155c450731a2,CVE-2025-8714,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,core server,false
+ae0e068b92f1603b643f9f50d5b07338,CVE-2026-14679,8.2,HIGH,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H,core server,false
+ae4dfc96b8a43928bce55a425db33b22,CVE-2024-0985,8.0,HIGH,AV:N/AC:L/PR:L/UI:R/S:U/C:H/I:H/A:H,core server,false
+aede4a0e03c7cda1ff8f0ace95c9e781,CVE-2025-8715,8.8,HIGH,AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H,core server,false
+b195b0c190b21e575007d889aeffa279,CVE-2026-14664,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+b9d4cc68b9aa67b02345695dcd0ed9ea,CVE-2026-6470,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L,core server,false
+bf0bf534da72c831cffe3e21cb6ef072,CVE-2012-0868,,,,,true
+bf41945ac67302fa56604c3d241d2717,CVE-2024-4317,3.1,LOW,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
+bfcf27736ba561da1e8154879d151cdc,CVE-2026-6479,7.5,HIGH,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H,core server,false
+c56c7509fd0ce3e1d15cf537391f17ed,CVE-2023-2455,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
+ca5dc57cb2adc66e9f93db0842da0eca,CVE-2025-12817,3.1,LOW,AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L,core server,false
+cde8b087d9fc0a26d66b1f0b0761382c,CVE-2017-7484,,,,,true
+d582f2ee842089901079816f0db02f0d,CVE-2026-14666,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
+dba3325f262c3ac505ff44da9918c098,CVE-2026-6637,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
+e94f0d93a38a0ed5ae81ac8639337ce7,CVE-2026-14668,8.1,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:H,core server,false
+e9c84f2a54b575341381837112a2fb16,CVE-2023-5870,2.2,LOW,AV:N/AC:H/PR:H/UI:N/S:U/C:N/I:N/A:L,core server,false
+f6e4b93dc6380334199e79ff71889f21,CVE-2026-16238,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+f92a44950bcebdb3e616158364da259d,CVE-2023-39417,7.5,HIGH,AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+fa978439e440699e66ab6cd47dc5556f,CVE-2024-10976,4.2,MEDIUM,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
+fdf80bdfe5ece9e86dbbf4f5f363fb9c,CVE-2026-6469,3.8,LOW,AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:L/A:L,core server,false
+ff804265a1748d27d4e15919ea35e3e5,CVE-2026-14670,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false

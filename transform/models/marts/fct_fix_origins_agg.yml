@@ -12,7 +12,12 @@ models:
             combination_of_columns: [wave_dt, origin]
     columns:
       - name: wave_dt
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: is_out_of_band
         tests: [not_null]
       - name: origin

@@ -19,15 +19,12 @@ models:
             expression: thread_start_cnt <= message_cnt
     columns:
       - name: month_dt
-        tests: [not_null]
-      - name: month_date_key
-        description: First-of-month date_key conforming this aggregate on dim_date.
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_date')
-                field: date_key
+                field: date_day
       - name: list_name
         tests:
           - not_null

@@ -5,8 +5,10 @@ models:
     description: >
       CVE dimension -> ../data/derived/dim_cve.csv: one row per CVE a corpus
       fix cites, with published CVSS v3 severity where available (NULL for
-      long-EOL CVEs the security page no longer lists). Grain = cve_id.
+      long-EOL CVEs the security page no longer lists). Grain = dim_cve_key.
     columns:
+      - name: dim_cve_key
+        tests: [not_null, unique]
       - name: cve_id
         tests:
           - not_null

@@ -13,11 +13,26 @@ models:
             combination_of_columns: [ships_at_dt, origin]
     columns:
       - name: ships_at_dt
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: wrap_dt
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: as_of_dt
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: origin
         tests:
           - not_null

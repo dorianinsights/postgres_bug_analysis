@@ -18,9 +18,8 @@ WITH file_stats AS (
 SELECT
   gcm.branch,
   gcm.commit_hash,
-  pmp_a.person_key AS author_person_key,
-  pmp_c.person_key AS committer_person_key,
-  STRFTIME((gcm.commit_ts AT TIME ZONE 'utc')::DATE, '%Y%m%d')::INTEGER AS commit_date_key,
+  pmp_a.person_key AS author_dim_person_key,
+  pmp_c.person_key AS committer_dim_person_key,
   (gcm.commit_ts AT TIME ZONE 'utc')::DATE AS commit_dt,
   org.origin,
   igc.is_plumbing,

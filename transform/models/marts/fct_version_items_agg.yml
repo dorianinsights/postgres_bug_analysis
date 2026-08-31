@@ -5,19 +5,19 @@ models:
     description: >
       Aggregate fact: changelog item count per individual release (version
       grain) -> ../data/derived/fct_version_items_agg.csv. Conforms to
-      dim_version on `version`; the release's date/major/minor attributes live
+      dim_version on dim_version_key; the release's date/major/minor attributes live
       in the dimension. item_cnt is the parsed SGML changelog-item count.
       (Formerly release_item_counts, which carried those attributes inline.)
-      Grain = version.
+      Grain = dim_version_key.
     columns:
-      - name: version
+      - name: dim_version_key
         tests:
           - not_null
           - unique
           - relationships:
               arguments:
                 to: ref('dim_version')
-                field: version
+                field: dim_version_key
       - name: item_cnt
         tests:
           - not_null

@@ -13,23 +13,14 @@ models:
           arguments:
             combination_of_columns: [list_name, message_id]
     columns:
-      - name: sender_person_key
+      - name: sender_dim_person_key
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_person')
-                field: person_key
-      - name: sent_date_key
-        description: >
-          NULL only when the message's Date header was unparseable; the
-          relationships test skips those rows.
-        tests:
-          - relationships:
-              arguments:
-                to: ref('dim_date')
-                field: date_key
-      - name: bug_number
+                field: dim_person_key
+      - name: dim_bug_key
         description: >
           The corpus bug report this message belongs to (from its "BUG #NNNNN"
           subject); NULL for pgsql-hackers messages and pgsql-bugs messages
@@ -38,11 +29,23 @@ models:
           - relationships:
               arguments:
                 to: ref('dim_bug')
-                field: bug_number
+                field: dim_bug_key
       - name: sent_dt
         description: The message's UTC send day as a DATE (the period aggregates group on it).
-        tests: [not_null]
-      - name: ship_release_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: earliest_ship_release_dt
+        description: The day of the next scheduled minor after this message (feeds ship_dim_release_key); NULL when none.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: ship_dim_release_key
         description: >
           The release the thread accrues toward (from earliest_ship_release_dt);
           NULL for pre-corpus targets that have no dim_release row.
@@ -50,7 +53,7 @@ models:
           - relationships:
               arguments:
                 to: ref('dim_release')
-                field: release_key
+                field: dim_release_key
       - name: is_thread_start
         tests: [not_null]
       - name: is_fix_linked
