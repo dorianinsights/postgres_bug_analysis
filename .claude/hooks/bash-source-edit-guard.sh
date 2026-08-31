@@ -16,30 +16,44 @@
 # (sqlfluff fix, ruff format, dbt) don't use these forms, so they pass. Scratch
 # targets (/tmp, scratch/, .cache/) are exempt. Blocks with exit 2 (stderr ->
 # Claude). BSD-grep-safe: no \b (use a non-alnum / end-of-string boundary).
+#
+# False-positive avoidance: git commands are skipped outright (they never edit
+# source via sed/redirect, but their messages/args routinely mention .py/.sql
+# filenames), and the match runs against a copy with quoted spans and "->"
+# arrows stripped, so a .py/.sql inside a sed s/// script, a quoted string, or
+# an arrow ("step 1 -> foo.py") isn't read as a redirect/sed target. Real
+# redirect and sed file targets are unquoted, so they survive the stripping.
 
 set -u
 
 cmd=$(jq -r '.tool_input.command // empty')
 [ -z "$cmd" ] && exit 0
 
+# git never edits source files through sed/redirect — skip (avoids commit
+# messages and git args that mention .py/.sql filenames tripping the guard).
+printf '%s' "$cmd" | grep -Eq '(^|[[:space:];&|(])git[[:space:]]' && exit 0
+
+# Strip quoted spans and -> arrows before matching (see header).
+scan=$(printf '%s' "$cmd" | sed "s/'[^']*'//g; s/\"[^\"]*\"//g; s/->//g")
+
 ext='\.(sql|py)([^[:alnum:]]|$)'
 violation=""
 
 # sed -i on a source file
-if printf '%s' "$cmd" | grep -Eq 'sed[[:space:]]+-i' \
-  && printf '%s' "$cmd" | grep -Eiq "$ext"; then
+if printf '%s' "$scan" | grep -Eq 'sed[[:space:]]+-i' \
+  && printf '%s' "$scan" | grep -Eiq "$ext"; then
   violation="sed -i on a .sql/.py file"
 fi
 
 # redirection / tee / heredoc whose target is a source file
-if printf '%s' "$cmd" | grep -Eq "(>>?[[:space:]]*|tee[[:space:]]+(-a[[:space:]]+)?)[^[:space:]|&>]*${ext}"; then
+if printf '%s' "$scan" | grep -Eq "(>>?[[:space:]]*|tee[[:space:]]+(-a[[:space:]]+)?)[^[:space:]|&>]*${ext}"; then
   violation="a shell redirect/tee writing a .sql/.py file"
 fi
 
 [ -z "$violation" ] && exit 0
 
 # Exempt throwaway/scratch paths.
-if printf '%s' "$cmd" | grep -Eq '(/tmp/|scratchpad|(^|[[:space:]./])scratch/|\.cache/)'; then
+if printf '%s' "$scan" | grep -Eq '(/tmp/|scratchpad|(^|[[:space:]./])scratch/|\.cache/)'; then
   exit 0
 fi
 
