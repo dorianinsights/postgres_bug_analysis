@@ -26,6 +26,12 @@ CACHE = Path(__file__).parent / ".cache" / "postgres.git"
 REFSPECS = ["+refs/heads/*:refs/heads/*", "+refs/tags/*:refs/tags/*"]
 
 
+def git(*args: str) -> str:
+    """Run git inside the clone and return stdout. Used by the release-notes
+    SGML scraper to `git show` release-NN.sgml straight out of the clone."""
+    return subprocess.run(["git", "-C", str(CACHE), *args], capture_output=True, text=True, check=True).stdout
+
+
 def ensure_clone() -> None:
     if CACHE.exists():
         print("fetching latest commits and tags...")
