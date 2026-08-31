@@ -7,7 +7,8 @@
 SELECT
   {{ dbt_utils.generate_surrogate_key(['ibo.bug_number']) }} AS dim_bug_key,
   ibo.bug_number,
-  pmp.person_key AS reporter_dim_person_key,
+  -- mandatory FK: fall back to dim_person's Unknown member if unresolved
+  COALESCE(pmp.person_key, {{ unknown_key() }}) AS reporter_dim_person_key,
   ibo.reported_dt,
   ibo.subject,
   ibo.thread_message_cnt,
@@ -38,3 +39,36 @@ LEFT JOIN {{ ref('latency_windows') }} AS ltw
     AND ibo.days_to_commit <= COALESCE(ltw.max_days, ibo.days_to_commit)
 ASOF LEFT JOIN {{ ref('int_release_calendar') }} AS cal
   ON ibo.reported_dt < cal.wrap_dt
+-- the two Kimball special members
+UNION ALL
+SELECT
+  {{ unknown_key() }} AS dim_bug_key,
+  -1 AS bug_number,
+  {{ unknown_key() }} AS reporter_dim_person_key,
+  DATE '{{ var('past_eternity') }}' AS reported_dt,
+  '(unknown)' AS subject,
+  null AS thread_message_cnt,
+  null AS thread_size_window,
+  false AS is_acted_upon,
+  '(unknown)' AS outcome,
+  null AS linked_via,
+  null AS first_commit_dt,
+  null AS days_to_commit,
+  null AS days_to_commit_window,
+  DATE '{{ var('past_eternity') }}' AS earliest_ship_release_dt
+UNION ALL
+SELECT
+  {{ not_applicable_key() }} AS dim_bug_key,
+  -2 AS bug_number,
+  {{ not_applicable_key() }} AS reporter_dim_person_key,
+  DATE '{{ var('past_eternity') }}' AS reported_dt,
+  '(not applicable)' AS subject,
+  null AS thread_message_cnt,
+  null AS thread_size_window,
+  false AS is_acted_upon,
+  '(not applicable)' AS outcome,
+  null AS linked_via,
+  null AS first_commit_dt,
+  null AS days_to_commit,
+  null AS days_to_commit_window,
+  DATE '{{ var('past_eternity') }}' AS earliest_ship_release_dt

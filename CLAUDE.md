@@ -73,17 +73,31 @@ per-session memories, which aren't committed to git.)
   "fix" `fct_*` to singular.
 - **Surrogate keys: every non-date dimension's PK is its first column, named
   `<table>_key`** (`dim_release_key`, `dim_version_key`, `dim_bug_key`,
-  `dim_cve_key`, `dim_person_key`) and a `dbt_utils.generate_surrogate_key` hash
-  (uniform VARCHAR). Facts/bridges link with a matching `<table>_key`, role-
-  prefixed where a fact references one dim twice (`author_dim_person_key`,
-  `primary_dim_bug_key`, `ship_dim_release_key`). The dims keep their natural key
-  as a plain attribute (`version`, `bug_number`, `cve_id`). A fact computes the
-  FK by hashing the SAME natural value the dim hashed — guard nullable FKs
-  (`CASE WHEN x IS NOT null THEN generate_surrogate_key([...]) END`) so a NULL
-  isn't hashed into a bogus key. `dim_person_key` is `int_person_map`'s
-  connected-component id surfaced under the convention (NOT a fresh hash — that
-  would break identity resolution). **`dim_date` is the deliberate exception:**
-  no surrogate — facts store the DATE and join on `dim_date.date_day`.
+  `dim_cve_key`, `dim_person_key`), a `dbt_utils.generate_surrogate_key` hash
+  computed ONCE, in the dimension. Facts/bridges get the FK by JOINing the dim on
+  the natural key and selecting its `<table>_key` — never recompute the hash in
+  the fact. Role-prefix where a fact references one dim twice
+  (`author_dim_person_key`, `primary_dim_bug_key`, `ship_dim_release_key`). Dims
+  keep the natural key as a plain attribute (`version`, `bug_number`, `cve_id`).
+  `dim_person_key` is `int_person_map`'s connected-component id surfaced under
+  the convention (NOT a fresh hash — that would break identity resolution).
+  **`dim_date` is the deliberate exception:** no surrogate — facts store the DATE
+  and join on `dim_date.date_day`.
+- **Kimball special members (no NULL FKs).** Every non-date dimension carries two
+  extra rows (`macros/dim_special_members.sql`): **Unknown**
+  (`unknown_key()` = `generate_surrogate_key('-1')`) and **Not Applicable**
+  (`not_applicable_key()` = `'-2'`). A fact's LEFT-JOINed FK is COALESCEd so it's
+  never NULL — mandatory FKs to Unknown (a resolution failure), legitimately-
+  absent optional FKs to Not Applicable (no bug, `.0` major, pre-corpus). The
+  `not_unknown_member` generic test guards each mandatory FK (errors if one lands
+  on Unknown). A special row's placeholder attributes that can't satisfy an
+  attribute test (`accepted_values`, a `not_null`, a regex) are exempted with a
+  `config: where:` filtered on the placeholder natural key (e.g. `status NOT IN
+  ('unknown','not applicable')`) — dbt forbids a macro in a test's `where`.
+  `dim_date`'s equivalents are its real `past_eternity` (1900-01-01) /
+  `future_eternity` (9999-01-01) rows (vars). Append special rows with an
+  explicit-column `UNION ALL` — NOT `UNION ALL BY NAME` (sqlfluff AM07 can't
+  parse it).
 - A **release cycle** and a **wave** are the same entity at two lifecycle stages
   (a wave is a shipped cycle), unified in **`dim_release`** (`status` =
   shipped/open/future; shipped measures NULL for non-shipped). The cycle signals

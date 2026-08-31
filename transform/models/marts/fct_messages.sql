@@ -21,14 +21,14 @@ WITH msg_bug AS (
 SELECT
   imt.list_name,
   imt.message_id,
-  pmp.person_key AS sender_dim_person_key,
+  COALESCE(pmp.person_key, {{ unknown_key() }}) AS sender_dim_person_key,
   (imt.sent_ts AT TIME ZONE 'utc')::DATE AS sent_dt,
-  dbg.dim_bug_key,
+  COALESCE(dbg.dim_bug_key, {{ not_applicable_key() }}) AS dim_bug_key,
   imt.root_id,
   imt.is_thread_start,
   imt.is_fix_linked,
   imt.earliest_ship_release_dt,
-  drl.dim_release_key AS ship_dim_release_key,
+  COALESCE(drl.dim_release_key, {{ not_applicable_key() }}) AS ship_dim_release_key,
   imt.subject
 FROM {{ ref('int_message_threads') }} AS imt
 INNER JOIN {{ ref('stg_list_messages') }} AS slm

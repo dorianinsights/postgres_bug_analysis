@@ -12,14 +12,38 @@
 -- conform on: fct_fixes (the representative minor of a deduped fix) and
 -- fct_version_items_agg (changelog item count per minor).
 -- Grain = version. -> ../data/derived/dim_version.csv
+WITH real_members AS (
+  SELECT
+    {{ dbt_utils.generate_surrogate_key(['rel.version']) }} AS dim_version_key,
+    rel.version,
+    rel.major,
+    rel.minor,
+    rel.minor = 0 AS is_major_release,
+    rel.wrap_dt,
+    rel.release_dt,
+    COALESCE(drl.dim_release_key, {{ not_applicable_key() }}) AS dim_release_key
+  FROM {{ ref('int_releases') }} AS rel
+  LEFT JOIN {{ ref('dim_release') }} AS drl ON rel.release_dt = drl.release_dt
+)
+
+SELECT * FROM real_members
+UNION ALL
 SELECT
-  {{ dbt_utils.generate_surrogate_key(['rel.version']) }} AS dim_version_key,
-  rel.version,
-  rel.major,
-  rel.minor,
-  rel.minor = 0 AS is_major_release,
-  rel.wrap_dt,
-  rel.release_dt,
-  drl.dim_release_key
-FROM {{ ref('int_releases') }} AS rel
-LEFT JOIN {{ ref('dim_release') }} AS drl ON rel.release_dt = drl.release_dt
+  {{ unknown_key() }} AS dim_version_key,
+  '(unknown)' AS version,
+  null AS major,
+  null AS minor,
+  false AS is_major_release,
+  DATE '{{ var('past_eternity') }}' AS wrap_dt,
+  DATE '{{ var('past_eternity') }}' AS release_dt,
+  {{ unknown_key() }} AS dim_release_key
+UNION ALL
+SELECT
+  {{ not_applicable_key() }} AS dim_version_key,
+  '(not applicable)' AS version,
+  null AS major,
+  null AS minor,
+  false AS is_major_release,
+  DATE '{{ var('past_eternity') }}' AS wrap_dt,
+  DATE '{{ var('past_eternity') }}' AS release_dt,
+  {{ not_applicable_key() }} AS dim_release_key

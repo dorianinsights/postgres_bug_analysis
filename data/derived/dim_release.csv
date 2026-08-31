@@ -10,6 +10,8 @@ dim_release_key,release_dt,wrap_dt,status,is_out_of_band,is_partial_window,versi
 4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,2025-02-10,shipped,false,false,15.11 / 16.7 / 17.3,3,74,1,1,2024-11-11,21,26,1899,48,165,47
 54b845081bd089efb1f91a1b5a00304b,2024-08-08,2024-08-05,shipped,false,false,15.8 / 16.4,2,55,2,3,2024-05-06,21,21,1938,16,125,16
 5d3fad531dd3ceed47b48db21b213987,2025-02-20,,shipped,true,false,15.12 / 16.8 / 17.4,3,3,1,1,,,,,,,
+5d7b9adcbe1c629ec722529dd12e5129,9999-01-01,9999-01-01,not applicable,false,false,Not applicable,,,,,,,,,,,
+6bb61e3b7bce0931da574d19d1d82c88,1900-01-01,1900-01-01,unknown,false,false,Unknown,,,,,,,,,,,
 740c1e0f22c109481cb0da8abe660ae0,2024-05-09,2024-05-06,shipped,false,false,15.7 / 16.3,2,58,1,1,2024-02-05,21,32,1885,32,124,30
 745f1c86e5cdd8936f605bfc2f720903,2025-05-08,2025-05-05,shipped,false,false,15.13 / 16.9 / 17.5,3,62,1,1,2025-02-10,21,28,2347,36,127,35
 908485dfcfcc6d43ee34661e0249105e,2026-11-12,2026-11-09,open,false,false,15.20 / 16.16 / 17.12 / 18.7,4,,,,2026-08-10,21,29,2165,60,60,60

@@ -38,6 +38,9 @@ models:
       - name: source_list_cnt
         tests:
           - not_null
+          # the two special members have no source lists (count 0)
           - dbt_utils.accepted_range:
+              config:
+                where: "canonical_name NOT IN ('Unknown', 'Not applicable')"
               arguments:
                 min_value: 1

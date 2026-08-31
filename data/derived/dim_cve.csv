@@ -29,9 +29,11 @@ dim_cve_key,cve_id,cvss_base_score,severity_band,cvss_vector,component,is_severi
 575e8560f9cb102cf2de080182788480,CVE-2026-15742,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
 59a47b5a6afb5f26478b7f23e3511096,CVE-2026-14671,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
 5b69cf8a895b085e4e3f25201096eacb,CVE-2023-5869,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
+5d7b9adcbe1c629ec722529dd12e5129,(not applicable),,,,,true
 5e3fedc9f7496281744d79789c103059,CVE-2026-14677,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
 677104e447ed036a67e50efc922653e3,CVE-2026-6473,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
 68c3777bcdab005450ba10c4f57a63a3,CVE-2026-6476,7.2,HIGH,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H,client,false
+6bb61e3b7bce0931da574d19d1d82c88,(unknown),,,,,true
 6ee08edeecdf54f26dce717a9c4afafb,CVE-2023-5868,4.3,MEDIUM,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
 73b652c1b2864d1bf0dfd5b7f628d018,CVE-2026-14662,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
 762a46523bcb117a6e9d36638d16a08d,CVE-2024-10979,8.8,HIGH,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false

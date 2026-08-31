@@ -13,7 +13,10 @@ models:
         tests:
           - not_null
           - unique
+          # the two special members carry placeholder cve_ids, not real CVEs
           - dbt_expectations.expect_column_values_to_match_regex:
+              config:
+                where: "cve_id NOT IN ('(unknown)', '(not applicable)')"
               arguments:
                 regex: '^CVE-\d{4}-\d+$'
       - name: cvss_base_score

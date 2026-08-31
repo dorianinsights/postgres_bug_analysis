@@ -24,6 +24,11 @@ models:
               arguments:
                 to: ref('dim_person')
                 field: dim_person_key
+          # an unresolved reporter falls back to dim_person's Unknown member (a
+          # data-quality flag); the Unknown bug row is itself exempt
+          - not_unknown_member:
+              config:
+                where: "bug_number NOT IN (-1, -2)"
       - name: reported_dt
         tests:
           - not_null
@@ -43,12 +48,18 @@ models:
       - name: outcome
         tests:
           - not_null
+          # the two special members carry placeholder outcomes
           - accepted_values:
+              config:
+                where: "bug_number NOT IN (-1, -2)"
               arguments:
                 values: [linked to a fix commit, no linked commit]
       - name: thread_size_window
         tests:
-          - not_null
+          # NULL for the two special members
+          - not_null:
+              config:
+                where: "bug_number NOT IN (-1, -2)"
           - relationships:
               arguments:
                 to: ref('thread_size_windows')

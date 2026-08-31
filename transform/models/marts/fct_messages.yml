@@ -20,12 +20,14 @@ models:
               arguments:
                 to: ref('dim_person')
                 field: dim_person_key
+          - not_unknown_member
       - name: dim_bug_key
         description: >
           The corpus bug report this message belongs to (from its "BUG #NNNNN"
-          subject); NULL for pgsql-hackers messages and pgsql-bugs messages
-          that name no corpus bug.
+          subject); dim_bug's Not Applicable member for pgsql-hackers messages
+          and pgsql-bugs messages that name no corpus bug.
         tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('dim_bug')
@@ -48,8 +50,9 @@ models:
       - name: ship_dim_release_key
         description: >
           The release the thread accrues toward (from earliest_ship_release_dt);
-          NULL for pre-corpus targets that have no dim_release row.
+          dim_release's Not Applicable member for pre-corpus targets.
         tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('dim_release')

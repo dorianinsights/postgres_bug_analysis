@@ -9,4 +9,6 @@ SELECT
   ROUND(COUNT(*) FILTER (WHERE is_acted_upon) * 100.0 / COUNT(*), 1) AS acted_upon_pct,
   MEDIAN(days_to_commit) AS days_to_commit_median
 FROM {{ ref('dim_bug') }}
+-- exclude dim_bug's Unknown / Not Applicable special members (bug_number -1/-2)
+WHERE bug_number > 0
 GROUP BY ALL

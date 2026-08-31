@@ -79,32 +79,76 @@ combined AS (
   SELECT * FROM shipped
   UNION ALL
   SELECT * FROM upcoming
+),
+
+real_members AS (
+  SELECT
+    {{ dbt_utils.generate_surrogate_key(['cmb.release_dt']) }} AS dim_release_key,
+    cmb.release_dt,
+    cmb.wrap_dt,
+    cmb.status,
+    cmb.is_out_of_band,
+    cmb.is_partial_window,
+    cmb.versions,
+    cmb.release_cnt,
+    cmb.distinct_fix_cnt,
+    cmb.distinct_cve_cnt,
+    cmb.security_fix_cnt,
+    -- cycle signals (folded in from the retired fct_release_cycles): non-NULL
+    -- only for the started scheduled cycles, NULL for out-of-band waves and the
+    -- not-yet-started future release
+    irc.cycle_start_dt,
+    irc.window_days,
+    irc.early_report_cnt,
+    irc.early_message_cnt,
+    irc.early_fix_cnt,
+    irc.full_fix_cnt,
+    -- first_window_fix_cnt is the FIXED-window (seasonality_window_days) early
+    -- count for the stable quarterly-seasonality view, vs early_fix_cnt's moving
+    -- age window used by the projection
+    irc.first_window_fix_cnt
+  FROM combined AS cmb
+  LEFT JOIN {{ ref('int_release_cycles') }} AS irc ON cmb.release_dt = irc.ships_at_dt
 )
 
+SELECT * FROM real_members
+UNION ALL
 SELECT
-  {{ dbt_utils.generate_surrogate_key(['cmb.release_dt']) }} AS dim_release_key,
-  cmb.release_dt,
-  cmb.wrap_dt,
-  cmb.status,
-  cmb.is_out_of_band,
-  cmb.is_partial_window,
-  cmb.versions,
-  cmb.release_cnt,
-  cmb.distinct_fix_cnt,
-  cmb.distinct_cve_cnt,
-  cmb.security_fix_cnt,
-  -- cycle signals (folded in from the retired fct_release_cycles): non-NULL
-  -- only for the started scheduled cycles, NULL for out-of-band waves and the
-  -- not-yet-started future release
-  irc.cycle_start_dt,
-  irc.window_days,
-  irc.early_report_cnt,
-  irc.early_message_cnt,
-  irc.early_fix_cnt,
-  irc.full_fix_cnt,
-  -- first_window_fix_cnt is the FIXED-window (seasonality_window_days) early
-  -- count for the stable quarterly-seasonality view, vs early_fix_cnt's moving
-  -- age window used by the projection
-  irc.first_window_fix_cnt
-FROM combined AS cmb
-LEFT JOIN {{ ref('int_release_cycles') }} AS irc ON cmb.release_dt = irc.ships_at_dt
+  {{ unknown_key() }} AS dim_release_key,
+  DATE '{{ var('past_eternity') }}' AS release_dt,
+  DATE '{{ var('past_eternity') }}' AS wrap_dt,
+  'unknown' AS status,
+  false AS is_out_of_band,
+  false AS is_partial_window,
+  'Unknown' AS versions,
+  null AS release_cnt,
+  null AS distinct_fix_cnt,
+  null AS distinct_cve_cnt,
+  null AS security_fix_cnt,
+  null AS cycle_start_dt,
+  null AS window_days,
+  null AS early_report_cnt,
+  null AS early_message_cnt,
+  null AS early_fix_cnt,
+  null AS full_fix_cnt,
+  null AS first_window_fix_cnt
+UNION ALL
+SELECT
+  {{ not_applicable_key() }} AS dim_release_key,
+  DATE '{{ var('future_eternity') }}' AS release_dt,
+  DATE '{{ var('future_eternity') }}' AS wrap_dt,
+  'not applicable' AS status,
+  false AS is_out_of_band,
+  false AS is_partial_window,
+  'Not applicable' AS versions,
+  null AS release_cnt,
+  null AS distinct_fix_cnt,
+  null AS distinct_cve_cnt,
+  null AS security_fix_cnt,
+  null AS cycle_start_dt,
+  null AS window_days,
+  null AS early_report_cnt,
+  null AS early_message_cnt,
+  null AS early_fix_cnt,
+  null AS full_fix_cnt,
+  null AS first_window_fix_cnt

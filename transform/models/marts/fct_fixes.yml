@@ -18,6 +18,7 @@ models:
               arguments:
                 to: ref('dim_release')
                 field: dim_release_key
+          - not_unknown_member
       - name: wave_dt
         description: The wave's release day (denormalized from dim_release for date joins).
         tests:
@@ -35,6 +36,7 @@ models:
               arguments:
                 to: ref('dim_version')
                 field: dim_version_key
+          - not_unknown_member
       - name: category
         tests: [not_null]
       - name: origin
@@ -73,8 +75,9 @@ models:
               arguments:
                 min_value: 0
       - name: primary_dim_bug_key
-        description: The fastest-resolved linked bug; NULL when the fix links to no report.
+        description: The fastest-resolved linked bug; dim_bug's Not Applicable member when the fix links to no report.
         tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('dim_bug')

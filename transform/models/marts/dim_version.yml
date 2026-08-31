@@ -10,7 +10,10 @@ models:
       for the .0 majors that ship alone) and to dim_date on its DATE columns
       (release_dt, wrap_dt). Grain = version.
     tests:
+      # the two special members carry placeholder versions with no real release
       - dbt_utils.expression_is_true:
+          config:
+            where: "version NOT IN ('(unknown)', '(not applicable)')"
           arguments:
             expression: ISODOW(release_dt) = 4
     columns:
@@ -19,9 +22,15 @@ models:
       - name: version
         tests: [not_null, unique]
       - name: major
-        tests: [not_null]
+        tests:
+          - not_null:
+              config:
+                where: "version NOT IN ('(unknown)', '(not applicable)')"
       - name: minor
-        tests: [not_null]
+        tests:
+          - not_null:
+              config:
+                where: "version NOT IN ('(unknown)', '(not applicable)')"
       - name: is_major_release
         tests: [not_null]
       - name: wrap_dt
@@ -38,10 +47,11 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
-      # NULL only for the .0 majors (they ship alone, not in a minor wave);
-      # the built-in relationships test ignores those NULLs.
+      # dim_release's Not Applicable member for the .0 majors (they ship alone,
+      # not in a minor wave)
       - name: dim_release_key
         tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('dim_release')

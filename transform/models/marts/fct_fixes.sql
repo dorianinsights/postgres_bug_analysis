@@ -38,9 +38,9 @@ primary_bug AS (
 
 SELECT
   chg.item_ord,
-  drl.dim_release_key,
+  COALESCE(drl.dim_release_key, {{ unknown_key() }}) AS dim_release_key,
   chg.wave_dt,
-  dvr.dim_version_key,
+  COALESCE(dvr.dim_version_key, {{ unknown_key() }}) AS dim_version_key,
   chg.item_index,
   reps.summary,
   reps.full_text,
@@ -62,7 +62,7 @@ SELECT
   sev.max_cvss_base_score,
   sev.severity_band,
   COALESCE(bag.bug_link_cnt, 0) AS bug_link_cnt,
-  dbg.dim_bug_key AS primary_dim_bug_key,
+  COALESCE(dbg.dim_bug_key, {{ not_applicable_key() }}) AS primary_dim_bug_key,
   bag.days_to_fix_min
 FROM {{ ref('int_fix_changes') }} AS chg
 INNER JOIN group_sizes AS grp ON chg.item_ord = grp.group_ord

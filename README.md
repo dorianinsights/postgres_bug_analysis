@@ -204,6 +204,12 @@ every object's name. Layers:
     month/week DATE. `dim_date` is keyed on `date_day` (a real DATE) — there is
     no separate integer date surrogate; every mart's date columns join to it
     directly, and a `relationships` test on each one enforces the conformance.
+    Following Kimball, no fact FK is ever NULL: every non-date dimension carries
+    an **Unknown** and a **Not Applicable** member (surrogate keys from
+    `generate_surrogate_key('-1')` / `'-2'`), and a LEFT-JOINed FK is COALESCEd
+    to one of them — mandatory keys to Unknown (guarded by a `not_unknown_member`
+    test), legitimately-absent optional keys to Not Applicable. `dim_date`'s
+    equivalents are its real `past_eternity` / `future_eternity` rows.
     Referential integrity is enforced by `relationships` tests on every FK, and
     singular tests pin each fact's row count to its grain. Several older marts were superseded as the star grew —
     `fct_fixes` replaced `fix_impact` and `fix_items`; the cycle signals

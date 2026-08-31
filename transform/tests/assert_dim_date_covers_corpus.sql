@@ -28,6 +28,8 @@ span AS (
     MIN(dtd.date_day) AS min_dt,
     MAX(dtd.date_day) AS max_dt
   FROM {{ ref('dim_date') }} AS dtd
+  -- the real spine only; the eternity sentinels would make this test trivial
+  WHERE dtd.date_day NOT IN (DATE '{{ var('past_eternity') }}', DATE '{{ var('future_eternity') }}')
 )
 
 SELECT

@@ -47,18 +47,46 @@ name_votes AS (
   QUALIFY ROW_NUMBER() OVER (
     PARTITION BY person_key ORDER BY COUNT(*) DESC, person_name ASC
   ) = 1
+),
+
+real_members AS (
+  SELECT
+    pky.person_key AS dim_person_key,
+    pky.canonical_email,
+    COALESCE(nvt.person_name, pky.canonical_email, '(unknown)') AS canonical_name,
+    pky.is_git_author,
+    pky.is_git_committer,
+    pky.is_list_sender,
+    pky.is_bug_reporter,
+    pky.first_seen_dt,
+    pky.last_seen_dt,
+    pky.source_list_cnt
+  FROM per_key AS pky
+  LEFT JOIN name_votes AS nvt ON pky.person_key = nvt.person_key
 )
 
+SELECT * FROM real_members
+UNION ALL
 SELECT
-  pky.person_key AS dim_person_key,
-  pky.canonical_email,
-  COALESCE(nvt.person_name, pky.canonical_email, '(unknown)') AS canonical_name,
-  pky.is_git_author,
-  pky.is_git_committer,
-  pky.is_list_sender,
-  pky.is_bug_reporter,
-  pky.first_seen_dt,
-  pky.last_seen_dt,
-  pky.source_list_cnt
-FROM per_key AS pky
-LEFT JOIN name_votes AS nvt ON pky.person_key = nvt.person_key
+  {{ unknown_key() }} AS dim_person_key,
+  null AS canonical_email,
+  'Unknown' AS canonical_name,
+  false AS is_git_author,
+  false AS is_git_committer,
+  false AS is_list_sender,
+  false AS is_bug_reporter,
+  DATE '{{ var('past_eternity') }}' AS first_seen_dt,
+  DATE '{{ var('past_eternity') }}' AS last_seen_dt,
+  0::BIGINT AS source_list_cnt
+UNION ALL
+SELECT
+  {{ not_applicable_key() }} AS dim_person_key,
+  null AS canonical_email,
+  'Not applicable' AS canonical_name,
+  false AS is_git_author,
+  false AS is_git_committer,
+  false AS is_list_sender,
+  false AS is_bug_reporter,
+  DATE '{{ var('past_eternity') }}' AS first_seen_dt,
+  DATE '{{ var('past_eternity') }}' AS last_seen_dt,
+  0::BIGINT AS source_list_cnt
