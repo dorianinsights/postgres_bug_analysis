@@ -26,6 +26,11 @@ vars:
   pace_comparison_cycles: 3
   # A wave's wrap tag is the latest tag within this many days before it.
   wrap_tag_window_days: 7
+  # The "early cycle" window for the quarterly-seasonality analysis
+  # (release_cycle_seasonality): distinct backpatched fixes in the first N days
+  # after the wrap. FIXED on purpose so the metric is stable across builds —
+  # unlike dim_release's early_fix_cnt, which tracks the open cycle's moving age.
+  seasonality_window_days: 20
   # -- Loose sanity floors shared by the date/major range tests. These are
   # deliberately NOT the corpus bounds (corpus.py owns those; a dbt copy
   # could silently drift) — just "obviously wrong data" backstops.

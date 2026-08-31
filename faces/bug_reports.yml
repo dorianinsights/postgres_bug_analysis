@@ -110,6 +110,32 @@ queries:
       FROM bug_reports_monthly
       ORDER BY 1
 
+  seasonality_counts:
+    description: >
+      Distinct backpatched fixes per release cycle, averaged by release quarter:
+      the fixed first-N-day window after the wrap vs the full cycle.
+    source: warehouse
+    sql: |
+      SELECT release_month, release_quarter, 'first ' || MIN(early_window_days) || ' days' AS series, ROUND(AVG(early_fix_cnt), 1) AS patches
+      FROM release_cycle_seasonality
+      GROUP BY release_month, release_quarter
+      UNION ALL
+      SELECT release_month, release_quarter, 'full cycle' AS series, ROUND(AVG(full_fix_cnt), 1) AS patches
+      FROM release_cycle_seasonality
+      GROUP BY release_month, release_quarter
+      ORDER BY release_quarter, series
+
+  seasonality_share:
+    description: >
+      Front-loading by release quarter: the share of a cycle's backpatched fixes
+      that land in the first N days after the wrap.
+    source: warehouse
+    sql: |
+      SELECT release_month, release_quarter, ROUND(AVG(early_fix_share), 4) AS early_share
+      FROM release_cycle_seasonality
+      GROUP BY release_month, release_quarter
+      ORDER BY release_quarter
+
   yearly_outcomes:
     description: Reports vs acted-upon reports per calendar year.
     source: warehouse
@@ -223,6 +249,29 @@ charts:
     style: { axis_y: { labels: { format: ".0%" } } }
     height: 340
 
+  seasonality_counts:
+    type: bar
+    query: seasonality_counts
+    title: "Fix submission by release quarter: first 20 days vs full cycle"
+    subtitle: "Avg distinct backpatched fixes per cycle — full-cycle totals are ~flat; the early window is not"
+    x: release_month
+    y: patches
+    color: series
+    sort: { by: release_quarter, order: asc }
+    style: { stack: none, orientation: vertical }
+    height: 320
+
+  seasonality_share:
+    type: bar
+    query: seasonality_share
+    title: "Front-loading by release quarter"
+    subtitle: "Share of the cycle's fixes committed in the first 20 days — Feb/May front-load, Aug/Nov back-load"
+    x: release_month
+    y: early_share
+    sort: { by: release_quarter, order: asc }
+    style: { orientation: vertical, axis_y: { labels: { format: ".0%" } } }
+    height: 320
+
   yearly_outcomes:
     type: bar
     query: yearly_outcomes
@@ -273,6 +322,7 @@ rows:
   - monthly_reports
   - weekly_reports
   - monthly_acted
+  - cols: [seasonality_counts, seasonality_share]
   - cols: [yearly_outcomes, yearly_latency]
   - cols: [fix_latency, thread_size]
   - most_discussed
