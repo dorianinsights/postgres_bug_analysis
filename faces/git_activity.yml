@@ -72,16 +72,23 @@ queries:
       currently open cycle, next to each closed cycle's full total.
     source: warehouse
     sql: |
-      -- label leads with the ISO date so the band's alphabetical order IS
-      -- chronological (the trailing word keeps dct from date-parsing it)
-      SELECT STRFTIME(cycle_start_dt, '%Y-%m-%d wrap') AS cycle, 'first ' || window_days || ' days' AS pace_window, early_fix_cnt AS fixes
+      -- compact "Aug 22" label + numeric cycle_seq for the chart's sort. dct
+      -- SUMS the sort key per label, so every cycle needs the SAME row count --
+      -- hence the zero 'full cycle' row for the still-open cycle (its full total
+      -- isn't in yet). The long ISO "wrap" labels crammed the axis when 17
+      -- cycles share a half-width chart.
+      SELECT STRFTIME(cycle_start_dt, '%b %y') AS cycle, EPOCH(cycle_start_dt)::BIGINT AS cycle_seq, 'first ' || window_days || ' days' AS pace_window, early_fix_cnt AS fixes
       FROM dim_release
       WHERE cycle_start_dt IS NOT NULL
       UNION ALL
-      SELECT STRFTIME(cycle_start_dt, '%Y-%m-%d wrap') AS cycle, 'full cycle' AS pace_window, full_fix_cnt AS fixes
+      SELECT STRFTIME(cycle_start_dt, '%b %y') AS cycle, EPOCH(cycle_start_dt)::BIGINT AS cycle_seq, 'full cycle' AS pace_window, full_fix_cnt AS fixes
       FROM dim_release
       WHERE cycle_start_dt IS NOT NULL AND status <> 'open'
-      ORDER BY 1, 2
+      UNION ALL
+      SELECT STRFTIME(cycle_start_dt, '%b %y') AS cycle, EPOCH(cycle_start_dt)::BIGINT AS cycle_seq, 'full cycle' AS pace_window, 0 AS fixes
+      FROM dim_release
+      WHERE status = 'open'
+      ORDER BY cycle_seq, pace_window
 
 charts:
   quarterly_distinct:
@@ -122,7 +129,8 @@ charts:
     x: cycle
     y: fixes
     color: pace_window
-    style: { stack: none }
+    sort: { by: cycle_seq, order: asc }
+    style: { stack: none, orientation: vertical }
     height: 340
 
   ai_credit_table:
