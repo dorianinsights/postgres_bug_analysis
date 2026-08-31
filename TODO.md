@@ -26,3 +26,24 @@ is correct as one-per-bug. The gap is a missing fix→reporter many-to-many.
 - optionally denormalize `reporter_cnt` onto `fct_fixes`.
 - tests: `unique_combination_of_columns` on the pair; `relationships` from each
   side to its dim and to `fct_fixes`.
+
+## Extend the corpus to PG 19 when it GAs (~Sept/Oct 2026)
+
+PG 19 is in beta (`REL_19_BETA1/2/3`, `REL_19_STABLE` branched, no `REL_19_0`
+yet). Don't include it until GA: the pipeline assumes each corpus major has
+shipped its `.0` — `gitsource.branch_range('REL_19_STABLE')` is
+`REL_19_0..REL_19_STABLE`, which errors (`unknown revision`) until `REL_19_0`
+exists, and there are no minor-release fix waves to analyze during beta anyway.
+
+At GA it's essentially a **one-line, reviewed change**: `LAST_MAJOR = 19` in
+`corpus.py`. Much already anticipates it — `stg_git_tags` scans `REL_1[5-9]_*`
+and filters prereleases out, so `REL_19_0` flows into `int_releases`
+automatically; `branch_range` resolves; and the open-release version projection
+(`active_majors` = `MAX(minor)+1`) picks up `19.1` the moment `REL_19_0` is
+tagged. Tags never rename: `REL_19_BETAn`/`REL_19_RC1` are permanent, GA adds a
+separate `REL_19_0`.
+
+Separate, larger option (NOT a corpus bump): track **19 beta development
+activity** now — would need `branch_range` special-cased for an unreleased major
+(range from the branch point or `REL_19_BETA1` instead of `REL_19_0`), living
+outside the minor-wave models.
