@@ -32,6 +32,14 @@ vars:
   test_floor_major: 10
   test_floor_release_dt: "'2017-10-01'"
   test_floor_git_ts: "'2016-10-01'"
+  # -- Build parameter (not an analysis knob). The on-run-end audit exporter
+  # (macros/export_marts_csv.sql) writes a diffable data/derived/<mart>.csv
+  # only for marts with FEWER than this many rows: bigger tables blow past
+  # what a human can review in a diff and bloat the repo, so their typed
+  # table in the .duckdb file stays the sole interface (as fct_messages
+  # already did). Raise it to re-export a larger mart; git rm the stale CSV
+  # of any mart that grows past it.
+  derived_csv_max_rows: 1000
 
 # One schema per layer (generate_schema_name.sql uses these names verbatim).
 models:
