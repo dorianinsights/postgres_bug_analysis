@@ -273,7 +273,7 @@ at cutover every derived CSV was verified field-identical against the
 Python implementation's output (the only byte difference: the csv module
 wrote CRLF line endings, DuckDB writes LF).
 
-## Linting & type checking
+## Linting, type checking & tests
 
 Repo-wide (config in the repo-root `pyproject.toml`, mirroring
 property_analysis): `ruff` (format + lint) and `pyright` (strict mode, all files).
@@ -287,6 +287,15 @@ via `.claude/hooks/` (`ruff-lint.sh`, `pyright-check.sh`, `sqlfluff-lint.sh`)
 and at commit time by the blocking pre-commit gate (`.pre-commit-config.yaml`;
 one-time setup: `./venv/bin/pre-commit install`). Auto-fix layout nits with
 `./venv/bin/sqlfluff fix <file>`.
+
+Python **unit tests** for the scrapers (`corpus.py`, `mailing_list_sync.py`,
+`scrape_cve_severity.py`, `postgres_clone.py`, `refresh_data.py`) and the
+`transform/sources/` readers live in `tests/` — pure parse/logic coverage, no
+network, clone, or warehouse. Run them with `./venv/bin/pytest` (~0.1s). They're
+enforced the same two ways: a per-edit `pytest.sh` hook on any `.py` change and
+the `pytest` hook in the pre-commit gate. The DuckDB Python models
+(`transform/models/raw_*`) are thin wrappers over the tested readers, so they
+carry no separate unit tests.
 
 ## Analysis conventions
 
