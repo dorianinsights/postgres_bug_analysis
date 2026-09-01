@@ -73,3 +73,61 @@ parallelization:
 Both keep byte-identical output (parse-once, read-back). Consider making
 `raw_list_messages` / `raw_commit_files` incremental `dbt` models, or doing the
 mtime/SHA-keyed caching inside `sources/mail.py` / `sources/git.py`.
+
+## Coerce naive email `Date` timestamps to UTC in `sources/mail.py`
+
+A `-0000` `Date` header (RFC 5322: "UTC, but local zone unknown") makes Python's
+`email.utils.parsedate_to_datetime` return a *naive* datetime, so `_sent_ts`'s
+`.isoformat()` emits no offset and `stg_list_messages.sent_ts::TIMESTAMPTZ`
+falls back to the **build machine's session timezone**. That value is then both
+wrong (read as HST instead of UTC on Josh's machine) and **non-deterministic**
+across build environments — a CI build in UTC would store a different instant.
+
+Currently exactly **1 of 159,714** messages hits this
+(`<7f6fabaa-3f8f-49ab-89ca-59fbfe633105@me.com>`, renans.l@icloud.com,
+2022-02-18; its `sent_dt` lands on 2022-02-19 instead of 2022-02-18).
+Negligible for aggregates, but a latent correctness + reproducibility defect
+that spreads silently if more `-0000` senders appear. Audited 2026-08-31; the
+other timestamped raw sources (`raw_git_commits`/`%cI`, `raw_git_tags`/iso-strict,
+`raw_item_commits` via `STRPTIME %z`) all preserve their offset correctly.
+
+Fix (one place, the reader) — default a naive parse to UTC:
+
+```python
+from datetime import timezone   # add to imports
+
+def _sent_ts(message: EmailMessage) -> str | None:
+    try:
+        parsed = email.utils.parsedate_to_datetime(message.get("Date", ""))
+    except (ValueError, TypeError):
+        return None
+    if parsed.tzinfo is None:  # a "-0000" Date header: RFC 5322 = UTC, unknown local zone
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.isoformat()
+```
+
+Rebuilds change exactly that one row (`sent_ts` gains `+00:00`, `sent_dt`
+2022-02-19 → 2022-02-18), rippling into `fct_messages` and possibly a ±1 in a
+message-day count — all corrections.
+
+## dbt-charts (dct) `{{ ref() }}` doesn't resolve in the render path (v0.5.0)
+
+We wanted faces to reference models via `{{ ref('model') }}` instead of bare
+table names + the `duckdb` search-path source. It half-works and is NOT usable
+for boards today:
+
+- With a `dbt_profile` source (`type: dbt_profile`, `profile`, `target`),
+  `dct query warehouse "… {{ ref('fct_fixes') }} …"` **resolves** (returns rows;
+  a bare `fct_fixes` fails because dbt_profile sets no search path).
+- But `dct render` / `dct serve` — the actual dashboard path — throws
+  `ERR-JINJA-ERROR: 'ref' is undefined`. The render pipeline runs the variable
+  Jinja pass (StrictUndefined) over the raw SQL *before* ref resolution, so
+  `{{ ref() }}` trips it. Same source config, same manifest, same cwd — only the
+  code path differs (`dct query` resolves first; `dct render` doesn't).
+
+v0.5.0 is the latest on PyPI (only 0.0.1 and 0.5.0 exist), so no upgrade fixes
+it. Verified 2026-08-31. Revisit when a dct release resolves refs in the render
+path (the fix is ordering ref-resolution before the variable pass). The target
+layout would then be: move `dbt_charts.yml` + `faces/` under `transform/` (dct
+root = dbt project, so `target/manifest.json` is found) and use a `dbt_profile`
+source. Until then, keep bare table names + the `duckdb` source (renders fine).
