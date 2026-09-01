@@ -1,4 +1,4 @@
-# Dataface project configuration
+# Dbt Charts project configuration
 #
 # This file anchors your project root. Running `dft serve` from any
 # subdirectory will walk up to find this file and use its directory
@@ -7,17 +7,7 @@
 # Credentials and database identity stay in dbt profiles.yml / env vars.
 # Only Dataface runtime and serving preferences belong here.
 #
-# serve:
-#   # Override the SQL dialect (auto-detected from dbt profile when possible)
-#   # dialect: bigquery
-#
-#   # dbt target override (defaults to DBT_TARGET env var, then profile default)
-#   # target: dev
 
-# The typed mart tables live in the transform's DuckDB file; dct opens it
-# READ-ONLY (it cannot corrupt the warehouse, and concurrent renders
-# coexist) — only a simultaneous `dbt build` writer conflicts. schema:
-# marts sets the search path so faces reference tables unqualified.
 sources:
   warehouse:
     type: duckdb

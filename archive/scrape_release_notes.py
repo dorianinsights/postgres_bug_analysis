@@ -2,16 +2,10 @@
 """Scrape PostgreSQL minor-release notes into local CSVs.
 
 Fetches every release-notes page for the configured major versions from
-postgresql.org and persists:
+postgresql.org.
 
-- data/raw/release_items.csv  one row per changelog item (summary, full text)
-
-Raw data only — categorization, wave grouping, and dedup live in the
-transform/ dbt project so the scrape never needs re-running to change
-analysis rules. (Release existence and dates come from git tags via the
-int_releases dbt model, not a releases.csv.) Re-running overwrites the file
-(the source pages are canonical).
-Takes no arguments; the majors scraped are defined in corpus.py.
+No longer used as part of the pipeline as we're able to get this data from the
+git repo but keeping this around just in case we need to reference in the future.
 """
 
 import csv
