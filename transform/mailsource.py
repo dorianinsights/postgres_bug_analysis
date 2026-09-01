@@ -135,6 +135,8 @@ def list_message_records() -> list[ListMessageRecord]:
     # default start method (spawn on macOS) — the parent process is multithreaded
     # (DuckDB), which makes fork unsafe; spawn workers inherit sys.path + cwd and
     # only parse files (no DuckDB/pyarrow), so importing this module is enough.
-    with mp.Pool(processes=min(len(tasks), os.cpu_count() or 1)) as pool:
+    # Leave one core free for whatever else the user is doing.
+    workers = min(len(tasks), max((os.cpu_count() or 2) - 1, 1))
+    with mp.Pool(processes=workers) as pool:
         per_file: list[list[ListMessageRecord]] = pool.map(_records_for_mbox, tasks)
     return [record for file_records in per_file for record in file_records]

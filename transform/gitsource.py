@@ -13,6 +13,8 @@ transform/ (the same convention as the ../data source locations), and
 corpus.py is imported from the directory above.
 """
 
+import multiprocessing as mp
+import os
 import re
 import subprocess
 import sys
@@ -116,22 +118,33 @@ def commit_records() -> list[CommitRecord]:
     return records
 
 
-def commit_file_records() -> list[CommitFileRecord]:
-    """One record per (commit, file) from git log --numstat."""
+def _file_records_for_branch(branch: str) -> list[CommitFileRecord]:
+    """One record per (commit, file) for one branch. Module-level so a worker
+    process can run it."""
     records: list[CommitFileRecord] = []
-    for branch in BRANCHES:
-        log = git("log", SINCE_FILTER, "--format=%x01%H", "--numstat", branch_range(branch))
-        commit_hash = ""
-        for line in log.splitlines():
-            if line.startswith("\x01"):
-                commit_hash = line[1:]
-            elif line.strip():
-                added, _, rest = line.partition("\t")
-                deleted, _, path = rest.partition("\t")
-                records.append(
-                    CommitFileRecord(hash=commit_hash, file_path=path, lines_added=added, lines_deleted=deleted)
-                )
+    log = git("log", SINCE_FILTER, "--format=%x01%H", "--numstat", branch_range(branch))
+    commit_hash = ""
+    for line in log.splitlines():
+        if line.startswith("\x01"):
+            commit_hash = line[1:]
+        elif line.strip():
+            added, _, rest = line.partition("\t")
+            deleted, _, path = rest.partition("\t")
+            records.append(CommitFileRecord(hash=commit_hash, file_path=path, lines_added=added, lines_deleted=deleted))
     return records
+
+
+def commit_file_records() -> list[CommitFileRecord]:
+    """One record per (commit, file) from git log --numstat, one branch per
+    worker: each branch is an independent git-log parse, and this is the
+    slowest git-side model. Spawn (the parent is multithreaded via DuckDB, so
+    fork is unsafe); `map` preserves branch order, so output is byte-identical.
+    Leave one core free for the user.
+    """
+    workers = min(len(BRANCHES), max((os.cpu_count() or 2) - 1, 1))
+    with mp.Pool(processes=workers) as pool:
+        per_branch: list[list[CommitFileRecord]] = pool.map(_file_records_for_branch, BRANCHES)
+    return [record for branch_records in per_branch for record in branch_records]
 
 
 def tag_records() -> list[TagRecord]:

@@ -47,3 +47,29 @@ Separate, larger option (NOT a corpus bump): track **19 beta development
 activity** now — would need `branch_range` special-cased for an unreleased major
 (range from the branch point or `REL_19_BETA1` instead of `REL_19_0`), living
 outside the minor-wave models.
+
+## Parquet-cache the immutable raw parses (mbox + git)
+
+`raw_list_messages` (mbox) and `raw_commit_files` (git) re-parse the entire
+history on every build. They're now parallelized across a process `Pool`
+(`mailsource.py` ~257s→~43s, ~6x; `gitsource.py` ~33s→~25s — the git side is
+bounded by `master`, the one branch a per-branch fan-out can't split), but the
+work is still redone every run.
+
+The bigger lever is to **cache the immutable parses as Parquet and only re-parse
+what changed** — the highest-payoff win for repeated builds, on top of the
+parallelization:
+- **mbox:** monthly files at `.cache/mbox/<list>/YYYYMM.mbox` are immutable once
+  a month is past (the sync only re-fetches the current month). Parse each month
+  once to `.cache/mbox_parsed/<list>/YYYYMM.parquet` (skip when the parquet is
+  newer than its mbox); re-parse only the current month. Rebuilds then read the
+  rest straight from Parquet (DuckDB reads it natively/fast) → the mail side
+  drops to ~seconds.
+- **git:** history below `GIT_HISTORY_SINCE` is immutable; only recent commits
+  are added. Cache per-branch numstat/log parses keyed by the branch tip SHA
+  (or an incremental `dbt` materialization), re-parsing only the new commits
+  since the cached tip.
+
+Both keep byte-identical output (parse-once, read-back). Consider making
+`raw_list_messages` / `raw_commit_files` incremental `dbt` models, or doing the
+mtime/SHA-keyed caching inside `mailsource.py` / `gitsource.py`.
