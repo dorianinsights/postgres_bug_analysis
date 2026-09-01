@@ -164,16 +164,15 @@ queries:
     description: >
       Share of each month's messages that belong to commit-cited threads.
       The sag in recent months is right-censoring, not less fix work —
-      their threads haven't been cited YET.
-    source: warehouse
-    sql: |
-      SELECT
-        month_dt,
-        list_name,
-        ROUND(fix_linked_share, 3) AS fix_linked_share
-      FROM fct_list_traffic_monthly_agg
-      WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
-      ORDER BY 1, 2
+      their threads haven't been cited YET. Computed by MetricFlow from the
+      atomic message grain (the fix_linked_share ratio metric) -- a non-additive
+      ratio, correct at whatever grain is asked, not a stored per-row value.
+    source: metrics
+    type: metricflow
+    metrics: [fix_linked_share]
+    dimensions: [message__list_name]
+    time_grain: month
+    where: ["metric_time__month < date_trunc('month', current_date)"]
 
   recent_weekly_traffic:
     description: >
@@ -196,17 +195,16 @@ queries:
     description: >
       Fix-linked share per week over the last three rolling months.
       Heavily right-censored — these threads have had little time to be
-      cited by commits.
-    source: warehouse
-    sql: |
-      SELECT
-        week_dt,
-        list_name,
-        ROUND(fix_linked_share, 3) AS fix_linked_share
-      FROM fct_list_traffic_weekly_agg
-      WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
-        AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
-      ORDER BY 1, 2
+      cited by commits. Computed by MetricFlow from the atomic message grain
+      (the fix_linked_share ratio metric).
+    source: metrics
+    type: metricflow
+    metrics: [fix_linked_share]
+    dimensions: [message__list_name]
+    time_grain: week
+    where:
+      - "metric_time__week >= date_trunc('week', current_date - interval 3 month) + interval 7 day"
+      - "metric_time__week < date_trunc('week', current_date)"
 
 charts:
 
@@ -280,9 +278,9 @@ charts:
     query: monthly_linked_share
     title: "Fix-linked share of monthly traffic"
     subtitle: "Percent of each month's messages in commit-cited threads; the recent sag is right-censoring, not less fix work"
-    x: month_dt
+    x: metric_time__month
     y: fix_linked_share
-    color: list_name
+    color: message__list_name
     style:
       axis_y:
         labels:
@@ -304,9 +302,9 @@ charts:
     query: recent_weekly_share
     title: "Fix-linked share of weekly traffic, last three months"
     subtitle: "Heavily right-censored — recent threads have had little time to be cited"
-    x: week_dt
+    x: metric_time__week
     y: fix_linked_share
-    color: list_name
+    color: message__list_name
     style:
       axis_y:
         labels:

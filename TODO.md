@@ -116,14 +116,15 @@ We wanted faces to reference models via `{{ ref('model') }}` instead of bare
 table names + the `duckdb` search-path source. It half-works and is NOT usable
 for boards today:
 
-- With a `dbt_profile` source (`type: dbt_profile`, `profile`, `target`),
-  `dct query warehouse "… {{ ref('fct_fixes') }} …"` **resolves** (returns rows;
-  a bare `fct_fixes` fails because dbt_profile sets no search path).
-- But `dct render` / `dct serve` — the actual dashboard path — throws
-  `ERR-JINJA-ERROR: 'ref' is undefined`. The render pipeline runs the variable
-  Jinja pass (StrictUndefined) over the raw SQL *before* ref resolution, so
-  `{{ ref() }}` trips it. Same source config, same manifest, same cwd — only the
-  code path differs (`dct query` resolves first; `dct render` doesn't).
+- `dct query` **resolves** `{{ ref('fct_fixes') }}` -- and, now that the project
+  is co-located (dbt_project.yml is a sibling, so the manifest is found), on BOTH
+  the `warehouse` (duckdb) and `metrics` (dbt_profile) sources (re-verified
+  2026-08-31: each returns 1128).
+- But `dct render` / `dct serve` — the actual dashboard path — still throws
+  `ERR-JINJA-ERROR: 'ref' is undefined`, even co-located. The render pipeline
+  runs the variable Jinja pass (StrictUndefined) over the raw SQL *before* ref
+  resolution, so `{{ ref() }}` trips it. Only the code path differs (`dct query`
+  resolves first; `dct render` doesn't) — it is independent of layout.
 
 v0.5.0 is the latest on PyPI (only 0.0.1 and 0.5.0 exist), so no upgrade fixes
 it. Verified 2026-08-31. Revisit when a dct release resolves refs in the render
