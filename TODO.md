@@ -127,7 +127,38 @@ for boards today:
 
 v0.5.0 is the latest on PyPI (only 0.0.1 and 0.5.0 exist), so no upgrade fixes
 it. Verified 2026-08-31. Revisit when a dct release resolves refs in the render
-path (the fix is ordering ref-resolution before the variable pass). The target
-layout would then be: move `dbt_charts.yml` + `faces/` under `transform/` (dct
-root = dbt project, so `target/manifest.json` is found) and use a `dbt_profile`
-source. Until then, keep bare table names + the `duckdb` source (renders fine).
+path (the fix is ordering ref-resolution before the variable pass). Until then,
+keep bare table names + the `duckdb` source for SQL boards (renders fine).
+
+Note: `dbt_charts.yml` + `faces/` now live under `transform/` (beside
+`dbt_project.yml`), so the dbt manifest + semantic layer resolve natively -- but
+that alone does NOT fix the render-path `ref()` bug above (it's the Jinja
+ordering, independent of layout). The co-location DID enable `type: metricflow`
+boards, which render correctly (a `dbt_profile` `metrics` source is configured);
+see the MetricFlow proof below.
+
+## MetricFlow foundation (proven; charts not yet migrated)
+
+Non-additive ratios (shares, rates) can't be re-aggregated from a stored
+per-grain value -- `AVG(monthly shares) != SUM(num)/SUM(denom)`. MetricFlow
+solves this by computing the ratio at query grain from additive measures, and
+it runs fully locally on DuckDB (no dbt Cloud, no hosting).
+
+Proven 2026-08-31: one semantic model over the atomic `fct_messages` grain
+(`models/marts/list_traffic_semantic.yml`) reproduces BOTH materialized traffic
+aggs EXACTLY -- month vs `fct_list_traffic_monthly_agg` 118/118 rows 0 mismatch,
+week vs `fct_list_traffic_weekly_agg` 514/514 rows 0 mismatch -- and gives any
+other grain (day/quarter/year) for free, with `fix_linked_share` correct at each
+grain (pooled 0.4777 vs the wrong avg-of-monthly-shares 0.4347). It renders in
+dct via a `type: metricflow` query against the `metrics` (`dbt_profile`) source.
+
+Foundation committed: the `metrics` source in `dbt_charts.yml`, the `dim_date`
+time-spine config, and the semantic model. dct's render uses the bundled
+`metricflow` lib -- no `dbt-metricflow` needed (install `dbt-metricflow[duckdb]`
+only if you want the `mf query` CLI for debugging).
+
+Next (optional migration): repoint the ~6 traffic charts in `faces/origins.yml`
+to `type: metricflow` queries and retire `fct_list_traffic_monthly_agg` +
+`_weekly_agg` (and their CSVs). Gotchas: dimensions are referenced by entity
+(`message__list_name`), time via `metric_time__<grain>`; a `type: metricflow`
+query needs the `dbt_profile` source, not `duckdb`.

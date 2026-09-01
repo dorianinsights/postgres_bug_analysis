@@ -8,7 +8,7 @@ Three explicit stages, each re-runnable on its own:
 
 ```
 scrape_cve_severity.py ──> data/raw/cve_severity.csv ─┐
-postgres_clone.py ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> transform.duckdb marts ──> faces/*.yml (dct)
+postgres_clone.py ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> transform.duckdb marts ──> transform/faces/*.yml (dct)
                       (full bare clone: commits,       │        │ (typed tables — what the faces read)           (visualization)
                        tags, AND release-notes SGML)   │        └────> data/derived/*.csv (diffable audit export)
 mailing_list_sync.py ──> .cache/mbox/ ────────────────┘
@@ -45,10 +45,10 @@ python3.12 -m venv venv
 #    dbt_expectations, one-time per clone)
 (cd transform && ../venv/bin/dbt deps && ../venv/bin/dbt build)
 
-# 3. Visualize (run from this directory — dbt_charts.yml anchors the project)
-./venv/bin/dct validate faces/*.yml
-./venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html"
-./venv/bin/dct serve          # or: live preview in the browser
+# 3. Visualize (run from transform/ — dbt_charts.yml sits beside dbt_project.yml)
+(cd transform && ../venv/bin/dct validate faces/*.yml)
+(cd transform && ../venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html")
+(cd transform && ../venv/bin/dct serve)   # or: live preview in the browser
 ```
 
 ## Data files (`data/`)
@@ -106,7 +106,7 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 archived message is too heavy to commit; its typed table in `transform.duckdb`
 is the interface, and `export_marts_csv` skips it.)
 
-## Dashboards (`faces/`)
+## Dashboards (`transform/faces/`)
 
 - `changelog.yml` — the release-notes view: fixes per release by branch,
   category mix (absolute + 100%), out-of-band releases, the security hockey
@@ -127,7 +127,7 @@ is the interface, and `export_marts_csv` skips it.)
   size and backpatch breadth by severity, and time-to-fix vs change size —
   how a fix's size and severity relate to its timeline and reach.
 
-Rendered copies land in `out/` (gitignored; regenerate with `dct render`).
+Rendered copies land in `transform/out/` (gitignored; regenerate with `dct render`).
 
 ## Transform (`transform/`)
 
@@ -346,7 +346,7 @@ Quirks that still shape the faces (details in `dbt_charts_bug_report.md`):
 - Bars on a temporal x-axis overhang the axis end (0.5.0 fixed the left edge
   and the dropped-labels bug; the right edge still clips). Each bar chart
   carries an invisible zero-opacity scatter layer (`*_pad` queries) padding
-  the x-scale domain — the note at the top of `faces/changelog.yml` explains
+  the x-scale domain — the note at the top of `transform/faces/changelog.yml` explains
   the pattern.
 - No native trendlines: the `*_trend` queries compute least-squares fits in
   DuckDB SQL (`REGR_SLOPE`/`REGR_INTERCEPT`) and draw them as dashed line

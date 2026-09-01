@@ -1,0 +1,17 @@
+# dbt-charts project config. Lives beside dbt_project.yml (the dct project root)
+# so dct's dbt integration -- the manifest and the semantic layer -- resolves
+# natively; run dct from transform/ (or point --project-dir here). Boards live
+# in faces/. Two sources:
+#   warehouse (duckdb) -- SQL boards read the typed marts by bare name (schema:
+#     marts sets the search path); opens transform.duckdb read-only.
+#   metrics (dbt_profile) -- MetricFlow `type: metricflow` boards; delegates the
+#     connection to the dbt profile and reads target/semantic_manifest.json.
+sources:
+  warehouse:
+    type: duckdb
+    path: transform.duckdb
+    schema: marts
+  metrics:
+    type: dbt_profile
+    profile: postgres_bug_analysis
+    target: dev
