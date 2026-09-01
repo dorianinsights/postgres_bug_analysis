@@ -16,6 +16,8 @@ in the SQL staging models. Paths assume dbt runs from transform/.
 import email
 import email.policy
 import email.utils
+import multiprocessing as mp
+import os
 import re
 from collections.abc import Iterator
 from email.message import EmailMessage
@@ -89,27 +91,50 @@ def _sent_ts(message: EmailMessage) -> str | None:
     return parsed.isoformat()
 
 
+def _records_for_mbox(task: tuple[str, str]) -> list[ListMessageRecord]:
+    """Decode one monthly mbox into its records. Module-level and self-contained
+    (takes list_name + an absolute path) so a worker process can run it."""
+    list_name, mbox_path = task
+    records: list[ListMessageRecord] = []
+    for message in _messages(Path(mbox_path)):
+        from_name, from_email = email.utils.parseaddr(str(message.get("From", "")))
+        records.append(
+            ListMessageRecord(
+                list_name=list_name,
+                message_id=str(message.get("Message-ID", "")),
+                sent_ts=_sent_ts(message),
+                from_name=from_name,
+                from_email=from_email,
+                subject=str(message.get("Subject", "")),
+                in_reply_to=str(message["In-Reply-To"]) if "In-Reply-To" in message else None,
+                reference_ids=str(message["References"]) if "References" in message else None,
+                body_text=_body_text(message),
+            )
+        )
+    return records
+
+
 def list_message_records() -> list[ListMessageRecord]:
-    """One record per message across every cached monthly mbox."""
+    """One record per message across every cached monthly mbox.
+
+    Each monthly mbox is an independent, CPU-bound parse, so we fan them out
+    across a process Pool — this parse is the build's dominant single-threaded
+    cost, and dbt/DuckDB can't parallelize within one Python model. `map`
+    preserves task order, so the record order matches the serial version.
+    """
     if not CACHE.is_dir():
         msg = f"mbox cache not found at {CACHE} — run ../mailing_list_sync.py first"
         raise RuntimeError(msg)
-    records: list[ListMessageRecord] = []
-    for list_dir in sorted(path for path in CACHE.iterdir() if path.is_dir()):
-        for mbox_path in sorted(list_dir.glob("*.mbox")):
-            for message in _messages(mbox_path):
-                from_name, from_email = email.utils.parseaddr(str(message.get("From", "")))
-                records.append(
-                    ListMessageRecord(
-                        list_name=list_dir.name,
-                        message_id=str(message.get("Message-ID", "")),
-                        sent_ts=_sent_ts(message),
-                        from_name=from_name,
-                        from_email=from_email,
-                        subject=str(message.get("Subject", "")),
-                        in_reply_to=str(message["In-Reply-To"]) if "In-Reply-To" in message else None,
-                        reference_ids=str(message["References"]) if "References" in message else None,
-                        body_text=_body_text(message),
-                    )
-                )
-    return records
+    tasks: list[tuple[str, str]] = [
+        (list_dir.name, str(mbox_path))
+        for list_dir in sorted(path for path in CACHE.iterdir() if path.is_dir())
+        for mbox_path in sorted(list_dir.glob("*.mbox"))
+    ]
+    if not tasks:
+        return []
+    # default start method (spawn on macOS) — the parent process is multithreaded
+    # (DuckDB), which makes fork unsafe; spawn workers inherit sys.path + cwd and
+    # only parse files (no DuckDB/pyarrow), so importing this module is enough.
+    with mp.Pool(processes=min(len(tasks), os.cpu_count() or 1)) as pool:
+        per_file: list[list[ListMessageRecord]] = pool.map(_records_for_mbox, tasks)
+    return [record for file_records in per_file for record in file_records]

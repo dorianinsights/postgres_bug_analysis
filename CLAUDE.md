@@ -24,8 +24,12 @@ per-session memories, which aren't committed to git.)
   `dbt_date.get_base_dates` expand) — it compiles the project per run, so a
   write-locked DuckDB breaks *linting* too, not just builds. `requirements.txt`
   pins `sqlfluff-templater-dbt` in lockstep with `sqlfluff`.
-- A full `dbt build` is ~4 min (re-reads the git clone + mbox cache). Use
-  `dbt build --select <models>` while iterating; do one full build to confirm.
+- A full `dbt build` re-reads the git clone + mbox cache each run. The mbox
+  parse (`raw_list_messages` via `mailsource.py`) is the dominant cost and now
+  fans out across a process `Pool` (spawn — the parent is multithreaded, so fork
+  is unsafe), ~6x faster (~257s -> ~43s); `raw_commit_files` (git side) is the
+  next-slowest and still serial. Use `dbt build --select <models>` while
+  iterating; do one full build to confirm.
 - **Edit `.sql`/`.py` files with the Edit/Write tools — never `sed -i`, a `>`
   redirect, or a `cat >` heredoc through Bash** (even in "auto mode", which
   otherwise nudges toward `sed`). The per-edit linters below are `PostToolUse`
