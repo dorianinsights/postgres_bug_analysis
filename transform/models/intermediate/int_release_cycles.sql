@@ -106,7 +106,7 @@ LEFT JOIN early_fixes AS efx ON cyc.cycle_start_dt = efx.cycle_start_dt
 LEFT JOIN full_fixes AS ffx ON cyc.cycle_start_dt = ffx.cycle_start_dt
 LEFT JOIN first_window_fixes AS fwf ON cyc.cycle_start_dt = fwf.cycle_start_dt
 -- started cycles only, and only those shipping a corpus release (or still open)
--- — cycles shipping a pre-corpus scheduled date have no wave and are noise
+-- — cycles shipping a pre-corpus scheduled date have no release and are noise
 WHERE
   cyc.cycle_start_dt <= CURRENT_DATE
-  AND cyc.ships_at_dt >= (SELECT MIN(iws.wave_dt) FROM {{ ref('int_wave_summary') }} AS iws)
+  AND cyc.ships_at_dt >= (SELECT MIN(iws.release_dt) FROM {{ ref('int_release_summary') }} AS iws)

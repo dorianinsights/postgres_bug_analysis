@@ -1,8 +1,8 @@
--- Cross-branch dedup: connected components over the items of each wave.
+-- Cross-branch dedup: connected components over the items of each release.
 -- Two items are the same fix when EITHER their text_key or their hash_key
 -- matches, transitively. Both signals are constants the notes author copies
 -- verbatim between branch files, and each covers the other's blind spot,
--- all observed in real waves:
+-- all observed in real releases:
 --
 -- - Same fix, wording drifted between branches -> caught by the hash set.
 -- - Same fix, one branch's block carries an extra follow-up commit
@@ -20,13 +20,13 @@
 WITH RECURSIVE item_keys AS (
   SELECT
     item_ord,
-    wave_dt,
+    release_dt,
     text_key AS join_key
   FROM {{ ref('int_fix_items') }}
   UNION ALL
   SELECT
     item_ord,
-    wave_dt,
+    release_dt,
     hash_key AS join_key
   FROM {{ ref('int_fix_items') }}
   WHERE hash_key IS NOT null
@@ -38,7 +38,7 @@ edges AS (
     rhs.item_ord AS dst_ord
   FROM item_keys AS lhs
   INNER JOIN item_keys AS rhs
-    ON lhs.wave_dt = rhs.wave_dt AND lhs.join_key = rhs.join_key
+    ON lhs.release_dt = rhs.release_dt AND lhs.join_key = rhs.join_key
   WHERE lhs.item_ord != rhs.item_ord
 ),
 

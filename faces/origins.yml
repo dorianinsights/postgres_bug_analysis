@@ -2,7 +2,7 @@
 # from: filed pgsql-bugs reports vs pgsql-hackers threads vs work with no
 # public trail (embargoed security, uningested lists, no trailer).
 #
-# Wave bars use short "Mon YY" labels on a categorical axis with an
+# Release bars use short "Mon YY" labels on a categorical axis with an
 # explicit chronological sort key (temporal bar axes label every bar with
 # wide two-line labels that collide at narrow widths). Monthly series use
 # areas — bars would label all ~58 months.
@@ -21,21 +21,21 @@ queries:
   fix_origin_shares:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the zero-fill spine is a deliberate cross join
     description: >
-      True per-wave origin shares (fractions summing to 1) so the percent
+      True per-release origin shares (fractions summing to 1) so the percent
       format is honest in the axis AND the tooltip's value/Total rows —
       feeding counts through stack:normalize left the tooltip's raw rows
       percent-formatted ("2000%").
     source: warehouse
     sql: |
-      WITH waves AS (
-        SELECT DISTINCT wave_dt FROM fct_fix_origins_agg WHERE NOT is_out_of_band
+      WITH releases AS (
+        SELECT DISTINCT release_dt FROM fct_fix_origins_agg WHERE NOT is_out_of_band
       ),
       origins AS (
         SELECT DISTINCT origin FROM fct_fix_origins_agg
       )
       SELECT
-        STRFTIME(wvs.wave_dt, '%b %y') AS wave,
-        EPOCH(wvs.wave_dt)::BIGINT AS wave_seq,
+        STRFTIME(wvs.release_dt, '%b %y') AS release,
+        EPOCH(wvs.release_dt)::BIGINT AS release_seq,
         CASE org.origin
           WHEN 'unknown_or_internal_security' THEN 'embargoed security'
           WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
@@ -43,15 +43,15 @@ queries:
         END AS origin,
         ROUND(
           COALESCE(fxo.fix_cnt, 0)
-          * 1.0 / SUM(COALESCE(fxo.fix_cnt, 0)) OVER (PARTITION BY wvs.wave_dt),
+          * 1.0 / SUM(COALESCE(fxo.fix_cnt, 0)) OVER (PARTITION BY wvs.release_dt),
           4
         ) AS fix_share
-      FROM waves AS wvs
+      FROM releases AS wvs
       CROSS JOIN origins AS org
       LEFT JOIN fct_fix_origins_agg AS fxo
-        ON fxo.wave_dt = wvs.wave_dt AND fxo.origin = org.origin
+        ON fxo.release_dt = wvs.release_dt AND fxo.origin = org.origin
       UNION ALL
-      -- the in-progress next wave's origin shares (see fct_fix_origins_agg below)
+      -- the in-progress next release's origin shares (see fct_fix_origins_agg below)
       SELECT
         (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM fct_pending_fix_origins_agg),
         (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM fct_pending_fix_origins_agg),
@@ -73,38 +73,38 @@ queries:
   fct_fix_origins_agg:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the zero-fill spine is a deliberate cross join
     description: >
-      Distinct fixes per scheduled wave by origin (out-of-band emergency
-      waves excluded — their tiny totals distort the shares). Short "Mon
-      YY" labels ride a categorical axis; wave_seq is the chronological
+      Distinct fixes per scheduled release by origin (out-of-band emergency
+      releases excluded — their tiny totals distort the shares). Short "Mon
+      YY" labels ride a categorical axis; release_seq is the chronological
       sort key.
     source: warehouse
     sql: |
-      -- zero-filled: every wave carries every origin so the chart sort
-      -- (which SUMS wave_seq over each wave's rows) stays chronological
-      -- regardless of how many origins a wave actually has
-      WITH waves AS (
-        SELECT DISTINCT wave_dt FROM fct_fix_origins_agg WHERE NOT is_out_of_band
+      -- zero-filled: every release carries every origin so the chart sort
+      -- (which SUMS release_seq over each release's rows) stays chronological
+      -- regardless of how many origins a release actually has
+      WITH releases AS (
+        SELECT DISTINCT release_dt FROM fct_fix_origins_agg WHERE NOT is_out_of_band
       ),
       origins AS (
         SELECT DISTINCT origin FROM fct_fix_origins_agg
       )
       SELECT
-        STRFTIME(wvs.wave_dt, '%b %y') AS wave,
-        EPOCH(wvs.wave_dt)::BIGINT AS wave_seq,
+        STRFTIME(wvs.release_dt, '%b %y') AS release,
+        EPOCH(wvs.release_dt)::BIGINT AS release_seq,
         CASE org.origin
           WHEN 'unknown_or_internal_security' THEN 'embargoed security'
           WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
           ELSE org.origin
         END AS origin,
         COALESCE(fxo.fix_cnt, 0) AS fix_cnt
-      FROM waves AS wvs
+      FROM releases AS wvs
       CROSS JOIN origins AS org
       LEFT JOIN fct_fix_origins_agg AS fxo
-        ON fxo.wave_dt = wvs.wave_dt AND fxo.origin = org.origin
+        ON fxo.release_dt = wvs.release_dt AND fxo.origin = org.origin
       UNION ALL
-      -- the in-progress next wave: fixes already committed toward the next
+      -- the in-progress next release: fixes already committed toward the next
       -- minor (fct_pending_fix_origins_agg), zero-filled over the same four display
-      -- labels so the categorical sort (which SUMS wave_seq per wave) keeps
+      -- labels so the categorical sort (which SUMS release_seq per release) keeps
       -- it last. 'embargoed security' is 0 by construction — that work only
       -- reaches public git on wrap day.
       SELECT
@@ -221,12 +221,12 @@ charts:
   fix_origin_counts:
     type: bar
     query: fct_fix_origins_agg
-    title: "Fix origins per wave"
-    subtitle: "Distinct fixes by source; out-of-band waves excluded. The rightmost '(in progress)' bar is the next minor's fixes committed so far — right-censored and with no security yet (embargoed until wrap)"
-    x: wave
+    title: "Fix origins per release"
+    subtitle: "Distinct fixes by source; out-of-band releases excluded. The rightmost '(in progress)' bar is the next minor's fixes committed so far — right-censored and with no security yet (embargoed until wrap)"
+    x: release
     y: fix_cnt
     color: origin
-    sort: { by: wave_seq, order: asc }
+    sort: { by: release_seq, order: asc }
     # string x would auto-flip horizontal; these are time series, keep vertical
     style: { stack: zero, orientation: vertical }
     height: 360
@@ -234,12 +234,12 @@ charts:
   fix_origin_share:
     type: bar
     query: fix_origin_shares
-    title: "Fix origin share per wave"
-    subtitle: "Same data as shares; out-of-band waves excluded — pgsql-bugs supplies a quarter to a third. The '(in progress)' bar skews to pgsql-hackers because embargoed security work has not landed yet"
-    x: wave
+    title: "Fix origin share per release"
+    subtitle: "Same data as shares; out-of-band releases excluded — pgsql-bugs supplies a quarter to a third. The '(in progress)' bar skews to pgsql-hackers because embargoed security work has not landed yet"
+    x: release
     y: fix_share
     color: origin
-    sort: { by: wave_seq, order: asc }
+    sort: { by: release_seq, order: asc }
     style:
       orientation: vertical
       # true fractions stacked to 1.0 (NOT stack:normalize over counts,

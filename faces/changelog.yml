@@ -1,8 +1,8 @@
 title: "PostgreSQL Fix Velocity — Changelog"
 description: >
   Every minor release of PostgreSQL majors 15-18, scraped from the official
-  release notes: fix volume per quarterly release wave, fix categories,
-  security fixes, contributors, and next-wave projection scenarios.
+  release notes: fix volume per quarterly release, fix categories,
+  security fixes, contributors, and next-release projection scenarios.
   Data are produced by the transform/ dbt project (release notes parsed from
   the clone's SGML at build time).
 
@@ -15,11 +15,11 @@ description: >
 # itself suppresses all x-axis labels in 0.4.0; the layer route keeps them.)
 
 queries:
-  latest_wave:
-    description: The most recent release wave's headline numbers.
+  latest_release:
+    description: The most recent release's headline numbers.
     source: warehouse
     sql: |
-      SELECT release_dt AS wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt
+      SELECT release_dt AS release_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt
       FROM dim_release
       WHERE status = 'shipped'
       ORDER BY 1 DESC
@@ -40,51 +40,51 @@ queries:
       WHERE dv.minor > 0 AND vi.item_cnt >= 20
       ORDER BY 1, dv.major
 
-  fct_wave_categories_agg:
+  fct_release_categories_agg:
     description: >
-      Distinct fixes per full-quarter wave by category (backpatched
-      duplicates collapsed across branches; out-of-band waves excluded).
+      Distinct fixes per full-quarter release by category (backpatched
+      duplicates collapsed across branches; out-of-band releases excluded).
     source: warehouse
     sql: |
-      SELECT release_dt AS wave_dt, category, category_order, fix_cnt
-      FROM fct_wave_categories_agg
+      SELECT release_dt AS release_dt, category, category_order, fix_cnt
+      FROM fct_release_categories_agg
       WHERE NOT is_out_of_band
       ORDER BY 1, 3
 
-  wave_category_shares:
+  release_category_shares:
     description: >
-      Per-wave category shares as true fractions (sum to 1 per wave) so
+      Per-release category shares as true fractions (sum to 1 per release) so
       the percent format is honest in axis and tooltip alike.
     source: warehouse
     sql: |
       SELECT
-        release_dt AS wave_dt,
+        release_dt AS release_dt,
         category,
         category_order,
         ROUND(fix_cnt * 1.0 / SUM(fix_cnt) OVER (PARTITION BY release_dt), 4) AS fix_share
-      FROM fct_wave_categories_agg
+      FROM fct_release_categories_agg
       WHERE NOT is_out_of_band
       ORDER BY 1, 3
 
-  wave_pad:
-    description: Invisible x-domain padding points for the scheduled-wave bar charts.
+  release_pad:
+    description: Invisible x-domain padding points for the scheduled-release bar charts.
     source: warehouse
     sql: |
-      SELECT MIN(release_dt) - 45 AS wave_dt, 'Other functionality' AS category, 0 AS pad_zero
-      FROM fct_wave_categories_agg WHERE NOT is_out_of_band
+      SELECT MIN(release_dt) - 45 AS release_dt, 'Other functionality' AS category, 0 AS pad_zero
+      FROM fct_release_categories_agg WHERE NOT is_out_of_band
       UNION ALL
       SELECT MAX(release_dt) + 45, 'Other functionality', 0
-      FROM fct_wave_categories_agg WHERE NOT is_out_of_band
+      FROM fct_release_categories_agg WHERE NOT is_out_of_band
 
   oob_categories:
-    description: The out-of-band emergency waves' fixes by category.
+    description: The out-of-band emergency releases' fixes by category.
     source: warehouse
     sql: |
       -- categorical x: an ISO-prefixed label sorts chronologically, and the
       -- suffix keeps dct from date-parsing it onto a (sparse) temporal axis —
       -- only 3 emergencies, so adjacent labelled bars beat 3 scattered ones
-      SELECT STRFTIME(release_dt, '%Y-%m') || ' re-release' AS wave, category, category_order, fix_cnt
-      FROM fct_wave_categories_agg
+      SELECT STRFTIME(release_dt, '%Y-%m') || ' re-release' AS release, category, category_order, fix_cnt
+      FROM fct_release_categories_agg
       WHERE is_out_of_band
       ORDER BY 1, 3
 
@@ -92,35 +92,35 @@ queries:
     description: Invisible x-domain padding points for the security bar chart.
     source: warehouse
     sql: |
-      SELECT MIN(release_dt) - 45 AS wave_dt, 'Security (CVE)' AS category, 0 AS pad_zero
-      FROM fct_wave_categories_agg WHERE NOT is_out_of_band
+      SELECT MIN(release_dt) - 45 AS release_dt, 'Security (CVE)' AS category, 0 AS pad_zero
+      FROM fct_release_categories_agg WHERE NOT is_out_of_band
       UNION ALL
       SELECT MAX(release_dt) + 45, 'Security (CVE)', 0
-      FROM fct_wave_categories_agg WHERE NOT is_out_of_band
+      FROM fct_release_categories_agg WHERE NOT is_out_of_band
 
-  security_by_wave:
+  security_by_release:
     description: >
-      Security fixes per scheduled wave, split into CVE-tagged and
+      Security fixes per scheduled release, split into CVE-tagged and
       uncredited hardening.
     source: warehouse
     sql: |
-      SELECT release_dt AS wave_dt, category, category_order, fix_cnt
-      FROM fct_wave_categories_agg
+      SELECT release_dt AS release_dt, category, category_order, fix_cnt
+      FROM fct_release_categories_agg
       WHERE NOT is_out_of_band
         AND category IN ('Security (CVE)', 'Security hardening (no CVE)')
       ORDER BY 1, 3
 
-  contributors_by_wave:
+  contributors_by_release:
     description: >
-      Distinct credited contributors per scheduled wave, split into names
+      Distinct credited contributors per scheduled release, split into names
       appearing for the first time in this corpus vs returning names.
     source: warehouse
     sql: |
       SELECT
-        wc.release_dt AS wave_dt,
-        CASE WHEN wc.is_first_wave THEN 'first-time' ELSE 'returning' END AS cohort,
+        wc.release_dt AS release_dt,
+        CASE WHEN wc.is_first_release THEN 'first-time' ELSE 'returning' END AS cohort,
         COUNT(DISTINCT wc.contributor) AS contributors
-      FROM fct_wave_contributors_agg AS wc
+      FROM fct_release_contributors_agg AS wc
       WHERE NOT wc.is_out_of_band
       GROUP BY 1, 2
       ORDER BY 1, 2 DESC
@@ -129,22 +129,22 @@ queries:
     description: Invisible x-domain padding points for the contributors bar chart.
     source: warehouse
     sql: |
-      SELECT MIN(release_dt) - 45 AS wave_dt, 'returning' AS cohort, 0 AS pad_zero
-      FROM fct_wave_categories_agg WHERE NOT is_out_of_band
+      SELECT MIN(release_dt) - 45 AS release_dt, 'returning' AS cohort, 0 AS pad_zero
+      FROM fct_release_categories_agg WHERE NOT is_out_of_band
       UNION ALL
       SELECT MAX(release_dt) + 45, 'returning', 0
-      FROM fct_wave_categories_agg WHERE NOT is_out_of_band
+      FROM fct_release_categories_agg WHERE NOT is_out_of_band
 
-  wave_trend:
+  release_trend:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]
     description: >
-      Least-squares trendlines over full-quarter wave totals (the partial
-      first wave excluded): one fit over all waves, one excluding the latest
-      wave as a sensitivity check.
+      Least-squares trendlines over full-quarter release totals (the partial
+      first release excluded): one fit over all releases, one excluding the latest
+      release as a sensitivity check.
     source: warehouse
     sql: |
       WITH fullq AS (
-        SELECT release_dt AS wave_dt,
+        SELECT release_dt AS release_dt,
                ROW_NUMBER() OVER (ORDER BY release_dt) - 1 AS slot,
                distinct_fix_cnt
         FROM dim_release
@@ -157,7 +157,7 @@ queries:
         SELECT REGR_SLOPE(distinct_fix_cnt, slot) AS b, REGR_INTERCEPT(distinct_fix_cnt, slot) AS a
         FROM fullq WHERE slot < (SELECT MAX(slot) FROM fullq)
       )
-      SELECT fullq.wave_dt,
+      SELECT fullq.release_dt,
              fit_all.a + fit_all.b * fullq.slot AS trend_all,
              fit_ex.a + fit_ex.b * fullq.slot AS trend_excl_latest
       FROM fullq, fit_all, fit_ex
@@ -165,11 +165,11 @@ queries:
 
   security_trend:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]
-    description: Same two trendlines fitted to the security-fix totals per wave.
+    description: Same two trendlines fitted to the security-fix totals per release.
     source: warehouse
     sql: |
       WITH fullq AS (
-        SELECT release_dt AS wave_dt,
+        SELECT release_dt AS release_dt,
                ROW_NUMBER() OVER (ORDER BY release_dt) - 1 AS slot,
                security_fix_cnt
         FROM dim_release
@@ -182,7 +182,7 @@ queries:
         SELECT REGR_SLOPE(security_fix_cnt, slot) AS b, REGR_INTERCEPT(security_fix_cnt, slot) AS a
         FROM fullq WHERE slot < (SELECT MAX(slot) FROM fullq)
       )
-      SELECT fullq.wave_dt,
+      SELECT fullq.release_dt,
              fit_all.a + fit_all.b * fullq.slot AS trend_all,
              fit_ex.a + fit_ex.b * fullq.slot AS trend_excl_latest
       FROM fullq, fit_all, fit_ex
@@ -213,17 +213,17 @@ queries:
       FROM sched, fit_all, fit_ex
       ORDER BY 1
 
-  wave_totals:
-    description: Distinct fixes per full-quarter wave (the projection base series).
+  release_totals:
+    description: Distinct fixes per full-quarter release (the projection base series).
     source: warehouse
     sql: |
-      SELECT release_dt AS wave_dt, distinct_fix_cnt
+      SELECT release_dt AS release_dt, distinct_fix_cnt
       FROM dim_release
       WHERE NOT is_out_of_band AND status = 'shipped'
       ORDER BY 1
 
   projections:
-    description: Next-wave scenario projections derived from the wave series.
+    description: Next-release scenario projections derived from the release series.
     source: warehouse
     sql: |
       SELECT projected_dt, scenario, distinct_fix_cnt, assumption
@@ -231,11 +231,11 @@ queries:
       -- scenario_order is not in the select list, so it stays named
       ORDER BY scenario_order
 
-  wave_table:
-    description: All waves with headline numbers, newest first.
+  release_table:
+    description: All releases with headline numbers, newest first.
     source: warehouse
     sql: |
-      SELECT release_dt AS wave_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt,
+      SELECT release_dt AS release_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt,
              CASE WHEN is_out_of_band THEN 'yes' ELSE '' END AS is_out_of_band
       FROM dim_release
       WHERE status = 'shipped'
@@ -244,21 +244,21 @@ queries:
 charts:
   kpi_fixes:
     type: kpi
-    query: latest_wave
+    query: latest_release
     value: distinct_fix_cnt
-    label: "Distinct fixes, latest wave"
+    label: "Distinct fixes, latest release"
 
   kpi_security:
     type: kpi
-    query: latest_wave
+    query: latest_release
     value: security_fix_cnt
-    label: "Security fixes, latest wave"
+    label: "Security fixes, latest release"
 
   kpi_cves:
     type: kpi
-    query: latest_wave
+    query: latest_release
     value: distinct_cve_cnt
-    label: "CVEs closed, latest wave"
+    label: "CVEs closed, latest release"
 
   fixes_by_branch:
     type: line
@@ -286,40 +286,40 @@ charts:
 
   category_mix:
     type: bar
-    query: fct_wave_categories_agg
-    title: "Category mix per full-quarter wave"
+    query: fct_release_categories_agg
+    title: "Category mix per full-quarter release"
     subtitle: "Distinct fixes; backpatched duplicates collapsed across branches"
-    x: wave_dt
+    x: release_dt
     y: fix_cnt
     color: category
     style: { stack: zero }
     height: 380
     layers:
       - type: scatter
-        query: wave_pad
-        x: wave_dt
+        query: release_pad
+        x: release_dt
         y: pad_zero
         color: category
         style: { marks: { point: { opacity: 0 } } }
       - type: line
-        query: wave_trend
-        x: wave_dt
+        query: release_trend
+        x: release_dt
         y: trend_all
-        label: "linear trend (full-quarter waves)"
+        label: "linear trend (full-quarter releases)"
         style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
       - type: line
-        query: wave_trend
-        x: wave_dt
+        query: release_trend
+        x: release_dt
         y: trend_excl_latest
         label: "trend excluding Aug '26"
         style: { marks: { line: { stroke: { color: "#c0392b", dasharray: "3 5", width: 1.5 } } } }
 
   category_share:
     type: bar
-    query: wave_category_shares
-    title: "Same data as shares of each wave"
+    query: release_category_shares
+    title: "Same data as shares of each release"
     subtitle: "100% stacked"
-    x: wave_dt
+    x: release_dt
     y: fix_share
     color: category
     style:
@@ -332,18 +332,18 @@ charts:
     height: 380
     layers:
       - type: scatter
-        query: wave_pad
-        x: wave_dt
+        query: release_pad
+        x: release_dt
         y: pad_zero
         color: category
         style: { marks: { point: { opacity: 0 } } }
 
-  oob_waves:
+  oob_releases:
     type: bar
     query: oob_categories
-    title: "The out-of-band emergency waves"
-    subtitle: "Re-releases shipped one or two weeks after a scheduled wave"
-    x: wave
+    title: "The out-of-band emergency releases"
+    subtitle: "Re-releases shipped one or two weeks after a scheduled release"
+    x: release
     y: fix_cnt
     color: category
     style: { stack: zero }
@@ -351,10 +351,10 @@ charts:
 
   security:
     type: bar
-    query: security_by_wave
+    query: security_by_release
     title: "The security hockey stick"
-    subtitle: "CVE-tagged fixes plus uncredited hardening, per scheduled wave"
-    x: wave_dt
+    subtitle: "CVE-tagged fixes plus uncredited hardening, per scheduled release"
+    x: release_dt
     y: fix_cnt
     color: category
     style: { stack: zero }
@@ -362,29 +362,29 @@ charts:
     layers:
       - type: scatter
         query: security_pad
-        x: wave_dt
+        x: release_dt
         y: pad_zero
         color: category
         style: { marks: { point: { opacity: 0 } } }
       - type: line
         query: security_trend
-        x: wave_dt
+        x: release_dt
         y: trend_all
-        label: "linear trend (full-quarter waves)"
+        label: "linear trend (full-quarter releases)"
         style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
       - type: line
         query: security_trend
-        x: wave_dt
+        x: release_dt
         y: trend_excl_latest
         label: "trend excluding Aug '26"
         style: { marks: { line: { stroke: { color: "#c0392b", dasharray: "3 5", width: 1.5 } } } }
 
   contributors:
     type: bar
-    query: contributors_by_wave
-    title: "Contributors per wave: first-time vs returning"
+    query: contributors_by_release
+    title: "Contributors per release: first-time vs returning"
     subtitle: "Names credited in the release notes; first-time = new to this 2022+ corpus"
-    x: wave_dt
+    x: release_dt
     y: contributors
     color: cohort
     style: { stack: zero }
@@ -392,17 +392,17 @@ charts:
     layers:
       - type: scatter
         query: contrib_pad
-        x: wave_dt
+        x: release_dt
         y: pad_zero
         color: cohort
         style: { marks: { point: { opacity: 0 } } }
 
   projection:
     type: line
-    query: wave_totals
-    title: "Next-wave projection scenarios"
-    subtitle: "Historical distinct fixes per full-quarter wave, with four scenarios for the next wave"
-    x: wave_dt
+    query: release_totals
+    title: "Next-release projection scenarios"
+    subtitle: "Historical distinct fixes per full-quarter release, with four scenarios for the next release"
+    x: release_dt
     y: distinct_fix_cnt
     y_label: "distinct fixes"
     height: 380
@@ -414,8 +414,8 @@ charts:
         color: scenario
         label: "Scenario"
       - type: line
-        query: wave_trend
-        x: wave_dt
+        query: release_trend
+        x: release_dt
         y: trend_all
         label: ""
         style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
@@ -425,18 +425,18 @@ charts:
     query: projections
     title: "Scenario assumptions"
 
-  wave_table:
+  release_table:
     type: table
-    query: wave_table
-    title: "All release waves"
+    query: release_table
+    title: "All release releases"
 
 rows:
   - cols: [kpi_fixes, kpi_security, kpi_cves]
   - fixes_by_branch
   - category_mix
   - category_share
-  - cols: [oob_waves, security]
+  - cols: [oob_releases, security]
   - contributors
   - projection
   - scenario_table
-  - wave_table
+  - release_table

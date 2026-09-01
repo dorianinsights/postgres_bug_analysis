@@ -87,20 +87,20 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 
 | File | Grain | Notes |
 |---|---|---|
-| `fct_wave_categories_agg.csv` | (dim_release_key, category) | distinct-fix counts per category, aggregated from `fct_fixes`; conformed to `dim_release` via `dim_release_key` |
-| `fct_wave_contributors_agg.csv` | (dim_release_key, contributor) | credit counts via `bridge_fix_contributor` (the notes' "(Name, Name)" parse lives in `int_fix_contributors`), with first-seen wave; conformed to `dim_release` |
-| `projections.csv` | one scenario | next-wave scenarios: reversion / trend / regime repeat / escalation |
+| `fct_release_categories_agg.csv` | (dim_release_key, category) | distinct-fix counts per category, aggregated from `fct_fixes`; conformed to `dim_release` via `dim_release_key` |
+| `fct_release_contributors_agg.csv` | (dim_release_key, contributor) | credit counts via `bridge_fix_contributor` (the notes' "(Name, Name)" parse lives in `int_fix_contributors`), with first-seen release; conformed to `dim_release` |
+| `projections.csv` | one scenario | next-release scenarios: reversion / trend / regime repeat / escalation |
 | `fct_category_vs_subsystem_agg.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
 | `fct_bug_reports_monthly_agg.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
-| `fct_fix_origins_agg.csv` | (wave, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
+| `fct_fix_origins_agg.csv` | (release, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
 | `fct_origin_activity_monthly_agg.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
-| `fct_pending_fix_origins_agg.csv` | (ships_at, origin) | the in-progress next wave: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
-| `dim_version.csv` | one version | version dimension: one row per individual minor (e.g. `18.6`) below the wave — major/minor, wrap + announced date, `dim_release_key` → `dim_release` (NULL for `.0` majors), and its dates conform to `dim_date` |
+| `fct_pending_fix_origins_agg.csv` | (ships_at, origin) | the in-progress next release: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
+| `dim_version.csv` | one version | version dimension: one row per individual minor (e.g. `18.6`) below the release — major/minor, wrap + announced date, `dim_release_key` → `dim_release` (NULL for `.0` majors), and its dates conform to `dim_date` |
 | `fct_version_items_agg.csv` | one version | aggregate fact: changelog item count per minor, conformed to `dim_version` (the date/major/minor attributes live in the dimension) |
 | `dim_cve.csv` | one CVE | CVE dimension: CVSS v3 base score + band + vector + component for every CVE a corpus fix cites |
 | `bridge_fix_cve.csv` | (fix, CVE) | bridge for the fix<->CVE many-to-many |
 | `bridge_fix_bug.csv` | (fix, bug) | bridge for the fix<->bug many-to-many |
-| `dim_release.csv` | one wave | the release dimension (unifies the retired dim_release_wave, dim_release_cycle, and fct_release_cycles): `status` = shipped/open/future, wave scale (fixes/CVEs/security) + flags for shipped rows, wrap date, plus the cycle signals (early reports/messages/fixes, pace, window) folded onto the started scheduled cycles; keyed `dim_release_key` (a generate_surrogate_key hash) |
+| `dim_release.csv` | one release | the release dimension (unifies the retired dim_release_wave, dim_release_cycle, and fct_release_cycles): `status` = shipped/open/future, release scale (fixes/CVEs/security) + flags for shipped rows, wrap date, plus the cycle signals (early reports/messages/fixes, pace, window) folded onto the started scheduled cycles; keyed `dim_release_key` (a generate_surrogate_key hash) |
 
 (The message-grain `fct_messages` mart has **no** CSV twin — one row per
 archived message is too heavy to commit; its typed table in `transform.duckdb`
@@ -109,8 +109,8 @@ is the interface, and `export_marts_csv` skips it.)
 ## Dashboards (`faces/`)
 
 - `changelog.yml` — the release-notes view: fixes per release by branch,
-  category mix (absolute + 100%), out-of-band waves, the security hockey
-  stick, contributors first-time-vs-returning, and the next-wave projection
+  category mix (absolute + 100%), out-of-band releases, the security hockey
+  stick, contributors first-time-vs-returning, and the next-release projection
   scenarios.
 - `git_activity.yml` — the commit-level view: quarterly distinct backpatched
   fixes, per-branch series, AI-credited commits (chart + full credit-line
@@ -119,8 +119,8 @@ is the interface, and `export_marts_csv` skips it.)
   6-month average, weekly volume with a 3-week average, acted-upon
   share, outcome and latency breakdowns, discussion volume by outcome,
   and the most-discussed reports table.
-- `origins.yml` — source attribution: fixes per wave by origin (counts
-  and share, with an in-progress bar for the next wave's fixes committed so
+- `origins.yml` — source attribution: fixes per release by origin (counts
+  and share, with an in-progress bar for the next release's fixes committed so
   far), cited discussion threads per month by source, AI-flagged commits by
   origin — the grounding for report-volume -> fix-volume projections.
 - `fix_impact.yml` — impact & severity: security fixes by CVSS band, fix
@@ -163,14 +163,14 @@ every object's name. Layers:
   (`stg_*`). The CSV source reader restricts type-sniffing to
   BIGINT/DATE/VARCHAR so version strings like "15.10" can't collapse into
   doubles.
-- `models/intermediate/` — the analysis steps as tables: `int_waves` (wave
+- `models/intermediate/` — the analysis steps as tables: `int_releases` (release
   grain + flags), `int_fix_items` (fix items + dedup keys + derived CVEs),
   `int_fix_groups` (cross-branch dedup as recursive-CTE connected
   components), `int_fix_reps` (one categorized representative per distinct
-  fix), `int_wave_summary`, `int_git_commits` (plumbing/AI-credit flags).
+  fix), `int_release_summary`, `int_git_commits` (plumbing/AI-credit flags).
 - `models/marts/` — the typed tables the faces and CSV exports read: the
   item-grain `fix_items` fact, the commit-grain `fct_commits`
-  fact, the wave/projection/pace rollups, and the star (dims + facts)
+  fact, the release/projection/pace rollups, and the star (dims + facts)
   described below. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
   which downstream writers silently turn into DOUBLE — cast count-like
   sums to `::BIGINT` at the aggregation site.
@@ -179,10 +179,10 @@ every object's name. Layers:
     authors + committers + list senders unified to one person, keyed by the
     shared `person_node()` macro + `int_person_map` connected-component
     resolution so several emails collapse to one person), `dim_date`,
-    `dim_release` (shipped waves + open/future cycles, status-flagged), `dim_cve` and `dim_bug`, with the
+    `dim_release` (shipped releases + open/future cycles, status-flagged), `dim_cve` and `dim_bug`, with the
     facts `fct_commits` (commit grain), `fct_messages` (message grain), and
     `fct_fixes` (fix grain). `dim_version` sits one grain below `dim_release`:
-    one row per individual minor (e.g. `18.6`), conformed up to its wave via
+    one row per individual minor (e.g. `18.6`), conformed up to its release via
     `dim_release_key` (NULL for the `.0` majors that ship alone); `fct_fixes` and
     `fct_version_items_agg` carry a `dim_version_key` FK to it.
     **Key convention:** every non-date dimension's PK is its first column, named
@@ -197,7 +197,7 @@ every object's name. Layers:
     on `dim_release`. The
     fix<->CVE, fix<->bug, and fix<->contributor many-to-manys go through
     `bridge_fix_cve` / `bridge_fix_bug` / `bridge_fix_contributor` (the last
-    fed by `int_fix_contributors`); `fct_wave_categories_agg` and `fct_wave_contributors_agg`
+    fed by `int_fix_contributors`); `fct_release_categories_agg` and `fct_release_contributors_agg`
     are conformed aggregates of `fct_fixes` (+ the contributor bridge). The period aggregates (`fct_bug_reports_monthly_agg`,
     `fct_list_traffic_monthly_agg`/`weekly`, `fct_origin_activity_monthly_agg`) are aggregate
     facts rolled up from those grains and conformed on `dim_date` by their
@@ -293,14 +293,14 @@ one-time setup: `./venv/bin/pre-commit install`). Auto-fix layout nits with
   deliberate, versioned commit, not a flag or an env var.
 - `.0` feature releases are not fixes; "update time zone data files" items are
   routine refreshes — both excluded.
-- A wave is **out-of-band** (emergency re-release) when its largest release has
-  fewer than 20 items; out-of-band waves are excluded from trend/pace series.
-- Cross-branch dedup: two items in a wave are the same fix when EITHER their
+- A release is **out-of-band** (emergency re-release) when its largest release has
+  fewer than 20 items; out-of-band releases are excluded from trend/pace series.
+- Cross-branch dedup: two items in a release are the same fix when EITHER their
   normalized summary text (lowercased, whitespace collapsed, "§" markers
   stripped) OR their exact annotated commit-hash set matches, transitively
   (connected components in `int_fix_groups.sql` — its header comment
   documents the four real-world cases behind the rule).
-- The corpus's first wave (15.1, Nov 2022) accumulated only ~4 weeks of fixes
+- The corpus's first release (15.1, Nov 2022) accumulated only ~4 weeks of fixes
   and is flagged `is_partial_window`; projection fits exclude it.
 - Timestamps keep full fidelity (ISO 8601 with offset) through raw and
   staging (`_ts` columns, TIMESTAMPTZ); truncation to a calendar day
@@ -316,7 +316,7 @@ one-time setup: `./venv/bin/pre-commit install`). Auto-fix layout nits with
   derivation lives in the transform: plumbing/AI-credit flags
   (`int_git_commits`), CVE extraction (`int_fix_items`), release-tag
   filtering and major/minor parsing (`stg_git_tags`), per-release item
-  counts for the out-of-band rule (`int_waves`).
+  counts for the out-of-band rule (`int_releases`).
 - Stable-branch commit series count only post-`.0` commits (the backpatch
   stream); shared pre-branch history belongs to `master`. Security fixes are
   embargoed and reach public git only on wrap day, so mid-cycle security
@@ -329,7 +329,7 @@ one-time setup: `./venv/bin/pre-commit install`). Auto-fix layout nits with
   dates, and CVE sets,
   and the commit-annotation dedup now used by the transform models (match on
   summary text OR the exact annotation block) reproduces the pure-text
-  counts exactly across all 19 waves (Aug 2026: 142 both ways). Known divergence: nested remediation
+  counts exactly across all 19 releases (Aug 2026: 142 both ways). Known divergence: nested remediation
   sub-bullets (e.g. CVE-2024-4317's three steps) fold into their parent item
   in SGML instead of counting as separate fixes — a correction.
 

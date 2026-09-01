@@ -1,17 +1,17 @@
 version: 2
 
 models:
-  - name: int_wave_summary
-    description: Wave-grain rollup of the deduped fixes. Grain = wave_dt.
+  - name: int_release_summary
+    description: Release-grain rollup of the deduped fixes. Grain = release_dt.
     tests:
       # Security fixes are a subset of all fixes. (distinct_cve_cnt is NOT
       # bounded by security_fix_cnt: one item can carry several CVEs — the
-      # 2025-08-14 wave has 5 CVEs across 3 security items.)
+      # 2025-08-14 release has 5 CVEs across 3 security items.)
       - dbt_utils.expression_is_true:
           arguments:
             expression: security_fix_cnt <= distinct_fix_cnt
     columns:
-      - name: wave_dt
+      - name: release_dt
         tests: [unique, not_null]
       - name: versions
         tests: [not_null]

@@ -16,15 +16,15 @@ clean-targets: [target]
 vars:
   # -- Analysis parameters (change these and the results MEAN something
   # different — treat edits like corpus.py changes: reviewed commits).
-  # A wave is out-of-band (emergency re-release) when its largest release
+  # A release is out-of-band (emergency re-release) when its largest release
   # has fewer items than this.
-  scheduled_wave_min_items: 20
-  # Quarterly wave cadence: where the projected next wave is placed.
-  wave_cadence_days: 91
+  scheduled_release_min_items: 20
+  # Quarterly release cadence: where the projected next release is placed.
+  release_cadence_days: 91
   # How many recent cycles the like-for-like pace comparison covers
   # (the open cycle plus N-1 closed comparators).
   pace_comparison_cycles: 3
-  # A wave's wrap tag is the latest tag within this many days before it.
+  # A release's wrap tag is the latest tag within this many days before it.
   wrap_tag_window_days: 7
   # The fixed "early cycle" window for the quarterly-seasonality view:
   # dim_release.first_window_fix_cnt (via int_release_cycles) counts distinct
@@ -44,7 +44,7 @@ vars:
   # test_floor_* values above these are BARE dates (no embedded quotes) --
   # get_base_dates wraps them in its own cast('...'). end_date is EXCLUSIVE
   # (dbt_date's spine is [start, end)). start sits safely before the earliest
-  # corpus row; end runs a couple years past the last scheduled wave.
+  # corpus row; end runs a couple years past the last scheduled release.
   # assert_dim_date_covers_corpus fails the build if the corpus ever outgrows
   # this span -- widen the var and rebuild when it does.
   date_spine_start: "2021-09-01"

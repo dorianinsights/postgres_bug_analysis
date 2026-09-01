@@ -21,7 +21,7 @@ WITH item_hashes AS (
 
 SELECT
   ROW_NUMBER() OVER (ORDER BY rel.major, rel.minor, itm.item_index) AS item_ord,
-  rel.release_dt AS wave_dt,
+  rel.release_dt,
   itm.version,
   itm.item_index,
   itm.summary,
@@ -33,7 +33,7 @@ SELECT
   't:' || LOWER(TRIM(REGEXP_REPLACE(REPLACE(itm.summary, '§', ' '), '\s+', ' ', 'g'))) AS text_key,
   CASE WHEN ihs.hash_set IS NOT null THEN 'h:' || ihs.hash_set END AS hash_key
 FROM {{ ref('stg_release_items') }} AS itm
-INNER JOIN {{ ref('int_releases') }} AS rel ON itm.version = rel.version
+INNER JOIN {{ ref('int_versions') }} AS rel ON itm.version = rel.version
 LEFT JOIN item_hashes AS ihs
   ON itm.version = ihs.version AND itm.item_index = ihs.item_index
 WHERE

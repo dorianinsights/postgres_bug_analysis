@@ -3,15 +3,15 @@ version: 2
 models:
   - name: fct_fix_origins_agg
     description: >
-      Distinct fixes per wave split by origin (pgsql-bugs /
+      Distinct fixes per release split by origin (pgsql-bugs /
       pgsql-hackers / unknown_or_internal) ->
-      ../data/derived/fct_fix_origins_agg.csv. Grain = (wave_dt, origin).
+      ../data/derived/fct_fix_origins_agg.csv. Grain = (release_dt, origin).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [wave_dt, origin]
+            combination_of_columns: [release_dt, origin]
     columns:
-      - name: wave_dt
+      - name: release_dt
         tests:
           - not_null
           - relationships:

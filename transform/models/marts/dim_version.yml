@@ -5,8 +5,8 @@ models:
     description: >
       Version dimension -> ../data/derived/dim_version.csv. One row per
       individual PostgreSQL release (e.g. 18.6) -- the grain below a release
-      wave (dim_release). Sourced from the git-tag registry (int_releases).
-      Conforms to dim_release via dim_release_key (the wave a minor shipped in; NULL
+      release (dim_release). Sourced from the git-tag registry (int_versions).
+      Conforms to dim_release via dim_release_key (the release a minor shipped in; NULL
       for the .0 majors that ship alone) and to dim_date on its DATE columns
       (release_dt, wrap_dt). Grain = version.
     tests:
@@ -48,7 +48,7 @@ models:
                 to: ref('dim_date')
                 field: date_day
       # dim_release's Not Applicable member for the .0 majors (they ship alone,
-      # not in a minor wave)
+      # not in a minor release)
       - name: dim_release_key
         tests:
           - not_null

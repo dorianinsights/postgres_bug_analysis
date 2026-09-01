@@ -13,7 +13,7 @@ models:
           - not_null
           - relationships:
               arguments:
-                to: ref('int_releases')
+                to: ref('int_versions')
                 field: version
       - name: major
         tests:

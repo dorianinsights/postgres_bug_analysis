@@ -3,23 +3,39 @@ version: 2
 models:
   - name: int_releases
     description: >
-      Release registry sourced from git release tags (REL_MAJOR_MINOR) rather
-      than the SGML release notes -- one row per release. release_dt is the
-      announced release day (always a Thursday), derived by snapping the tag's
-      wrap date forward to the first Thursday on/after it; it reproduces the
-      former SGML-sourced stg_releases.release_dt exactly. Grain = version.
-    tests:
-      - dbt_utils.expression_is_true:
-          arguments:
-            expression: ISODOW(release_dt) = 4
+      The release registry -- one row per PostgreSQL release (shipped, open, or
+      future), with the surrogate key minted once here so dim_release and
+      dim_version both conform to the same dim_release_key. Grain =
+      dim_release_key.
     columns:
-      - name: version
+      - name: dim_release_key
         tests: [not_null, unique]
-      - name: major
-        tests: [not_null]
-      - name: minor
-        tests: [not_null]
-      - name: wrap_dt
-        tests: [not_null]
       - name: release_dt
+        tests:
+          - unique
+          - not_null
+          # spans shipped through the last scheduled future release
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "{{ var('test_floor_release_dt') }}"
+                max_value: "'{{ var('date_spine_end') }}'"
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [shipped, open, future]
+      - name: wrap_dt
+        description: The tarball wrap day; NULL for out-of-band releases (not on the calendar).
+      - name: versions
+        tests: [not_null]
+      - name: release_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: is_out_of_band
+        tests: [not_null]
+      - name: is_partial_window
         tests: [not_null]

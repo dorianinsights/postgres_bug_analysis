@@ -1,17 +1,17 @@
 version: 2
 
 models:
-  - name: fct_wave_contributors_agg
+  - name: fct_release_contributors_agg
     description: >
-      Tidy (release-wave, contributor) credit counts with each name's first-seen
-      wave -> ../data/derived/fct_wave_contributors_agg.csv, aggregated from the
+      Tidy (release-release, contributor) credit counts with each name's first-seen
+      release -> ../data/derived/fct_release_contributors_agg.csv, aggregated from the
       fix<->contributor bridge and conformed to dim_release via dim_release_key.
       Grain = (dim_release_key, contributor).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [dim_release_key, contributor]
-      # A contributor's first-seen wave can never postdate a wave they appear in.
+      # A contributor's first-seen release can never postdate a release they appear in.
       - dbt_utils.expression_is_true:
           arguments:
             expression: first_seen_release_dt <= release_dt
@@ -49,7 +49,7 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
-      - name: is_first_wave
+      - name: is_first_release
         tests: [not_null]
       - name: is_out_of_band
         tests: [not_null]

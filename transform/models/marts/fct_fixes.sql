@@ -39,7 +39,7 @@ primary_bug AS (
 SELECT
   chg.item_ord,
   COALESCE(drl.dim_release_key, {{ unknown_key() }}) AS dim_release_key,
-  chg.wave_dt,
+  chg.release_dt,
   COALESCE(dvr.dim_version_key, {{ unknown_key() }}) AS dim_version_key,
   chg.item_index,
   reps.summary,
@@ -49,7 +49,7 @@ SELECT
   cats.category_order,
   chg.dominant_subsystem,
   fio.origin,
-  waves.is_out_of_band,
+  releases.is_out_of_band,
   grp.branch_item_cnt,
   chg.file_cnt,
   chg.lines_added_sum,
@@ -68,13 +68,13 @@ FROM {{ ref('int_fix_changes') }} AS chg
 INNER JOIN group_sizes AS grp ON chg.item_ord = grp.group_ord
 INNER JOIN {{ ref('int_fix_reps') }} AS reps ON chg.item_ord = reps.item_ord
 INNER JOIN {{ ref('categories') }} AS cats ON chg.category = cats.category
-INNER JOIN {{ ref('int_waves') }} AS waves ON chg.wave_dt = waves.wave_dt
+INNER JOIN {{ ref('int_releases') }} AS releases ON chg.release_dt = releases.release_dt
 LEFT JOIN {{ ref('int_fix_severity') }} AS sev ON chg.item_ord = sev.item_ord
 LEFT JOIN {{ ref('int_fix_origins') }} AS fio ON chg.item_ord = fio.group_ord
 LEFT JOIN bug_agg AS bag ON chg.item_ord = bag.item_ord
 LEFT JOIN primary_bug AS pbg ON chg.item_ord = pbg.item_ord
 -- resolve the surrogate keys from the dimensions (defined once, there) rather
 -- than recomputing the hashes here
-LEFT JOIN {{ ref('dim_release') }} AS drl ON chg.wave_dt = drl.release_dt
+LEFT JOIN {{ ref('dim_release') }} AS drl ON chg.release_dt = drl.release_dt
 LEFT JOIN {{ ref('dim_version') }} AS dvr ON chg.version = dvr.version
 LEFT JOIN {{ ref('dim_bug') }} AS dbg ON pbg.primary_bug_number = dbg.bug_number

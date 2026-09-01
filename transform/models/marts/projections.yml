@@ -3,7 +3,7 @@ version: 2
 models:
   - name: projections
     description: >
-      Next-wave scenario values -> ../data/derived/projections.csv.
+      Next-release scenario values -> ../data/derived/projections.csv.
       Exactly one row per scenario.
     tests:
       - dbt_expectations.expect_table_row_count_to_equal:

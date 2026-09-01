@@ -1,5 +1,5 @@
 scenario,scenario_order,projected_dt,distinct_fix_cnt,low,high,assumption
-escalation,3,2026-11-12,145,,,latest wave is the new base and growth continues at the fitted trend rate
-regime repeat,2,2026-11-12,142,,,whatever produced the latest wave keeps delivering at that level
-reversion,0,2026-11-12,75,65,85,latest wave was a one-off; return to the mean of the prior three full-quarter waves
-trend,1,2026-11-12,93,,,"least-squares line through all full-quarter waves, extended one slot"
+escalation,3,2026-11-12,145,,,latest release is the new base and growth continues at the fitted trend rate
+regime repeat,2,2026-11-12,142,,,whatever produced the latest release keeps delivering at that level
+reversion,0,2026-11-12,75,65,85,latest release was a one-off; return to the mean of the prior three full-quarter releases
+trend,1,2026-11-12,93,,,"least-squares line through all full-quarter releases, extended one slot"

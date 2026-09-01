@@ -1,7 +1,7 @@
 -- Distinct pending fixes (committed toward the next minor, not yet
 -- released) rolled up by origin — the source breakdown of the in-progress
--- November wave the origins face appends to the historical "fix origins
--- per wave" chart. Carries the cutoff dates as context (as_of_dt is the
+-- November release the origins face appends to the historical "fix origins
+-- per release" chart. Carries the cutoff dates as context (as_of_dt is the
 -- build date; the counts grow until wrap_dt). Grain = (ships_at_dt,
 -- origin). Note: no security bucket here — embargoed security work only
 -- lands in public git on wrap day, so the pending set can't see it yet.

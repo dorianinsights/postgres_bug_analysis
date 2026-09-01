@@ -1,11 +1,11 @@
 version: 2
 
 models:
-  - name: fct_wave_categories_agg
+  - name: fct_release_categories_agg
     description: >
-      Tidy (release-wave, category) fix counts -> ../data/derived/fct_wave_categories_agg.csv,
+      Tidy (release-release, category) fix counts -> ../data/derived/fct_release_categories_agg.csv,
       aggregated from fct_fixes and conformed to dim_release via dim_release_key.
-      Only categories present in a wave are written, so fix_cnt >= 1.
+      Only categories present in a release are written, so fix_cnt >= 1.
       Grain = (dim_release_key, category).
     tests:
       - dbt_utils.unique_combination_of_columns:

@@ -1,4 +1,4 @@
-wave_dt,is_out_of_band,origin,fix_cnt
+release_dt,is_out_of_band,origin,fix_cnt
 2022-11-10,false,pgsql-bugs,10
 2022-11-10,false,pgsql-hackers,13
 2022-11-10,false,unknown_or_internal_not_security,2

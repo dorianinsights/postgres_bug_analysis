@@ -98,8 +98,8 @@ per-session memories, which aren't committed to git.)
   `future_eternity` (9999-01-01) rows (vars). Append special rows with an
   explicit-column `UNION ALL` — NOT `UNION ALL BY NAME` (sqlfluff AM07 can't
   parse it).
-- A **release cycle** and a **wave** are the same entity at two lifecycle stages
-  (a wave is a shipped cycle), unified in **`dim_release`** (`status` =
+- A **release cycle** and a **release** are the same entity at two lifecycle stages
+  (a release is a shipped cycle), unified in **`dim_release`** (`status` =
   shipped/open/future; shipped measures NULL for non-shipped). The cycle signals
   (`cycle_start_dt`, `window_days`, `early_*_cnt`, `full_fix_cnt`, from
   `int_release_cycles`) are **folded onto the same row** — a cycle was a fact 1:1
@@ -107,4 +107,4 @@ per-session memories, which aren't committed to git.)
   non-NULL only for the started scheduled cycles (`cycle_start_dt IS NOT NULL`).
   `fct_fixes.dim_release_key` conforms to `dim_release.dim_release_key`.
   `dim_release.release_dt` is the release day — the changelog aliases it back to
-  `wave_dt` for its charts.
+  `release_dt` for its charts.

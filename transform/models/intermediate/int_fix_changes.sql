@@ -103,7 +103,7 @@ dominant AS (
 
 SELECT
   reps.item_ord,
-  reps.wave_dt,
+  reps.release_dt,
   reps.version,
   reps.item_index,
   reps.category,

@@ -5,7 +5,7 @@
 -- parsed for a version that has no tag (e.g. a corpus/tag-pattern mismatch).
 -- Replaces the former n_items checksum, which only compared two CSVs from the
 -- same scrape run now that release existence comes from git rather than SGML.
-WITH reg AS (SELECT version FROM {{ ref('int_releases') }}),
+WITH reg AS (SELECT version FROM {{ ref('int_versions') }}),
 
 items AS (SELECT DISTINCT version FROM {{ ref('stg_release_items') }})
 

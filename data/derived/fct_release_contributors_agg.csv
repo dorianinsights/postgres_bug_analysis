@@ -1,4 +1,4 @@
-dim_release_key,release_dt,contributor,credit_cnt,first_seen_release_dt,is_first_wave,is_out_of_band
+dim_release_key,release_dt,contributor,credit_cnt,first_seen_release_dt,is_first_release,is_out_of_band
 086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Alexander Lakhin,3,2023-05-11,false,false
 086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Andres Freund,2,2022-11-10,false,false
 086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Ankit Kumar Pandey,1,2023-08-10,true,false

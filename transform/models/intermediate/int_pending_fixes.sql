@@ -1,7 +1,7 @@
 -- The fixes already committed toward the NEXT scheduled minor but not yet
--- released — the pending wave. Same supply-side signal the projection
+-- released — the pending release. Same supply-side signal the projection
 -- models use (int_backpatch_fixes): backpatched, non-plumbing
--- stable-branch commits since the last wrap (the content cutoff of the wave
+-- stable-branch commits since the last wrap (the content cutoff of the release
 -- that already shipped), deduped to distinct fixes by normalized subject
 -- (a fix backpatched to N branches has N near-identical subjects). Each
 -- distinct fix is attributed to an origin from its commits via

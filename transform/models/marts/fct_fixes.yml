@@ -19,8 +19,8 @@ models:
                 to: ref('dim_release')
                 field: dim_release_key
           - not_unknown_member
-      - name: wave_dt
-        description: The wave's release day (denormalized from dim_release for date joins).
+      - name: release_dt
+        description: The release's release day (denormalized from dim_release for date joins).
         tests:
           - not_null
           - relationships:
@@ -28,7 +28,7 @@ models:
                 to: ref('dim_date')
                 field: date_day
       # The representative minor of the deduped fix (the fix is backpatched
-      # across a wave's branches; this is one member version) -> dim_version.
+      # across a release's branches; this is one member version) -> dim_version.
       - name: dim_version_key
         tests:
           - not_null

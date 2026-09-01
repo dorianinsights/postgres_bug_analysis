@@ -5,7 +5,7 @@ models:
     description: >
       One row per (distinct fix, CVE) — the fix cves list exploded once. Grain =
       (item_ord, cve_id). Reused by dim_cve, bridge_fix_cve, int_fix_severity,
-      int_wave_summary.
+      int_release_summary.
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

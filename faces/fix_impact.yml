@@ -16,7 +16,7 @@ description: >
   representative commit) and, for security fixes, CVE severity (CVSS v3
   base score from postgresql.org/support/security), then correlating both
   against outcomes: report-to-fix latency, backpatch breadth, and
-  out-of-band emergency waves.
+  out-of-band emergency releases.
 
 queries:
 

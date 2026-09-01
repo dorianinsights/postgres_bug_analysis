@@ -20,7 +20,7 @@ models:
               arguments:
                 to: ref('int_fix_groups')
                 field: group_ord
-      - name: wave_dt
+      - name: release_dt
         tests: [not_null]
       - name: summary
         tests: [not_null]

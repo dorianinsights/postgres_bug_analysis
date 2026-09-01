@@ -1,10 +1,10 @@
--- Category counts partition the deduped fixes: their per-wave sum must
--- equal wave_summary.distinct_fix_cnt.
-WITH per_wave AS (
+-- Category counts partition the deduped fixes: their per-release sum must
+-- equal release_summary.distinct_fix_cnt.
+WITH per_release AS (
   SELECT
     dim_release_key,
     SUM(fix_cnt) AS fix_cnt
-  FROM {{ ref('fct_wave_categories_agg') }}
+  FROM {{ ref('fct_release_categories_agg') }}
   GROUP BY dim_release_key
 )
 
@@ -13,5 +13,5 @@ SELECT
   wsm.distinct_fix_cnt,
   COALESCE(pwv.fix_cnt, 0) AS fix_cnt
 FROM {{ ref('dim_release') }} AS wsm
-LEFT JOIN per_wave AS pwv ON wsm.dim_release_key = pwv.dim_release_key
+LEFT JOIN per_release AS pwv ON wsm.dim_release_key = pwv.dim_release_key
 WHERE wsm.status = 'shipped' AND wsm.distinct_fix_cnt != COALESCE(pwv.fix_cnt, 0)

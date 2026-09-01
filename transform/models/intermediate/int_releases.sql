@@ -1,27 +1,114 @@
--- The authoritative release registry, sourced from git release tags (the same
--- postgres.git clone the commit models read) rather than the SGML release
--- notes. One row per REL_MAJOR_MINOR tag (stg_git_tags already drops BETA/RC).
---
--- release_dt is the ANNOUNCED release day, always a Thursday: PostgreSQL wraps
--- the tarball Mon-Wed and ships the first Thursday on/after the wrap, so we snap
--- the tag's wrap date forward to that Thursday (ISODOW 4). This reproduces the
--- old SGML <date> EXACTLY for every corpus release -- scheduled, out-of-band,
--- and .0 majors alike -- and covers the out-of-band waves that the quarterly
--- int_release_calendar deliberately omits. Grain = version.
-WITH wraps AS (
+-- The release registry: one row per PostgreSQL release (a same-day group of
+-- minors), shipped OR upcoming, with the surrogate key minted ONCE here so
+-- dim_release and dim_version both conform to the same dim_release_key.
+--   status  shipped (past, scheduled OR out-of-band) / open (in-flight, ships
+--           next) / future (an upcoming scheduled release not yet started)
+-- Shipped releases are grouped from the version tags (int_versions, minors
+-- only; ".0" feature releases excluded); a release is out-of-band (emergency
+-- re-release) when its LARGEST release has fewer than
+-- var(scheduled_release_min_items) items (from stg_release_items -- the
+-- scraper's n_items stays in raw as a checksum, see
+-- assert_release_items_match_n_items). The corpus's first shipped release is a
+-- partial accumulation window (15.1 shipped ~4 weeks after 15.0). Upcoming
+-- open/future releases come from the scheduled calendar (version numbers known
+-- ahead of the release, but the fix/CVE counts are not -- those live in
+-- int_release_summary for shipped releases only). Grain = dim_release_key.
+WITH item_counts AS (
   SELECT
-    major::VARCHAR || '.' || minor::VARCHAR AS version,
+    version,
+    COUNT(*) AS parsed_item_cnt
+  FROM {{ ref('stg_release_items') }}
+  GROUP BY ALL
+),
+
+fix_releases AS (
+  SELECT
+    rel.version,
+    rel.major,
+    rel.minor,
+    rel.release_dt,
+    cnt.parsed_item_cnt
+  FROM {{ ref('int_versions') }} AS rel
+  INNER JOIN item_counts AS cnt ON rel.version = cnt.version
+  WHERE rel.minor > 0
+),
+
+grouped AS (
+  SELECT
+    release_dt,
+    STRING_AGG(version, ' / ' ORDER BY major, minor) AS versions,
+    COUNT(*) AS release_cnt,
+    MAX(parsed_item_cnt) < {{ var('scheduled_release_min_items') }} AS is_out_of_band
+  FROM fix_releases
+  GROUP BY ALL
+),
+
+shipped AS (
+  SELECT
+    grp.release_dt,
+    cal.wrap_dt,
+    'shipped' AS status,
+    grp.versions,
+    grp.release_cnt,
+    grp.is_out_of_band,
+    grp.release_dt = MIN(grp.release_dt) OVER () AS is_partial_window
+  FROM grouped AS grp
+  LEFT JOIN {{ ref('int_release_calendar') }} AS cal ON grp.release_dt = cal.scheduled_release_dt
+),
+
+next_release AS (
+  SELECT MIN(scheduled_release_dt) AS release_dt
+  FROM {{ ref('int_release_calendar') }}
+  WHERE scheduled_release_dt > CURRENT_DATE
+),
+
+-- each active major's next minor is its latest release tag's minor + 1; the
+-- Nth upcoming release adds N (open = +1, the release after = +2, ...)
+active_majors AS (
+  SELECT
     major,
-    minor,
-    (tag_ts AT TIME ZONE 'utc')::DATE AS wrap_dt
+    MAX(minor) AS latest_minor
   FROM {{ ref('stg_git_tags') }}
+  GROUP BY major
+),
+
+upcoming_dates AS (
+  SELECT
+    cal.scheduled_release_dt AS release_dt,
+    cal.wrap_dt,
+    CASE WHEN cal.scheduled_release_dt = nxt.release_dt THEN 'open' ELSE 'future' END AS status,
+    ROW_NUMBER() OVER (ORDER BY cal.scheduled_release_dt) AS release_offset
+  FROM {{ ref('int_release_calendar') }} AS cal, next_release AS nxt
+  WHERE cal.scheduled_release_dt > CURRENT_DATE
+),
+
+upcoming AS (
+  SELECT
+    udt.release_dt,
+    udt.wrap_dt,
+    udt.status,
+    STRING_AGG(amj.major || '.' || (amj.latest_minor + udt.release_offset), ' / ' ORDER BY amj.major) AS versions,
+    COUNT(*)::BIGINT AS release_cnt,
+    false AS is_out_of_band,
+    false AS is_partial_window
+  FROM upcoming_dates AS udt
+  CROSS JOIN active_majors AS amj
+  GROUP BY udt.release_dt, udt.wrap_dt, udt.status
+),
+
+combined AS (
+  SELECT * FROM shipped
+  UNION ALL
+  SELECT * FROM upcoming
 )
 
 SELECT
-  version,
-  major,
-  minor,
-  wrap_dt,
-  -- ISODOW arithmetic yields BIGINT; DATE + n needs INTEGER
-  wrap_dt + (((4 - ISODOW(wrap_dt)) + 7) % 7)::INTEGER AS release_dt
-FROM wraps
+  {{ dbt_utils.generate_surrogate_key(['cmb.release_dt']) }} AS dim_release_key,
+  cmb.release_dt,
+  cmb.wrap_dt,
+  cmb.status,
+  cmb.versions,
+  cmb.release_cnt,
+  cmb.is_out_of_band,
+  cmb.is_partial_window
+FROM combined AS cmb
