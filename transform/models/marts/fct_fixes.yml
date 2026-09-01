@@ -68,6 +68,12 @@ models:
               arguments:
                 min_value: 0
                 max_value: 10
+      - name: severity_band_order
+        description: Ordinal rank of severity_band (NONE=0 … CRITICAL=4) for chart sorting; NULL for non-CVE fixes.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2, 3, 4]
       - name: bug_link_cnt
         tests:
           - not_null

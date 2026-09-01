@@ -1,0 +1,28 @@
+version: 2
+
+seeds:
+  - name: cvss_severity_bands
+    description: >
+      The CVSS v3 base-score -> severity band mapping (NONE/LOW/MEDIUM/HIGH/
+      CRITICAL) and each band's display order, defined once here so the
+      thresholds live in a single place instead of being duplicated between
+      stg_cve_severity (per CVE) and int_fix_severity (per fix's worst CVE).
+      Inclusive, contiguous one-decimal score ranges; max_base_score NULL =
+      unbounded (CRITICAL, 9.0+). Consumers range-join on the score
+      (score >= min_base_score AND score <= COALESCE(max_base_score, score));
+      a NULL score matches no band.
+    config:
+      column_types:
+        severity_band: VARCHAR
+        severity_band_order: INTEGER
+        min_base_score: DECIMAL(3, 1)
+        max_base_score: DECIMAL(3, 1)
+    columns:
+      - name: severity_band
+        tests: [unique, not_null]
+      - name: severity_band_order
+        tests: [unique, not_null]
+      - name: min_base_score
+        tests: [unique, not_null]
+      - name: max_base_score
+        tests: [unique]

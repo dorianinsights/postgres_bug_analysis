@@ -26,3 +26,9 @@ models:
           - accepted_values:
               arguments:
                 values: [NONE, LOW, MEDIUM, HIGH, CRITICAL]
+      - name: severity_band_order
+        description: Ordinal rank of severity_band (NONE=0 … CRITICAL=4) from the seed; NULL when no CVE is scored.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2, 3, 4]

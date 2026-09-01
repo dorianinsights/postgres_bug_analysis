@@ -25,5 +25,11 @@ models:
               arguments:
                 min_value: 0
                 max_value: 10
+      - name: severity_band_order
+        description: Ordinal rank of severity_band (NONE=0 … CRITICAL=4) from the seed; NULL for unlisted-severity and special-member rows.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2, 3, 4]
       - name: is_severity_unlisted
         tests: [not_null]

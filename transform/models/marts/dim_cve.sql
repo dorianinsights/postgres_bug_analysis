@@ -16,6 +16,7 @@ real_members AS (
     cvs.cve_id,
     sev.cvss_base_score,
     sev.severity_band,
+    sev.severity_band_order,
     sev.cvss_vector,
     sev.component,
     sev.cve_id IS null AS is_severity_unlisted
@@ -30,6 +31,7 @@ SELECT
   '(unknown)' AS cve_id,
   null AS cvss_base_score,
   null AS severity_band,
+  null AS severity_band_order,
   null AS cvss_vector,
   null AS component,
   true AS is_severity_unlisted
@@ -39,6 +41,7 @@ SELECT
   '(not applicable)' AS cve_id,
   null AS cvss_base_score,
   null AS severity_band,
+  null AS severity_band_order,
   null AS cvss_vector,
   null AS component,
   true AS is_severity_unlisted
