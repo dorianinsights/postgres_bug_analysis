@@ -29,6 +29,17 @@ repos:
         language: system
         types: [python]
 
+      # Unit tests for the scrapers + transform/ source readers. Runs the whole
+      # suite (pass_filenames: false) whenever any Python file is staged
+      # (types: [python]) — it's fast (~0.1s) and cross-module, so scoping to
+      # changed files would miss regressions the edit caused elsewhere.
+      - id: pytest
+        name: pytest
+        entry: ./venv/bin/pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: sqlfluff-lint
         name: sqlfluff lint
         entry: ./venv/bin/sqlfluff lint

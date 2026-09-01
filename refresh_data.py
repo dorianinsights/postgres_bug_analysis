@@ -65,7 +65,7 @@ STEPS: tuple[Step, ...] = (
 STEP_KEYS = tuple(s.key for s in STEPS)
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Refresh all external data sources (git clone, mboxes, CVE severities).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -104,7 +104,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="print the command for each selected step without running it",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def select_steps(args: argparse.Namespace) -> list[Step]:

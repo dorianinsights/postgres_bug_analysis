@@ -26,6 +26,10 @@ pyarrow-stubs==20.0.0.20260819
 ruff==0.16.5
 pyright==1.1.411
 pre_commit==4.6.2
+# Unit tests for the scrapers and the transform/ source readers (pure parse
+# logic — regex splitters, HTML/SGML/mbox parsers, date + selection helpers).
+# Run from the repo root: `./venv/bin/pytest`.
+pytest==9.1.1
 # SQL linter for the dbt models (duckdb dialect + dbt templater; config in
 # the repo-root .sqlfluff). Enforced per-edit by .claude/hooks/sqlfluff-lint.sh
 # and at commit time by the pre-commit gate. The dbt templater compiles each

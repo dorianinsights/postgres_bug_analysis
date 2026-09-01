@@ -46,6 +46,23 @@ ignore = [
   "S607",  # shell=True and never untrusted input
 ]
 
+# Tests exercise internals and use fixtures/fake secrets, so relax a few
+# security/style rules that only make sense for production code.
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+  "S101",  # asserts ARE the point in tests
+  "S105",  # test fixtures use fake/hardcoded "passwords"
+  "S106",
+]
+
 # Black-compatible defaults (double quotes, 4-space indent).
 [tool.ruff.format]
 docstring-code-format = false
+
+[tool.pytest.ini_options]
+# The scrapers live at the repo root; the source readers under transform/
+# (imported as `sources.*`, mirroring pyright's extraPaths). Both on the path
+# so tests import them the same way the dbt Python models do.
+pythonpath = [".", "transform"]
+testpaths = ["tests"]
+addopts = "-q"

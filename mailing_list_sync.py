@@ -41,6 +41,7 @@ USER_AGENT = "postgres-patch-analysis (personal research)"
 CSRF_RE = re.compile(r'name="csrfmiddlewaretoken" value="([^"]+)"')
 MBOX_FETCH_WAIT = 0.5  # seconds between back-to-back downloads to avoid server overload, be nice to people!
 
+
 def credentials() -> tuple[str, str]:
     """(username, password) from the environment, falling back to .env."""
     env: dict[str, str | None] = {**dotenv_values(ENV_FILE), **os.environ}
@@ -50,6 +51,14 @@ def credentials() -> tuple[str, str]:
         msg = f"set POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD (env or {ENV_FILE})"
         raise SystemExit(msg)
     return username, password
+
+
+def refetch_months(now: datetime) -> set[tuple[int, int]]:
+    """The (year, month) pairs to re-fetch even when already cached: the current
+    month AND the immediately-previous one (which correctly rolls the year back
+    in January). See main() for why the previous month must be revisited."""
+    prev = now.replace(day=1) - timedelta(days=1)
+    return {(now.year, now.month), (prev.year, prev.month)}
 
 
 def month_range() -> list[tuple[int, int]]:
@@ -140,8 +149,7 @@ def main() -> None:
     # backfills that tail — otherwise, once the month rolled over it would be
     # frozen at the partial snapshot and never revisited. Every earlier month is
     # genuinely immutable and is skipped once cached.
-    prev = now.replace(day=1) - timedelta(days=1)
-    refetch = {(now.year, now.month), (prev.year, prev.month)}
+    refetch = refetch_months(now)
     session = requests.Session()
     session.headers["User-Agent"] = USER_AGENT
     login(session)
