@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: stg_fix_categories_llm
+    description: >
+      Typed view over data/raw/fix_categories_llm.csv (classify_fixes.py): one
+      local-LLM content-category label per distinct fix, produced offline to
+      audit the category_rules regex classifier. Grain = item_ord. category_llm
+      is one of the nine CONTENT categories (the regex "Security (CVE)" label is
+      metadata, not offered to the model).
+    columns:
+      - name: item_ord
+        tests: [not_null, unique]
+      - name: category_llm
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - Security hardening (no CVE)
+                  - Crash & corruption
+                  - Wrong results & planner
+                  - Replication & recovery
+                  - Client tools
+                  - Extensions & contrib
+                  - Performance
+                  - Build & platform
+                  - Other functionality
+      - name: confidence
+        description: The model's self-reported confidence in [0, 1], stored exactly as DECIMAL(3,2).
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1

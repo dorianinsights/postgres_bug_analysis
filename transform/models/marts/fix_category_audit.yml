@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: fix_category_audit
+    description: >
+      Per-fix comparison of the regex classifier (category_rules, via
+      int_fix_reps) against the local-LLM classifier (classify_fixes.py), for
+      every distinct fix that has been classified. Grain = item_ord. agrees is
+      defined only for non-CVE fixes (a CVE fix's regex label is metadata, not a
+      content judgment). Per-fix and over the CSV threshold, so no derived twin —
+      query it in the warehouse; the reviewable summary is fix_category_agreement_agg.
+    columns:
+      - name: item_ord
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('fct_fixes')
+                field: item_ord
+      - name: category_regex
+        tests: [not_null]
+      - name: category_llm
+        tests: [not_null]
