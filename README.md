@@ -199,9 +199,12 @@ every object's name. Layers:
     `bridge_fix_cve` / `bridge_fix_bug` / `bridge_fix_contributor` (the last
     fed by `int_fix_contributors`); `fct_release_categories_agg` and `fct_release_contributors_agg`
     are conformed aggregates of `fct_fixes` (+ the contributor bridge). The period aggregates (`fct_bug_reports_monthly_agg`,
-    `fct_list_traffic_monthly_agg`/`weekly`, `fct_origin_activity_monthly_agg`) are aggregate
-    facts rolled up from those grains and conformed on `dim_date` by their
-    month/week DATE. `dim_date` is keyed on `date_day` (a real DATE) — there is
+    `fct_origin_activity_monthly_agg`) are aggregate facts rolled up from those
+    grains and conformed on `dim_date` by their month/week DATE. (Mailing-list
+    traffic has no materialized agg: the `transform/faces/` boards roll it up
+    from the atomic `fct_messages` at query time — the count charts in SQL, the
+    non-additive fix-linked share via a MetricFlow ratio metric; see
+    `models/marts/list_traffic_semantic.yml`.) `dim_date` is keyed on `date_day` (a real DATE) — there is
     no separate integer date surrogate; every mart's date columns join to it
     directly, and a `relationships` test on each one enforces the conformance.
     Following Kimball, no fact FK is ever NULL: every non-date dimension carries

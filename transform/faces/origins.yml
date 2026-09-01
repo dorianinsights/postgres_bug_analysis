@@ -151,12 +151,21 @@ queries:
       eventually cites). Complete months only.
     source: warehouse
     sql: |
+      WITH monthly AS (
+        SELECT
+          DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
+          list_name,
+          COUNT(*) AS message_cnt,
+          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
+        FROM fct_messages
+        GROUP BY ALL
+      )
       SELECT month_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM fct_list_traffic_monthly_agg
+      FROM monthly
       WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
       UNION ALL
       SELECT month_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM fct_list_traffic_monthly_agg
+      FROM monthly
       WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
       ORDER BY 1, 2
 
@@ -180,13 +189,22 @@ queries:
       complete weeks only — the near-term zoom of monthly_traffic.
     source: warehouse
     sql: |
+      WITH weekly AS (
+        SELECT
+          DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
+          list_name,
+          COUNT(*) AS message_cnt,
+          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
+        FROM fct_messages
+        GROUP BY ALL
+      )
       SELECT week_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM fct_list_traffic_weekly_agg
+      FROM weekly
       WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
         AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
       UNION ALL
       SELECT week_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM fct_list_traffic_weekly_agg
+      FROM weekly
       WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
         AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
       ORDER BY 1, 2
