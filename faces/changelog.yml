@@ -61,7 +61,7 @@ queries:
         release_dt AS release_dt,
         category,
         category_order,
-        ROUND(fix_cnt * 1.0 / SUM(fix_cnt) OVER (PARTITION BY release_dt), 4) AS fix_share
+        ROUND(fix_share, 4) AS fix_share
       FROM fct_release_categories_agg
       WHERE NOT is_out_of_band
       ORDER BY 1, 3

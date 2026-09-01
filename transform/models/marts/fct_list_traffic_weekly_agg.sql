@@ -19,6 +19,9 @@ SELECT
   COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt,
   COUNT(*) FILTER (
     WHERE is_thread_start AND is_fix_linked
-  ) AS fix_linked_thread_start_cnt
+  ) AS fix_linked_thread_start_cnt,
+  -- share of the week's messages in commit-cited (fix-linked) threads; a ratio,
+  -- so DECIMAL not float. The charts consumed this as an inline division before.
+  (COUNT(*) FILTER (WHERE is_fix_linked)::DECIMAL(18, 6) / NULLIF(COUNT(*), 0))::DECIMAL(7, 6) AS fix_linked_share
 FROM {{ ref('fct_messages') }}
 GROUP BY ALL

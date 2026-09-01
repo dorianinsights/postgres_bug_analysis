@@ -41,11 +41,7 @@ queries:
           WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
           ELSE org.origin
         END AS origin,
-        ROUND(
-          COALESCE(fxo.fix_cnt, 0)
-          * 1.0 / SUM(COALESCE(fxo.fix_cnt, 0)) OVER (PARTITION BY wvs.release_dt),
-          4
-        ) AS fix_share
+        ROUND(COALESCE(fxo.fix_share, 0), 4) AS fix_share
       FROM releases AS wvs
       CROSS JOIN origins AS org
       LEFT JOIN fct_fix_origins_agg AS fxo
@@ -56,16 +52,12 @@ queries:
         (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM fct_pending_fix_origins_agg),
         (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM fct_pending_fix_origins_agg),
         labels.origin,
-        ROUND(
-          COALESCE(pnd.fix_cnt, 0)
-          * 1.0 / (SELECT SUM(fix_cnt) FROM fct_pending_fix_origins_agg),
-          4
-        )
+        ROUND(COALESCE(pnd.fix_share, 0), 4)
       FROM (SELECT UNNEST(['pgsql-bugs', 'pgsql-hackers', 'embargoed security', 'unsourced']) AS origin) AS labels
       LEFT JOIN (
         SELECT
           CASE origin WHEN 'unknown_or_internal' THEN 'unsourced' ELSE origin END AS origin,
-          fix_cnt
+          fix_share
         FROM fct_pending_fix_origins_agg
       ) AS pnd ON pnd.origin = labels.origin
       ORDER BY 2, 3
@@ -178,7 +170,7 @@ queries:
       SELECT
         month_dt,
         list_name,
-        ROUND(fix_linked_message_cnt * 1.0 / message_cnt, 3) AS fix_linked_share
+        ROUND(fix_linked_share, 3) AS fix_linked_share
       FROM fct_list_traffic_monthly_agg
       WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
       ORDER BY 1, 2
@@ -210,7 +202,7 @@ queries:
       SELECT
         week_dt,
         list_name,
-        ROUND(fix_linked_message_cnt * 1.0 / message_cnt, 3) AS fix_linked_share
+        ROUND(fix_linked_share, 3) AS fix_linked_share
       FROM fct_list_traffic_weekly_agg
       WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
         AND week_dt < DATE_TRUNC('week', CURRENT_DATE)

@@ -74,17 +74,17 @@ queries:
       cycle age — how stable each estimator's scaling factor has been.
     source: warehouse
     sql: |
-      SELECT release_dt AS ships_at_dt, 'per bug report' AS estimator, ROUND(distinct_fix_cnt * 1.0 / early_report_cnt, 2) AS ratio
+      SELECT release_dt AS ships_at_dt, 'per bug report' AS estimator, ROUND(fix_per_early_report, 2) AS ratio
       FROM dim_release
-      WHERE NOT is_out_of_band AND NOT is_partial_window AND distinct_fix_cnt IS NOT NULL AND early_report_cnt > 0
+      WHERE NOT is_out_of_band AND NOT is_partial_window AND fix_per_early_report IS NOT NULL
       UNION ALL
-      SELECT release_dt AS ships_at_dt, 'per 100 list messages', ROUND(distinct_fix_cnt * 100.0 / early_message_cnt, 2)
+      SELECT release_dt AS ships_at_dt, 'per 100 list messages', ROUND(fix_per_early_message * 100, 2)
       FROM dim_release
-      WHERE NOT is_out_of_band AND NOT is_partial_window AND distinct_fix_cnt IS NOT NULL AND early_message_cnt > 0
+      WHERE NOT is_out_of_band AND NOT is_partial_window AND fix_per_early_message IS NOT NULL
       UNION ALL
-      SELECT release_dt AS ships_at_dt, 'per committed fix', ROUND(distinct_fix_cnt * 1.0 / early_fix_cnt, 2)
+      SELECT release_dt AS ships_at_dt, 'per committed fix', ROUND(fix_per_early_fix, 2)
       FROM dim_release
-      WHERE NOT is_out_of_band AND NOT is_partial_window AND distinct_fix_cnt IS NOT NULL AND early_fix_cnt > 0
+      WHERE NOT is_out_of_band AND NOT is_partial_window AND fix_per_early_fix IS NOT NULL
       ORDER BY 1, 2
 
   pace_history:

@@ -1,151 +1,151 @@
-dim_release_key,release_dt,category,category_order,is_out_of_band,fix_cnt
-086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Build & platform,8,false,1
-086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Client tools,5,false,3
-086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Crash & corruption,2,false,19
-086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Extensions & contrib,6,false,3
-086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Other functionality,9,false,14
-086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Replication & recovery,4,false,2
-086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Security (CVE),0,false,2
-086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Wrong results & planner,3,false,3
-10fa0d573d632725421808674378f487,2026-08-13,Build & platform,8,false,4
-10fa0d573d632725421808674378f487,2026-08-13,Client tools,5,false,12
-10fa0d573d632725421808674378f487,2026-08-13,Crash & corruption,2,false,32
-10fa0d573d632725421808674378f487,2026-08-13,Extensions & contrib,6,false,6
-10fa0d573d632725421808674378f487,2026-08-13,Other functionality,9,false,31
-10fa0d573d632725421808674378f487,2026-08-13,Performance,7,false,1
-10fa0d573d632725421808674378f487,2026-08-13,Replication & recovery,4,false,13
-10fa0d573d632725421808674378f487,2026-08-13,Security (CVE),0,false,29
-10fa0d573d632725421808674378f487,2026-08-13,Security hardening (no CVE),1,false,5
-10fa0d573d632725421808674378f487,2026-08-13,Wrong results & planner,3,false,9
-14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Build & platform,8,false,6
-14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Client tools,5,false,4
-14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Crash & corruption,2,false,37
-14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Extensions & contrib,6,false,6
-14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Other functionality,9,false,17
-14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Replication & recovery,4,false,4
-14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Security (CVE),0,false,2
-14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Security hardening (no CVE),1,false,2
-14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Wrong results & planner,3,false,4
-1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Build & platform,8,false,2
-1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Client tools,5,false,3
-1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Crash & corruption,2,false,13
-1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Extensions & contrib,6,false,4
-1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Other functionality,9,false,20
-1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Replication & recovery,4,false,11
-1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Security (CVE),0,false,1
-1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Wrong results & planner,3,false,3
-33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Client tools,5,false,3
-33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Crash & corruption,2,false,10
-33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Extensions & contrib,6,false,3
-33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Other functionality,9,false,26
-33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Replication & recovery,4,false,8
-33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Security (CVE),0,false,14
-33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Security hardening (no CVE),1,false,4
-33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Wrong results & planner,3,false,5
-3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Build & platform,8,false,3
-3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Client tools,5,false,5
-3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Crash & corruption,2,false,16
-3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Extensions & contrib,6,false,4
-3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Other functionality,9,false,29
-3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Replication & recovery,4,false,8
-3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Security (CVE),0,false,3
-3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Wrong results & planner,3,false,2
-40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Client tools,5,true,1
-40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Crash & corruption,2,true,1
-40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Other functionality,9,true,4
-40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Replication & recovery,4,true,1
-40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Security (CVE),0,true,2
-4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Build & platform,8,false,7
-4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Client tools,5,false,8
-4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Crash & corruption,2,false,25
-4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Extensions & contrib,6,false,3
-4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Other functionality,9,false,22
-4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Replication & recovery,4,false,4
-4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Security (CVE),0,false,1
-4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Wrong results & planner,3,false,4
-54b845081bd089efb1f91a1b5a00304b,2024-08-08,Build & platform,8,false,4
-54b845081bd089efb1f91a1b5a00304b,2024-08-08,Client tools,5,false,3
-54b845081bd089efb1f91a1b5a00304b,2024-08-08,Crash & corruption,2,false,11
-54b845081bd089efb1f91a1b5a00304b,2024-08-08,Extensions & contrib,6,false,5
-54b845081bd089efb1f91a1b5a00304b,2024-08-08,Other functionality,9,false,21
-54b845081bd089efb1f91a1b5a00304b,2024-08-08,Replication & recovery,4,false,4
-54b845081bd089efb1f91a1b5a00304b,2024-08-08,Security (CVE),0,false,2
-54b845081bd089efb1f91a1b5a00304b,2024-08-08,Security hardening (no CVE),1,false,1
-54b845081bd089efb1f91a1b5a00304b,2024-08-08,Wrong results & planner,3,false,4
-5d3fad531dd3ceed47b48db21b213987,2025-02-20,Build & platform,8,true,1
-5d3fad531dd3ceed47b48db21b213987,2025-02-20,Crash & corruption,2,true,1
-5d3fad531dd3ceed47b48db21b213987,2025-02-20,Security (CVE),0,true,1
-740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Build & platform,8,false,2
-740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Client tools,5,false,6
-740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Crash & corruption,2,false,16
-740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Extensions & contrib,6,false,5
-740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Other functionality,9,false,21
-740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Performance,7,false,1
-740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Replication & recovery,4,false,2
-740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Security (CVE),0,false,1
-740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Wrong results & planner,3,false,4
-745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Build & platform,8,false,1
-745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Client tools,5,false,3
-745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Crash & corruption,2,false,21
-745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Extensions & contrib,6,false,1
-745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Other functionality,9,false,22
-745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Performance,7,false,1
-745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Replication & recovery,4,false,8
-745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Security (CVE),0,false,1
-745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Wrong results & planner,3,false,4
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Build & platform,8,false,5
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Client tools,5,false,6
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Crash & corruption,2,false,16
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Extensions & contrib,6,false,1
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Other functionality,9,false,22
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Performance,7,false,2
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Replication & recovery,4,false,6
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Security (CVE),0,false,4
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Security hardening (no CVE),1,false,1
-941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Wrong results & planner,3,false,5
-9913f136f555e8d180895e7b13f3cc29,2024-11-21,Crash & corruption,2,true,3
-9913f136f555e8d180895e7b13f3cc29,2024-11-21,Extensions & contrib,6,true,1
-9913f136f555e8d180895e7b13f3cc29,2024-11-21,Other functionality,9,true,1
-9913f136f555e8d180895e7b13f3cc29,2024-11-21,Replication & recovery,4,true,2
-9913f136f555e8d180895e7b13f3cc29,2024-11-21,Security (CVE),0,true,1
-ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Build & platform,8,false,4
-ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Client tools,5,false,10
-ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Crash & corruption,2,false,14
-ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Extensions & contrib,6,false,3
-ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Other functionality,9,false,26
-ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Performance,7,false,1
-ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Replication & recovery,4,false,9
-ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Security (CVE),0,false,1
-ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Wrong results & planner,3,false,3
-b1036aa132d59c6301b245e14d25cebd,2025-08-14,Build & platform,8,false,8
-b1036aa132d59c6301b245e14d25cebd,2025-08-14,Client tools,5,false,12
-b1036aa132d59c6301b245e14d25cebd,2025-08-14,Crash & corruption,2,false,22
-b1036aa132d59c6301b245e14d25cebd,2025-08-14,Extensions & contrib,6,false,2
-b1036aa132d59c6301b245e14d25cebd,2025-08-14,Other functionality,9,false,14
-b1036aa132d59c6301b245e14d25cebd,2025-08-14,Performance,7,false,1
-b1036aa132d59c6301b245e14d25cebd,2025-08-14,Replication & recovery,4,false,9
-b1036aa132d59c6301b245e14d25cebd,2025-08-14,Security (CVE),0,false,3
-c6d9135a49bdef377840c6e9b647981b,2025-11-13,Build & platform,8,false,9
-c6d9135a49bdef377840c6e9b647981b,2025-11-13,Client tools,5,false,9
-c6d9135a49bdef377840c6e9b647981b,2025-11-13,Crash & corruption,2,false,25
-c6d9135a49bdef377840c6e9b647981b,2025-11-13,Extensions & contrib,6,false,2
-c6d9135a49bdef377840c6e9b647981b,2025-11-13,Other functionality,9,false,16
-c6d9135a49bdef377840c6e9b647981b,2025-11-13,Replication & recovery,4,false,11
-c6d9135a49bdef377840c6e9b647981b,2025-11-13,Security (CVE),0,false,2
-c6d9135a49bdef377840c6e9b647981b,2025-11-13,Wrong results & planner,3,false,4
-cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Build & platform,8,false,6
-cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Client tools,5,false,5
-cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Crash & corruption,2,false,14
-cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Extensions & contrib,6,false,7
-cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Other functionality,9,false,22
-cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Performance,7,false,2
-cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Replication & recovery,4,false,6
-cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Security (CVE),0,false,5
-cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Wrong results & planner,3,false,8
-e689c36b2ed92991eecb44650ef67992,2022-11-10,Build & platform,8,false,4
-e689c36b2ed92991eecb44650ef67992,2022-11-10,Client tools,5,false,4
-e689c36b2ed92991eecb44650ef67992,2022-11-10,Crash & corruption,2,false,8
-e689c36b2ed92991eecb44650ef67992,2022-11-10,Extensions & contrib,6,false,1
-e689c36b2ed92991eecb44650ef67992,2022-11-10,Other functionality,9,false,3
-e689c36b2ed92991eecb44650ef67992,2022-11-10,Replication & recovery,4,false,4
-e689c36b2ed92991eecb44650ef67992,2022-11-10,Wrong results & planner,3,false,1
+dim_release_key,release_dt,category,category_order,is_out_of_band,fix_cnt,fix_share
+086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Build & platform,8,false,1,0.021277
+086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Client tools,5,false,3,0.063830
+086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Crash & corruption,2,false,19,0.404255
+086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Extensions & contrib,6,false,3,0.063830
+086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Other functionality,9,false,14,0.297872
+086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Replication & recovery,4,false,2,0.042553
+086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Security (CVE),0,false,2,0.042553
+086ceaa75240d0c8218ee8cd31103e84,2023-08-10,Wrong results & planner,3,false,3,0.063830
+10fa0d573d632725421808674378f487,2026-08-13,Build & platform,8,false,4,0.028169
+10fa0d573d632725421808674378f487,2026-08-13,Client tools,5,false,12,0.084507
+10fa0d573d632725421808674378f487,2026-08-13,Crash & corruption,2,false,32,0.225352
+10fa0d573d632725421808674378f487,2026-08-13,Extensions & contrib,6,false,6,0.042254
+10fa0d573d632725421808674378f487,2026-08-13,Other functionality,9,false,31,0.218310
+10fa0d573d632725421808674378f487,2026-08-13,Performance,7,false,1,0.007042
+10fa0d573d632725421808674378f487,2026-08-13,Replication & recovery,4,false,13,0.091549
+10fa0d573d632725421808674378f487,2026-08-13,Security (CVE),0,false,29,0.204225
+10fa0d573d632725421808674378f487,2026-08-13,Security hardening (no CVE),1,false,5,0.035211
+10fa0d573d632725421808674378f487,2026-08-13,Wrong results & planner,3,false,9,0.063380
+14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Build & platform,8,false,6,0.073171
+14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Client tools,5,false,4,0.048780
+14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Crash & corruption,2,false,37,0.451220
+14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Extensions & contrib,6,false,6,0.073171
+14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Other functionality,9,false,17,0.207317
+14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Replication & recovery,4,false,4,0.048780
+14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Security (CVE),0,false,2,0.024390
+14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Security hardening (no CVE),1,false,2,0.024390
+14d8b6c36187f5adc35e95280a91c9cb,2023-05-11,Wrong results & planner,3,false,4,0.048780
+1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Build & platform,8,false,2,0.035088
+1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Client tools,5,false,3,0.052632
+1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Crash & corruption,2,false,13,0.228070
+1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Extensions & contrib,6,false,4,0.070175
+1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Other functionality,9,false,20,0.350877
+1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Replication & recovery,4,false,11,0.192982
+1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Security (CVE),0,false,1,0.017544
+1f43afe79c4f5f90d2e555ef65ec2716,2023-02-09,Wrong results & planner,3,false,3,0.052632
+33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Client tools,5,false,3,0.041096
+33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Crash & corruption,2,false,10,0.136986
+33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Extensions & contrib,6,false,3,0.041096
+33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Other functionality,9,false,26,0.356164
+33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Replication & recovery,4,false,8,0.109589
+33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Security (CVE),0,false,14,0.191781
+33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Security hardening (no CVE),1,false,4,0.054795
+33136a96e9bc3dc6b8eb26e468436406,2026-05-14,Wrong results & planner,3,false,5,0.068493
+3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Build & platform,8,false,3,0.042857
+3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Client tools,5,false,5,0.071429
+3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Crash & corruption,2,false,16,0.228571
+3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Extensions & contrib,6,false,4,0.057143
+3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Other functionality,9,false,29,0.414286
+3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Replication & recovery,4,false,8,0.114286
+3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Security (CVE),0,false,3,0.042857
+3aa0dcd869a782cee2f08c40235e2762,2023-11-09,Wrong results & planner,3,false,2,0.028571
+40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Client tools,5,true,1,0.111111
+40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Crash & corruption,2,true,1,0.111111
+40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Other functionality,9,true,4,0.444444
+40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Replication & recovery,4,true,1,0.111111
+40101526bfeb6f95bd7ee528cc8bffe0,2026-02-26,Security (CVE),0,true,2,0.222222
+4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Build & platform,8,false,7,0.094595
+4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Client tools,5,false,8,0.108108
+4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Crash & corruption,2,false,25,0.337838
+4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Extensions & contrib,6,false,3,0.040541
+4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Other functionality,9,false,22,0.297297
+4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Replication & recovery,4,false,4,0.054054
+4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Security (CVE),0,false,1,0.013514
+4864ec4775ef5c58b98d9f148c2e9869,2025-02-13,Wrong results & planner,3,false,4,0.054054
+54b845081bd089efb1f91a1b5a00304b,2024-08-08,Build & platform,8,false,4,0.072727
+54b845081bd089efb1f91a1b5a00304b,2024-08-08,Client tools,5,false,3,0.054545
+54b845081bd089efb1f91a1b5a00304b,2024-08-08,Crash & corruption,2,false,11,0.200000
+54b845081bd089efb1f91a1b5a00304b,2024-08-08,Extensions & contrib,6,false,5,0.090909
+54b845081bd089efb1f91a1b5a00304b,2024-08-08,Other functionality,9,false,21,0.381818
+54b845081bd089efb1f91a1b5a00304b,2024-08-08,Replication & recovery,4,false,4,0.072727
+54b845081bd089efb1f91a1b5a00304b,2024-08-08,Security (CVE),0,false,2,0.036364
+54b845081bd089efb1f91a1b5a00304b,2024-08-08,Security hardening (no CVE),1,false,1,0.018182
+54b845081bd089efb1f91a1b5a00304b,2024-08-08,Wrong results & planner,3,false,4,0.072727
+5d3fad531dd3ceed47b48db21b213987,2025-02-20,Build & platform,8,true,1,0.333333
+5d3fad531dd3ceed47b48db21b213987,2025-02-20,Crash & corruption,2,true,1,0.333333
+5d3fad531dd3ceed47b48db21b213987,2025-02-20,Security (CVE),0,true,1,0.333333
+740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Build & platform,8,false,2,0.034483
+740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Client tools,5,false,6,0.103448
+740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Crash & corruption,2,false,16,0.275862
+740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Extensions & contrib,6,false,5,0.086207
+740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Other functionality,9,false,21,0.362069
+740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Performance,7,false,1,0.017241
+740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Replication & recovery,4,false,2,0.034483
+740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Security (CVE),0,false,1,0.017241
+740c1e0f22c109481cb0da8abe660ae0,2024-05-09,Wrong results & planner,3,false,4,0.068966
+745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Build & platform,8,false,1,0.016129
+745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Client tools,5,false,3,0.048387
+745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Crash & corruption,2,false,21,0.338710
+745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Extensions & contrib,6,false,1,0.016129
+745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Other functionality,9,false,22,0.354839
+745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Performance,7,false,1,0.016129
+745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Replication & recovery,4,false,8,0.129032
+745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Security (CVE),0,false,1,0.016129
+745f1c86e5cdd8936f605bfc2f720903,2025-05-08,Wrong results & planner,3,false,4,0.064516
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Build & platform,8,false,5,0.073529
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Client tools,5,false,6,0.088235
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Crash & corruption,2,false,16,0.235294
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Extensions & contrib,6,false,1,0.014706
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Other functionality,9,false,22,0.323529
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Performance,7,false,2,0.029412
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Replication & recovery,4,false,6,0.088235
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Security (CVE),0,false,4,0.058824
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Security hardening (no CVE),1,false,1,0.014706
+941e22d8a4f291e3ef640e97c4354a02,2024-11-14,Wrong results & planner,3,false,5,0.073529
+9913f136f555e8d180895e7b13f3cc29,2024-11-21,Crash & corruption,2,true,3,0.375000
+9913f136f555e8d180895e7b13f3cc29,2024-11-21,Extensions & contrib,6,true,1,0.125000
+9913f136f555e8d180895e7b13f3cc29,2024-11-21,Other functionality,9,true,1,0.125000
+9913f136f555e8d180895e7b13f3cc29,2024-11-21,Replication & recovery,4,true,2,0.250000
+9913f136f555e8d180895e7b13f3cc29,2024-11-21,Security (CVE),0,true,1,0.125000
+ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Build & platform,8,false,4,0.056338
+ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Client tools,5,false,10,0.140845
+ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Crash & corruption,2,false,14,0.197183
+ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Extensions & contrib,6,false,3,0.042254
+ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Other functionality,9,false,26,0.366197
+ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Performance,7,false,1,0.014085
+ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Replication & recovery,4,false,9,0.126761
+ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Security (CVE),0,false,1,0.014085
+ad89edc9dc5c9a74a8d3f9e6941f425d,2024-02-08,Wrong results & planner,3,false,3,0.042254
+b1036aa132d59c6301b245e14d25cebd,2025-08-14,Build & platform,8,false,8,0.112676
+b1036aa132d59c6301b245e14d25cebd,2025-08-14,Client tools,5,false,12,0.169014
+b1036aa132d59c6301b245e14d25cebd,2025-08-14,Crash & corruption,2,false,22,0.309859
+b1036aa132d59c6301b245e14d25cebd,2025-08-14,Extensions & contrib,6,false,2,0.028169
+b1036aa132d59c6301b245e14d25cebd,2025-08-14,Other functionality,9,false,14,0.197183
+b1036aa132d59c6301b245e14d25cebd,2025-08-14,Performance,7,false,1,0.014085
+b1036aa132d59c6301b245e14d25cebd,2025-08-14,Replication & recovery,4,false,9,0.126761
+b1036aa132d59c6301b245e14d25cebd,2025-08-14,Security (CVE),0,false,3,0.042254
+c6d9135a49bdef377840c6e9b647981b,2025-11-13,Build & platform,8,false,9,0.115385
+c6d9135a49bdef377840c6e9b647981b,2025-11-13,Client tools,5,false,9,0.115385
+c6d9135a49bdef377840c6e9b647981b,2025-11-13,Crash & corruption,2,false,25,0.320513
+c6d9135a49bdef377840c6e9b647981b,2025-11-13,Extensions & contrib,6,false,2,0.025641
+c6d9135a49bdef377840c6e9b647981b,2025-11-13,Other functionality,9,false,16,0.205128
+c6d9135a49bdef377840c6e9b647981b,2025-11-13,Replication & recovery,4,false,11,0.141026
+c6d9135a49bdef377840c6e9b647981b,2025-11-13,Security (CVE),0,false,2,0.025641
+c6d9135a49bdef377840c6e9b647981b,2025-11-13,Wrong results & planner,3,false,4,0.051282
+cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Build & platform,8,false,6,0.080000
+cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Client tools,5,false,5,0.066667
+cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Crash & corruption,2,false,14,0.186667
+cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Extensions & contrib,6,false,7,0.093333
+cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Other functionality,9,false,22,0.293333
+cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Performance,7,false,2,0.026667
+cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Replication & recovery,4,false,6,0.080000
+cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Security (CVE),0,false,5,0.066667
+cef63e90a9cb8fd660c730931ca1e05c,2026-02-12,Wrong results & planner,3,false,8,0.106667
+e689c36b2ed92991eecb44650ef67992,2022-11-10,Build & platform,8,false,4,0.160000
+e689c36b2ed92991eecb44650ef67992,2022-11-10,Client tools,5,false,4,0.160000
+e689c36b2ed92991eecb44650ef67992,2022-11-10,Crash & corruption,2,false,8,0.320000
+e689c36b2ed92991eecb44650ef67992,2022-11-10,Extensions & contrib,6,false,1,0.040000
+e689c36b2ed92991eecb44650ef67992,2022-11-10,Other functionality,9,false,3,0.120000
+e689c36b2ed92991eecb44650ef67992,2022-11-10,Replication & recovery,4,false,4,0.160000
+e689c36b2ed92991eecb44650ef67992,2022-11-10,Wrong results & planner,3,false,1,0.040000

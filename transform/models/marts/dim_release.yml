@@ -85,3 +85,30 @@ models:
               arguments:
                 min_value: 0
                 max_value: 1
+      - name: fix_per_early_report
+        description: >
+          Shipped distinct fixes per early bug report at the open cycle's age
+          (distinct_fix_cnt / early_report_cnt) -- a projection scaling factor,
+          DECIMAL(12,6); NULL when early_report_cnt is 0 or the cycle is unshipped.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: fix_per_early_message
+        description: >
+          Shipped distinct fixes per early list message (distinct_fix_cnt /
+          early_message_cnt); DECIMAL(12,6). NULL when early_message_cnt is 0 or
+          the cycle is unshipped. The chart scales it x100 for display.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: fix_per_early_fix
+        description: >
+          Shipped distinct fixes per early committed fix (distinct_fix_cnt /
+          early_fix_cnt); DECIMAL(12,6). NULL when early_fix_cnt is 0 or the
+          cycle is unshipped.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
