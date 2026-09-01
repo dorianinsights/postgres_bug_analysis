@@ -139,7 +139,7 @@ queries:
     source: warehouse
     sql: |
       SELECT STRFTIME(release_dt, '%b') AS release_month, QUARTER(release_dt) AS release_quarter,
-             ROUND(AVG(first_window_fix_cnt * 1.0 / full_fix_cnt), 4) AS early_share
+             ROUND(AVG(early_fix_share), 4) AS early_share
       FROM dim_release
       WHERE cycle_start_dt IS NOT NULL AND status = 'shipped'
         AND NOT is_out_of_band AND NOT is_partial_window

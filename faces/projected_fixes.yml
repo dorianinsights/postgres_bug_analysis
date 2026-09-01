@@ -20,9 +20,9 @@ queries:
     sql: |
       SELECT
         MIN(wrap_dt) - CURRENT_DATE AS days_to_wrap,
-        MIN(scheduled_release_dt) AS release_dt
-      FROM intermediate.int_release_calendar
-      WHERE wrap_dt > CURRENT_DATE
+        MIN(release_dt) AS release_dt
+      FROM dim_release
+      WHERE status IN ('open', 'future')
 
   next_minor_reports:
     description: Bug reports that can only ship in the next minor.

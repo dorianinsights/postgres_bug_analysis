@@ -34,7 +34,12 @@ WITH real_members AS (
     -- first_window_fix_cnt is the FIXED-window (seasonality_window_days) early
     -- count for the stable quarterly-seasonality view, vs early_fix_cnt's moving
     -- age window used by the projection
-    irc.first_window_fix_cnt
+    irc.first_window_fix_cnt,
+    -- the front-loading signal: the fraction of a cycle's backpatched fixes that
+    -- land in that fixed first window (first_window_fix_cnt / full_fix_cnt). A
+    -- ratio, so DECIMAL not float; NULL when the cycle has no full-window fixes
+    -- (and on the non-cycle rows). The quarterly-seasonality chart averages it.
+    (irc.first_window_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.full_fix_cnt, 0))::DECIMAL(7, 6) AS early_fix_share
   FROM {{ ref('int_releases') }} AS rel
   LEFT JOIN {{ ref('int_release_summary') }} AS rrs ON rel.release_dt = rrs.release_dt
   LEFT JOIN {{ ref('int_release_cycles') }} AS irc ON rel.release_dt = irc.ships_at_dt
@@ -60,7 +65,8 @@ SELECT
   null AS early_message_cnt,
   null AS early_fix_cnt,
   null AS full_fix_cnt,
-  null AS first_window_fix_cnt
+  null AS first_window_fix_cnt,
+  null AS early_fix_share
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_release_key,
@@ -80,4 +86,5 @@ SELECT
   null AS early_message_cnt,
   null AS early_fix_cnt,
   null AS full_fix_cnt,
-  null AS first_window_fix_cnt
+  null AS first_window_fix_cnt,
+  null AS early_fix_share

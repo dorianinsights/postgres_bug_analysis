@@ -74,3 +74,14 @@ models:
           wrap (var seasonality_window_days) -- the stable metric for the
           quarterly-seasonality view, vs early_fix_cnt's moving age window (used
           by the projection). NULL for non-cycle rows.
+      - name: early_fix_share
+        description: >
+          Front-loading signal: first_window_fix_cnt / full_fix_cnt, the fraction
+          of a cycle's backpatched fixes that land in the fixed early window. A
+          ratio typed DECIMAL(7,6); NULL for cycles with no full-window fixes and
+          for non-cycle rows. The quarterly-seasonality chart averages it.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
