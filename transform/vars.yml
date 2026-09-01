@@ -1,0 +1,56 @@
+# Project variables, split out of dbt_project.yml (dbt >= 1.12 auto-parses
+# vars.yml at the project root before dbt_project.yml; no reference needed).
+# The vars block must live in ONE file only -- dbt errors if both this and
+# dbt_project.yml define `vars`. See CLAUDE.md / README for what each controls.
+vars:
+  # -- Analysis parameters (change these and the results MEAN something
+  # different — treat edits like corpus.py changes: reviewed commits).
+  # A release is out-of-band (emergency re-release) when its largest release
+  # has fewer items than this.
+  scheduled_release_min_items: 20
+  # Quarterly release cadence: where the projected next release is placed.
+  release_cadence_days: 91
+  # How many recent cycles the like-for-like pace comparison covers
+  # (the open cycle plus N-1 closed comparators).
+  pace_comparison_cycles: 3
+  # A release's wrap tag is the latest tag within this many days before it.
+  wrap_tag_window_days: 7
+  # The fixed "early cycle" window for the quarterly-seasonality view:
+  # dim_release.first_window_fix_cnt (via int_release_cycles) counts distinct
+  # backpatched fixes in the first N days after the wrap. FIXED on purpose so the
+  # metric is stable across builds — unlike dim_release's early_fix_cnt, which
+  # tracks the open cycle's moving age (used by the projection).
+  seasonality_window_days: 20
+  # -- Loose sanity floors shared by the date/major range tests. These are
+  # deliberately NOT the corpus bounds (corpus.py owns those; a dbt copy
+  # could silently drift) — just "obviously wrong data" backstops.
+  test_floor_major: 10
+  test_floor_release_dt: "'2017-10-01'"
+  test_floor_git_ts: "'2016-10-01'"
+  # -- Calendar spine bounds for dim_date. FIXED on purpose so the date
+  # dimension builds without depending on any other model: the spine comes from
+  # dbt_date.get_base_dates(start, end) over these literals. Unlike the
+  # test_floor_* values above these are BARE dates (no embedded quotes) --
+  # get_base_dates wraps them in its own cast('...'). end_date is EXCLUSIVE
+  # (dbt_date's spine is [start, end)). start sits safely before the earliest
+  # corpus row; end runs a couple years past the last scheduled release.
+  # assert_dim_date_covers_corpus fails the build if the corpus ever outgrows
+  # this span -- widen the var and rebuild when it does.
+  date_spine_start: "2021-09-01"
+  date_spine_end: "2029-01-01"
+  # -- Sentinel "eternity" dates carried as real dim_date rows (outside the
+  # spine above), so an unknown / not-applicable date reference can point at a
+  # real calendar row instead of NULL and still pass its dim_date relationships
+  # test. past_eternity is the unknown/oldest marker, future_eternity the
+  # not-yet/newest one. Bare dates (rendered as DATE literals). dim_date's
+  # date-range test and assert_dim_date_covers_corpus exclude these two rows.
+  past_eternity: "1900-01-01"
+  future_eternity: "9999-01-01"
+  # -- Build parameter (not an analysis knob). The on-run-end audit exporter
+  # (macros/export_marts_csv.sql) writes a diffable data/derived/<mart>.csv
+  # only for marts with FEWER than this many rows: bigger tables blow past
+  # what a human can review in a diff and bloat the repo, so their typed
+  # table in the .duckdb file stays the sole interface (as fct_messages
+  # already did). Raise it to re-export a larger mart; git rm the stale CSV
+  # of any mart that grows past it.
+  derived_csv_max_rows: 1000
