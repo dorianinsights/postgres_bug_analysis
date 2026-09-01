@@ -4,9 +4,11 @@
 Downloads one mbox file per list per month
 (https://www.postgresql.org/list/<list>/mbox/<list>.YYYYMM) for every month
 in the corpus window into .cache/mbox/<list>/YYYYMM.mbox. Like the
-postgres.git clone, the cache IS the raw store: past months are immutable
-on the archive side, so an existing file is never re-fetched — except the
-current month, which is still growing and is always refreshed.
+postgres.git clone, the cache IS the raw store: months older than last are
+immutable on the archive side, so an existing file is never re-fetched — but
+the current AND the immediately-previous month are always re-fetched, so a
+mid-month run's incomplete tail gets backfilled on the next run after the
+month ends (otherwise it would freeze at the partial snapshot).
 
 The mbox endpoints sit behind a postgresql.org community-account login
 (Django form with a CSRF token scraped from the login page). Credentials
@@ -21,7 +23,7 @@ is an error, never cached.
 import os
 import re
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import requests
@@ -37,7 +39,7 @@ CACHE = Path(__file__).parent / ".cache" / "mbox"
 ENV_FILE = Path(__file__).parent / ".env"
 USER_AGENT = "postgres-patch-analysis (personal research)"
 CSRF_RE = re.compile(r'name="csrfmiddlewaretoken" value="([^"]+)"')
-
+MBOX_FETCH_WAIT = 0.5  # seconds between back-to-back downloads to avoid server overload, be nice to people!
 
 def credentials() -> tuple[str, str]:
     """(username, password) from the environment, falling back to .env."""
@@ -132,6 +134,14 @@ def fetch_month(session: requests.Session, list_name: str, year: int, month: int
 
 def main() -> None:
     now = datetime.now(UTC)
+    # Always re-fetch the current AND the immediately-previous month: a month's
+    # final days only settle after it ends, so a mid-month run captures the
+    # current month incompletely. Re-fetching the previous month on the next run
+    # backfills that tail — otherwise, once the month rolled over it would be
+    # frozen at the partial snapshot and never revisited. Every earlier month is
+    # genuinely immutable and is skipped once cached.
+    prev = now.replace(day=1) - timedelta(days=1)
+    refetch = {(now.year, now.month), (prev.year, prev.month)}
     session = requests.Session()
     session.headers["User-Agent"] = USER_AGENT
     login(session)
@@ -140,13 +150,13 @@ def main() -> None:
     for list_name in LISTS:
         for year, month in month_range():
             target = CACHE / list_name / f"{year}{month:02d}.mbox"
-            if target.is_file() and (year, month) != (now.year, now.month):
+            if target.is_file() and (year, month) not in refetch:
                 skipped += 1
                 continue
             path = fetch_month(session, list_name, year, month)
             fetched += 1
             print(f"{list_name} {year}-{month:02d}: {path.stat().st_size:,} bytes")
-            time.sleep(0.5)
+            time.sleep(MBOX_FETCH_WAIT)
 
     print(f"\n{fetched} months fetched, {skipped} already cached -> {CACHE}")
 
