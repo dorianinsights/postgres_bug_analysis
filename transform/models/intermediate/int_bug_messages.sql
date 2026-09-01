@@ -4,7 +4,7 @@
 -- the report itself (subject starts with the tag — no Re:).
 SELECT
   message_id,
-  (sent_ts AT TIME ZONE 'utc')::DATE AS sent_dt,
+  sent_dt,
   author_name,
   subject,
   NULLIF(REGEXP_EXTRACT(subject, 'BUG #(\d+):', 1), '')::INTEGER AS bug_number,

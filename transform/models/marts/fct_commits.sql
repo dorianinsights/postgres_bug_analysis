@@ -20,7 +20,7 @@ SELECT
   gcm.commit_hash,
   COALESCE(pmp_a.person_key, {{ unknown_key() }}) AS author_dim_person_key,
   COALESCE(pmp_c.person_key, {{ unknown_key() }}) AS committer_dim_person_key,
-  (gcm.commit_ts AT TIME ZONE 'utc')::DATE AS commit_dt,
+  gcm.commit_dt,
   org.origin,
   igc.is_plumbing,
   igc.ai_credit IS NOT null AS has_ai_credit,

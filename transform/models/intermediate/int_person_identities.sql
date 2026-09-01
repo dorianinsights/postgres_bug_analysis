@@ -13,7 +13,8 @@ WITH git_authors AS (
     patch_author_name AS person_name,
     'git_author' AS identity_role,
     'git' AS source_list,
-    commit_ts AS seen_ts
+    commit_ts AS seen_ts,
+    commit_dt AS seen_dt
   FROM {{ ref('int_git_commits') }}
 ),
 
@@ -23,7 +24,8 @@ git_committers AS (
     committer_name AS person_name,
     'git_committer' AS identity_role,
     'git' AS source_list,
-    commit_ts AS seen_ts
+    commit_ts AS seen_ts,
+    commit_dt AS seen_dt
   FROM {{ ref('int_git_commits') }}
 ),
 
@@ -33,7 +35,8 @@ list_senders AS (
     author_name AS person_name,
     'list_sender' AS identity_role,
     list_name AS source_list,
-    sent_ts AS seen_ts
+    sent_ts AS seen_ts,
+    sent_dt AS seen_dt
   FROM {{ ref('stg_list_messages') }}
 ),
 
@@ -43,7 +46,8 @@ bug_reporters AS (
     reporter_name AS person_name,
     'bug_reporter' AS identity_role,
     'pgsql-bugs' AS source_list,
-    reported_ts AS seen_ts
+    reported_ts AS seen_ts,
+    reported_dt AS seen_dt
   FROM {{ ref('int_bug_reports') }}
 ),
 
@@ -65,5 +69,6 @@ SELECT
   LOWER(TRIM(COALESCE(person_name, ''))) AS norm_name,
   identity_role,
   source_list,
-  seen_ts
+  seen_ts,
+  seen_dt
 FROM occurrences

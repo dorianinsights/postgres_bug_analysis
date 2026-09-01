@@ -31,6 +31,9 @@ models:
               arguments:
                 min_value: "'2000-01-01'"
                 max_value: current_date + 2
+      - name: sent_dt
+        description: sent_ts truncated to its UTC calendar day — the day-grain grouping key consumers use in place of re-truncating the instant.
+        tests: [not_null]
       - name: subject
         description: >
           NULL for the rare message sent with no Subject header (2 in the

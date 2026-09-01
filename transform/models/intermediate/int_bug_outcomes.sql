@@ -41,7 +41,7 @@ all_links AS (
 commit_dates AS (
   SELECT
     lnk.bug_number,
-    MIN((gcm.commit_ts AT TIME ZONE 'utc')::DATE) AS first_commit_dt
+    MIN(gcm.commit_dt) AS first_commit_dt
   FROM all_links AS lnk
   INNER JOIN {{ ref('stg_git_commits') }} AS gcm ON lnk.commit_hash = gcm.commit_hash
   GROUP BY ALL

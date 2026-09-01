@@ -45,9 +45,9 @@ early_messages AS (
   FROM cycles AS cyc
   INNER JOIN {{ ref('int_message_threads') }} AS imt
     ON
-      (imt.sent_ts AT TIME ZONE 'utc')::DATE >= cyc.cycle_start_dt
-      AND (imt.sent_ts AT TIME ZONE 'utc')::DATE
-      < cyc.cycle_start_dt + (SELECT age.window_days FROM age)
+      cyc.cycle_start_dt <= imt.sent_dt
+      AND cyc.cycle_start_dt + (SELECT age.window_days FROM age)
+      > imt.sent_dt
   GROUP BY ALL
 ),
 

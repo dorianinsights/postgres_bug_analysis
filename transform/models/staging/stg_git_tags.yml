@@ -37,3 +37,6 @@ models:
               arguments:
                 min_value: "{{ var('test_floor_git_ts') }}"
                 max_value: current_date + 2
+      - name: tag_dt
+        description: tag_ts (the wrap moment) truncated to its UTC calendar day.
+        tests: [not_null]

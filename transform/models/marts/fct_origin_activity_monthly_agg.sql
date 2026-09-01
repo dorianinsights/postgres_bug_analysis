@@ -42,7 +42,7 @@ thread_rollup AS (
   -- than the archive floor, or an uningested list) is never embargoed
   -- security — it lands in _not_security
   SELECT
-    DATE_TRUNC('month', gcm.commit_ts AT TIME ZONE 'utc')::DATE AS month_dt,
+    DATE_TRUNC('month', gcm.commit_dt)::DATE AS month_dt,
     COALESCE(ths.source_list, 'unknown_or_internal_not_security') AS origin,
     COUNT(DISTINCT dsc.message_id) AS cited_thread_cnt
   FROM {{ ref('int_commit_discussions') }} AS dsc

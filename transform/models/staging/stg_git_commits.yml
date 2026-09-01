@@ -32,6 +32,9 @@ models:
               arguments:
                 min_value: "{{ var('test_floor_git_ts') }}"
                 max_value: current_date + 2
+      - name: commit_dt
+        description: commit_ts truncated to its UTC calendar day — the day-grain grouping key consumers use in place of re-truncating the instant.
+        tests: [not_null]
       - name: author_name
         description: The patch author's display name (git %an).
         tests: [not_null]

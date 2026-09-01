@@ -13,7 +13,7 @@ WITH wraps AS (
     major::VARCHAR || '.' || minor::VARCHAR AS version,
     major,
     minor,
-    (tag_ts AT TIME ZONE 'utc')::DATE AS wrap_dt
+    tag_dt AS wrap_dt
   FROM {{ ref('stg_git_tags') }}
 )
 

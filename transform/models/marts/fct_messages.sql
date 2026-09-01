@@ -22,7 +22,7 @@ SELECT
   imt.list_name,
   imt.message_id,
   COALESCE(pmp.person_key, {{ unknown_key() }}) AS sender_dim_person_key,
-  (imt.sent_ts AT TIME ZONE 'utc')::DATE AS sent_dt,
+  imt.sent_dt,
   COALESCE(dbg.dim_bug_key, {{ not_applicable_key() }}) AS dim_bug_key,
   imt.root_id,
   imt.is_thread_start,

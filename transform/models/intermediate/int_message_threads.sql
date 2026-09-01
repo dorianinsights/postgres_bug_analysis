@@ -14,6 +14,7 @@ WITH resolved AS (
     list_name,
     message_id,
     sent_ts,
+    sent_dt,
     subject,
     COALESCE(
       TRIM(REGEXP_EXTRACT(reference_ids, '<([^>]+)>', 1)),
@@ -34,6 +35,7 @@ SELECT
   res.list_name,
   res.message_id,
   res.sent_ts,
+  res.sent_dt,
   res.subject,
   res.root_id,
   res.is_thread_start,
@@ -42,4 +44,4 @@ SELECT
 FROM resolved AS res
 LEFT JOIN cited_roots AS crt ON res.root_id = crt.root_id
 ASOF LEFT JOIN {{ ref('int_release_calendar') }} AS cal
-  ON (res.sent_ts AT TIME ZONE 'utc')::DATE < cal.wrap_dt
+  ON res.sent_dt < cal.wrap_dt

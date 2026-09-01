@@ -8,7 +8,7 @@ SELECT
   branch,
   commit_hash,
   commit_ts,
-  (commit_ts AT TIME ZONE 'utc')::DATE AS commit_dt,
+  commit_dt,
   LOWER(TRIM(REGEXP_REPLACE(subject, '\s+', ' ', 'g'))) AS fix_key
 FROM {{ ref('int_git_commits') }}
 WHERE branch != 'master' AND NOT is_plumbing

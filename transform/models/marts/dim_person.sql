@@ -14,7 +14,7 @@ WITH resolved AS (
     idn.person_name,
     idn.identity_role,
     idn.source_list,
-    idn.seen_ts
+    idn.seen_dt
   FROM {{ ref('int_person_identities') }} AS idn
   INNER JOIN {{ ref('int_person_map') }} AS pmp ON idn.node_id = pmp.node_id
 ),
@@ -27,8 +27,8 @@ per_key AS (
     BOOL_OR(identity_role = 'git_committer') AS is_git_committer,
     BOOL_OR(identity_role = 'list_sender') AS is_list_sender,
     BOOL_OR(identity_role = 'bug_reporter') AS is_bug_reporter,
-    MIN((seen_ts AT TIME ZONE 'utc')::DATE) AS first_seen_dt,
-    MAX((seen_ts AT TIME ZONE 'utc')::DATE) AS last_seen_dt,
+    MIN(seen_dt) AS first_seen_dt,
+    MAX(seen_dt) AS last_seen_dt,
     COUNT(DISTINCT source_list)::BIGINT AS source_list_cnt
   FROM resolved
   GROUP BY ALL
