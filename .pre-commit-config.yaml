@@ -34,3 +34,15 @@ repos:
         entry: ./venv/bin/sqlfluff lint
         language: system
         types: [sql]
+
+      # dbt-charts board validation, scoped to faces/ so it never runs on the
+      # dbt project's model schema .yml files. Triggers only when a faces board
+      # changes (files:), then validates the whole faces/ tree (pass_filenames:
+      # false) so cross-board references are checked too. Mirrors
+      # .claude/hooks/dct-validate.sh. Needs no database connection.
+      - id: dct-validate
+        name: dct validate (faces)
+        entry: ./venv/bin/dct validate faces
+        language: system
+        pass_filenames: false
+        files: ^faces/.*\.ya?ml$
