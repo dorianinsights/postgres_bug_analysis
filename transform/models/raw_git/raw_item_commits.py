@@ -11,7 +11,7 @@ from typing import Any
 sys.path.insert(0, str(Path.cwd()))
 import pyarrow as pa
 
-from sgmlsource import item_commit_records
+from sources.sgml import item_commit_records
 
 
 def model(dbt: Any, session: Any) -> pa.Table:

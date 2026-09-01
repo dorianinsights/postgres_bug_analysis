@@ -10,7 +10,7 @@ from typing import Any
 sys.path.insert(0, str(Path.cwd()))
 import pyarrow as pa
 
-from mailsource import list_message_records
+from sources.mail import list_message_records
 
 
 def model(dbt: Any, session: Any) -> pa.Table:

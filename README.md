@@ -61,7 +61,7 @@ review, but read back by nothing (the faces read the typed mart tables in
 end to end with no re-casting). Nothing writes and reads the same directory. **Git-side and mail-side data have no CSV landing layer at all**:
 the clone at `.cache/postgres.git` is content-addressed and immutable — its
 own perfect raw store — so the transform's `models/raw_git/` Python models
-(commits, tags, AND the release-notes SGML, via `gitsource` / `sgmlsource`)
+(commits, tags, AND the release-notes SGML, via `sources.git` / `sources.sgml`)
 read it directly at build time, and every git-derived table shares one
 consistent snapshot of the clone. Likewise the monthly mbox files at
 `.cache/mbox/` (immutable once a month is past) are decoded directly by
@@ -153,7 +153,7 @@ every object's name. Layers:
   build. Requires the clone (run `postgres_clone.py` or either scraper
   entry point first).
 - `models/raw_mail/` — Python model decoding the `.cache/mbox/` archives
-  via `transform/mailsource.py`: per message, the bare headers (RFC 2047
+  via `transform/sources/mail.py`: per message, the bare headers (RFC 2047
   decoded), the Date header as an ISO string with its original offset,
   and the first text body part. Splitting is on the archive's own
   envelope line — stdlib `mailbox` oversplits on the `From <sha>` first
@@ -322,7 +322,7 @@ one-time setup: `./venv/bin/pre-commit install`). Auto-fix layout nits with
   embargoed and reach public git only on wrap day, so mid-cycle security
   volume is structurally invisible.
 - The release notes are parsed from the clone's SGML at build time
-  (`sgmlsource` -> `raw_release_items` / `raw_item_commits`), the primary
+  (`sources.sgml` -> `raw_release_items` / `raw_item_commits`), the primary
   source. `scrape_release_notes.py` (HTML from postgresql.org) parses the same
   notes and is kept as an independent manual cross-check (its output is not
   wired into the build). Validated 2026-08-28: identical version coverage,

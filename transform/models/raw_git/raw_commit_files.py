@@ -9,7 +9,7 @@ from typing import Any
 sys.path.insert(0, str(Path.cwd()))
 import pyarrow as pa
 
-from gitsource import commit_file_records
+from sources.git import commit_file_records
 
 
 def model(dbt: Any, session: Any) -> pa.Table:

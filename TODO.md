@@ -31,7 +31,7 @@ is correct as one-per-bug. The gap is a missing fix→reporter many-to-many.
 
 PG 19 is in beta (`REL_19_BETA1/2/3`, `REL_19_STABLE` branched, no `REL_19_0`
 yet). Don't include it until GA: the pipeline assumes each corpus major has
-shipped its `.0` — `gitsource.branch_range('REL_19_STABLE')` is
+shipped its `.0` — `sources.git.branch_range('REL_19_STABLE')` is
 `REL_19_0..REL_19_STABLE`, which errors (`unknown revision`) until `REL_19_0`
 exists, and there are no minor-release fix waves to analyze during beta anyway.
 
@@ -52,7 +52,7 @@ outside the minor-wave models.
 
 `raw_list_messages` (mbox) and `raw_commit_files` (git) re-parse the entire
 history on every build. They're now parallelized across a process `Pool`
-(`mailsource.py` ~257s→~43s, ~6x; `gitsource.py` ~33s→~25s — the git side is
+(`sources/mail.py` ~257s→~43s, ~6x; `sources/git.py` ~33s→~25s — the git side is
 bounded by `master`, the one branch a per-branch fan-out can't split), but the
 work is still redone every run.
 
@@ -72,4 +72,4 @@ parallelization:
 
 Both keep byte-identical output (parse-once, read-back). Consider making
 `raw_list_messages` / `raw_commit_files` incremental `dbt` models, or doing the
-mtime/SHA-keyed caching inside `mailsource.py` / `gitsource.py`.
+mtime/SHA-keyed caching inside `sources/mail.py` / `sources/git.py`.

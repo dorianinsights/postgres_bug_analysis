@@ -1,6 +1,6 @@
 # pyright: strict
 """Parse PostgreSQL release notes from the SGML sources in postgres.git, for the
-raw_git Python models. A gitsource-style reader: the notes live in the clone
+raw_git Python models. A sources.git-style reader: the notes live in the clone
 (doc/src/sgml/release-NN.sgml on each stable branch), so they're parsed at build
 time from the same immutable snapshot as the commits and tags -- the git side
 has no CSV landing layer.
@@ -28,7 +28,8 @@ from bs4 import BeautifulSoup, Comment, Tag
 
 sys.path.insert(0, str(Path.cwd().parent))
 from corpus import MAJORS
-from gitsource import git
+
+from .git import git
 
 
 class ReleaseItemRecord(NamedTuple):

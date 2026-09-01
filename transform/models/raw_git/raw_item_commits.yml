@@ -4,5 +4,5 @@ models:
   - name: raw_item_commits
     description: >
       One (item, branch-commit) annotation per row, parsed verbatim from the
-      release-notes SGML comment blocks in the clone (via sgmlsource) at build
+      release-notes SGML comment blocks in the clone (via sources.sgml) at build
       time. Typing and filtering happen in stg_item_commits.

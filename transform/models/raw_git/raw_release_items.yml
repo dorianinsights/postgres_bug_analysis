@@ -4,5 +4,5 @@ models:
   - name: raw_release_items
     description: >
       One changelog item per row, parsed verbatim from the release-notes SGML in
-      the clone (via sgmlsource) at build time. Typing, the CVE derivation, and
+      the clone (via sources.sgml) at build time. Typing, the CVE derivation, and
       filtering happen in stg_release_items.

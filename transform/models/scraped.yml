@@ -10,7 +10,7 @@ sources:
       CVSS base score must stay VARCHAR until stg_cve_severity casts it) and
       TIMESTAMP. The release notes (release_items, item_commits) used to live
       here too, but are now parsed from the clone at build time by the
-      raw_release_items / raw_item_commits Python models (via sgmlsource).
+      raw_release_items / raw_item_commits Python models (via sources.sgml).
     meta:
       external_location: "read_csv('../data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'DATE', 'VARCHAR'])"
     tables:

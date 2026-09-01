@@ -3,13 +3,13 @@
 
 This is the raw store for the entire git side of the pipeline — there is no
 CSV landing layer for git data. The transform's models/raw_git/ Python models
-read this clone directly at build time -- commits/tags via transform/gitsource.py
-and the release-notes SGML via transform/sgmlsource.py -- so a `dbt build` after
+read this clone directly at build time -- commits/tags via transform/sources/git.py
+and the release-notes SGML via transform/sources/sgml.py -- so a `dbt build` after
 one sync sees a single consistent snapshot.
 
 First run clones; later runs fetch. The fetch passes explicit heads+tags
 refspecs on purpose: the pipeline reads both branch heads (refs/heads/master +
-REL_1x_STABLE — gitsource commits) AND tags (refs/tags/REL_1x_* — gitsource
+REL_1x_STABLE — sources.git commits) AND tags (refs/tags/REL_1x_* — sources.git
 release/prerelease records), and a plain `git fetch origin` on a bare clone
 (which configures no fetch refspec of its own) writes only FETCH_HEAD, leaving
 every ref the pipeline reads frozen at clone time. Heads and tags only —
