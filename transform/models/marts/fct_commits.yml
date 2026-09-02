@@ -27,6 +27,19 @@ models:
                 to: ref('dim_person')
                 field: dim_person_key
           - not_unknown_member
+      - name: dim_release_key
+        description: >
+          The scheduled release this commit shipped in — the first release whose
+          content-cutoff wrap falls on/after the commit date, mirroring the
+          release cycles. master commits (next-major development, not backpatches)
+          and any not-yet-shipped commits resolve to the Not Applicable member, so
+          this FK is optional (no not_unknown_member guard).
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_release')
+                field: dim_release_key
       - name: commit_dt
         description: The commit's UTC day as a DATE (point-of-use day-trunc; the git face groups on it).
         tests:
