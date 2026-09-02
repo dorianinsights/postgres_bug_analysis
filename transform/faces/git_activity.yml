@@ -66,7 +66,7 @@ queries:
   quarterly_by_branch:
     ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_major is N:1 (dim_major_key is its PK); COUNT not inflated
     description: >
-      Fix commits per stable branch per quarter (each branch counts its own
+      Fix commits per non-master branch per quarter (each branch counts its own
       backpatches).
     source: warehouse
     sql: |
@@ -76,7 +76,7 @@ queries:
         COUNT(*) AS fix_commits
       FROM dim_commit AS fc
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-      WHERE dm.is_released
+      WHERE dm.lifecycle IN ('released', 'beta')
       GROUP BY 1, 2
       ORDER BY 1, 2
 
@@ -327,8 +327,8 @@ charts:
   quarterly_by_branch:
     type: line
     query: quarterly_by_branch
-    title: "Fix commits per stable branch per quarter"
-    subtitle: "Each branch counts its own backpatch, so one fix landed on every stable major is one commit per branch here; newer branches carry more; every branch jumps in Q3 2026"
+    title: "Fix commits per non-master branch per quarter"
+    subtitle: "Each branch counts its own backpatches, so one fix landed on every stable major is one commit per branch here; newer branches carry more; every branch jumps in Q3 2026"
     x: quarter
     y: fix_commits
     y_label: "fix commits"
