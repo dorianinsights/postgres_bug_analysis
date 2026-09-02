@@ -1,6 +1,6 @@
 -- The fixes already committed toward the NEXT scheduled minor but not yet
 -- released — the pending release. Same supply-side signal the projection
--- models use (int_backpatch_fixes): backpatched, non-plumbing
+-- models use (int_backpatch_fixes): backpatched
 -- stable-branch commits since the last wrap (the content cutoff of the release
 -- that already shipped), deduped to distinct fixes by normalized subject
 -- (a fix backpatched to N branches has N near-identical subjects). Each

@@ -3,7 +3,7 @@ version: 2
 models:
   - name: int_backpatch_fixes
     description: >
-      One row per stable-branch, non-plumbing commit (the backpatched-fix
+      One row per stable-branch commit (the backpatched-fix
       stream), with commit_dt and the normalized-subject fix_key consumers dedup
       on. Grain = (branch, commit_hash). Reused by git_cycle_pace, the
       fix-projection signals, and int_pending_fixes.

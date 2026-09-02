@@ -3,9 +3,8 @@ version: 2
 models:
   - name: int_git_commits
     description: >
-      Commit grain with the derived analysis flags: is_plumbing (release
-      mechanics, not fixes) and ai_credit (first message line crediting an
-      AI tool, NULL when none). Grain = (branch, commit_hash).
+      Commit grain with the derived analysis flag ai_credit (first message
+      line crediting an AI tool, NULL when none). Grain = (branch, commit_hash).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -18,8 +17,6 @@ models:
       - name: commit_ts
         tests: [not_null]
       - name: subject
-        tests: [not_null]
-      - name: is_plumbing
         tests: [not_null]
       # ai_credit: NULL for the overwhelming majority; when present it is a
       # trimmed message line, at most 200 chars.

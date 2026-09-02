@@ -4,7 +4,7 @@ models:
   - name: int_pending_fixes
     description: >
       Distinct fixes committed toward the next scheduled minor but not yet
-      released (backpatched, non-plumbing stable-branch commits since the
+      released (backpatched stable-branch commits since the
       last wrap, deduped by normalized subject), each attributed to an
       origin. Grain = fix_key (normalized subject).
     columns:

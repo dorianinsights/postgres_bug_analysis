@@ -8,8 +8,8 @@ models:
       (by area, file type, branch scope, author, at any interval), so no metric
       needs a pre-aggregated table; the fct_commit_files_semantic MetricFlow model
       exposes the measures, joined to dim_commit on the commit entity. Conforms to
-      dim_commit (dim_commit_key -- commit attributes, keys, is_plumbing,
-      branch_scope live there) and dim_date (commit_dt). subsystem and file_class
+      dim_commit (dim_commit_key -- commit attributes, keys, branch_scope live
+      there) and dim_date (commit_dt). subsystem and file_class
       are file-grain degenerate dimensions. Line counts are NULL for binary files.
       Too many rows for a derived CSV twin (over var(derived_csv_max_rows)); query
       it in the warehouse. Grain = (dim_commit_key, file_path).

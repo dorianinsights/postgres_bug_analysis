@@ -6,8 +6,8 @@
 -- commit_ts instant is kept alongside for latency/ordering. body is NULL when the commit message has no body
 -- (no empty strings in this layer). author_* is the patch author (%an/%ae);
 -- committer_* is who pushed it (%cn/%ce) — the two differ for a committed
--- contributor patch; both feed the person dimension. Derived flags
--- (is_plumbing, ai_credit) live downstream in int_git_commits, not here.
+-- contributor patch; both feed the person dimension. The derived ai_credit
+-- flag lives downstream in int_git_commits, not here.
 SELECT
   branch,
   hash AS commit_hash,

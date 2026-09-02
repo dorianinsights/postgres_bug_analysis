@@ -93,7 +93,7 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 | `fct_category_vs_subsystem_agg.csv` | (category, subsystem) | content category (int_fix_content_categories) cross-tabbed against the changed-file subsystem |
 | `fct_bug_reports_monthly_agg.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
 | `fct_fix_origins_agg.csv` | (release, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
-| `fct_origin_activity_monthly_agg.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
+| `fct_origin_activity_monthly_agg.csv` | (month, origin) | master-branch activity by origin: commit count, AI-flagged commits, distinct cited threads |
 | `fct_pending_fix_origins_agg.csv` | (ships_at, origin) | the in-progress next release: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
 | `dim_version.csv` | one version | version dimension: one row per individual minor (e.g. `18.6`) below the release — major/minor, wrap + announced date, `dim_release_key` → `dim_release` (NULL for `.0` majors), and its dates conform to `dim_date` |
 | `fct_version_items_agg.csv` | one version | aggregate fact: changelog item count per minor, conformed to `dim_version` (the date/major/minor attributes live in the dimension) |
@@ -167,7 +167,7 @@ every object's name. Layers:
   grain + flags), `int_fix_items` (fix items + dedup keys + derived CVEs),
   `int_fix_groups` (cross-branch dedup as recursive-CTE connected
   components), `int_fix_reps` (one categorized representative per distinct
-  fix), `int_release_summary`, `int_git_commits` (plumbing/AI-credit flags).
+  fix), `int_release_summary`, `int_git_commits` (AI-credit flag).
 - `models/marts/` — the typed tables the faces and CSV exports read: the
   item-grain `fix_items` fact, the file-grain `fct_commit_files` churn fact
   (with its `dim_commit` spine), the release/projection/pace rollups, and the
@@ -209,7 +209,7 @@ every object's name. Layers:
     carries a `dominant_subsystem` (a weighted vote over its files via the
     per-file `int_commit_files`, which classifies each changed file by subsystem
     and by extension `file_class`), plus `branch_scope` (trunk/stable/beta) and
-    the plumbing/AI/origin flags. The atomic churn fact **`fct_commit_files`** (one
+    the AI-credit and origin flags. The atomic churn fact **`fct_commit_files`** (one
     row per file per commit — line counts + subsystem + file_class, FK to
     `dim_commit`, conformed to `dim_date`) is where every churn metric rolls up
     from dynamically rather than from a frozen by-quarter table. Two MetricFlow
@@ -345,7 +345,7 @@ carry no separate unit tests.
   report counts as acted upon when any message of its thread is cited by
   a commit, or the bug number is mentioned.
 - **The scrapers are pure extraction** — fields land raw verbatim. Every
-  derivation lives in the transform: plumbing/AI-credit flags
+  derivation lives in the transform: the AI-credit flag
   (`int_git_commits`), CVE extraction (`int_fix_items`), release-tag
   filtering and major/minor parsing (`stg_git_tags`), per-release item
   counts for the out-of-band rule (`int_releases`).

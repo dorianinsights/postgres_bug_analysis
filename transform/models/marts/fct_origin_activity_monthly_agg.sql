@@ -20,7 +20,6 @@ master_commits AS (
       WHEN sfc.abbrev_hash IS NOT null THEN 'unknown_or_internal_security'
       ELSE 'unknown_or_internal_not_security'
     END AS origin,
-    fcm.is_plumbing,
     fcm.ai_credit
   FROM {{ ref('dim_commit') }} AS fcm
   INNER JOIN {{ ref('dim_major') }} AS dmj ON fcm.dim_major_key = dmj.dim_major_key
@@ -36,7 +35,7 @@ commit_rollup AS (
   SELECT
     month_dt,
     origin,
-    COUNT(*) FILTER (WHERE NOT is_plumbing) AS commit_cnt,
+    COUNT(*) AS commit_cnt,
     COUNT(*) FILTER (WHERE ai_credit IS NOT null) AS ai_commit_cnt
   FROM master_commits
   GROUP BY ALL

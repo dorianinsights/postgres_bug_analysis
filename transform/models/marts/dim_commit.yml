@@ -77,9 +77,6 @@ models:
                 values: [trunk, stable, beta, other]
       - name: origin
         tests: [not_null]
-      - name: is_plumbing
-        description: True for mechanical/non-substantive commits (translation refreshes, catalog bumps, typo sweeps).
-        tests: [not_null]
       - name: has_ai_credit
         tests: [not_null]
       - name: dominant_subsystem

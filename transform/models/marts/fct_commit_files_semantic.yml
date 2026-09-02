@@ -4,7 +4,7 @@ version: 2
 # one file changed by one commit. Churn measures are defined once here and
 # computed dynamically at ANY time grain (day/week/month/quarter/year) and sliced
 # by any file dimension (subsystem, file_class) or -- via the `commit` entity join
-# to dim_commit -- any commit dimension (branch_scope, is_plumbing, author, ...).
+# to dim_commit -- any commit dimension (branch_scope, author, origin, ...).
 # No pre-aggregated by-quarter table. Consumed by dbt-charts via `type: metricflow`
 # queries; the interactive git_activity churn charts read the fact directly in SQL
 # (their file-class toggle composes more simply as a SQL predicate).

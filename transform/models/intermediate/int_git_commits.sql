@@ -1,8 +1,6 @@
 -- Commit-grain enrichment: the analysis flags formerly computed in the
 -- scraper, now derived here from the verbatim subject/body.
 --
--- is_plumbing: release mechanics (stamps, translation refreshes, release
--- notes, pgindent runs) — not fixes; excluded by consumers.
 -- ai_credit: the first line of the commit message that credits an AI tool
 -- (trimmed, capped at 200 chars), NULL when none does. The pattern keeps
 -- the LLM signal only — fuzzers are tracked separately in the
@@ -24,13 +22,6 @@ WITH flagged AS (
     committer_email,
     NULLIF(TRIM(REGEXP_EXTRACT(body, 'Author:\s*([^<\n]+?)\s*<([^>\n]+)>', 1)), '') AS body_author_name,
     NULLIF(TRIM(REGEXP_EXTRACT(body, 'Author:\s*([^<\n]+?)\s*<([^>\n]+)>', 2)), '') AS body_author_email,
-    REGEXP_MATCHES(
-      subject,
-      '^(Stamp |Translation updates|Update time zone data|Update plpgsql\.po'
-      || '|First-draft release notes|Release notes for|Update release notes'
-      || '|Last-minute updates for release notes|Re-pgindent|pgindent )',
-      'i'
-    ) AS is_plumbing,
     LIST_FILTER(
       STRING_SPLIT(subject || CHR(10) || COALESCE(body, ''), CHR(10)),
       line -> REGEXP_MATCHES(
@@ -49,7 +40,6 @@ SELECT
   commit_dt,
   subject,
   body,
-  is_plumbing,
   committer_name,
   committer_email,
   COALESCE(body_author_name, committer_name) AS patch_author_name,

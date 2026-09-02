@@ -23,8 +23,6 @@ semantic_models:
           time_granularity: day
       - name: branch_scope
         type: categorical
-      - name: is_plumbing
-        type: categorical
       - name: origin
         type: categorical
       - name: has_ai_credit

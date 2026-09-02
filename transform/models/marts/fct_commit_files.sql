@@ -4,7 +4,7 @@
 -- pre-aggregated table; a MetricFlow semantic model (fct_commit_files_semantic)
 -- exposes the measures, joined to dim_commit on the commit entity for commit-level
 -- slicing. Conforms to dim_commit (dim_commit_key -- the commit's attributes,
--- keys, is_plumbing and branch_scope live there) and to dim_date on commit_dt (the
+-- keys and branch_scope live there) and to dim_date on commit_dt (the
 -- fact carries its own event day). subsystem and file_class ride along as
 -- file-grain degenerate dimensions. Line counts are NULL for binary files (git
 -- numstat '-'), so SUMs naturally exclude binary churn.

@@ -48,7 +48,7 @@ queries:
     description: >
       Distinct fix COMMITS on the stable branches per calendar quarter (subjects
       deduplicated across branches, so a fix backpatched across every stable
-      major counts once; release plumbing excluded). A git-history count — roughly 2x
+      major counts once). A git-history count — roughly 2x
       the Changelog's documented per-release fixes, since only ~half of fix
       commits become a release-note item. The current quarter is partial.
     source: warehouse
@@ -59,7 +59,7 @@ queries:
         COUNT(DISTINCT LOWER(TRIM(fc.subject))) AS distinct_fix_cnt
       FROM dim_commit AS fc
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-      WHERE dm.is_released AND NOT fc.is_plumbing
+      WHERE dm.is_released
       GROUP BY 1
       ORDER BY 1
 
@@ -67,7 +67,7 @@ queries:
     ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_major is N:1 (dim_major_key is its PK); COUNT not inflated
     description: >
       Fix commits per stable branch per quarter (each branch counts its own
-      backpatches; plumbing excluded).
+      backpatches).
     source: warehouse
     sql: |
       SELECT
@@ -76,14 +76,14 @@ queries:
         COUNT(*) AS fix_commits
       FROM dim_commit AS fc
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-      WHERE dm.is_released AND NOT fc.is_plumbing
+      WHERE dm.is_released
       GROUP BY 1, 2
       ORDER BY 1, 2
 
   commits_per_version:
     ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_version is N:1 (one version per commit); COUNTs verified to reconcile
     description: >
-      Non-plumbing stable-branch fix commits binned by the minor release they
+      Stable-branch fix commits binned by the minor release they
       shipped in (via dim_commit.dim_version_key, resolved by exact git tag
       ancestry) — REL_15_STABLE commits in the Feb 2026 release are 15.16, and so
       on. Grouped by release month + major, so an out-of-band re-release folds into
@@ -100,7 +100,7 @@ queries:
       FROM dim_commit AS fc
       INNER JOIN dim_version AS dv ON fc.dim_version_key = dv.dim_version_key
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-      WHERE NOT fc.is_plumbing AND dv.minor > 0
+      WHERE dv.minor > 0
       -- by month + major: an out-of-band re-release shares its calendar month with
       -- the scheduled release (e.g. 18.2 and OOB 18.3 both "Feb 26"), so fold them
       -- into one bar rather than colliding on the (release, major) key.
@@ -163,7 +163,7 @@ queries:
   churn_by_quarter:
     description: >
       Lines of code churned per calendar quarter on the stable branches (fix
-      commits, plumbing excluded), as three series: total churn (adds +
+      commits), as three series: total churn (adds +
       deletes), additions, and deletions. Backpatches count per branch (like the
       per-branch commit chart), so a fix landed on several majors contributes its
       churn once per branch. Generated file classes (translation catalogs .po,
@@ -178,12 +178,9 @@ queries:
           SUM(COALESCE(cf.lines_deleted, 0))::BIGINT AS deletes
         FROM fct_commit_files AS cf
         INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
-        -- non-plumbing churn in the file classes chosen by the per-chart dropdown
-        -- (defaults to hand-written source). NOTE translation churn is almost all
-        -- plumbing, so adding 'translations' here moves little -- test fixtures,
-        -- being substantive, do show.
+        -- churn in the file classes chosen by the per-chart dropdown
+        -- (defaults to hand-written source).
         WHERE dc.branch_scope = 'stable'
-          AND NOT dc.is_plumbing
           AND {{ filter('cf.file_class', stable_churn_classes) }}
         GROUP BY 1
       )
@@ -212,11 +209,9 @@ queries:
         SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS churn
       FROM fct_commit_files AS cf
       INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
-      -- non-plumbing churn in the file classes chosen by the per-chart dropdown
-      -- (defaults to hand-written source; translation churn is almost all plumbing
-      -- so adding it moves little, test fixtures do show)
+      -- churn in the file classes chosen by the per-chart dropdown
+      -- (defaults to hand-written source)
       WHERE dc.branch_scope = 'trunk'
-        AND NOT dc.is_plumbing
         AND {{ filter('cf.file_class', trunk_churn_classes) }}
       GROUP BY DATE_TRUNC('quarter', cf.commit_dt), cf.subsystem
       ORDER BY quarter, cf.subsystem
@@ -380,7 +375,7 @@ charts:
     type: line
     query: churn_by_quarter
     title: "Lines of code churned per quarter"
-    subtitle: "Stable-branch fix commits (plumbing excluded); total churn, additions, and deletions; backpatches counted per branch; current quarter partial"
+    subtitle: "Stable-branch fix commits; total churn, additions, and deletions; backpatches counted per branch; current quarter partial"
     x: quarter
     y: lines
     y_label: "lines changed"

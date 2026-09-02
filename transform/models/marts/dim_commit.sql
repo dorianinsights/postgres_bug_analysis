@@ -6,7 +6,7 @@
 -- Foreign keys into dim_person (author + committer roles), dim_date (commit day),
 -- dim_release / dim_version (the release + minor it shipped in) and dim_major (its
 -- development line -- master included). branch_scope folds the major lifecycle for
--- churn views (trunk / stable / beta). origin, the plumbing/AI flags, the dominant
+-- churn views (trunk / stable / beta). origin, the AI-credit flag, the dominant
 -- subsystem and the subject ride along as attributes. Each person key resolves via
 -- the identity node (person_node + int_person_map), matching dim_person.
 --
@@ -58,7 +58,6 @@ SELECT
     ELSE 'other'
   END AS branch_scope,
   org.origin,
-  igc.is_plumbing,
   igc.ai_credit IS NOT null AS has_ai_credit,
   igc.ai_credit,
   -- the area this commit mostly touched (weighted vote over its files); 'other'
