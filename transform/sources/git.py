@@ -261,3 +261,43 @@ def branch_size_weekly_records(
                 )
             )
     return records
+
+
+class CommitVersionRecord(NamedTuple):
+    "One commit mapped to the minor it shipped in, by git tag ancestry."
+
+    branch: str
+    commit_hash: str
+    version: str
+
+
+def commit_version_records() -> list[CommitVersionRecord]:
+    """Each stable-branch commit mapped to the minor it FIRST shipped in, by EXACT
+    git tag ancestry: for consecutive release tags REL_M_(N-1), REL_M_N on a
+    branch, `git rev-list REL_M_(N-1)..REL_M_N` is exactly the commits reachable
+    from REL_M_N but not REL_M_(N-1) -- i.e. the ones that shipped in REL_M_N. No
+    date windows, no wrap heuristic; out-of-band re-releases are ordinary tags.
+    master carries no release tags, and open-cycle commits (after the latest tag,
+    not yet released) are unmapped. Grain = (branch, commit_hash).
+    """
+    records: list[CommitVersionRecord] = []
+    for branch in STABLE_BRANCHES:
+        matched = re.match(r"REL_(\d+)_STABLE$", branch)
+        if not matched:
+            continue
+        major = int(matched.group(1))
+        refs = git("for-each-ref", "--format=%(refname:short)", f"refs/tags/REL_{major}_*").splitlines()
+        minors: list[tuple[int, str]] = []
+        for ref in refs:
+            tag_match = re.fullmatch(rf"REL_{major}_(\d+)", ref)
+            if tag_match:
+                minors.append((int(tag_match.group(1)), ref))
+        minors.sort()
+        for (_, prev_tag), (minor, tag) in zip(minors, minors[1:], strict=False):
+            version = f"{major}.{minor}"
+            records.extend(
+                CommitVersionRecord(branch=branch, commit_hash=commit_hash, version=version)
+                for commit_hash in git("rev-list", f"{prev_tag}..{tag}").splitlines()
+                if commit_hash
+            )
+    return records

@@ -3,12 +3,13 @@ version: 2
 models:
   - name: int_commit_versions
     description: >
-      The commit -> shipped-minor mapping (branch's major x the release window
-      containing the commit day). ship_release_dt / version are NULL for master,
-      out-of-band, and not-yet-shipped commits. The single source for the
-      resolution: fct_commits reads it for dim_release_key/dim_version_key,
-      dim_version aggregates it for each version's first/last commit. Grain =
-      (branch, commit_hash).
+      The commit -> shipped-minor mapping by EXACT git tag ancestry (rev-list
+      between consecutive release tags; see stg_commit_versions / sources.git) --
+      no date windows, out-of-band re-releases handled as ordinary tags.
+      ship_release_dt / version are NULL for master and open-cycle (not-yet-tagged)
+      commits. The single source for the resolution: fct_commits reads it for
+      dim_release_key/dim_version_key, dim_version aggregates it for each version's
+      first/last commit. Grain = (branch, commit_hash).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

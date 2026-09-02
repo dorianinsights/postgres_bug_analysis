@@ -51,23 +51,28 @@ queries:
   commits_per_version:
     ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_version is N:1 (one version per commit); COUNTs verified to reconcile
     description: >
-      Non-plumbing stable-branch fix commits binned by the exact minor release
-      they shipped in, via fct_commits.dim_version_key — REL_15_STABLE commits in
-      the Feb 2026 release are 15.16, and so on. Shipped releases only; a fix
-      backpatched to several majors shows once under each. This is the
-      release-binned counterpart of the per-quarter commit chart above.
+      Non-plumbing stable-branch fix commits binned by the minor release they
+      shipped in (via fct_commits.dim_version_key, resolved by exact git tag
+      ancestry) — REL_15_STABLE commits in the Feb 2026 release are 15.16, and so
+      on. Grouped by release month + major, so an out-of-band re-release folds into
+      its month's scheduled bar. Shipped releases only; a fix backpatched to
+      several majors shows once under each. The release-binned counterpart of the
+      per-quarter commit chart above.
     source: warehouse
     sql: |
       SELECT
         STRFTIME(dv.release_dt, '%b %y') AS release,
-        EPOCH(dv.release_dt)::BIGINT AS release_seq,
+        MIN(EPOCH(dv.release_dt))::BIGINT AS release_seq,
         dm.major_label AS major,
         COUNT(*)::BIGINT AS commit_cnt
       FROM fct_commits AS fc
       INNER JOIN dim_version AS dv ON fc.dim_version_key = dv.dim_version_key
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
       WHERE NOT fc.is_plumbing AND dv.minor > 0
-      GROUP BY ALL
+      -- by month + major: an out-of-band re-release shares its calendar month with
+      -- the scheduled release (e.g. 18.2 and OOB 18.3 both "Feb 26"), so fold them
+      -- into one bar rather than colliding on the (release, major) key.
+      GROUP BY 1, 3
       ORDER BY release_seq, major
 
   codebase_size:

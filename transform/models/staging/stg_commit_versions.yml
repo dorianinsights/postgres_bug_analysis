@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: stg_commit_versions
+    description: >
+      Typed commit -> shipped-minor mapping by EXACT git tag ancestry (from
+      raw_commit_versions). One row per (branch, commit) that shipped in a tagged
+      minor; open-cycle and master commits are absent. Grain = (branch, commit_hash).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [branch, commit_hash]
+    columns:
+      - name: branch
+        tests: [not_null]
+      - name: commit_hash
+        tests: [not_null]
+      - name: version
+        tests: [not_null]
