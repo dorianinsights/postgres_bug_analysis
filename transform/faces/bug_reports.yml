@@ -96,30 +96,36 @@ queries:
       QUALIFY report_week >= (DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY)::DATE
       ORDER BY 1
 
-  monthly_acted:
+  monthly_acted_pct:
     description: >
-      Share of each month's reports later linked to a fix commit. The
-      trailing months sag because their fixes haven't landed yet.
+      Acted-upon share per month (raw percentage points, 0-100) and its 3-month
+      trailing average, as two series -- the right-axis lines. The trailing
+      months sag because their fixes haven't landed yet.
     source: warehouse
     sql: |
       SELECT
         report_month_dt AS report_month,
         'acted upon (%)' AS series,
-        -- as a 0-1 fraction so the y-axis can use a percent format (below)
-        acted_upon_pct / 100.0 AS acted_upon_pct
+        acted_upon_pct AS pct
       FROM fct_bug_reports_monthly_agg
-      ORDER BY 1
+      UNION ALL
+      SELECT
+        report_month_dt AS report_month,
+        '3-month rolling average' AS series,
+        AVG(acted_upon_pct) OVER (
+          ORDER BY report_month_dt ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) AS pct
+      FROM fct_bug_reports_monthly_agg
+      ORDER BY report_month, series
 
-  monthly_acted_trend:
-    description: Three-month trailing average of the acted-upon share.
+  monthly_acted_cnt:
+    description: Count of each month's reports later linked to a fix commit (the acted-upon count).
     source: warehouse
     sql: |
       SELECT
         report_month_dt AS report_month,
-        '3-month average' AS series,
-        AVG(acted_upon_pct / 100.0) OVER (
-          ORDER BY report_month_dt ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-        ) AS acted_upon_pct
+        'reports fixed' AS series,
+        acted_upon_cnt
       FROM fct_bug_reports_monthly_agg
       ORDER BY 1
 
@@ -262,22 +268,24 @@ charts:
         color: series
 
   monthly_acted:
-    type: line
-    query: monthly_acted
-    title: "Reports acted upon, by month"
-    subtitle: "Lower bound (exact commit links only); trailing months right-censored; with a 3-month rolling average"
+    type: bar
+    query: monthly_acted_cnt
+    title: "Bug reports acted upon, by month"
+    subtitle: "Bars: reports later linked to a fix (count, left axis). Lines: acted-upon share (%, right axis) with its 3-month rolling average. Lower bound (exact links only); trailing months right-censored."
     x: report_month
-    y: acted_upon_pct
+    y: acted_upon_cnt
+    y_label: "reports fixed"
     color: series
-    style: { axis_y: { labels: { format: ".0%" } } }
     height: 340
     layers:
+      # both % series share one right axis (one query, coloured by series), so
+      # they can't fight over two competing secondary scales
       - type: line
-        query: monthly_acted_trend
+        query: monthly_acted_pct
         x: report_month
-        y: acted_upon_pct
-        label: "3-month rolling average"
-        style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
+        y: pct
+        color: series
+        axis_y: { position: right, title: "acted upon (%)" }
 
   seasonality_counts:
     type: bar
