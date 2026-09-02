@@ -11,6 +11,38 @@ description: >
   release). Parsed from the postgres.git clone at build time by the transform/
   dbt project (sources.git).
 
+# One file-class dropdown per line-count chart (dct variables are a single
+# board-level strip, so per-chart control = one variable each). Every dropdown
+# lists the file classes and defaults to the hand-written source set; add
+# translation catalogs / regression fixtures on a chart to include them, remove a
+# class to drop it -- each chart is independent. multiselect (not single select)
+# because a chart sums several source classes at once.
+variables:
+  size_classes:
+    input: multiselect
+    label: "Codebase size — file classes"
+    options:
+      static: [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
+    default: [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
+  composition_classes:
+    input: multiselect
+    label: "Composition — file classes"
+    options:
+      static: [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
+    default: [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
+  stable_churn_classes:
+    input: multiselect
+    label: "Stable churn — file classes"
+    options:
+      static: [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
+    default: [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
+  trunk_churn_classes:
+    input: multiselect
+    label: "Trunk churn — file classes"
+    options:
+      static: [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
+    default: [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
+
 queries:
   quarterly_distinct:
     description: >
@@ -92,10 +124,9 @@ queries:
         SUM(bsz.code_lines) AS code_lines
       FROM fct_branch_size_weekly AS bsz
       INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
-      -- hand-written source only (default): the generated classes -- translation
-      -- catalogs and regression fixtures -- are measured in the fact but excluded
-      -- here, as are the non-code classes (catalog_data, build, other).
-      WHERE bsz.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
+      -- file classes chosen by the per-chart dropdown (defaults to hand-written
+      -- source; add translations / test_fixtures to include them here)
+      WHERE {{ filter('bsz.file_class', size_classes) }}
       GROUP BY bsz.week_start, dm.major_label
       ORDER BY bsz.week_start
 
@@ -124,10 +155,8 @@ queries:
       INNER JOIN latest AS lst
         ON bsz.dim_major_key = lst.dim_major_key AND bsz.week_start = lst.week_start
       INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
-      -- hand-written source only (default): the generated classes -- translation
-      -- catalogs and regression fixtures -- are measured in the fact but excluded
-      -- here, as are the non-code classes (catalog_data, build, other).
-      WHERE bsz.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
+      -- file classes chosen by the per-chart dropdown (defaults to hand-written source)
+      WHERE {{ filter('bsz.file_class', composition_classes) }}
       GROUP BY dm.major_label, bsz.subsystem
       ORDER BY dm.major_label, bsz.subsystem
 
@@ -149,11 +178,13 @@ queries:
           SUM(COALESCE(cf.lines_deleted, 0))::BIGINT AS deletes
         FROM fct_commit_files AS cf
         INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
-        -- substantive (non-plumbing) source churn: plumbing commits and the
-        -- generated file classes (translations, regression fixtures) are excluded.
+        -- non-plumbing churn in the file classes chosen by the per-chart dropdown
+        -- (defaults to hand-written source). NOTE translation churn is almost all
+        -- plumbing, so adding 'translations' here moves little -- test fixtures,
+        -- being substantive, do show.
         WHERE dc.branch_scope = 'stable'
           AND NOT dc.is_plumbing
-          AND cf.file_class NOT IN ('translations', 'test_fixtures')
+          AND {{ filter('cf.file_class', stable_churn_classes) }}
         GROUP BY 1
       )
 
@@ -181,11 +212,12 @@ queries:
         SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS churn
       FROM fct_commit_files AS cf
       INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
-      -- substantive (non-plumbing) source churn: plumbing commits and the
-      -- generated file classes (translations, regression fixtures) are excluded.
+      -- non-plumbing churn in the file classes chosen by the per-chart dropdown
+      -- (defaults to hand-written source; translation churn is almost all plumbing
+      -- so adding it moves little, test fixtures do show)
       WHERE dc.branch_scope = 'trunk'
         AND NOT dc.is_plumbing
-        AND cf.file_class NOT IN ('translations', 'test_fixtures')
+        AND {{ filter('cf.file_class', trunk_churn_classes) }}
       GROUP BY DATE_TRUNC('quarter', cf.commit_dt), cf.subsystem
       ORDER BY quarter, cf.subsystem
 
@@ -253,11 +285,12 @@ queries:
     source: warehouse
     sql: |
       SELECT
+        EXTRACT(year FROM commit_ts AT TIME ZONE 'UTC')::INTEGER AS year_utc,
         EXTRACT(hour FROM commit_ts AT TIME ZONE 'UTC')::INTEGER AS hour_utc,
         COUNT(*)::BIGINT AS commit_cnt
       FROM dim_commit
-      GROUP BY 1
-      ORDER BY 1
+      GROUP BY 1, 2
+      ORDER BY 1, 2
 
   commit_hour_stats:
     description: The mean and median commit time of day (UTC), as HH:MM, over all commits.
@@ -404,6 +437,8 @@ charts:
     x_label: "hour of day (UTC)"
     y_label: "commits"
     height: 340
+    multiples:
+      rows: year_utc
 
   mean_commit_hour:
     type: kpi
