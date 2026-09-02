@@ -4,10 +4,12 @@
 -- 1900-01-01) and future_eternity (var, 9999-01-01). Those give an unknown /
 -- not-applicable date reference a real calendar row to point at instead of NULL
 -- (so its dim_date relationships test still passes). This dimension depends on
--- no other model to build -- the corpus-coverage guarantee lives in
--- assert_dim_date_covers_corpus, which fails the build if the data ever outgrows
--- the fixed span (widen the var when it does). Facts store the calendar DATE and
--- join on date_day; there is no separate integer date key.
+-- no other model to build -- the corpus-coverage guarantee is the relationships
+-- tests to date_day on the source-side date columns (stg_git_commits.commit_dt,
+-- stg_list_messages.sent_dt, int_release_calendar's two dates) and on every
+-- mart date column, which fail the build if the data ever outgrows the fixed
+-- span (widen the var when it does). Facts store the calendar DATE and join on
+-- date_day; there is no separate integer date key.
 -- Grain = date_day. -> ../data/derived/dim_date.csv
 WITH all_days AS (
   SELECT

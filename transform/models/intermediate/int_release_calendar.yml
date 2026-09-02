@@ -18,7 +18,23 @@ models:
           arguments:
             expression: MONTH(scheduled_release_dt) IN (2, 5, 8, 11)
     columns:
+      # both dates conform to dim_date: the calendar is generated from 2016-08
+      # through six months past today, so if either relationships test fails the
+      # fixed calendar spine no longer covers the schedule — widen
+      # date_spine_start / date_spine_end in vars.yml and rebuild
       - name: scheduled_release_dt
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: wrap_dt
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day

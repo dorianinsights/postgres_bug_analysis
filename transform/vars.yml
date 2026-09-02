@@ -43,12 +43,14 @@ vars:
   # get_base_dates wraps them in its own cast('...'). end_date is EXCLUSIVE
   # (dbt_date's spine is [start, end)). start sits safely before the earliest
   # corpus row; end runs a couple years past the last scheduled release.
-  # assert_dim_date_covers_corpus fails the build if the corpus ever outgrows
-  # this span -- widen the var and rebuild when it does.
+  # The relationships tests to dim_date on the source-side date columns
+  # (stg_git_commits.commit_dt, stg_list_messages.sent_dt, int_release_calendar)
+  # fail the build if the corpus ever outgrows this span -- widen the var and
+  # rebuild when it does.
   # Covers the lowest allowed corpus floor AND the release calendar's own start
   # (int_release_calendar generates from 2016-08 so the earliest corpus release
   # has a prior cycle). Set wide enough that pushing FIRST_MAJOR back never needs
-  # a change here; the assert_dim_date_covers_corpus test guards it.
+  # a change here; those relationships tests guard it.
   date_spine_start: "2016-07-01"
   date_spine_end: "2029-01-01"
   # -- Sentinel "eternity" dates carried as real dim_date rows (outside the
@@ -56,7 +58,7 @@ vars:
   # real calendar row instead of NULL and still pass its dim_date relationships
   # test. past_eternity is the unknown/oldest marker, future_eternity the
   # not-yet/newest one. Bare dates (rendered as DATE literals). dim_date's
-  # date-range test and assert_dim_date_covers_corpus exclude these two rows.
+  # date-range test excludes these two rows.
   past_eternity: "1900-01-01"
   future_eternity: "9999-01-01"
   # -- Build parameter (not an analysis knob). The on-run-end audit exporter

@@ -33,8 +33,18 @@ models:
                 min_value: "{{ var('test_floor_git_ts') }}"
                 max_value: current_date + 2
       - name: commit_dt
-        description: commit_ts truncated to its UTC calendar day — the day-grain grouping key consumers use in place of re-truncating the instant.
-        tests: [not_null]
+        description: >
+          commit_ts truncated to its UTC calendar day — the day-grain grouping key
+          consumers use in place of re-truncating the instant. Conforms to
+          dim_date: if the relationships test fails, the git history has outgrown
+          the fixed calendar spine — widen date_spine_start / date_spine_end in
+          vars.yml and rebuild.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: author_name
         description: The patch author's display name (git %an).
         tests: [not_null]

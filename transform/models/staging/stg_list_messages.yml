@@ -32,8 +32,18 @@ models:
                 min_value: "'2000-01-01'"
                 max_value: current_date + 2
       - name: sent_dt
-        description: sent_ts truncated to its UTC calendar day — the day-grain grouping key consumers use in place of re-truncating the instant.
-        tests: [not_null]
+        description: >
+          sent_ts truncated to its UTC calendar day — the day-grain grouping key
+          consumers use in place of re-truncating the instant. Conforms to
+          dim_date: if the relationships test fails, the archive has outgrown the
+          fixed calendar spine (or a skewed client Date header landed outside it)
+          — widen date_spine_start / date_spine_end in vars.yml and rebuild.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: subject
         description: >
           NULL for the rare message sent with no Subject header (2 in the
