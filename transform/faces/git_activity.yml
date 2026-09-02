@@ -17,7 +17,8 @@ variables:
     label: "Include translation catalogs (.po)"
     description: >
       Off by default: generated GNU gettext message catalogs are not
-      hand-written code. (Most already fall out via the plumbing filter.)
+      hand-written code. On, this adds all .po churn — mostly large mechanical
+      (plumbing) catalog refreshes, so it moves the total a lot.
     default: false
   include_test_fixtures:
     input: checkbox
@@ -154,7 +155,10 @@ queries:
         FROM fct_commit_churn_by_area_agg AS ca
         WHERE ca.branch_scope = 'stable'
           AND (
-            ca.file_class NOT IN ('translations', 'test_fixtures')
+            -- default: substantive (non-plumbing) source; each toggle adds that
+            -- generated class back INCLUDING its plumbing commits (translation
+            -- churn is almost all plumbing, so this is what makes it show up)
+            (NOT ca.is_plumbing AND ca.file_class NOT IN ('translations', 'test_fixtures'))
             OR ({{ include_translations }} AND ca.file_class = 'translations')
             OR ({{ include_test_fixtures }} AND ca.file_class = 'test_fixtures')
           )
@@ -186,7 +190,9 @@ queries:
       FROM fct_commit_churn_by_area_agg AS ca
       WHERE ca.branch_scope = 'trunk'
         AND (
-          ca.file_class NOT IN ('translations', 'test_fixtures')
+          -- default: substantive (non-plumbing) source; each toggle adds that
+          -- generated class back INCLUDING its plumbing commits
+          (NOT ca.is_plumbing AND ca.file_class NOT IN ('translations', 'test_fixtures'))
           OR ({{ include_translations }} AND ca.file_class = 'translations')
           OR ({{ include_test_fixtures }} AND ca.file_class = 'test_fixtures')
         )

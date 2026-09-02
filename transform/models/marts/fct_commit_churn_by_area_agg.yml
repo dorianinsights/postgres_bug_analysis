@@ -6,17 +6,19 @@ models:
       Quarterly code churn by area and branch scope, per file (int_commit_files)
       so a cross-area commit splits across its areas. branch_scope = 'trunk'
       (master, feature development, counted once) or 'stable' (released majors'
-      backpatch stream, counted per branch). Non-plumbing only. subsystem
-      (directory) and file_class (extension) both ride along so a chart can keep
-      the area breakdown while filtering the generated file classes
-      (translations, test_fixtures) in or out of a line count. Conforms to
-      dim_date on quarter_dt. Too many rows for a derived CSV twin (over
+      backpatch stream, counted per branch). Carries ALL churn -- plumbing
+      included and every file_class -- so exclusions live downstream in the
+      report, not baked in. is_plumbing, subsystem (directory), and file_class
+      (extension) all ride along so a chart can keep the area breakdown while
+      filtering plumbing and the generated file classes (translations,
+      test_fixtures) in or out of a line count. Conforms to dim_date on
+      quarter_dt. Too many rows for a derived CSV twin (over
       var(derived_csv_max_rows)); query it in the warehouse.
-      Grain = (quarter_dt, branch_scope, subsystem, file_class).
+      Grain = (quarter_dt, branch_scope, subsystem, file_class, is_plumbing).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [quarter_dt, branch_scope, subsystem, file_class]
+            combination_of_columns: [quarter_dt, branch_scope, subsystem, file_class, is_plumbing]
     columns:
       - name: quarter_dt
         description: First day of the UTC calendar quarter; conforms to dim_date.
@@ -72,8 +74,15 @@ models:
                   - test_fixtures
                   - build
                   - other
+      - name: is_plumbing
+        description: >
+          True for mechanical/non-substantive commits (translation-catalog
+          refreshes, catalog bumps, typo sweeps). Charts drop these by default;
+          exposed here so a report can add them back -- necessary to surface
+          translation churn, which is almost entirely plumbing.
+        tests: [not_null]
       - name: commit_cnt
-        description: Distinct commits touching this (scope, subsystem, file_class) in the quarter.
+        description: Distinct commits touching this (scope, subsystem, file_class, is_plumbing) in the quarter.
         tests:
           - not_null
           - dbt_utils.accepted_range:
