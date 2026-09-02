@@ -7,6 +7,8 @@ The parsers are driven by a fake git() so nothing touches a real clone: each
 reader just splits git's delimited output, and that splitting is what we pin.
 """
 
+import re
+
 import pytest
 
 import sources.git as gitmod
@@ -76,3 +78,42 @@ def test_file_records_parse_numstat_and_binary_markers(monkeypatch: pytest.Monke
         ("abc123", "bin/data", "-", "-"),
         ("def456", "doc/bar.sgml", "5", "0"),
     ]
+
+
+# subsystem rules as (subsystem, compiled-pattern) in match_order precedence,
+# mirroring a slice of the subsystem_rules seed — enough to pin the precedence
+# and the 'other' fallback without reading the seed from disk.
+_RULES = [
+    ("tests", re.compile(r"^src/test/")),
+    ("docs", re.compile(r"^doc/")),
+    ("client_tools", re.compile(r"^src/bin/|^src/interfaces/")),
+    ("core_server", re.compile(r"^src/backend/|^src/include/")),
+]
+
+
+def test_subsystem_of_first_match_wins_and_falls_back_to_other() -> None:
+    # src/test/ beats the later core_server rule even though neither src/backend
+    # nor src/include matches here — precedence is by match_order, not specificity.
+    assert gitmod._subsystem_of("src/test/regress/foo.sql", _RULES) == "tests"
+    assert gitmod._subsystem_of("src/backend/optimizer/plan.c", _RULES) == "core_server"
+    assert gitmod._subsystem_of("src/bin/psql/command.c", _RULES) == "client_tools"
+    assert gitmod._subsystem_of("doc/src/sgml/ref.sgml", _RULES) == "docs"
+    # a source file no rule matches lands in the catch-all bucket
+    assert gitmod._subsystem_of("Makefile.shlib", _RULES) == "other"
+
+
+def test_tree_size_by_subsystem_buckets_and_sums(monkeypatch: pytest.MonkeyPatch) -> None:
+    # git grep -I -c '^' emits "<rev>:<path>:<count>" per file; the paths carry
+    # colons only in the rev/path split, which rpartition/partition handle.
+    grep_out = (
+        "HEAD:src/backend/executor/a.c:100\n"
+        "HEAD:src/include/x.h:20\n"
+        "HEAD:src/test/regress/b.sql:40\n"
+        "HEAD:doc/src/sgml/c.sgml:5\n"
+    )
+    _patch_git(monkeypatch, grep_out)
+    sizes = gitmod._tree_size_by_subsystem("HEAD", _RULES)
+    assert sizes["core_server"] == (120, 2)  # a.c + x.h
+    assert sizes["tests"] == (40, 1)
+    assert sizes["docs"] == (5, 1)
+    assert sum(code for code, _ in sizes.values()) == 165  # subsystems sum to the tree

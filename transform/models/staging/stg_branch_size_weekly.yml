@@ -3,15 +3,15 @@ version: 2
 models:
   - name: stg_branch_size_weekly
     description: >
-      Typed weekly codebase-size snapshots per stable branch (from
-      raw_branch_size_weekly). code_lines is the total source-line count across
-      the code globs; doc_lines (.sgml) and test_lines (src/test) are subsets, so
-      implementation lines = code_lines - doc_lines - test_lines. A per-branch
-      stock, never summed across majors. Grain = (branch, week_start).
+      Typed weekly codebase-size snapshots per stable branch, split by subsystem
+      (from raw_branch_size_weekly). code_lines / file_cnt are this subsystem's
+      slice of the tree at the week's end; the subsystems of a week sum to the
+      branch's total size. A per-branch stock, never summed across majors.
+      Grain = (branch, week_start, subsystem).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [branch, week_start]
+            combination_of_columns: [branch, week_start, subsystem]
     columns:
       - name: branch
         tests: [not_null]
@@ -19,16 +19,14 @@ models:
         tests: [not_null]
       - name: commit_hash
         tests: [not_null]
+      - name: subsystem
+        tests: [not_null]
       - name: code_lines
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: doc_lines
-        tests: [not_null]
-      - name: test_lines
-        tests: [not_null]
       - name: file_cnt
         tests:
           - not_null

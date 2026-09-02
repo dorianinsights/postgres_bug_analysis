@@ -13,6 +13,7 @@ transform/ (the same convention as the ../data source locations), and
 corpus.py is imported from the directory above.
 """
 
+import csv
 import multiprocessing as mp
 import os
 import re
@@ -226,15 +227,37 @@ CODE_GLOBS = ("*.c", "*.h", "*.y", "*.l", "*.pl", "*.pm", "*.py", "*.sql", "*.sg
 
 
 class BranchSizeRecord(NamedTuple):
-    "One weekly snapshot of a stable branch's tree size (a stock, not a flow)."
+    """One weekly snapshot of ONE subsystem's slice of a stable branch's tree
+    (a stock, not a flow). Long form: a week has one row per subsystem present,
+    so the subsystems sum to the branch's total size that week."""
 
     branch: str
     week_start: str  # ISO date of the week's Monday
     commit_hash: str  # branch HEAD as of that week's end
-    code_lines: str  # total source lines across CODE_GLOBS
-    doc_lines: str  # the .sgml documentation subset
-    test_lines: str  # the src/test/ subset
-    file_cnt: str  # number of source files
+    subsystem: str  # the subsystem_rules bucket (single taxonomy; see _subsystem_of)
+    code_lines: str  # source lines in this subsystem's files
+    file_cnt: str  # number of source files in this subsystem
+
+
+def _subsystem_rules() -> list[tuple[str, "re.Pattern[str]"]]:
+    """The (subsystem, compiled-pattern) rules from the subsystem_rules seed, in
+    match_order precedence. Read from the SAME seed the SQL side uses
+    (int_fix_changes), so the path -> subsystem taxonomy has one source of truth.
+    Loaded lazily (not at import) so tests that import this module from any cwd
+    don't need the seed on disk."""
+    path = Path.cwd() / "seeds" / "subsystem_rules.csv"
+    with path.open(encoding="utf-8") as handle:
+        rows = [(int(r["match_order"]), r["subsystem"], re.compile(r["pattern"])) for r in csv.DictReader(handle)]
+    rows.sort(key=lambda r: r[0])
+    return [(subsystem, pattern) for _, subsystem, pattern in rows]
+
+
+def _subsystem_of(path: str, rules: list[tuple[str, "re.Pattern[str]"]]) -> str:
+    "The first rule (by match_order) whose pattern matches the path; else 'other'."
+    for subsystem, pattern in rules:
+        if pattern.search(path):
+            return subsystem
+    return "other"
 
 
 def _major_eol(major: int) -> date:
@@ -244,27 +267,36 @@ def _major_eol(major: int) -> date:
     return date(major + 2012, 11, 30)
 
 
-def _tree_size(rev: str) -> tuple[int, int, int, int]:
-    """(code_lines, doc_lines, test_lines, file_cnt) for the tree at `rev`.
-
-    One `git grep -c '^'` emits `<rev>:<path>:<count>` per matched file, so the
-    total, the file count, and any path-based split all come from a single grep.
+def _tree_size_by_subsystem(rev: str, rules: list[tuple[str, "re.Pattern[str]"]]) -> dict[str, tuple[int, int]]:
+    """{subsystem: (code_lines, file_cnt)} for the tree at `rev`, bucketed by the
+    subsystem_rules taxonomy. One `git grep -I -c '^'` emits `<rev>:<path>:<count>`
+    per matched (text) source file; -I keeps binary files out, and CODE_GLOBS
+    keeps it to source extensions, so no binary size is ever counted.
     """
     out = git("grep", "-I", "-c", "^", rev, "--", *CODE_GLOBS)
-    code = doc = test = files = 0
+    sizes: dict[str, tuple[int, int]] = {}
     for line in out.splitlines():
         if not line:
             continue
         prefix, _, count = line.rpartition(":")
-        lines = int(count)
         path = prefix.partition(":")[2]  # strip the "<rev>:" prefix
-        code += lines
-        files += 1
-        if path.endswith(".sgml"):
-            doc += lines
-        elif path.startswith("src/test/"):
-            test += lines
-    return code, doc, test, files
+        subsystem = _subsystem_of(path, rules)
+        code, files = sizes.get(subsystem, (0, 0))
+        sizes[subsystem] = (code + int(count), files + 1)
+    return sizes
+
+
+def _branch_size_start(branch: str, major: int) -> date | None:
+    """The first day of a stable branch's size curve. Released majors anchor at GA
+    (REL_M_0); the in-progress major has no GA tag yet, so it anchors at its fork
+    from master (the beta-1 branch point) -- the moment its tree became a distinct
+    line. None when neither anchor resolves."""
+    if git("tag", "-l", f"REL_{major}_0").strip():
+        start_iso = git("log", "-1", "--format=%cI", f"REL_{major}_0").strip()
+    else:
+        fork = git("merge-base", "master", branch).strip()
+        start_iso = git("log", "-1", "--format=%cI", fork).strip()
+    return date.fromisoformat(start_iso[:10]) if start_iso else None
 
 
 def branch_size_weekly_records(
@@ -280,23 +312,16 @@ def branch_size_weekly_records(
     immutable, so caching them is safe.
     """
     today = datetime.now(UTC).date()
+    rules = _subsystem_rules()
     records: list[BranchSizeRecord] = []
     for branch in all_stable_branches():
         matched = re.match(r"REL_(\d+)_STABLE$", branch)
         if not matched:
             continue
         major = int(matched.group(1))
-        # released majors anchor the size curve at GA (REL_M_0); the in-progress
-        # major has no GA tag yet, so anchor at its fork from master (the beta-1
-        # branch point) -- the moment its tree became a distinct line.
-        if git("tag", "-l", f"REL_{major}_0").strip():
-            start_iso = git("log", "-1", "--format=%cI", f"REL_{major}_0").strip()
-        else:
-            fork = git("merge-base", "master", branch).strip()
-            start_iso = git("log", "-1", "--format=%cI", fork).strip()
-        if not start_iso:
+        start = _branch_size_start(branch, major)
+        if start is None:
             continue
-        start = date.fromisoformat(start_iso[:10])
         end = min(today, _major_eol(major))
         # weekly Mondays covering [branch .0 release, end]
         monday = start - timedelta(days=start.weekday())
@@ -313,20 +338,19 @@ def branch_size_weekly_records(
             head = git("rev-list", "-1", f"--before={asof}T00:00:00Z", branch).strip()
             if head:
                 week_head[week] = head
-        sizes = {head: _tree_size(head) for head in set(week_head.values())}
+        sizes = {head: _tree_size_by_subsystem(head, rules) for head in set(week_head.values())}
         for week, head in week_head.items():
-            code, doc, test, files = sizes[head]
-            records.append(
-                BranchSizeRecord(
-                    branch=branch,
-                    week_start=week.isoformat(),
-                    commit_hash=head,
-                    code_lines=str(code),
-                    doc_lines=str(doc),
-                    test_lines=str(test),
-                    file_cnt=str(files),
+            for subsystem, (code, files) in sizes[head].items():
+                records.append(
+                    BranchSizeRecord(
+                        branch=branch,
+                        week_start=week.isoformat(),
+                        commit_hash=head,
+                        subsystem=subsystem,
+                        code_lines=str(code),
+                        file_cnt=str(files),
+                    )
                 )
-            )
     return records
 
 

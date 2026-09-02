@@ -79,18 +79,47 @@ queries:
     description: >
       Absolute codebase size — total source lines (.c/.h/.y/.l/.pl/.pm/.py/.sql/
       .sgml/.pgc) in each stable branch's tree, sampled WEEKLY by git grep at the
-      branch HEAD (fct_branch_size_weekly). One line per major, a smooth growth
-      curve. NOT summed across majors — they are parallel near-copies of the same
-      tree, so size is read within a major and stepped across majors, never added.
+      branch HEAD (fct_branch_size_weekly, summed over its subsystem rows). One
+      line per major, a smooth growth curve. NOT summed across majors — they are
+      parallel near-copies of the same tree, so size is read within a major and
+      stepped across majors, never added.
     source: warehouse
     sql: |
       SELECT
         bsz.week_start AS week_dt,
         dm.major_label AS major,
-        bsz.code_lines AS code_lines
+        SUM(bsz.code_lines) AS code_lines
       FROM fct_branch_size_weekly AS bsz
       INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
+      GROUP BY bsz.week_start, dm.major_label
       ORDER BY bsz.week_start
+
+  codebase_composition:
+    description: >
+      The LATEST weekly snapshot of each major's tree, broken into subsystems
+      (fct_branch_size_weekly, the shared subsystem_rules taxonomy) — a stacked
+      bar per major so each version's total size AND where the lines live are
+      visible at once. The step up from one major to the next (e.g. PG18 -> PG19's
+      ~112k lines) resolves into which areas grew: core server, tests, new contrib
+      extensions, docs. Absolute lines, so taller bars are genuinely bigger trees.
+    source: warehouse
+    sql: |
+      WITH latest AS (
+        SELECT
+          dim_major_key,
+          MAX(week_start) AS week_start
+        FROM fct_branch_size_weekly
+        GROUP BY dim_major_key
+      )
+      SELECT
+        dm.major_label AS major,
+        bsz.subsystem AS subsystem,
+        bsz.code_lines AS code_lines
+      FROM fct_branch_size_weekly AS bsz
+      INNER JOIN latest AS lst
+        ON bsz.dim_major_key = lst.dim_major_key AND bsz.week_start = lst.week_start
+      INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
+      ORDER BY dm.major_label, bsz.subsystem
 
   churn_by_quarter:
     description: >
@@ -224,6 +253,18 @@ charts:
     color: major
     height: 380
 
+  codebase_composition:
+    type: bar
+    query: codebase_composition
+    title: "Codebase composition by subsystem"
+    subtitle: "Latest weekly snapshot of each major's tree, split into subsystems (subsystem_rules); the step up between majors resolves into which areas grew — core server, tests, new contrib extensions, docs"
+    x: major
+    y: code_lines
+    y_label: "source lines"
+    color: subsystem
+    style: { stack: zero }
+    height: 380
+
   churn_by_quarter:
     type: line
     query: churn_by_quarter
@@ -268,6 +309,7 @@ rows:
   - quarterly_by_branch
   - commits_per_version
   - codebase_size
+  - codebase_composition
   - churn_by_quarter
   - cols: [ai_credited, cycle_pace]
   - ai_credit_table

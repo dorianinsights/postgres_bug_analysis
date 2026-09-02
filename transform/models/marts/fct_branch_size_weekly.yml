@@ -3,18 +3,21 @@ version: 2
 models:
   - name: fct_branch_size_weekly
     description: >
-      Weekly periodic-snapshot fact ->
-      ../data/derived/fct_branch_size_weekly.csv: the STATE (size) of each stable
-      branch's tree sampled at each week's end -- the codebase growth curve over
-      calendar time. Conforms to dim_date on week_start and dim_major on
-      dim_major_key. code_lines is the total across the source globs; doc_lines
-      (.sgml) and test_lines (src/test) are subsets. A per-major stock, never
-      summed across majors. Flow (churn / commit counts) lives in fct_commits, not
-      here. Grain = (dim_major_key, week_start).
+      Weekly periodic-snapshot fact: the STATE (size) of each stable branch's
+      tree sampled at each week's end, split by subsystem -- the codebase growth
+      curve over calendar time, decomposed by area. Conforms to dim_date on
+      week_start and dim_major on dim_major_key. Each row is one subsystem's
+      slice; the subsystems of a (branch, week) sum to its total, so a total
+      curve is SUM(code_lines) and a composition view reads the subsystems
+      directly. subsystem is the shared subsystem_rules taxonomy. A per-major
+      stock, never summed across majors. Flow (churn / commit counts) lives in
+      fct_commits, not here. Too many rows for a derived CSV twin (over
+      var(derived_csv_max_rows)); query it in the warehouse.
+      Grain = (dim_major_key, week_start, subsystem).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [dim_major_key, week_start]
+            combination_of_columns: [dim_major_key, week_start, subsystem]
     columns:
       - name: dim_major_key
         description: FK to dim_major -- the stable branch / major line this tree belongs to.
@@ -33,23 +36,40 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
+      - name: subsystem
+        description: >
+          The area of the tree this row measures, from the subsystem_rules seed
+          (the same path taxonomy fct_fixes / int_fix_changes use), plus 'other'
+          for source files no rule matches.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - core_server
+                  - client_tools
+                  - extensions_contrib
+                  - replication_recovery
+                  - planner
+                  - tests
+                  - docs
+                  - build_platform
+                  - other
       - name: commit_hash
         description: >
           The branch HEAD as of the week's end -- the exact commit whose tree was
           measured (provenance, not an aggregation key). Quiet weeks share a
-          commit_hash.
+          commit_hash, and every subsystem row of a (branch, week) shares it.
         tests: [not_null]
       - name: code_lines
+        description: Source lines in this subsystem's files that week.
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: doc_lines
-        tests: [not_null]
-      - name: test_lines
-        tests: [not_null]
       - name: file_cnt
+        description: Number of source files in this subsystem that week.
         tests:
           - not_null
           - dbt_utils.accepted_range:
