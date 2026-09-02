@@ -47,10 +47,10 @@ SELECT
   -- the commit's development line (dim_major includes master, so this always
   -- resolves; the COALESCE only guards an unexpected branch)
   COALESCE(dmj.dim_major_key, {{ not_applicable_key() }}) AS dim_major_key,
-  -- the full committer instant (TIMESTAMPTZ) for latency/ordering; commit_dt is
-  -- its UTC calendar day, kept for the dim_date FK and day-grain grouping.
-  gcm.commit_ts,
+  -- commit_dt (the UTC calendar day) is the dim_date FK and leads with the other
+  -- keys; commit_ts is the full committer instant kept alongside for latency.
   gcm.commit_dt,
+  gcm.commit_ts,
   org.origin,
   igc.is_plumbing,
   igc.ai_credit IS NOT null AS has_ai_credit,

@@ -22,13 +22,13 @@ SELECT
   imt.list_name,
   imt.message_id,
   COALESCE(pmp.person_key, {{ unknown_key() }}) AS sender_dim_person_key,
-  imt.sent_dt,
   COALESCE(dbg.dim_bug_key, {{ not_applicable_key() }}) AS dim_bug_key,
+  COALESCE(drl.dim_release_key, {{ not_applicable_key() }}) AS ship_dim_release_key,
+  imt.sent_dt,
   imt.root_id,
   imt.is_thread_start,
   imt.is_fix_linked,
   imt.earliest_ship_release_dt,
-  COALESCE(drl.dim_release_key, {{ not_applicable_key() }}) AS ship_dim_release_key,
   imt.subject
 FROM {{ ref('int_message_threads') }} AS imt
 INNER JOIN {{ ref('stg_list_messages') }} AS slm

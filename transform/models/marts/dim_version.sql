@@ -28,14 +28,14 @@ WITH item_counts AS (
 real_members AS (
   SELECT
     {{ dbt_utils.generate_surrogate_key(['rel.version']) }} AS dim_version_key,
+    COALESCE(dmj.dim_major_key, {{ unknown_key() }}) AS dim_major_key,
+    COALESCE(irl.dim_release_key, {{ not_applicable_key() }}) AS dim_release_key,
     rel.version,
     rel.major,
-    COALESCE(dmj.dim_major_key, {{ unknown_key() }}) AS dim_major_key,
     rel.minor,
     rel.minor = 0 AS is_major_release,
     rel.wrap_dt,
     rel.release_dt,
-    COALESCE(irl.dim_release_key, {{ not_applicable_key() }}) AS dim_release_key,
     itc.item_cnt,
     -- inherited from the version's release: a release is out-of-band (emergency
     -- re-release) when its LARGEST minor has fewer than
@@ -53,26 +53,26 @@ SELECT * FROM real_members
 UNION ALL
 SELECT
   {{ unknown_key() }} AS dim_version_key,
+  {{ unknown_key() }} AS dim_major_key,
+  {{ unknown_key() }} AS dim_release_key,
   '(unknown)' AS version,
   null AS major,
-  {{ unknown_key() }} AS dim_major_key,
   null AS minor,
   false AS is_major_release,
   DATE '{{ var('past_eternity') }}' AS wrap_dt,
   DATE '{{ var('past_eternity') }}' AS release_dt,
-  {{ unknown_key() }} AS dim_release_key,
   null AS item_cnt,
   false AS is_out_of_band
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_version_key,
+  {{ not_applicable_key() }} AS dim_major_key,
+  {{ not_applicable_key() }} AS dim_release_key,
   '(not applicable)' AS version,
   null AS major,
-  {{ not_applicable_key() }} AS dim_major_key,
   null AS minor,
   false AS is_major_release,
   DATE '{{ var('past_eternity') }}' AS wrap_dt,
   DATE '{{ var('past_eternity') }}' AS release_dt,
-  {{ not_applicable_key() }} AS dim_release_key,
   null AS item_cnt,
   false AS is_out_of_band
