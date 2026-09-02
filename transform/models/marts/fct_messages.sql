@@ -25,6 +25,9 @@ SELECT
   COALESCE(dbg.dim_bug_key, {{ not_applicable_key() }}) AS dim_bug_key,
   COALESCE(drl.dim_release_key, {{ not_applicable_key() }}) AS ship_dim_release_key,
   imt.sent_dt,
+  -- the full send instant in UTC wall-clock (a plain TIMESTAMP, so it always
+  -- reads UTC regardless of the session timezone); its ::DATE is sent_dt
+  (imt.sent_ts AT TIME ZONE 'utc') AS sent_ts,
   imt.root_id,
   imt.is_thread_start,
   imt.is_fix_linked,

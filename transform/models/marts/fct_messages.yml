@@ -40,6 +40,12 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
+      - name: sent_ts
+        description: >
+          The full send instant in UTC wall-clock (a plain TIMESTAMP), so it reads
+          UTC regardless of session timezone; its ::DATE is sent_dt. From the Date
+          header via stg_list_messages.
+        tests: [not_null]
       - name: earliest_ship_release_dt
         description: The day of the next scheduled minor after this message (feeds ship_dim_release_key); NULL when none.
         tests:
