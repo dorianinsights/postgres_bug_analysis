@@ -11,6 +11,20 @@ description: >
   release). Parsed from the postgres.git clone at build time by the transform/
   dbt project (sources.git).
 
+variables:
+  include_translations:
+    input: checkbox
+    label: "Include translation catalogs (.po)"
+    description: >
+      Off by default: generated GNU gettext message catalogs are not
+      hand-written code. (Most already fall out via the plumbing filter.)
+    default: false
+  include_test_fixtures:
+    input: checkbox
+    label: "Include regression test fixtures (.out)"
+    description: "Off by default: expected-output fixtures are generated, not source."
+    default: false
+
 queries:
   quarterly_distinct:
     description: >
@@ -127,17 +141,23 @@ queries:
       commits, plumbing excluded), as three series: total churn (adds +
       deletes), additions, and deletions. Backpatches count per branch (like the
       per-branch commit chart), so a fix landed on several majors contributes its
-      churn once per branch. The current quarter is partial.
+      churn once per branch. Generated file classes (translation catalogs .po,
+      regression fixtures .out) are excluded by default -- toggle them back with
+      the controls above. The current quarter is partial.
     source: warehouse
     sql: |
       WITH q AS (
         SELECT
-          DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
-          SUM(fc.lines_added_sum)::BIGINT AS adds,
-          SUM(fc.lines_deleted_sum)::BIGINT AS deletes
-        FROM fct_commits AS fc
-        INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-        WHERE dm.is_released AND NOT fc.is_plumbing
+          ca.quarter_dt AS quarter,
+          SUM(ca.lines_added_sum)::BIGINT AS adds,
+          SUM(ca.lines_deleted_sum)::BIGINT AS deletes
+        FROM fct_commit_churn_by_area_agg AS ca
+        WHERE ca.branch_scope = 'stable'
+          AND (
+            ca.file_class NOT IN ('translations', 'test_fixtures')
+            OR ({{ include_translations }} AND ca.file_class = 'translations')
+            OR ({{ include_test_fixtures }} AND ca.file_class = 'test_fixtures')
+          )
         GROUP BY 1
       )
 
@@ -151,18 +171,27 @@ queries:
   trunk_churn_by_subsystem:
     description: >
       Lines churned per quarter on the development trunk (master), split by
-      subsystem (fct_trunk_churn_by_subsystem_agg) — where feature work is
-      happening over time, per file so a cross-area commit splits across its
-      areas. Master only, so no backpatch multiplication (the released-branch
-      backpatch churn is the chart above). The current quarter is partial.
+      subsystem (fct_commit_churn_by_area_agg, branch_scope = trunk) — where
+      feature work is happening over time, per file so a cross-area commit splits
+      across its areas. Master only, so no backpatch multiplication (the
+      released-branch backpatch churn is the chart above). Generated file classes
+      (.po, .out) excluded by default — toggle them back with the controls above.
+      The current quarter is partial.
     source: warehouse
     sql: |
       SELECT
-        ch.quarter_dt AS quarter,
-        ch.subsystem AS subsystem,
-        ch.churn AS churn
-      FROM fct_trunk_churn_by_subsystem_agg AS ch
-      ORDER BY ch.quarter_dt, ch.subsystem
+        ca.quarter_dt AS quarter,
+        ca.subsystem AS subsystem,
+        SUM(ca.churn)::BIGINT AS churn
+      FROM fct_commit_churn_by_area_agg AS ca
+      WHERE ca.branch_scope = 'trunk'
+        AND (
+          ca.file_class NOT IN ('translations', 'test_fixtures')
+          OR ({{ include_translations }} AND ca.file_class = 'translations')
+          OR ({{ include_test_fixtures }} AND ca.file_class = 'test_fixtures')
+        )
+      GROUP BY ca.quarter_dt, ca.subsystem
+      ORDER BY ca.quarter_dt, ca.subsystem
 
   ai_credited:
     description: >

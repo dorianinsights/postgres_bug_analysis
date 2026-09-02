@@ -91,7 +91,6 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 | `fct_release_contributors_agg.csv` | (dim_release_key, contributor) | credit counts via `bridge_fix_contributor` (the notes' "(Name, Name)" parse lives in `int_fix_contributors`), with first-seen release; conformed to `dim_release` |
 | `projections.csv` | one scenario | next-release scenarios: reversion / trend / regime repeat / escalation |
 | `fct_category_vs_subsystem_agg.csv` | (category, subsystem) | content category (int_fix_content_categories) cross-tabbed against the changed-file subsystem |
-| `fct_trunk_churn_by_subsystem_agg.csv` | (quarter, subsystem) | quarterly code churn on master (feature development), split by the changed file's subsystem, per file (int_commit_files); master only, so no backpatch multiplication |
 | `fct_bug_reports_monthly_agg.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
 | `fct_fix_origins_agg.csv` | (release, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
 | `fct_origin_activity_monthly_agg.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
@@ -200,11 +199,14 @@ every object's name. Layers:
     `bridge_fix_cve` / `bridge_fix_bug` / `bridge_fix_contributor` (the last
     fed by `int_fix_contributors`); `fct_release_categories_agg` and `fct_release_contributors_agg`
     are conformed aggregates of `fct_fixes` (+ the contributor bridge). The period aggregates (`fct_bug_reports_monthly_agg`,
-    `fct_origin_activity_monthly_agg`, `fct_trunk_churn_by_subsystem_agg`) are aggregate facts rolled up from those
+    `fct_origin_activity_monthly_agg`, `fct_commit_churn_by_area_agg`) are aggregate facts rolled up from those
     grains and conformed on `dim_date` by their month/week/quarter DATE. `fct_commits`
     carries a `dominant_subsystem` (a weighted vote over its files via the
     per-file `int_commit_files`, which classifies each changed file by subsystem
-    and by extension `file_class`). (Mailing-list
+    and by extension `file_class`); `fct_commit_churn_by_area_agg` rolls that
+    per-file churn up by quarter, branch scope (trunk vs stable), subsystem, and
+    file_class, so the line-count charts can filter generated file classes
+    (translation catalogs, test fixtures) in or out. (Mailing-list
     traffic has no materialized agg: the `transform/faces/` boards roll it up
     from the atomic `fct_messages` at query time — the count charts in SQL, the
     non-additive fix-linked share via a MetricFlow ratio metric; see

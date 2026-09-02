@@ -1,0 +1,92 @@
+version: 2
+
+models:
+  - name: fct_commit_churn_by_area_agg
+    description: >
+      Quarterly code churn by area and branch scope, per file (int_commit_files)
+      so a cross-area commit splits across its areas. branch_scope = 'trunk'
+      (master, feature development, counted once) or 'stable' (released majors'
+      backpatch stream, counted per branch). Non-plumbing only. subsystem
+      (directory) and file_class (extension) both ride along so a chart can keep
+      the area breakdown while filtering the generated file classes
+      (translations, test_fixtures) in or out of a line count. Conforms to
+      dim_date on quarter_dt. Too many rows for a derived CSV twin (over
+      var(derived_csv_max_rows)); query it in the warehouse.
+      Grain = (quarter_dt, branch_scope, subsystem, file_class).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [quarter_dt, branch_scope, subsystem, file_class]
+    columns:
+      - name: quarter_dt
+        description: First day of the UTC calendar quarter; conforms to dim_date.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: branch_scope
+        description: "'trunk' (master development) or 'stable' (released-branch backpatch, per branch)."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [trunk, stable]
+      - name: subsystem
+        description: The file's directory-based area (subsystem_rules; 'other' when no rule matches).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - core_server
+                  - client_tools
+                  - extensions_contrib
+                  - replication_recovery
+                  - planner
+                  - tests
+                  - docs
+                  - build_platform
+                  - other
+      - name: file_class
+        description: >
+          The file's extension-based kind (file_class_rules). Lets a chart filter
+          the generated categories (translations = .po, test_fixtures = .out) out
+          of a line-count view by default and back in on demand.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - source_c
+                  - header
+                  - sql
+                  - perl
+                  - python
+                  - grammar
+                  - docs
+                  - embedded_sql
+                  - catalog_data
+                  - translations
+                  - test_fixtures
+                  - build
+                  - other
+      - name: commit_cnt
+        description: Distinct commits touching this (scope, subsystem, file_class) in the quarter.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: lines_added_sum
+        tests: [not_null]
+      - name: lines_deleted_sum
+        tests: [not_null]
+      - name: churn
+        description: lines_added_sum + lines_deleted_sum for this group.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
