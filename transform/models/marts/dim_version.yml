@@ -58,28 +58,52 @@ models:
       - name: first_commit_dt
         description: >
           UTC day of the earliest stable-branch commit that shipped in this minor
-          (from int_commit_versions). NULL for the .0 majors (no in-window
-          backpatch commits) and the special members.
+          (from int_commit_versions -- out-of-band re-releases included, since they
+          tag the branch). Every shipped minor (minor > 0) has one; NULL only for
+          the .0 majors (their commits are pre-branch on master) and the special
+          members.
         tests:
+          - not_null:
+              config:
+                where: "minor > 0"
           - relationships:
               arguments:
                 to: ref('dim_date')
                 field: date_day
       - name: first_commit_ts
-        description: Full instant of that first commit (TIMESTAMPTZ); NULL as first_commit_dt.
-      - name: first_commit_hash
-        description: SHA of that first commit; NULL as first_commit_dt.
-      - name: last_commit_dt
-        description: UTC day of the latest stable-branch commit that shipped in this minor; NULL as first_commit_dt.
+        description: Full instant of that first commit (TIMESTAMPTZ); non-NULL exactly when first_commit_dt is.
         tests:
+          - not_null:
+              config:
+                where: "minor > 0"
+      - name: first_commit_hash
+        description: SHA of that first commit; non-NULL exactly when first_commit_dt is.
+        tests:
+          - not_null:
+              config:
+                where: "minor > 0"
+      - name: last_commit_dt
+        description: UTC day of the latest stable-branch commit that shipped in this minor; non-NULL for every shipped minor.
+        tests:
+          - not_null:
+              config:
+                where: "minor > 0"
           - relationships:
               arguments:
                 to: ref('dim_date')
                 field: date_day
       - name: last_commit_ts
-        description: Full instant of that last commit (TIMESTAMPTZ); NULL as first_commit_dt.
+        description: Full instant of that last commit (TIMESTAMPTZ); non-NULL exactly when last_commit_dt is.
+        tests:
+          - not_null:
+              config:
+                where: "minor > 0"
       - name: last_commit_hash
-        description: SHA of that last commit; NULL as first_commit_dt.
+        description: SHA of that last commit; non-NULL exactly when last_commit_dt is.
+        tests:
+          - not_null:
+              config:
+                where: "minor > 0"
       - name: minor
         tests:
           - not_null:
