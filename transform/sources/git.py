@@ -23,13 +23,9 @@ from pathlib import Path
 from typing import NamedTuple
 
 sys.path.insert(0, str(Path.cwd().parent))
-from corpus import FIRST_MAJOR, GIT_HISTORY_SINCE, MAJORS, STABLE_BRANCHES
+from corpus import FIRST_MAJOR, GIT_HISTORY_SINCE
 
 CACHE = Path.cwd().parent / ".cache" / "postgres.git"
-BRANCHES = [*STABLE_BRANCHES, "master"]
-# One for-each-ref pattern per corpus major, so the tag readers track the corpus
-# (a REL_1[5-9]_* glob silently dropped a corpus that reaches below 15 or past 19).
-TAG_GLOBS = tuple(f"refs/tags/REL_{major}_*" for major in MAJORS)
 
 # The history floor as an exact instant. Two git date gotchas make the bare
 # GIT_HISTORY_SINCE date nondeterministic: approxidate fills a missing
@@ -86,10 +82,39 @@ def branch_range(branch: str) -> str:
     return f"REL_{m.group(1)}_0..{branch}" if m else branch
 
 
+def released_majors() -> list[int]:
+    """Majors at/above FIRST_MAJOR that have shipped a GA tag (REL_M_0) — the
+    released corpus, DISCOVERED from the repo. FIRST_MAJOR anchors the floor (we
+    don't want all of PostgreSQL's history); the upper bound follows the repo, so
+    a newly released major joins automatically with no LAST_MAJOR to bump.
+    """
+    majors = [
+        int(m.group(1))
+        for tag in git("tag", "-l", "REL_*_0").splitlines()
+        if (m := re.fullmatch(r"REL_(\d+)_0", tag)) and int(m.group(1)) >= FIRST_MAJOR
+    ]
+    return sorted(majors)
+
+
+def stable_branches() -> list[str]:
+    "The released majors' stable branches (the backpatch streams)."
+    return [f"REL_{major}_STABLE" for major in released_majors()]
+
+
+def all_branches() -> list[str]:
+    "Stable branches plus master."
+    return [*stable_branches(), "master"]
+
+
+def tag_globs() -> list[str]:
+    "One for-each-ref pattern per released major, so the tag readers track the repo."
+    return [f"refs/tags/REL_{major}_*" for major in released_majors()]
+
+
 def commit_records() -> list[CommitRecord]:
     """One record per commit per branch since the corpus history floor."""
     records: list[CommitRecord] = []
-    for branch in BRANCHES:
+    for branch in all_branches():
         log = git(
             "log",
             SINCE_FILTER,
@@ -145,15 +170,16 @@ def commit_file_records() -> list[CommitFileRecord]:
     fork is unsafe); `map` preserves branch order, so output is byte-identical.
     Leave one core free for the user.
     """
-    workers = min(len(BRANCHES), max((os.cpu_count() or 2) - 1, 1))
+    branches = all_branches()
+    workers = min(len(branches), max((os.cpu_count() or 2) - 1, 1))
     with mp.Pool(processes=workers) as pool:
-        per_branch: list[list[CommitFileRecord]] = pool.map(_file_records_for_branch, BRANCHES)
+        per_branch: list[list[CommitFileRecord]] = pool.map(_file_records_for_branch, branches)
     return [record for branch_records in per_branch for record in branch_records]
 
 
 def tag_records() -> list[TagRecord]:
     """One record per REL_1x_* ref (release tags AND BETA/RC prereleases)."""
-    out = git("for-each-ref", "--format=%(refname:short)%09%(creatordate:iso-strict)", *TAG_GLOBS)
+    out = git("for-each-ref", "--format=%(refname:short)%09%(creatordate:iso-strict)", *tag_globs())
     records: list[TagRecord] = []
     for line in sorted(out.splitlines()):
         tag, _, tag_ts = line.partition("\t")
@@ -221,7 +247,7 @@ def branch_size_weekly_records(
     """
     today = datetime.now(UTC).date()
     records: list[BranchSizeRecord] = []
-    for branch in STABLE_BRANCHES:
+    for branch in stable_branches():
         matched = re.match(r"REL_(\d+)_STABLE$", branch)
         if not matched:
             continue
@@ -281,7 +307,7 @@ def commit_version_records() -> list[CommitVersionRecord]:
     not yet released) are unmapped. Grain = (branch, commit_hash).
     """
     records: list[CommitVersionRecord] = []
-    for branch in STABLE_BRANCHES:
+    for branch in stable_branches():
         matched = re.match(r"REL_(\d+)_STABLE$", branch)
         if not matched:
             continue
@@ -334,7 +360,7 @@ def major_dev_records() -> list[MajorDevRecord]:
     everything developed FOR major M. For the in-progress major (a REL_M_STABLE
     branch exists but no REL_M_0 yet -- e.g. PG19 in beta) the range runs to the
     branch HEAD, status is 'beta', and latest_milestone is its newest BETA/RC.
-    Covers FIRST_MAJOR..LAST_MAJOR+1. Grain = major.
+    Covers every major with a stable branch at/above the floor. Grain = major.
     """
     tags = set(git("tag", "-l", "REL_*").splitlines())
     branches = set(git("for-each-ref", "--format=%(refname:short)", "refs/heads/*").splitlines())

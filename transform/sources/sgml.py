@@ -27,9 +27,8 @@ from typing import NamedTuple
 from bs4 import BeautifulSoup, Comment, Tag
 
 sys.path.insert(0, str(Path.cwd().parent))
-from corpus import MAJORS
 
-from .git import git
+from .git import git, released_majors
 
 
 class ReleaseItemRecord(NamedTuple):
@@ -161,7 +160,7 @@ def _parse_major(major: int) -> tuple[_ParsedRelease, ...]:
 def release_item_records() -> list[ReleaseItemRecord]:
     """One record per changelog item across the corpus majors."""
     records: list[ReleaseItemRecord] = []
-    for major in MAJORS:
+    for major in released_majors():
         for rel in _parse_major(major):
             version = f"{rel.major}.{rel.minor}"
             for i, item in enumerate(rel.items):
@@ -181,7 +180,7 @@ def release_item_records() -> list[ReleaseItemRecord]:
 def item_commit_records() -> list[ItemCommitRecord]:
     """One record per (item, branch-commit) annotation across the corpus majors."""
     records: list[ItemCommitRecord] = []
-    for major in MAJORS:
+    for major in released_majors():
         for rel in _parse_major(major):
             version = f"{rel.major}.{rel.minor}"
             for i, item in enumerate(rel.items):

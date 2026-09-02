@@ -48,7 +48,7 @@ def test_branch_range_leaves_master_and_non_matches_untouched() -> None:
 
 def test_commit_records_split_fields_and_pad_empty_body(monkeypatch: pytest.MonkeyPatch) -> None:
     _patch_git(monkeypatch, _COMMIT_LOG)
-    monkeypatch.setattr(gitmod, "BRANCHES", ["master"])
+    monkeypatch.setattr(gitmod, "all_branches", lambda: ["master"])
     records = gitmod.commit_records()
     assert [r.hash for r in records] == ["abc123", "def456"]
     first = records[0]

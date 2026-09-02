@@ -18,7 +18,13 @@ from typing import TypedDict
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from corpus import MAJORS
+from corpus import FIRST_MAJOR
+
+# Archived web scraper (superseded by the git/SGML reader in transform/sources).
+# corpus.py no longer exports a pinned MAJORS -- the live corpus discovers its
+# upper bound from the repo. This standalone script probes a generous window from
+# the floor; discover_versions skips versions whose release page does not exist.
+MAJORS = tuple(range(FIRST_MAJOR, FIRST_MAJOR + 12))
 
 
 class Item(TypedDict):
