@@ -62,8 +62,12 @@ models:
                 to: ref('dim_date')
                 field: date_day
       - name: wrap_dt
-        description: This release's own wrap day; NULL for the not-yet-wrapped future row.
+        description: >
+          This release's own wrap day -- from the scheduled quarterly calendar, or
+          (for an out-of-band re-release, which the calendar does not cover) the
+          version's real wrap tag. Populated for every release.
         tests:
+          - not_null
           - relationships:
               arguments:
                 to: ref('dim_date')

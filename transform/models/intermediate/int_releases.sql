@@ -43,10 +43,22 @@ grouped AS (
   GROUP BY ALL
 ),
 
+version_wraps AS (
+  -- an out-of-band re-release has no scheduled calendar wrap (int_release_calendar
+  -- is the quarterly cadence only), but each of its versions carries a real wrap
+  -- tag -- use it so OOB releases get a wrap_dt too, consistent with dim_version.
+  SELECT
+    release_dt,
+    MAX(wrap_dt) AS wrap_dt
+  FROM {{ ref('int_versions') }}
+  WHERE minor > 0 AND wrap_dt IS NOT null
+  GROUP BY release_dt
+),
+
 shipped AS (
   SELECT
     grp.release_dt,
-    cal.wrap_dt,
+    COALESCE(cal.wrap_dt, vwr.wrap_dt) AS wrap_dt,
     'shipped' AS status,
     grp.versions,
     grp.release_cnt,
@@ -54,6 +66,7 @@ shipped AS (
     grp.release_dt = MIN(grp.release_dt) OVER () AS is_partial_window
   FROM grouped AS grp
   LEFT JOIN {{ ref('int_release_calendar') }} AS cal ON grp.release_dt = cal.scheduled_release_dt
+  LEFT JOIN version_wraps AS vwr ON grp.release_dt = vwr.release_dt
 ),
 
 next_release AS (
