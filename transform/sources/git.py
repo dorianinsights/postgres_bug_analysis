@@ -271,7 +271,8 @@ def branch_size_weekly_records(
     known: frozenset[tuple[str, str]] = frozenset(),
 ) -> list[BranchSizeRecord]:
     """Weekly (branch, week) codebase-size snapshots for every stable branch,
-    from the branch's .0 release to min(today, its ~5-year EOL). A STOCK -- the
+    from the branch's .0 release (or, for the in-progress major, its fork from
+    master) to min(today, its ~5-year EOL). A STOCK -- the
     state of the tree -- sampled at each week's end. Only DISTINCT resolved
     commits are grepped (quiet weeks share a HEAD), and any (branch, week) in
     `known` is skipped without grepping: the incremental model passes what it
@@ -280,12 +281,19 @@ def branch_size_weekly_records(
     """
     today = datetime.now(UTC).date()
     records: list[BranchSizeRecord] = []
-    for branch in stable_branches():
+    for branch in all_stable_branches():
         matched = re.match(r"REL_(\d+)_STABLE$", branch)
         if not matched:
             continue
         major = int(matched.group(1))
-        start_iso = git("log", "-1", "--format=%cI", f"REL_{major}_0").strip()
+        # released majors anchor the size curve at GA (REL_M_0); the in-progress
+        # major has no GA tag yet, so anchor at its fork from master (the beta-1
+        # branch point) -- the moment its tree became a distinct line.
+        if git("tag", "-l", f"REL_{major}_0").strip():
+            start_iso = git("log", "-1", "--format=%cI", f"REL_{major}_0").strip()
+        else:
+            fork = git("merge-base", "master", branch).strip()
+            start_iso = git("log", "-1", "--format=%cI", fork).strip()
         if not start_iso:
             continue
         start = date.fromisoformat(start_iso[:10])

@@ -25,8 +25,11 @@ master_commits AS (
   FROM {{ ref('fct_commits') }} AS fcm
   INNER JOIN {{ ref('dim_major') }} AS dmj ON fcm.dim_major_key = dmj.dim_major_key
   LEFT JOIN security_fix_commits AS sfc ON LEFT(fcm.commit_hash, 9) = sfc.abbrev_hash
-  -- master (the development trunk) is the one unreleased line
-  WHERE NOT dmj.is_released
+  -- master (the development trunk) only. NOT is_released is no longer a proxy for
+  -- this: the in-progress major's stable branch (e.g. PG19 beta) is also
+  -- unreleased, but its commits are backpatch-style stabilization, not trunk
+  -- development. lifecycle = 'development' is master alone.
+  WHERE dmj.lifecycle = 'development'
 ),
 
 commit_rollup AS (
