@@ -3,6 +3,7 @@ dim_cve_key,cve_id,cvss_base_score,severity_band,severity_band_order,cvss_vector
 05cd79e3d2de6eeacbaf13fffd56b97a,CVE-2023-2454,7.2,HIGH,3,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H,core server,false
 068931a4d1fe76df88c5d16ff0208588,CVE-2024-10978,4.2,MEDIUM,2,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
 09b67e1b5eb9cad52ab3e12e048c1423,CVE-2023-39418,3.1,LOW,1,AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N,core server,false
+0a9d8edcab2c0557e3de872c52b594cc,CVE-2022-1552,8.8,HIGH,3,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
 0ea6c1a89686becf900f2e0177e0285a,CVE-2026-14680,8.8,HIGH,3,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,core server,false
 0ec0d8d9f63c1028e5a6952899e73126,CVE-2026-19385,8.8,HIGH,3,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,client,false
 107d919442eb6717f3031044f759d79a,CVE-2026-6575,4.3,MEDIUM,2,AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
@@ -42,7 +43,9 @@ dim_cve_key,cve_id,cvss_base_score,severity_band,severity_band_order,cvss_vector
 832d10d379faffa85293e8ed63734b3b,CVE-2026-6638,3.7,LOW,1,AV:N/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:N,core server,false
 84d2f3e04f3158d172f5645f54c8e081,CVE-2026-14673,3.8,LOW,1,AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:N,contrib module,false
 8667f101288f51be6c4d2c49a0adf48f,CVE-2024-10977,3.1,LOW,1,AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N,client,false
+8df643ef6ac73c0b2b8a87dae3c528d8,CVE-2021-23222,3.7,LOW,1,AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N,client,false
 9392fda0c6d761aad3bad37089676d4a,CVE-2026-14676,8.8,HIGH,3,AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H,contrib module,false
+942f6b7ded14b5cc4110b2dd3327c4c7,CVE-2021-23214,8.1,HIGH,3,AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H,core server,false
 974c10353b4f39101842d78d2632b7e6,CVE-2026-6471,7.2,HIGH,3,AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H,core server,false
 9aaa4b86b928946e5d2538940fd38ac2,CVE-2025-12818,5.9,MEDIUM,2,AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H,core server,false
 9ab901b9e07a77b46f32c5df8e9b0eca,CVE-2026-6478,6.5,MEDIUM,2,AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N,core server,false
@@ -58,6 +61,7 @@ bf0bf534da72c831cffe3e21cb6ef072,CVE-2012-0868,,,,,,true
 bf41945ac67302fa56604c3d241d2717,CVE-2024-4317,3.1,LOW,1,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:N/A:N,core server,false
 bfcf27736ba561da1e8154879d151cdc,CVE-2026-6479,7.5,HIGH,3,AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H,core server,false
 c56c7509fd0ce3e1d15cf537391f17ed,CVE-2023-2455,4.2,MEDIUM,2,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false
+c704cf87586c12d85992a3e1f25d8f47,CVE-2022-2625,7.1,HIGH,3,AV:N/AC:H/PR:L/UI:R/S:U/C:H/I:H/A:H,core server,false
 ca5dc57cb2adc66e9f93db0842da0eca,CVE-2025-12817,3.1,LOW,1,AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L,core server,false
 cde8b087d9fc0a26d66b1f0b0761382c,CVE-2017-7484,,,,,,true
 d582f2ee842089901079816f0db02f0d,CVE-2026-14666,4.2,MEDIUM,2,AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N,core server,false

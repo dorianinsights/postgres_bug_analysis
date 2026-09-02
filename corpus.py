@@ -16,7 +16,7 @@ pinned rather than auto-discovered on purpose — the corpus should not
 silently grow when a new major releases.
 """
 
-FIRST_MAJOR = 15
+FIRST_MAJOR = 14
 LAST_MAJOR = 18
 MAJORS: tuple[int, ...] = tuple(range(FIRST_MAJOR, LAST_MAJOR + 1))
 

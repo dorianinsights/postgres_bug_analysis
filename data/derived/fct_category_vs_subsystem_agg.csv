@@ -1,65 +1,71 @@
 category,dominant_subsystem,fix_cnt
-Build & platform,build_platform,18
-Build & platform,client_tools,1
-Build & platform,core_server,30
+Build & platform,build_platform,25
+Build & platform,client_tools,3
+Build & platform,core_server,36
 Build & platform,docs,1
-Build & platform,extensions_contrib,8
-Build & platform,other,3
-Build & platform,replication_recovery,3
-Build & platform,tests,2
+Build & platform,extensions_contrib,9
+Build & platform,other,4
+Build & platform,replication_recovery,4
+Build & platform,tests,3
 Client interfaces,build_platform,3
-Client interfaces,client_tools,31
-Client interfaces,core_server,13
-Client interfaces,extensions_contrib,1
+Client interfaces,client_tools,41
+Client interfaces,core_server,17
+Client interfaces,extensions_contrib,2
 Client interfaces,replication_recovery,3
 Client interfaces,tests,1
-Client tools,client_tools,86
-Client tools,core_server,11
+Client tools,build_platform,1
+Client tools,client_tools,104
+Client tools,core_server,13
 Client tools,extensions_contrib,2
-Client tools,replication_recovery,6
-Client tools,tests,2
-"Concurrency, locking & crashes",client_tools,4
-"Concurrency, locking & crashes",core_server,113
-"Concurrency, locking & crashes",extensions_contrib,23
+Client tools,replication_recovery,9
+Client tools,tests,3
+"Concurrency, locking & crashes",client_tools,6
+"Concurrency, locking & crashes",core_server,145
+"Concurrency, locking & crashes",extensions_contrib,25
 "Concurrency, locking & crashes",planner,3
-"Concurrency, locking & crashes",replication_recovery,24
-"Concurrency, locking & crashes",tests,2
-"Data types, text & collation",client_tools,11
-"Data types, text & collation",core_server,77
-"Data types, text & collation",extensions_contrib,14
-"Data types, text & collation",planner,2
+"Concurrency, locking & crashes",replication_recovery,25
+"Concurrency, locking & crashes",tests,5
+"Data types, text & collation",client_tools,13
+"Data types, text & collation",core_server,88
+"Data types, text & collation",extensions_contrib,15
+"Data types, text & collation",planner,3
 "Data types, text & collation",replication_recovery,1
 "Data types, text & collation",tests,5
-Execution & correctness,core_server,147
-Execution & correctness,extensions_contrib,16
-Execution & correctness,planner,14
+Execution & correctness,core_server,174
+Execution & correctness,extensions_contrib,18
+Execution & correctness,planner,15
+Execution & correctness,replication_recovery,3
 Execution & correctness,tests,2
 Extensions & contrib,build_platform,1
-Extensions & contrib,core_server,3
-Extensions & contrib,extensions_contrib,39
+Extensions & contrib,core_server,5
+Extensions & contrib,extensions_contrib,45
 Extensions & contrib,replication_recovery,1
-Indexes,core_server,48
-Indexes,extensions_contrib,23
-"Numeric, overflow & limits",build_platform,1
-"Numeric, overflow & limits",client_tools,1
-"Numeric, overflow & limits",core_server,44
-"Numeric, overflow & limits",extensions_contrib,8
+Indexes,core_server,59
+Indexes,extensions_contrib,28
+Indexes,tests,1
+"Numeric, overflow & limits",build_platform,2
+"Numeric, overflow & limits",core_server,51
+"Numeric, overflow & limits",extensions_contrib,10
+"Numeric, overflow & limits",planner,1
 "Numeric, overflow & limits",replication_recovery,1
-Partitioning & inheritance,core_server,27
+Partitioning & inheritance,core_server,29
 Partitioning & inheritance,extensions_contrib,2
 Partitioning & inheritance,planner,2
-Partitioning & inheritance,replication_recovery,2
+Partitioning & inheritance,replication_recovery,3
 Partitioning & inheritance,tests,1
 Planner & optimizer,build_platform,1
-Planner & optimizer,core_server,30
-Planner & optimizer,extensions_contrib,5
-Planner & optimizer,planner,49
+Planner & optimizer,core_server,39
+Planner & optimizer,extensions_contrib,9
+Planner & optimizer,planner,58
+Planner & optimizer,tests,1
 Replication & recovery,client_tools,2
-Replication & recovery,core_server,26
+Replication & recovery,core_server,34
+Replication & recovery,docs,1
 Replication & recovery,extensions_contrib,6
-Replication & recovery,replication_recovery,64
-Replication & recovery,tests,2
-"Storage, vacuum & TOAST",client_tools,2
-"Storage, vacuum & TOAST",core_server,47
-"Storage, vacuum & TOAST",extensions_contrib,3
+Replication & recovery,replication_recovery,81
+Replication & recovery,tests,4
+"Storage, vacuum & TOAST",client_tools,3
+"Storage, vacuum & TOAST",core_server,52
+"Storage, vacuum & TOAST",extensions_contrib,4
 "Storage, vacuum & TOAST",replication_recovery,4
+"Storage, vacuum & TOAST",tests,1

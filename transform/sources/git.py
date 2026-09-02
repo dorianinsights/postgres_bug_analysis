@@ -22,10 +22,13 @@ from pathlib import Path
 from typing import NamedTuple
 
 sys.path.insert(0, str(Path.cwd().parent))
-from corpus import GIT_HISTORY_SINCE, STABLE_BRANCHES
+from corpus import GIT_HISTORY_SINCE, MAJORS, STABLE_BRANCHES
 
 CACHE = Path.cwd().parent / ".cache" / "postgres.git"
 BRANCHES = [*STABLE_BRANCHES, "master"]
+# One for-each-ref pattern per corpus major, so the tag readers track the corpus
+# (a REL_1[5-9]_* glob silently dropped a corpus that reaches below 15 or past 19).
+TAG_GLOBS = tuple(f"refs/tags/REL_{major}_*" for major in MAJORS)
 
 # The history floor as an exact instant. Two git date gotchas make the bare
 # GIT_HISTORY_SINCE date nondeterministic: approxidate fills a missing
@@ -149,7 +152,7 @@ def commit_file_records() -> list[CommitFileRecord]:
 
 def tag_records() -> list[TagRecord]:
     """One record per REL_1x_* ref (release tags AND BETA/RC prereleases)."""
-    out = git("for-each-ref", "--format=%(refname:short)%09%(creatordate:iso-strict)", "refs/tags/REL_1[5-9]_*")
+    out = git("for-each-ref", "--format=%(refname:short)%09%(creatordate:iso-strict)", *TAG_GLOBS)
     records: list[TagRecord] = []
     for line in sorted(out.splitlines()):
         tag, _, tag_ts = line.partition("\t")
@@ -177,7 +180,7 @@ def tag_line_records() -> list[TagSizeRecord]:
     stable branch's REL_1x_N tags), NOT a cross-branch sum — the branches are
     parallel copies of nearly the same tree.
     """
-    refs = git("for-each-ref", "--format=%(refname:short)", "refs/tags/REL_1[5-9]_*").splitlines()
+    refs = git("for-each-ref", "--format=%(refname:short)", *TAG_GLOBS).splitlines()
     records: list[TagSizeRecord] = []
     for tag in sorted(ref for ref in refs if re.fullmatch(r"REL_\d+_\d+", ref)):
         out = git("grep", "-I", "-c", "^", tag, "--", *CODE_GLOBS)
