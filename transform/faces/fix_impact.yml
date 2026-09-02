@@ -95,6 +95,40 @@ queries:
         AND churn_sum IS NOT null
       ORDER BY 1
 
+  size_latency_trend:
+    ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the single-row fit is a deliberate cross join
+    description: >
+      Power-law (log-log OLS) trend of report-to-fix days on fix size, as a
+      fitted curve over the churn range. The fit is essentially flat
+      (R^2 ~ 0.007): size explains almost none of the latency. days = churn+1
+      shifts avoid log(0).
+    source: warehouse
+    sql: |
+      WITH pts AS (
+        SELECT
+          churn_sum,
+          LOG10(churn_sum) AS lx,
+          LOG10(days_to_fix_min + 1) AS ly
+        FROM fct_fixes
+        WHERE days_to_fix_min IS NOT null
+          AND days_to_fix_min >= 0
+          AND churn_sum IS NOT null
+      ),
+
+      fit AS (
+        SELECT
+          REGR_SLOPE(pts.ly, pts.lx) AS b,
+          REGR_INTERCEPT(pts.ly, pts.lx) AS a
+        FROM pts
+      )
+
+      SELECT DISTINCT
+        pts.churn_sum AS churn_sum,
+        POWER(10, fit.a + fit.b * pts.lx) - 1 AS days_trend
+      FROM pts
+      CROSS JOIN fit
+      ORDER BY 1
+
   latency_by_size:
     description: >
       Median report-to-fix latency by fix-size bucket (line churn) — does a
@@ -191,11 +225,31 @@ charts:
     type: scatter
     query: size_vs_latency
     title: "Fix size vs time to fix"
-    subtitle: "Each bug-linked fix: line churn (x) vs report-to-fix days (y), colored by category"
+    subtitle: >
+      Each bug-linked fix: line churn (x, log) vs report-to-fix days (y, symlog
+      so same-day fixes still show). The power-law fit is nearly flat — size
+      explains ~0.7% of the variance (R² = 0.007), so bigger changes don't take
+      longer to land.
     x: churn_sum
     y: days_to_fix_min
+    y_label: "days, report → commit"
     color: category
-    height: 420
+    height: 440
+    style:
+      # Both quantities are heavily right-skewed; log x + symlog y spread the
+      # cluster into a readable cloud. symlog (not log) keeps the 44 same-day
+      # (0-day) fixes, which a log scale would drop.
+      axis_x:
+        scale: { continuous: { type: log, zero: false } }
+      axis_y:
+        scale: { continuous: { type: symlog } }
+    layers:
+      - type: line
+        query: size_latency_trend
+        x: churn_sum
+        y: days_trend
+        label: "power-law fit (R² = 0.007)"
+        style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
 
   latency_by_size:
     type: bar

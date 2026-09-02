@@ -25,6 +25,24 @@ queries:
       ORDER BY 1 DESC
       LIMIT 1
 
+  upcoming_release:
+    description: >
+      The upcoming (open) release's headline numbers SO FAR, to sit beneath the
+      latest-release KPIs for comparison. Fixes so far is early_fix_cnt — distinct
+      fixes already committed to the stable branches this cycle. Security fixes and
+      CVEs arrive embargoed on wrap day (they only reach public git then), so they
+      are 0 by construction until the release wraps.
+    source: warehouse
+    sql: |
+      SELECT
+        release_dt AS release_dt,
+        versions,
+        early_fix_cnt AS distinct_fix_cnt,
+        0 AS security_fix_cnt,
+        0 AS distinct_cve_cnt
+      FROM dim_release
+      WHERE status = 'open'
+
   releases_by_branch:
     description: >
       Fix items per scheduled minor release, one series per major version.
@@ -260,6 +278,24 @@ charts:
     value: distinct_cve_cnt
     label: "CVEs closed, latest release"
 
+  kpi_upcoming_fixes:
+    type: kpi
+    query: upcoming_release
+    value: distinct_fix_cnt
+    label: "Distinct fixes so far, next release"
+
+  kpi_upcoming_security:
+    type: kpi
+    query: upcoming_release
+    value: security_fix_cnt
+    label: "Security fixes so far, next release (embargoed until wrap)"
+
+  kpi_upcoming_cves:
+    type: kpi
+    query: upcoming_release
+    value: distinct_cve_cnt
+    label: "CVEs closed so far, next release (embargoed until wrap)"
+
   fixes_by_branch:
     type: line
     query: releases_by_branch
@@ -432,6 +468,7 @@ charts:
 
 rows:
   - cols: [kpi_fixes, kpi_security, kpi_cves]
+  - cols: [kpi_upcoming_fixes, kpi_upcoming_security, kpi_upcoming_cves]
   - fixes_by_branch
   - category_mix
   - category_share

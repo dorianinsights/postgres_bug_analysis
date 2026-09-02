@@ -1,21 +1,29 @@
 title: "PostgreSQL Fix Velocity — Git Commits"
 description: >
-  Commit-level view of the PostgreSQL stable branches (majors 15-18) plus
-  master: quarterly backpatch volume, AI-tool-credited fixes, and the pace of
-  the currently open release cycle. Data files are produced by
-  scrape_git_commits.py + the transform/ dbt project.
+  Commit-level view of PostgreSQL's stable branches (majors 15-18) plus master,
+  straight from the git history: backpatch commit volume per quarter, AI-tool-
+  credited commits, and the pace of the open release cycle. IMPORTANT: every
+  count here is GIT COMMITS (deduplicated by commit subject), NOT the curated,
+  user-facing fixes documented in the release notes — for those see the Changelog
+  and Fix Origins dashboards. Only about half of fix commits ever become a
+  documented release-note item, so these numbers run roughly 2x the Changelog's
+  per-release fix counts (they are also binned by calendar quarter here, not by
+  release). Parsed from the postgres.git clone at build time by the transform/
+  dbt project (sources.git).
 
 queries:
   quarterly_distinct:
     description: >
-      Distinct fix commits across all stable branches per quarter (subjects
-      deduplicated across branches; release plumbing excluded). The current
-      quarter is partial.
+      Distinct fix COMMITS on the stable branches per calendar quarter (subjects
+      deduplicated across branches, so a fix backpatched to all four majors
+      counts once; release plumbing excluded). A git-history count — roughly 2x
+      the Changelog's documented per-release fixes, since only ~half of fix
+      commits become a release-note item. The current quarter is partial.
     source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
-        'distinct fixes' AS series,
+        'distinct fix commits' AS series,
         COUNT(DISTINCT LOWER(TRIM(subject))) AS distinct_fix_cnt
       FROM fct_commits
       WHERE branch != 'master' AND NOT is_plumbing
@@ -35,6 +43,58 @@ queries:
       FROM fct_commits
       WHERE branch != 'master' AND NOT is_plumbing
       GROUP BY 1, 2
+      ORDER BY 1, 2
+
+  commits_per_version:
+    ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_version is N:1 (one version per (release, major)); COUNTs verified to reconcile
+    description: >
+      Non-plumbing stable-branch fix commits binned by the minor release they
+      shipped in (via the new fct_commits.dim_release_key), split by major to give
+      the exact released version — REL_15_STABLE commits in the Feb 2026 release
+      are 15.16, and so on. Shipped releases only; a fix backpatched to four
+      majors shows once under each. This is the release-binned counterpart of the
+      per-quarter commit chart above.
+    source: warehouse
+    sql: |
+      SELECT
+        STRFTIME(dv.release_dt, '%b %y') AS release,
+        EPOCH(dv.release_dt)::BIGINT AS release_seq,
+        'PG' || dv.major AS major,
+        COUNT(*)::BIGINT AS commit_cnt
+      FROM fct_commits AS fc
+      INNER JOIN dim_version AS dv
+        ON
+          fc.dim_release_key = dv.dim_release_key
+          AND CAST(SPLIT_PART(fc.branch, '_', 2) AS INTEGER) = dv.major
+      WHERE fc.branch != 'master' AND NOT fc.is_plumbing
+        AND dv.minor > 0 AND dv.release_dt <= CURRENT_DATE
+      GROUP BY ALL
+      ORDER BY release_seq, major
+
+  churn_by_quarter:
+    description: >
+      Lines of code churned per calendar quarter on the stable branches (fix
+      commits, plumbing excluded), as three series: total churn (adds +
+      deletes), additions, and deletions. Backpatches count per branch (like the
+      per-branch commit chart), so a fix landed on four majors contributes its
+      churn four times. The current quarter is partial.
+    source: warehouse
+    sql: |
+      WITH q AS (
+        SELECT
+          DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
+          SUM(lines_added_sum)::BIGINT AS adds,
+          SUM(lines_deleted_sum)::BIGINT AS deletes
+        FROM fct_commits
+        WHERE branch != 'master' AND NOT is_plumbing
+        GROUP BY 1
+      )
+
+      SELECT q.quarter, 'total churn (adds + deletes)' AS series, q.adds + q.deletes AS lines FROM q
+      UNION ALL
+      SELECT q.quarter, 'lines added' AS series, q.adds FROM q
+      UNION ALL
+      SELECT q.quarter, 'lines deleted' AS series, q.deletes FROM q
       ORDER BY 1, 2
 
   ai_credited:
@@ -67,9 +127,11 @@ queries:
 
   cycle_pace:
     description: >
-      Like-for-like release-cycle pace: distinct stable-branch fixes committed
-      in the first N days after each scheduled wrap, where N is the age of the
-      currently open cycle, next to each closed cycle's full total.
+      Like-for-like release-cycle pace, in COMMITS: distinct stable-branch fix
+      commits in the first N days after each scheduled wrap (N = the age of the
+      open cycle) next to each closed cycle's full-cycle commit total. Binned per
+      release cycle (not calendar quarter) — this full-cycle total is the
+      commit-level counterpart of the Changelog's documented per-release fix count.
     source: warehouse
     sql: |
       -- compact "Aug 22" label + numeric cycle_seq for the chart's sort. dct
@@ -94,10 +156,14 @@ charts:
   quarterly_distinct:
     type: bar
     query: quarterly_distinct
-    title: "Distinct backpatched fixes per quarter"
-    subtitle: "Across REL_15..18_STABLE, deduplicated by commit subject; current quarter partial"
+    title: "Distinct fix commits per quarter"
+    subtitle: >
+      Git commits on REL_15..18_STABLE, deduplicated by subject across branches —
+      a superset of the Changelog's documented fixes (~2x); calendar quarters,
+      current one partial
     x: quarter
     y: distinct_fix_cnt
+    y_label: "distinct fix commits"
     color: series
     height: 380
 
@@ -105,10 +171,35 @@ charts:
     type: line
     query: quarterly_by_branch
     title: "Fix commits per stable branch per quarter"
-    subtitle: "Newer branches receive more backpatches; every branch jumps in Q3 2026"
+    subtitle: "Each branch counts its own backpatch, so one fix landed on all four majors is four commits here; newer branches carry more; every branch jumps in Q3 2026"
     x: quarter
     y: fix_commits
+    y_label: "fix commits"
     color: branch
+    height: 380
+
+  commits_per_version:
+    type: bar
+    query: commits_per_version
+    title: "Fix commits per released version"
+    subtitle: "Stable-branch fix commits binned by the release they shipped in (fct_commits.dim_release_key), split by major; shipped releases only"
+    x: release
+    y: commit_cnt
+    y_label: "fix commits"
+    color: major
+    sort: { by: release_seq, order: asc }
+    style: { stack: zero }
+    height: 380
+
+  churn_by_quarter:
+    type: line
+    query: churn_by_quarter
+    title: "Lines of code churned per quarter"
+    subtitle: "Stable-branch fix commits (plumbing excluded); total churn, additions, and deletions; backpatches counted per branch; current quarter partial"
+    x: quarter
+    y: lines
+    y_label: "lines changed"
+    color: series
     height: 380
 
   ai_credited:
@@ -125,9 +216,10 @@ charts:
     type: bar
     query: cycle_pace
     title: "Release-cycle pace, like for like"
-    subtitle: "Fixes queued in each cycle's first N days (N = the open cycle's age) vs its full total"
+    subtitle: "Distinct stable-branch fix COMMITS queued in each cycle's first N days (N = the open cycle's age) vs its full-cycle total — per release cycle"
     x: cycle
     y: fixes
+    y_label: "distinct fix commits"
     color: pace_window
     sort: { by: cycle_seq, order: asc }
     style: { stack: none, orientation: vertical }
@@ -141,5 +233,7 @@ charts:
 rows:
   - quarterly_distinct
   - quarterly_by_branch
+  - commits_per_version
+  - churn_by_quarter
   - cols: [ai_credited, cycle_pace]
   - ai_credit_table
