@@ -14,7 +14,18 @@ models:
             expression: ISODOW(release_dt) = 4
     columns:
       - name: version
-        tests: [not_null, unique]
+        tests:
+          - not_null
+          - unique
+          # the tag registry and the SGML notes must agree: every tagged
+          # release has changelog items (the converse, items without a tag, is
+          # stg_release_items.version -> int_versions). A failure means a
+          # release was tagged but not yet in the notes, or a corpus/tag-pattern
+          # mismatch.
+          - relationships:
+              arguments:
+                to: ref('stg_release_items')
+                field: version
       - name: major
         tests: [not_null]
       - name: minor

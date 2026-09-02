@@ -20,6 +20,12 @@ models:
             where: "status NOT IN ('unknown', 'not applicable', 'in_development')"
           arguments:
             expression: "(cycle_start_dt IS NOT NULL) = (NOT is_out_of_band AND status <> 'future')"
+      # exactly one cycle is open (the current one); zero or several means the
+      # wrap-date derivation broke
+      - dbt_expectations.expect_table_row_count_to_equal:
+          arguments:
+            value: 1
+            row_condition: "status = 'open'"
     columns:
       - name: dim_release_key
         tests: [not_null, unique]

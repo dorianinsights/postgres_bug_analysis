@@ -11,6 +11,17 @@ models:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [dim_release_key, category]
+      # category counts partition the deduped fixes: their per-release sum
+      # equals dim_release.distinct_fix_cnt (full outer join on the key, so a
+      # release missing on either side fails)
+      - dbt_expectations.expect_table_aggregation_to_equal_other_table:
+          arguments:
+            expression: sum(fix_cnt)
+            group_by: [dim_release_key]
+            compare_model: ref('dim_release')
+            compare_expression: sum(distinct_fix_cnt)
+            compare_group_by: [dim_release_key]
+            compare_row_condition: "status = 'shipped'"
     columns:
       - name: dim_release_key
         tests:

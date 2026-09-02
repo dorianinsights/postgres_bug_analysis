@@ -19,7 +19,13 @@ models:
               arguments:
                 values: [pgsql-bugs, pgsql-hackers]
       - name: message_id
-        tests: [not_null]
+        tests:
+          - not_null
+          # every archived message reaches the message-grain fact
+          - relationships:
+              arguments:
+                to: ref('fct_messages')
+                field: message_id
       - name: sent_ts
         description: >
           The sender's own Date header — client clocks can be skewed, so

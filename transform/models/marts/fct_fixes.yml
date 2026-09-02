@@ -8,6 +8,23 @@ models:
       cves/category), change size, worst CVE severity, origin, bug linkage, and
       a dim_release_key FK into dim_release (and a dim_version_key FK into dim_version). Per-CVE and per-bug detail live in
       bridge_fix_cve / bridge_fix_bug. Grain = item_ord (one distinct fix).
+    tests:
+      # the fact stays at the distinct-fix grain: exactly one row per int_fix_reps
+      # row (with item_ord unique here and int_fix_reps.item_ord -> fct_fixes
+      # relationships, no fix is lost or duplicated by the bug/CVE joins)
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          arguments:
+            compare_model: ref('int_fix_reps')
+      # ... and the per-release count agrees with dim_release.distinct_fix_cnt
+      # (full outer join on release_dt, so a release missing on either side fails)
+      - dbt_expectations.expect_table_aggregation_to_equal_other_table:
+          arguments:
+            expression: count(*)
+            group_by: [release_dt]
+            compare_model: ref('dim_release')
+            compare_expression: sum(distinct_fix_cnt)
+            compare_group_by: [release_dt]
+            compare_row_condition: "status = 'shipped'"
     columns:
       - name: item_ord
         tests: [not_null, unique]

@@ -12,6 +12,13 @@ models:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [list_name, message_id]
+      # exactly the message grain: one row per stg_list_messages row, none lost
+      # or duplicated by the join into the person dimension (with the unique
+      # combination above and stg_list_messages.message_id -> fct_messages
+      # relationships, the grain is pinned exactly)
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          arguments:
+            compare_model: ref('stg_list_messages')
     columns:
       - name: sender_dim_person_key
         tests:

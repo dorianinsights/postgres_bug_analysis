@@ -15,6 +15,12 @@ models:
               arguments:
                 to: ref('int_fix_groups')
                 field: group_ord
+          # every representative reaches the fix-grain fact (with fct_fixes'
+          # unique item_ord + equal row count, the grain is pinned exactly)
+          - relationships:
+              arguments:
+                to: ref('fct_fixes')
+                field: item_ord
       - name: release_dt
         tests: [not_null]
       - name: summary

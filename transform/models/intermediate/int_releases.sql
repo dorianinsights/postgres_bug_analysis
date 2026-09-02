@@ -6,9 +6,10 @@
 -- Shipped releases are grouped from the version tags (int_versions, minors
 -- only; ".0" feature releases excluded); a release is out-of-band (emergency
 -- re-release) when its LARGEST release has fewer than
--- var(scheduled_release_min_items) items (from stg_release_items -- the
--- scraper's n_items stays in raw as a checksum, see
--- assert_release_items_match_n_items). The corpus's first shipped release is a
+-- var(scheduled_release_min_items) items (from stg_release_items; the tag
+-- registry and the parsed notes are reconciled both ways by the version
+-- relationships tests on int_versions / stg_release_items). The corpus's first
+-- shipped release is a
 -- partial accumulation window (15.1 shipped ~4 weeks after 15.0). Upcoming
 -- open/future releases come from the scheduled calendar (version numbers known
 -- ahead of the release, but the fix/CVE counts are not -- those live in
