@@ -15,6 +15,28 @@ WITH file_stats AS (
     SUM(COALESCE(lines_deleted, 0))::BIGINT AS lines_deleted_sum
   FROM {{ ref('stg_commit_files') }}
   GROUP BY ALL
+),
+
+-- the commit's dominant subsystem: a weighted vote over its files (int_commit_files),
+-- same rule as a fix's dominant_subsystem -- most files then most churn, and
+-- tests/docs win only when nothing else changed.
+dominant_subsystem AS (
+  SELECT
+    commit_hash,
+    subsystem AS dominant_subsystem
+  FROM (
+    SELECT
+      commit_hash,
+      subsystem,
+      COUNT(*) AS file_cnt,
+      SUM(COALESCE(lines_added, 0) + COALESCE(lines_deleted, 0)) AS line_sum
+    FROM {{ ref('int_commit_files') }}
+    GROUP BY ALL
+  ) AS votes
+  QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY commit_hash
+    ORDER BY (subsystem IN ('tests', 'docs')) ASC, file_cnt DESC, line_sum DESC, subsystem ASC
+  ) = 1
 )
 
 SELECT
@@ -38,6 +60,9 @@ SELECT
   igc.is_plumbing,
   igc.ai_credit IS NOT null AS has_ai_credit,
   igc.ai_credit,
+  -- the area this commit mostly touched (weighted vote over its files); 'other'
+  -- for an empty commit with no file changes
+  COALESCE(dsub.dominant_subsystem, 'other') AS dominant_subsystem,
   COALESCE(fst.file_cnt, 0) AS file_cnt,
   COALESCE(fst.lines_added_sum, 0) AS lines_added_sum,
   COALESCE(fst.lines_deleted_sum, 0) AS lines_deleted_sum,
@@ -49,6 +74,7 @@ LEFT JOIN {{ ref('int_commit_versions') }} AS icv
   ON gcm.branch = icv.branch AND gcm.commit_hash = icv.commit_hash
 LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
 LEFT JOIN file_stats AS fst ON gcm.commit_hash = fst.commit_hash
+LEFT JOIN dominant_subsystem AS dsub ON gcm.commit_hash = dsub.commit_hash
 -- resolve the version from int_commit_versions' mapping; its dim_release_key and
 -- dim_version_key ride along (dim_version is 1:1 on version). A NULL version
 -- (master, not-yet-shipped) misses and falls through to Not Applicable above.

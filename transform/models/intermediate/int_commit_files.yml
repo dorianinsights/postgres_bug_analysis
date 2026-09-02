@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: int_commit_files
+    description: >
+      Every file touched by every commit, classified by subsystem (directory,
+      subsystem_rules) and file_class (extension, file_class_rules). The per-file
+      area/type grain behind fct_commits.dominant_subsystem and the
+      churn-by-area rollups. Line counts are NULL for binary files (excluded from
+      churn). Grain = (commit_hash, file_path).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [commit_hash, file_path]
+    columns:
+      - name: commit_hash
+        tests: [not_null]
+      - name: file_path
+        tests: [not_null]
+      - name: subsystem
+        description: The directory-based area (subsystem_rules; 'other' when no rule matches).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - core_server
+                  - client_tools
+                  - extensions_contrib
+                  - replication_recovery
+                  - planner
+                  - tests
+                  - docs
+                  - build_platform
+                  - other
+      - name: file_class
+        description: The extension-based file kind (file_class_rules; 'other' for extensionless/long-tail).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - source_c
+                  - header
+                  - sql
+                  - perl
+                  - python
+                  - grammar
+                  - docs
+                  - embedded_sql
+                  - catalog_data
+                  - translations
+                  - test_fixtures
+                  - build
+                  - other
+      - name: lines_added
+        description: Lines added to this file by this commit; NULL for binary files.
+      - name: lines_deleted
+        description: Lines deleted from this file by this commit; NULL for binary files.

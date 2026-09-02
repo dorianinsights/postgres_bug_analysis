@@ -1,0 +1,23 @@
+version: 2
+
+seeds:
+  - name: file_class_rules
+    description: >
+      File extension -> file_class (the kind of file), matched on the
+      lower-cased extension after the last dot in the path. The orthogonal
+      companion to subsystem_rules (which classifies by directory): where a
+      change lives vs what kind of file it is. Extensions no rule names fall
+      back to 'other' -- that bucket is dominated by extensionless files
+      (Makefile, README, configure) and long-tail types. Notably separates
+      generated translation catalogs (.po, huge churn) and regression
+      fixtures (.out) from real source, so churn-by-type isn't dominated by
+      generated artifacts.
+    config:
+      column_types:
+        extension: VARCHAR
+        file_class: VARCHAR
+    columns:
+      - name: extension
+        tests: [unique, not_null]
+      - name: file_class
+        tests: [not_null]

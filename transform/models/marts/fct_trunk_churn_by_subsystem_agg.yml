@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: fct_trunk_churn_by_subsystem_agg
+    description: >
+      Quarterly code churn on the development trunk (master) by subsystem ->
+      ../data/derived/fct_trunk_churn_by_subsystem_agg.csv. The area breakdown of
+      trunk feature development over time, per file (int_commit_files) so a
+      cross-area commit splits across its areas. Master only + non-plumbing (a
+      backpatch is the same work under another hash; released-branch backpatch
+      churn is the separate churn_by_quarter view). Conforms to dim_date on
+      quarter_dt. Grain = (quarter_dt, subsystem).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [quarter_dt, subsystem]
+    columns:
+      - name: quarter_dt
+        description: First day of the UTC calendar quarter; conforms to dim_date.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: subsystem
+        description: The file's directory-based area (subsystem_rules; 'other' when no rule matches).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - core_server
+                  - client_tools
+                  - extensions_contrib
+                  - replication_recovery
+                  - planner
+                  - tests
+                  - docs
+                  - build_platform
+                  - other
+      - name: commit_cnt
+        description: Distinct trunk commits touching this subsystem in the quarter.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: lines_added_sum
+        tests: [not_null]
+      - name: lines_deleted_sum
+        tests: [not_null]
+      - name: churn
+        description: lines_added_sum + lines_deleted_sum for this subsystem-quarter.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0

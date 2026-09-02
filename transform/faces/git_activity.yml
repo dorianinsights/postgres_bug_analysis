@@ -148,6 +148,22 @@ queries:
       SELECT q.quarter, 'lines deleted' AS series, q.deletes FROM q
       ORDER BY 1, 2
 
+  trunk_churn_by_subsystem:
+    description: >
+      Lines churned per quarter on the development trunk (master), split by
+      subsystem (fct_trunk_churn_by_subsystem_agg) — where feature work is
+      happening over time, per file so a cross-area commit splits across its
+      areas. Master only, so no backpatch multiplication (the released-branch
+      backpatch churn is the chart above). The current quarter is partial.
+    source: warehouse
+    sql: |
+      SELECT
+        ch.quarter_dt AS quarter,
+        ch.subsystem AS subsystem,
+        ch.churn AS churn
+      FROM fct_trunk_churn_by_subsystem_agg AS ch
+      ORDER BY ch.quarter_dt, ch.subsystem
+
   ai_credited:
     description: >
       Distinct commits whose message credits an AI tool (Claude, ChatGPT,
@@ -276,6 +292,18 @@ charts:
     color: series
     height: 380
 
+  trunk_churn_by_subsystem:
+    type: bar
+    query: trunk_churn_by_subsystem
+    title: "Trunk churn by subsystem per quarter"
+    subtitle: "Lines churned on master (feature development), split by subsystem — where the work is happening; master only so no backpatch multiplication; current quarter partial"
+    x: quarter
+    y: churn
+    y_label: "lines changed"
+    color: subsystem
+    style: { stack: zero }
+    height: 380
+
   ai_credited:
     type: bar
     query: ai_credited
@@ -311,5 +339,6 @@ rows:
   - codebase_size
   - codebase_composition
   - churn_by_quarter
+  - trunk_churn_by_subsystem
   - cols: [ai_credited, cycle_pace]
   - ai_credit_table

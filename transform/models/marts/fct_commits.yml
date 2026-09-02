@@ -84,6 +84,25 @@ models:
         tests: [not_null]
       - name: has_ai_credit
         tests: [not_null]
+      - name: dominant_subsystem
+        description: >
+          The area this commit mostly touched -- a weighted vote over its files
+          (int_commit_files; most files, then most churn, tests/docs last), the
+          same rule as a fix's dominant subsystem. 'other' for an empty commit.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - core_server
+                  - client_tools
+                  - extensions_contrib
+                  - replication_recovery
+                  - planner
+                  - tests
+                  - docs
+                  - build_platform
+                  - other
       - name: file_cnt
         tests:
           - not_null
