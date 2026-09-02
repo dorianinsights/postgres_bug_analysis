@@ -98,17 +98,20 @@ queries:
 
   monthly_acted_data:
     description: >
-      Per month: reports fixed (count, the bars), the acted-upon share (%) and
-      its 3-month trailing average (the two right-axis lines). Wide (one row per
-      month) so a hover shows all three at once; the two % lines share one axis
-      via a y-list. Trailing months sag because their fixes haven't landed yet.
+      Per month: reports fixed (count, the bars), the acted-upon share and its
+      3-month trailing average (the two right-axis lines). The two share columns
+      are emitted as FRACTIONS (0-1), not percentage points, so the chart's
+      per-layer axis_y.label.format ".1%" renders them as real percentages on the
+      right axis AND in the tooltip (d3's % type multiplies by 100). Wide (one row
+      per month) so a hover shows all three at once. Trailing months sag because
+      their fixes haven't landed yet.
     source: warehouse
     sql: |
       SELECT
         report_month_dt AS report_month,
         acted_upon_cnt AS "reports fixed",
-        acted_upon_pct AS "acted upon (%)",
-        AVG(acted_upon_pct) OVER (
+        acted_upon_pct / 100.0 AS "acted upon (%)",
+        AVG(acted_upon_pct / 100.0) OVER (
           ORDER BY report_month_dt ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
         ) AS "3-month rolling average"
       FROM fct_bug_reports_monthly_agg
@@ -271,17 +274,28 @@ charts:
     y: "reports fixed"
     height: 340
     # the two % lines are distinct columns (so a hover reads both, plus the bar);
-    # both right axes are pinned to the same [0, 50] domain so they coincide as
-    # one shared secondary scale (dct can't merge two layer axes otherwise)
+    # both share the same right axis, pinned to [0, 0.5] (the data is fractions)
+    # with a per-layer axis_y.label.format ".1%" -- that scopes the percent
+    # formatting to THIS axis and its tooltip entries only, leaving the left
+    # count axis untouched. NOTE the key is `label` (singular) on a layer; the
+    # chart-wide equivalent is `axis_y.labels.format` (plural).
     layers:
       - type: line
         x: report_month
         y: "acted upon (%)"
-        axis_y: { position: right, title: "acted upon (%)", scale: { domain: [0, 50] } }
+        axis_y:
+          position: right
+          title: "acted upon (%)"
+          scale: { domain: [0, 0.5] }
+          label: { format: ".1%" }
       - type: line
         x: report_month
         y: "3-month rolling average"
-        axis_y: { position: right, title: "acted upon (%)", scale: { domain: [0, 50] } }
+        axis_y:
+          position: right
+          title: "acted upon (%)"
+          scale: { domain: [0, 0.5] }
+          label: { format: ".1%" }
         style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
 
   seasonality_counts:
@@ -304,7 +318,7 @@ charts:
     x: release_month
     y: early_share
     sort: { by: release_quarter, order: asc }
-    style: { orientation: vertical, axis_y: { labels: { format: ".0%" } } }
+    style: { orientation: vertical, axis_y: { labels: { format: ".1%" } } }
     height: 320
 
   yearly_outcomes:

@@ -372,7 +372,7 @@ charts:
       stack: zero
       axis_y:
         labels:
-          format: ".0%"
+          format: ".1%"
     height: 380
     layers:
       - type: scatter
