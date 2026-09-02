@@ -16,12 +16,18 @@ WITH credits AS (
   GROUP BY ALL
 ),
 
-first_seen AS (
+-- a contributor's debut = the earliest release they appear in. credits already
+-- has one row per (contributor, release), so a MIN() window over that partition
+-- gives it in one pass -- no separate aggregate CTE self-joined back on.
+debut AS (
   SELECT
-    contributor,
-    MIN(release_dt) AS first_seen_release_dt
-  FROM credits
-  GROUP BY ALL
+    crd.dim_release_key,
+    crd.release_dt,
+    crd.contributor,
+    crd.credit_cnt,
+    crd.is_out_of_band,
+    MIN(crd.release_dt) OVER (PARTITION BY crd.contributor) AS first_seen_release_dt
+  FROM credits AS crd
 ),
 
 first_release AS (
@@ -31,15 +37,14 @@ first_release AS (
 )
 
 SELECT
-  crd.dim_release_key,
-  crd.release_dt,
-  crd.contributor,
-  crd.credit_cnt,
-  fst.first_seen_release_dt,
+  deb.dim_release_key,
+  deb.release_dt,
+  deb.contributor,
+  deb.credit_cnt,
+  deb.first_seen_release_dt,
   (
-    fst.first_seen_release_dt = crd.release_dt
-    AND crd.release_dt != (SELECT fwv.release_dt FROM first_release AS fwv)
+    deb.first_seen_release_dt = deb.release_dt
+    AND deb.release_dt != (SELECT fwv.release_dt FROM first_release AS fwv)
   ) AS is_first_release,
-  crd.is_out_of_band
-FROM credits AS crd
-INNER JOIN first_seen AS fst ON crd.contributor = fst.contributor
+  deb.is_out_of_band
+FROM debut AS deb
