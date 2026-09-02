@@ -106,7 +106,6 @@ SELECT
   reps.release_dt,
   reps.version,
   reps.item_index,
-  reps.category,
   cov.annotated_commit_cnt,
   cov.matched_commit_cnt,
   prf.file_cnt,

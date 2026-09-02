@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: int_fix_content_categories
+    description: >
+      One content-taxonomy label per distinct fix (+ orthogonal
+      is_security_hardening / is_performance flags), from a local LLM. INCREMENTAL
+      and classify-once: keyed by a content hash of the fix text, so each fix is
+      classified once and read back forever (a text change re-triggers it); only
+      new/changed fixes reach the model. The committed
+      data/raw/fix_content_categories.csv is the fresh-build fallback, and the
+      post_hook re-exports it so it stays current. Grain = item_ord.
+    config:
+      post_hook: >
+        COPY (SELECT item_ord, content_hash, model, prompt_version, category_content,
+        confidence, is_security_hardening, is_performance, rationale
+        FROM {{ this }} ORDER BY item_ord)
+        TO '../data/raw/fix_content_categories.csv' (HEADER, FORMAT csv)
+    columns:
+      - name: item_ord
+        tests: [not_null, unique]
+      - name: category_content
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('content_categories')
+                field: category
+      - name: confidence
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: is_security_hardening
+        tests: [not_null]
+      - name: is_performance
+        tests: [not_null]

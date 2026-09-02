@@ -38,7 +38,7 @@ models:
                 field: dim_version_key
           - not_unknown_member
       - name: category
-        description: The fix's content category (classify_content.py, via the content_categories taxonomy).
+        description: The fix's content category (int_fix_content_categories, via the content_categories taxonomy).
         tests:
           - not_null
           - relationships:
