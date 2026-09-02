@@ -1,15 +1,17 @@
 title: "PostgreSQL Fix Velocity — Git Commits"
 description: >
-  Commit-level view of PostgreSQL's stable branches (majors 14-18) plus master,
+  Commit-level view of PostgreSQL's released majors' stable branches plus master,
   straight from the git history: backpatch commit volume per quarter, AI-tool-
   credited commits, and the pace of the open release cycle. IMPORTANT: every
-  count here is GIT COMMITS (deduplicated by commit subject), NOT the curated,
-  user-facing fixes documented in the release notes — for those see the Changelog
-  and Fix Origins dashboards. Only about half of fix commits ever become a
-  documented release-note item, so these numbers run roughly 2x the Changelog's
-  per-release fix counts (they are also binned by calendar quarter here, not by
-  release). Parsed from the postgres.git clone at build time by the transform/
-  dbt project (sources.git).
+  count here is GIT COMMITS (deduplicated by dim_commit.fix_key, the normalized
+  subject, with housekeeping commits -- stamps, translation refreshes,
+  release-notes drafting -- excluded), NOT the curated, user-facing fixes
+  documented in the release notes — for those see the Changelog and Fix Origins
+  dashboards. Only about half of fix commits ever become a documented
+  release-note item (dim_release.documentation_rate), so these numbers run
+  roughly 2x the Changelog's per-release fix counts (they are also binned by
+  calendar quarter here, not by release). Parsed from the postgres.git clone at
+  build time by the transform/ dbt project (sources.git).
 
 # One file-class dropdown per line-count chart (dct variables are a single
 # board-level strip, so per-chart control = one variable each). Every dropdown
@@ -46,20 +48,21 @@ variables:
 queries:
   quarterly_distinct:
     description: >
-      Distinct fix COMMITS on the stable branches per calendar quarter (subjects
-      deduplicated across branches, so a fix backpatched across every stable
-      major counts once). A git-history count — roughly 2x
-      the Changelog's documented per-release fixes, since only ~half of fix
-      commits become a release-note item. The current quarter is partial.
+      Distinct fix COMMITS on the stable branches per calendar quarter
+      (dim_commit.fix_key deduplicates across branches, so a fix backpatched
+      across every stable major counts once; housekeeping commits excluded). A
+      git-history count — roughly 2x the Changelog's documented per-release
+      fixes, since only ~half of fix commits become a release-note item. The
+      current quarter is partial.
     source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
         'distinct fix commits' AS series,
-        COUNT(DISTINCT LOWER(TRIM(fc.subject))) AS distinct_fix_cnt
+        COUNT(DISTINCT fc.fix_key) AS distinct_fix_cnt
       FROM dim_commit AS fc
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-      WHERE dm.is_released
+      WHERE dm.is_released AND NOT fc.is_housekeeping
       GROUP BY 1
       ORDER BY 1
 
@@ -67,7 +70,7 @@ queries:
     ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_major is N:1 (dim_major_key is its PK); COUNT not inflated
     description: >
       Fix commits per non-master branch per quarter (each branch counts its own
-      backpatches).
+      backpatches; housekeeping commits excluded).
     source: warehouse
     sql: |
       SELECT
@@ -76,7 +79,7 @@ queries:
         COUNT(*) AS fix_commits
       FROM dim_commit AS fc
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-      WHERE dm.lifecycle IN ('released', 'beta')
+      WHERE dm.lifecycle IN ('released', 'beta') AND NOT fc.is_housekeeping
       GROUP BY 1, 2
       ORDER BY 1, 2
 
@@ -100,7 +103,7 @@ queries:
       FROM dim_commit AS fc
       INNER JOIN dim_version AS dv ON fc.dim_version_key = dv.dim_version_key
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-      WHERE dv.minor > 0
+      WHERE dv.minor > 0 AND NOT fc.is_housekeeping
       -- by month + major: an out-of-band re-release shares its calendar month with
       -- the scheduled release (e.g. 18.2 and OOB 18.3 both "Feb 26"), so fold them
       -- into one bar rather than colliding on the (release, major) key.
@@ -167,8 +170,10 @@ queries:
       deletes), additions, and deletions. Backpatches count per branch (like the
       per-branch commit chart), so a fix landed on several majors contributes its
       churn once per branch. Generated file classes (translation catalogs .po,
-      regression fixtures .out) are excluded -- source churn only. The current
-      quarter is partial.
+      regression fixtures .out) are excluded -- source churn only -- and so are
+      housekeeping commits (the release-notes SGML drafts are the largest single
+      churn items of a cycle and scale with the fix count, not with the work).
+      The current quarter is partial.
     source: warehouse
     sql: |
       WITH q AS (
@@ -181,6 +186,7 @@ queries:
         -- churn in the file classes chosen by the per-chart dropdown
         -- (defaults to hand-written source).
         WHERE dc.branch_scope = 'stable'
+          AND NOT dc.is_housekeeping
           AND {{ filter('cf.file_class', stable_churn_classes) }}
         GROUP BY 1
       )
@@ -199,7 +205,7 @@ queries:
       feature work is happening over time, per file so a cross-area commit splits
       across its areas. Master only, so no backpatch multiplication (the
       released-branch backpatch churn is the chart above). Generated file classes
-      (.po, .out) are excluded -- source churn only.
+      (.po, .out) are excluded -- source churn only -- as are housekeeping commits.
       The current quarter is partial.
     source: warehouse
     sql: |
@@ -212,6 +218,7 @@ queries:
       -- churn in the file classes chosen by the per-chart dropdown
       -- (defaults to hand-written source)
       WHERE dc.branch_scope = 'trunk'
+        AND NOT dc.is_housekeeping
         AND {{ filter('cf.file_class', trunk_churn_classes) }}
       GROUP BY DATE_TRUNC('quarter', cf.commit_dt), cf.subsystem
       ORDER BY quarter, cf.subsystem
@@ -225,7 +232,7 @@ queries:
       SELECT
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
         'AI-credited commits' AS series,
-        COUNT(DISTINCT LOWER(TRIM(subject))) AS ai_credited_commits
+        COUNT(DISTINCT fix_key) AS ai_credited_commits
       FROM dim_commit
       WHERE ai_credit IS NOT NULL
       GROUP BY 1
@@ -315,9 +322,9 @@ charts:
     query: quarterly_distinct
     title: "Distinct fix commits per quarter"
     subtitle: >
-      Git commits on REL_14..18_STABLE, deduplicated by subject across branches —
-      a superset of the Changelog's documented fixes (~2x); calendar quarters,
-      current one partial
+      Git commits on the released majors' stable branches, deduplicated by
+      subject across branches (housekeeping excluded) — a superset of the
+      Changelog's documented fixes (~2x); calendar quarters, current one partial
     x: quarter
     y: distinct_fix_cnt
     y_label: "distinct fix commits"
@@ -339,7 +346,7 @@ charts:
     type: bar
     query: commits_per_version
     title: "Fix commits per released version"
-    subtitle: "Stable-branch fix commits binned by the release they shipped in (dim_commit.dim_release_key), split by major; shipped releases only"
+    subtitle: "Stable-branch fix commits (housekeeping excluded) binned by the release they shipped in (dim_commit.dim_release_key), split by major; shipped releases only"
     x: release
     y: commit_cnt
     y_label: "fix commits"
@@ -375,7 +382,7 @@ charts:
     type: line
     query: churn_by_quarter
     title: "Lines of code churned per quarter"
-    subtitle: "Stable-branch fix commits; total churn, additions, and deletions; backpatches counted per branch; current quarter partial"
+    subtitle: "Stable-branch fix commits (housekeeping excluded); total churn, additions, and deletions; backpatches counted per branch; current quarter partial"
     x: quarter
     y: lines
     y_label: "lines changed"

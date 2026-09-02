@@ -13,104 +13,93 @@ description: >
   pgsql-bugs (or a Bug: # trailer), pgsql-hackers, or
   unknown/other/internal when there is no public trail. Built to ground
   projections of how bug-report volume translates into fix volume. Data
-  from the transform/ dbt project (fct_fix_origins_agg,
-  fct_origin_activity_monthly_agg).
+  from the transform/ dbt project (fct_fix_origins_agg -- documented and
+  committed fixes per release by origin, the open release's committed-so-far
+  count included -- and fct_origin_activity_monthly_agg).
 
 queries:
 
-  fix_origin_shares:
-    ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the zero-fill spine is a deliberate cross join
+  fix_origins:
     description: >
-      True per-release origin shares (fractions summing to 1) so the percent
-      format is honest in the axis AND the tooltip's value/Total rows —
-      feeding counts through stack:normalize left the tooltip's raw rows
-      percent-formatted ("2000%").
+      DOCUMENTED fixes per shipped release by origin: a fix is one release-notes
+      item, deduplicated across the branches it was backpatched to (fct_fixes).
+      Shipped releases only -- the open release has no notes yet (its committed
+      fixes are the fix_commit_origins chart below). Every release carries all
+      four origins (zero-filled upstream) so the categorical sort (which SUMS
+      release_seq per release) stays chronological. Out-of-band emergency
+      releases excluded. committed_fix_cnt and rate ride along for the hover:
+      the commits behind each bar and the share of them the notes documented.
     source: warehouse
     sql: |
-      WITH releases AS (
-        SELECT DISTINCT release_dt FROM fct_fix_origins_agg WHERE NOT is_out_of_band
-      ),
-      origins AS (
-        SELECT DISTINCT origin FROM fct_fix_origins_agg
-      )
       SELECT
-        STRFTIME(wvs.release_dt, '%b %y') AS release,
-        EPOCH(wvs.release_dt)::BIGINT AS release_seq,
-        CASE org.origin
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        CASE origin
           WHEN 'unknown_or_internal_security' THEN 'embargoed security'
           WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
-          ELSE org.origin
+          ELSE origin
         END AS origin,
-        ROUND(COALESCE(fxo.fix_share, 0), 4) AS fix_share
-      FROM releases AS wvs
-      CROSS JOIN origins AS org
-      LEFT JOIN fct_fix_origins_agg AS fxo
-        ON fxo.release_dt = wvs.release_dt AND fxo.origin = org.origin
-      UNION ALL
-      -- the in-progress next release's origin shares (see fct_fix_origins_agg below)
-      SELECT
-        (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM fct_pending_fix_origins_agg),
-        (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM fct_pending_fix_origins_agg),
-        labels.origin,
-        ROUND(COALESCE(pnd.fix_share, 0), 4)
-      FROM (SELECT UNNEST(['pgsql-bugs', 'pgsql-hackers', 'embargoed security', 'unsourced']) AS origin) AS labels
-      LEFT JOIN (
-        SELECT
-          CASE origin WHEN 'unknown_or_internal' THEN 'unsourced' ELSE origin END AS origin,
-          fix_share
-        FROM fct_pending_fix_origins_agg
-      ) AS pnd ON pnd.origin = labels.origin
+        fix_cnt,
+        committed_fix_cnt,
+        documentation_rate AS rate
+      FROM fct_fix_origins_agg
+      WHERE status = 'shipped' AND NOT is_out_of_band
       ORDER BY 2, 3
 
-  fct_fix_origins_agg:
-    ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the zero-fill spine is a deliberate cross join
+  fix_commit_origins:
     description: >
-      Distinct fixes per scheduled release by origin (out-of-band emergency
-      releases excluded — their tiny totals distort the shares). Short "Mon
-      YY" labels ride a categorical axis; release_seq is the chronological
-      sort key.
+      COMMITTED fixes per release by origin, the same measure for every bar: a
+      fix is one distinct non-housekeeping stable-branch commit subject,
+      deduplicated across the branches it was backpatched to
+      (dim_commit.fix_key -> int_committed_fixes), counted in the release it
+      shipped in by git tag ancestry. The open release counts the fixes landed
+      since the wrap SO FAR (same rule, not yet tagged) -- right-censored, and
+      with no security yet because embargoed work reaches git only on wrap day.
+      Roughly twice the documented chart above: the notes fold several commits
+      into one item and document only 40-60% of subjects. The ORDER BY IS the
+      x-axis order: the chart carries a dashed overlay layer, and dct 0.5 drops
+      an explicit `sort:` key once a chart has layers, but keeps the query's row
+      order when `sort:` is omitted.
     source: warehouse
     sql: |
-      -- zero-filled: every release carries every origin so the chart sort
-      -- (which SUMS release_seq over each release's rows) stays chronological
-      -- regardless of how many origins a release actually has
-      WITH releases AS (
-        SELECT DISTINCT release_dt FROM fct_fix_origins_agg WHERE NOT is_out_of_band
-      ),
-      origins AS (
-        SELECT DISTINCT origin FROM fct_fix_origins_agg
-      )
       SELECT
-        STRFTIME(wvs.release_dt, '%b %y') AS release,
-        EPOCH(wvs.release_dt)::BIGINT AS release_seq,
-        CASE org.origin
+        STRFTIME(release_dt, '%b %y') || CASE WHEN status = 'open' THEN ' (so far)' ELSE '' END AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        CASE origin
           WHEN 'unknown_or_internal_security' THEN 'embargoed security'
           WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
-          ELSE org.origin
+          ELSE origin
         END AS origin,
-        COALESCE(fxo.fix_cnt, 0) AS fix_cnt
-      FROM releases AS wvs
-      CROSS JOIN origins AS org
-      LEFT JOIN fct_fix_origins_agg AS fxo
-        ON fxo.release_dt = wvs.release_dt AND fxo.origin = org.origin
-      UNION ALL
-      -- the in-progress next release: fixes already committed toward the next
-      -- minor (fct_pending_fix_origins_agg), zero-filled over the same four display
-      -- labels so the categorical sort (which SUMS release_seq per release) keeps
-      -- it last. 'embargoed security' is 0 by construction — that work only
-      -- reaches public git on wrap day.
+        -- named for the y-axis title, which dct composes from the base and layer y columns
+        committed_fix_cnt AS fix_commits,
+        -- the open release's value again, NULL elsewhere: the dashed overlay layer's y
+        CASE WHEN status = 'open' THEN committed_fix_cnt END AS so_far,
+        fix_cnt AS documented_fix_cnt,
+        documentation_rate AS rate
+      FROM fct_fix_origins_agg
+      WHERE NOT is_out_of_band
+      ORDER BY 2, 3
+
+  fix_origin_shares:
+    description: >
+      True per-release origin shares of the documented fixes (fractions summing
+      to 1) so the percent format is honest in the axis AND the tooltip's
+      value/Total rows — feeding counts through stack:normalize left the
+      tooltip's raw rows percent-formatted ("2000%"). Shipped releases only,
+      like fix_origins.
+    source: warehouse
+    sql: |
       SELECT
-        (SELECT STRFTIME(MIN(ships_at_dt), '%b %y') || ' (in progress)' FROM fct_pending_fix_origins_agg),
-        (SELECT EPOCH(MIN(ships_at_dt))::BIGINT FROM fct_pending_fix_origins_agg),
-        labels.origin,
-        COALESCE(pnd.fix_cnt, 0)
-      FROM (SELECT UNNEST(['pgsql-bugs', 'pgsql-hackers', 'embargoed security', 'unsourced']) AS origin) AS labels
-      LEFT JOIN (
-        SELECT
-          CASE origin WHEN 'unknown_or_internal' THEN 'unsourced' ELSE origin END AS origin,
-          fix_cnt
-        FROM fct_pending_fix_origins_agg
-      ) AS pnd ON pnd.origin = labels.origin
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        CASE origin
+          WHEN 'unknown_or_internal_security' THEN 'embargoed security'
+          WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
+          ELSE origin
+        END AS origin,
+        ROUND(COALESCE(fix_share, 0), 4) AS fix_share
+      FROM fct_fix_origins_agg
+      WHERE status = 'shipped' AND NOT is_out_of_band
       ORDER BY 2, 3
 
   cited_threads:
@@ -278,9 +267,9 @@ charts:
 
   fix_origin_counts:
     type: bar
-    query: fct_fix_origins_agg
+    query: fix_origins
     title: "Fix origins per release"
-    subtitle: "Distinct fixes by source; out-of-band releases excluded. The rightmost '(in progress)' bar is the next minor's fixes committed so far — right-censored and with no security yet (embargoed until wrap)"
+    subtitle: "Documented fixes by source: a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band releases excluded"
     x: release
     y: fix_cnt
     color: origin
@@ -289,11 +278,36 @@ charts:
     style: { stack: zero, orientation: vertical }
     height: 360
 
+  fix_commit_origins:
+    type: bar
+    query: fix_commit_origins
+    title: "Fix commits per release"
+    subtitle: "Committed fixes by source: a fix = one distinct fix-commit subject, deduplicated across backpatched branches, in the release it shipped in. Dashed bar = the next release so far (no security until wrap)"
+    x: release
+    y: fix_commits
+    color: origin
+    # NO sort: key -- with layers present dct 0.5 ignores it and falls back to
+    # alphabetical; the query's ORDER BY release_seq is what orders the axis
+    style: { stack: zero, orientation: vertical }
+    height: 360
+    # the open release's bar is the same measure, still accumulating: mark it
+    # with a dashed outline -- a bar layer on the same query whose y (so_far)
+    # is NULL on every shipped row, so it draws only that bar (bar charts take
+    # no per-row opacity encoding)
+    layers:
+      - type: bar
+        y: so_far
+        color: origin
+        style:
+          marks:
+            bar:
+              border: { color: "#333333", width: 2, dash_array: [6, 4] }
+
   fix_origin_share:
     type: bar
     query: fix_origin_shares
     title: "Fix origin share per release"
-    subtitle: "Same data as shares; out-of-band releases excluded — pgsql-bugs supplies a quarter to a third. The '(in progress)' bar skews to pgsql-hackers because embargoed security work has not landed yet"
+    subtitle: "Same documented fixes as shares; shipped releases only, out-of-band excluded — pgsql-bugs supplies a quarter to a third"
     x: release
     y: fix_share
     color: origin
@@ -305,7 +319,7 @@ charts:
       stack: zero
       axis_y:
         labels:
-          format: ".0%"
+          format: ".1%"
     height: 360
 
   cited_threads:
@@ -367,7 +381,7 @@ charts:
     style:
       axis_y:
         labels:
-          format: ".0%"
+          format: ".1%"
     height: 340
 
   recent_weekly_traffic:
@@ -402,11 +416,12 @@ charts:
     style:
       axis_y:
         labels:
-          format: ".0%"
+          format: ".1%"
     height: 340
 
 rows:
   - fix_origin_counts
+  - fix_commit_origins
   - fix_origin_share
   - monthly_traffic
   - monthly_linked_share
