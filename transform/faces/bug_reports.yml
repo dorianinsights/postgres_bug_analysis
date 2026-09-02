@@ -276,7 +276,8 @@ charts:
         query: monthly_acted_trend
         x: report_month
         y: acted_upon_pct
-        color: series
+        label: "3-month rolling average"
+        style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
 
   seasonality_counts:
     type: bar
