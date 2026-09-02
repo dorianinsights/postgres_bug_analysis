@@ -163,3 +163,23 @@ to `type: metricflow` queries and retire `fct_list_traffic_monthly_agg` +
 `_weekly_agg` (and their CSVs). Gotchas: dimensions are referenced by entity
 (`message__list_name`), time via `metric_time__<grain>`; a `type: metricflow`
 query needs the `dbt_profile` source, not `duckdb`.
+
+---
+
+## Upcoming release on the changelog "Fixes per Scheduled Minor Release" chart
+
+The chart plots documented changelog `item_cnt` (shipped releases only). The
+upcoming (open) release has no release notes yet, so it is absent. We CAN show a
+"fixes so far" point for it (the `early_fix_cnt` KPI proves the data exists), but
+measured empirically the committed distinct-fix count runs ~1.5-2.6x the eventual
+documented `item_cnt` (per major, recent releases), so dropping it onto the same
+lines would show the upcoming release ~2x too tall.
+
+Decide + implement one of:
+1. Feather (dashed) a per-major COMMITTED-fixes-so-far point at the open release,
+   clearly labeled as a commit-scale leading indicator (~2x documented). Closest
+   to "accumulating now"; sits on a different scale than the rest of the line.
+2. Feather a per-major PROJECTED documented-item count (from the projection
+   models) -- same scale as the lines, but a forecast not the live count.
+3. A dedicated small "upcoming release: fixes committed so far, per major" chart
+   in the commit measure, separate from the item-count lines.
