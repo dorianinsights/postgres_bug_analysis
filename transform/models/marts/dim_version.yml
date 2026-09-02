@@ -12,8 +12,10 @@ models:
     tests:
       # the two special members carry placeholder versions with no real release
       - dbt_utils.expression_is_true:
+          # the special members and the forward-looking in-development version
+          # (future release_dt) are exempt from the Thursday-release invariant
           config:
-            where: "version NOT IN ('(unknown)', '(not applicable)')"
+            where: "version NOT IN ('(unknown)', '(not applicable)') AND release_dt <= CURRENT_DATE"
           arguments:
             expression: ISODOW(release_dt) = 4
     columns:

@@ -75,9 +75,39 @@ real_members AS (
   LEFT JOIN item_counts AS itc ON rel.version = itc.version
   LEFT JOIN commit_span AS csp ON rel.version = csp.version
   LEFT JOIN {{ ref('stg_major_development') }} AS smd ON rel.major = smd.major
+),
+
+-- the in-progress major's GA-to-be (e.g. 19.0): a first-class in-development
+-- version whose "commits" are the major's feature development so far. No release
+-- date yet (forward-looking); its release is the matching in_development row in
+-- dim_release (same key).
+in_dev_version AS (
+  SELECT
+    {{ dbt_utils.generate_surrogate_key(["smd.major || '.0'"]) }} AS dim_version_key,
+    dmj.dim_major_key,
+    {{ dbt_utils.generate_surrogate_key(["smd.major || '.0'"]) }} AS dim_release_key,
+    smd.major || '.0' AS version,
+    smd.major,
+    0 AS minor,
+    true AS is_major_release,
+    DATE '{{ var('future_eternity') }}' AS wrap_dt,
+    DATE '{{ var('future_eternity') }}' AS release_dt,
+    null AS item_cnt,
+    false AS is_out_of_band,
+    smd.first_dev_commit_dt AS first_commit_dt,
+    smd.first_dev_commit_ts AS first_commit_ts,
+    smd.first_dev_commit_hash AS first_commit_hash,
+    smd.last_dev_commit_dt AS last_commit_dt,
+    smd.last_dev_commit_ts AS last_commit_ts,
+    smd.last_dev_commit_hash AS last_commit_hash
+  FROM {{ ref('stg_major_development') }} AS smd
+  INNER JOIN {{ ref('dim_major') }} AS dmj ON smd.major = dmj.major
+  WHERE smd.dev_status = 'beta'
 )
 
 SELECT * FROM real_members
+UNION ALL
+SELECT * FROM in_dev_version
 UNION ALL
 SELECT
   {{ unknown_key() }} AS dim_version_key,

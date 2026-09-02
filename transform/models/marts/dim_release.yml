@@ -17,7 +17,7 @@ models:
       # the two special members are exempt
       - dbt_utils.expression_is_true:
           config:
-            where: "status NOT IN ('unknown', 'not applicable')"
+            where: "status NOT IN ('unknown', 'not applicable', 'in_development')"
           arguments:
             expression: "(cycle_start_dt IS NOT NULL) = (NOT is_out_of_band AND status <> 'future')"
     columns:
@@ -26,7 +26,11 @@ models:
       - name: release_dt
         tests:
           - not_null
-          - unique
+          # the in_development release shares future_eternity with Not Applicable;
+          # dim_release_key is the real PK, so scope uniqueness to dated releases
+          - unique:
+              config:
+                where: "status <> 'in_development'"
           - relationships:
               arguments:
                 to: ref('dim_date')
@@ -39,7 +43,7 @@ models:
               config:
                 where: "status NOT IN ('unknown', 'not applicable')"
               arguments:
-                values: [shipped, open, future]
+                values: [shipped, open, future, in_development]
       - name: is_out_of_band
         tests: [not_null]
       - name: is_partial_window

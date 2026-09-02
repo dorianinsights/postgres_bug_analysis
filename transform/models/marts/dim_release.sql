@@ -101,3 +101,32 @@ SELECT
   null AS fix_per_early_report,
   null AS fix_per_early_message,
   null AS fix_per_early_fix
+UNION ALL
+-- the in-progress major's GA-to-be (e.g. 19.0): a first-class in_development
+-- release. No real date or measures yet (all forward-looking), so date- and
+-- status-filtered charts leave it out. Sourced from the in-beta major.
+SELECT
+  {{ dbt_utils.generate_surrogate_key(["smd.major || '.0'"]) }} AS dim_release_key,
+  DATE '{{ var('future_eternity') }}' AS release_dt,
+  DATE '{{ var('future_eternity') }}' AS wrap_dt,
+  'in_development' AS status,
+  false AS is_out_of_band,
+  false AS is_partial_window,
+  smd.major || '.0' AS versions,
+  1::BIGINT AS release_cnt,
+  null AS distinct_fix_cnt,
+  null AS distinct_cve_cnt,
+  null AS security_fix_cnt,
+  null AS cycle_start_dt,
+  null AS window_days,
+  null AS early_report_cnt,
+  null AS early_message_cnt,
+  null AS early_fix_cnt,
+  null AS full_fix_cnt,
+  null AS first_window_fix_cnt,
+  null AS early_fix_share,
+  null AS fix_per_early_report,
+  null AS fix_per_early_message,
+  null AS fix_per_early_fix
+FROM {{ ref('stg_major_development') }} AS smd
+WHERE smd.dev_status = 'beta'
