@@ -47,7 +47,9 @@ queries:
     description: >
       Fix items per scheduled minor release, one series per major version.
       Out-of-band emergency re-releases are excluded via dim_version.is_out_of_band
-      (a release-group property, not a per-version item-count threshold).
+      (a release-group property, not a per-version item-count threshold). Shipped
+      releases only -- item_cnt is the release-notes item count, which does not
+      exist for the still-accumulating upcoming release.
     source: warehouse
     sql: |
       SELECT
@@ -306,7 +308,7 @@ charts:
     type: line
     query: releases_by_branch
     title: "Fixes per scheduled minor release, by major version"
-    subtitle: "A fix backpatched to all branches appears on each line"
+    subtitle: "A fix backpatched to all branches appears on each line; shipped releases only (the upcoming release has no changelog yet)"
     x: date
     y: n_items
     color: branch
@@ -323,7 +325,7 @@ charts:
         query: branch_trend
         x: date
         y: trend_excl_latest
-        label: "trend excluding Aug '26"
+        label: "trend excluding latest release"
         style: { marks: { line: { stroke: { color: "#c0392b", dasharray: "3 5", width: 1.5 } } } }
 
   category_mix:

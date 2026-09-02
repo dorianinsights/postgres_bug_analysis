@@ -110,6 +110,19 @@ queries:
       FROM fct_bug_reports_monthly_agg
       ORDER BY 1
 
+  monthly_acted_trend:
+    description: Three-month trailing average of the acted-upon share.
+    source: warehouse
+    sql: |
+      SELECT
+        report_month_dt AS report_month,
+        '3-month average' AS series,
+        AVG(acted_upon_pct / 100.0) OVER (
+          ORDER BY report_month_dt ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) AS acted_upon_pct
+      FROM fct_bug_reports_monthly_agg
+      ORDER BY 1
+
   seasonality_counts:
     description: >
       Distinct backpatched fixes per release cycle, averaged by release quarter:
@@ -252,12 +265,18 @@ charts:
     type: line
     query: monthly_acted
     title: "Reports acted upon, by month"
-    subtitle: "Lower bound (exact commit links only); trailing months right-censored"
+    subtitle: "Lower bound (exact commit links only); trailing months right-censored; with a 3-month rolling average"
     x: report_month
     y: acted_upon_pct
     color: series
     style: { axis_y: { labels: { format: ".0%" } } }
     height: 340
+    layers:
+      - type: line
+        query: monthly_acted_trend
+        x: report_month
+        y: acted_upon_pct
+        color: series
 
   seasonality_counts:
     type: bar
