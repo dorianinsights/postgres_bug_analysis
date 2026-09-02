@@ -45,6 +45,16 @@ models:
           trunk) and the special members. The clean "released majors only"
           filter, replacing the old fct_commits.branch != 'master' string test.
         tests: [not_null]
+      - name: lifecycle
+        description: >
+          released (a shipped major), beta (the in-progress major, branched but
+          not GA), or development (master, the trunk). Distinguishes the three
+          kinds of non-released line.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["released", "beta", "development", "(unknown)", "(not applicable)"]
       - name: is_supported
         description: Released AND still inside its ~5-year window (CURRENT_DATE <= eol_dt). False for master and specials.
         tests: [not_null]

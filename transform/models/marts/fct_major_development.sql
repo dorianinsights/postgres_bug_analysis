@@ -11,15 +11,16 @@
 -- dim_major, which is released majors + master); the dev-commit days conform to
 -- dim_date. Grain = major. -> ../data/derived/fct_major_development.csv
 SELECT
-  major,
-  major_label,
-  dev_status,
-  latest_milestone,
-  dev_commit_cnt,
-  first_dev_commit_dt,
-  first_dev_commit_ts,
-  first_dev_commit_hash,
-  last_dev_commit_dt,
-  last_dev_commit_ts,
-  last_dev_commit_hash
-FROM {{ ref('stg_major_development') }}
+  dmj.dim_major_key,
+  smd.major,
+  smd.dev_status,
+  smd.latest_milestone,
+  smd.dev_commit_cnt,
+  smd.first_dev_commit_dt,
+  smd.first_dev_commit_ts,
+  smd.first_dev_commit_hash,
+  smd.last_dev_commit_dt,
+  smd.last_dev_commit_ts,
+  smd.last_dev_commit_hash
+FROM {{ ref('stg_major_development') }} AS smd
+INNER JOIN {{ ref('dim_major') }} AS dmj ON smd.major = dmj.major

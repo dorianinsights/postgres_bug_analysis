@@ -1,17 +1,16 @@
--- Major-line dimension: one row per PostgreSQL development line -- the five
--- released majors (their stable branches, e.g. PG18) PLUS master, the
--- development trunk (the in-progress next major, not yet released). The single
--- home for line-level attributes previously re-derived as literals across the
--- project: the display label, the branch name, and the ~5-year support window
--- (ga_dt -> eol_dt). is_released separates the released majors from master;
--- is_supported is the released-and-still-in-window subset. Because master is a
--- member, every fct_commits.branch value (incl. 'master') resolves to a real
--- row -- no NULL/Unknown FK. Sourced from the version registry (int_versions)
--- for the majors, with master appended. dim_major_key is a
--- generate_surrogate_key hash of the natural key; conforms to dim_version,
--- fct_commits, and fct_branch_size_weekly. Grain = major line.
--- -> ../data/derived/dim_major.csv
-WITH majors AS (
+-- Major-line dimension: one row per PostgreSQL development line -- the released
+-- majors (their stable branches, e.g. PG18), the in-progress major (branched and
+-- in beta, e.g. PG19), PLUS master, the development trunk. The single home for
+-- line-level attributes: display label, branch name, the ~5-year support window
+-- (ga_dt -> eol_dt), and lifecycle (released / beta / development). is_released
+-- separates the released majors; is_supported is the released-and-still-in-window
+-- subset. Every fct_commits.branch value resolves to a real row (no NULL/Unknown
+-- FK). Sourced from stg_major_development, which discovers released AND
+-- in-progress majors from the repo, with ga_dt from int_versions and master
+-- appended. dim_major_key is a generate_surrogate_key hash of the natural key;
+-- conforms to dim_version, fct_commits, fct_branch_size_weekly,
+-- fct_major_development. Grain = major line. -> ../data/derived/dim_major.csv
+WITH ga_dates AS (
   SELECT
     major,
     MIN(release_dt) AS ga_dt
@@ -21,24 +20,25 @@ WITH majors AS (
 
 real_members AS (
   SELECT
-    {{ dbt_utils.generate_surrogate_key(['mjr.major']) }} AS dim_major_key,
-    mjr.major,
-    'PG' || mjr.major AS major_label,
-    'REL_' || mjr.major || '_STABLE' AS stable_branch,
-    mjr.ga_dt,
-    -- ~5-year support window: major M's final minor lands ~Nov of 2012 + M. Same
-    -- formula int_releases uses to drop EOL majors and git.py uses to cap the
-    -- weekly snapshot -- surfaced here as a queryable attribute.
-    MAKE_DATE(mjr.major + 2012, 11, 30) AS eol_dt,
-    true AS is_released,
-    CURRENT_DATE <= MAKE_DATE(mjr.major + 2012, 11, 30) AS is_supported
-  FROM majors AS mjr
+    {{ dbt_utils.generate_surrogate_key(['smd.major']) }} AS dim_major_key,
+    smd.major,
+    'PG' || smd.major AS major_label,
+    'REL_' || smd.major || '_STABLE' AS stable_branch,
+    -- released majors have a GA day; the in-progress major has not shipped yet
+    COALESCE(gad.ga_dt, DATE '{{ var('future_eternity') }}') AS ga_dt,
+    -- ~5-year support window: major M's final minor lands ~Nov of 2012 + M
+    MAKE_DATE(smd.major + 2012, 11, 30) AS eol_dt,
+    smd.dev_status = 'released' AS is_released,
+    smd.dev_status = 'released' AND CURRENT_DATE <= MAKE_DATE(smd.major + 2012, 11, 30) AS is_supported,
+    smd.dev_status AS lifecycle
+  FROM {{ ref('stg_major_development') }} AS smd
+  LEFT JOIN ga_dates AS gad ON smd.major = gad.major
 )
 
 SELECT * FROM real_members
 UNION ALL
--- master: the development trunk, the in-progress next major -- a real line with
--- no released major number, GA, or EOL yet (all forward-looking).
+-- master: the development trunk (the major AFTER the in-progress one) -- no
+-- numbered major, GA, or EOL yet.
 SELECT
   {{ dbt_utils.generate_surrogate_key(["'master'"]) }} AS dim_major_key,
   null AS major,
@@ -47,7 +47,8 @@ SELECT
   DATE '{{ var('future_eternity') }}' AS ga_dt,
   DATE '{{ var('future_eternity') }}' AS eol_dt,
   false AS is_released,
-  false AS is_supported
+  false AS is_supported,
+  'development' AS lifecycle
 UNION ALL
 SELECT
   {{ unknown_key() }} AS dim_major_key,
@@ -57,7 +58,8 @@ SELECT
   DATE '{{ var('past_eternity') }}' AS ga_dt,
   DATE '{{ var('future_eternity') }}' AS eol_dt,
   false AS is_released,
-  false AS is_supported
+  false AS is_supported,
+  '(unknown)' AS lifecycle
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_major_key,
@@ -67,4 +69,5 @@ SELECT
   DATE '{{ var('past_eternity') }}' AS ga_dt,
   DATE '{{ var('future_eternity') }}' AS eol_dt,
   false AS is_released,
-  false AS is_supported
+  false AS is_supported,
+  '(not applicable)' AS lifecycle
