@@ -1,0 +1,14 @@
+category_content,fix_cnt,cve_cnt,security_hardening_cnt,performance_cnt,avg_confidence
+Build & platform,66,0,2,1,0.95
+Client interfaces,52,12,21,0,0.95
+Client tools,107,7,10,1,0.95
+"Concurrency, locking & crashes",169,9,62,2,0.95
+"Data types, text & collation",110,5,6,0,0.95
+Execution & correctness,179,8,10,0,0.95
+Extensions & contrib,44,9,15,0,0.95
+Indexes,71,0,3,4,0.95
+"Numeric, overflow & limits",55,22,28,1,0.95
+Partitioning & inheritance,34,0,1,0,0.95
+Planner & optimizer,85,1,1,10,0.95
+Replication & recovery,100,2,8,4,0.95
+"Storage, vacuum & TOAST",56,0,3,5,0.95

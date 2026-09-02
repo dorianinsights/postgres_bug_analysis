@@ -16,3 +16,4 @@ sources:
       external_location: "read_csv('../data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'VARCHAR'])"
     tables:
       - name: fix_categories_llm
+      - name: fix_content_categories

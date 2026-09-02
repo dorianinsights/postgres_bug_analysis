@@ -1,0 +1,19 @@
+version: 2
+
+seeds:
+  - name: content_categories
+    description: >
+      The redesigned fix taxonomy — 12 content categories derived bottom-up from
+      the mxbai-embed-large clusters (see embed_fixes.py / the Fix Atlas), each a
+      what-is-this-fix-about class rather than a keyword match. classify_content.py
+      reads the definitions to prompt the LLM; the classification lands one of
+      these per fix, with orthogonal is_cve / is_security_hardening / is_performance
+      flags alongside. Replaces the category_rules regex seed once the LLM
+      classifier is trusted (staged retirement).
+    columns:
+      - name: category_order
+        tests: [not_null, unique]
+      - name: category
+        tests: [not_null, unique]
+      - name: definition
+        tests: [not_null]
