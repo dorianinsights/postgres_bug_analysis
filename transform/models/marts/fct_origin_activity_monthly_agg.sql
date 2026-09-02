@@ -23,8 +23,10 @@ master_commits AS (
     fcm.is_plumbing,
     fcm.ai_credit
   FROM {{ ref('fct_commits') }} AS fcm
+  INNER JOIN {{ ref('dim_major') }} AS dmj ON fcm.dim_major_key = dmj.dim_major_key
   LEFT JOIN security_fix_commits AS sfc ON LEFT(fcm.commit_hash, 9) = sfc.abbrev_hash
-  WHERE fcm.branch = 'master'
+  -- master (the development trunk) is the one unreleased line
+  WHERE NOT dmj.is_released
 ),
 
 commit_rollup AS (

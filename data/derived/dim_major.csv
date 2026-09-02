@@ -1,0 +1,9 @@
+dim_major_key,major,major_label,stable_branch,ga_dt,eol_dt,is_released,is_supported
+5d7b9adcbe1c629ec722529dd12e5129,,(not applicable),(not applicable),1900-01-01,9999-01-01,false,false
+6bb61e3b7bce0931da574d19d1d82c88,,(unknown),(unknown),1900-01-01,9999-01-01,false,false
+6f4922f45568161a8cdf4ad2299f6d23,18,PG18,REL_18_STABLE,2025-09-25,2030-11-30,true,true
+70efdf2ec9b086079795c442636b55fb,17,PG17,REL_17_STABLE,2024-09-26,2029-11-30,true,true
+9bf31c7ff062936a96d3c8bd1f8f2ff3,15,PG15,REL_15_STABLE,2022-10-13,2027-11-30,true,true
+aab3238922bcc25a6f606eb525ffdc56,14,PG14,REL_14_STABLE,2021-09-30,2026-11-30,true,true
+c74d97b01eae257e44aa9d5bade97baf,16,PG16,REL_16_STABLE,2023-09-14,2028-11-30,true,true
+eb0a191797624dd3a48fa681d3061212,,master,master,9999-01-01,9999-01-01,false,false

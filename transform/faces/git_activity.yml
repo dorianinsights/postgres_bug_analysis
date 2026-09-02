@@ -22,26 +22,29 @@ queries:
     source: warehouse
     sql: |
       SELECT
-        DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
+        DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
         'distinct fix commits' AS series,
-        COUNT(DISTINCT LOWER(TRIM(subject))) AS distinct_fix_cnt
-      FROM fct_commits
-      WHERE branch != 'master' AND NOT is_plumbing
+        COUNT(DISTINCT LOWER(TRIM(fc.subject))) AS distinct_fix_cnt
+      FROM fct_commits AS fc
+      INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
+      WHERE dm.is_released AND NOT fc.is_plumbing
       GROUP BY 1
       ORDER BY 1
 
   quarterly_by_branch:
+    ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_major is N:1 (dim_major_key is its PK); COUNT not inflated
     description: >
       Fix commits per stable branch per quarter (each branch counts its own
       backpatches; plumbing excluded).
     source: warehouse
     sql: |
       SELECT
-        DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
-        branch,
+        DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
+        dm.stable_branch AS branch,
         COUNT(*) AS fix_commits
-      FROM fct_commits
-      WHERE branch != 'master' AND NOT is_plumbing
+      FROM fct_commits AS fc
+      INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
+      WHERE dm.is_released AND NOT fc.is_plumbing
       GROUP BY 1, 2
       ORDER BY 1, 2
 
@@ -58,10 +61,11 @@ queries:
       SELECT
         STRFTIME(dv.release_dt, '%b %y') AS release,
         EPOCH(dv.release_dt)::BIGINT AS release_seq,
-        dv.major_label AS major,
+        dm.major_label AS major,
         COUNT(*)::BIGINT AS commit_cnt
       FROM fct_commits AS fc
       INNER JOIN dim_version AS dv ON fc.dim_version_key = dv.dim_version_key
+      INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
       WHERE NOT fc.is_plumbing AND dv.minor > 0
       GROUP BY ALL
       ORDER BY release_seq, major
@@ -69,20 +73,19 @@ queries:
   codebase_size:
     description: >
       Absolute codebase size — total source lines (.c/.h/.y/.l/.pl/.pm/.py/.sql/
-      .sgml/.pgc) in the tree at each release, from git grep at the release tag
-      (fct_version_size_agg). One line per major: each stable branch's tree over
-      its lifetime. NOT summed across majors — they are parallel near-copies of
-      the same tree, so size is read within a major and stepped across majors,
-      never added.
+      .sgml/.pgc) in each stable branch's tree, sampled WEEKLY by git grep at the
+      branch HEAD (fct_branch_size_weekly). One line per major, a smooth growth
+      curve. NOT summed across majors — they are parallel near-copies of the same
+      tree, so size is read within a major and stepped across majors, never added.
     source: warehouse
     sql: |
       SELECT
-        dv.release_dt AS release_dt,
-        dv.major_label AS major,
-        sz.code_lines AS code_lines
-      FROM fct_version_size_agg AS sz
-      INNER JOIN dim_version AS dv ON sz.dim_version_key = dv.dim_version_key
-      ORDER BY dv.release_dt
+        bsz.week_start AS week_dt,
+        dm.major_label AS major,
+        bsz.code_lines AS code_lines
+      FROM fct_branch_size_weekly AS bsz
+      INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
+      ORDER BY bsz.week_start
 
   churn_by_quarter:
     description: >
@@ -95,11 +98,12 @@ queries:
     sql: |
       WITH q AS (
         SELECT
-          DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
-          SUM(lines_added_sum)::BIGINT AS adds,
-          SUM(lines_deleted_sum)::BIGINT AS deletes
-        FROM fct_commits
-        WHERE branch != 'master' AND NOT is_plumbing
+          DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
+          SUM(fc.lines_added_sum)::BIGINT AS adds,
+          SUM(fc.lines_deleted_sum)::BIGINT AS deletes
+        FROM fct_commits AS fc
+        INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
+        WHERE dm.is_released AND NOT fc.is_plumbing
         GROUP BY 1
       )
 
@@ -208,8 +212,8 @@ charts:
     type: line
     query: codebase_size
     title: "Codebase size over time, by major"
-    subtitle: "Total source lines in the tree at each release (git grep at the release tag); one line per stable branch — never summed across majors (parallel copies of the same tree)"
-    x: release_dt
+    subtitle: "Total source lines per stable branch, sampled weekly (git grep at the branch HEAD); one line per major — never summed across majors (parallel copies of the same tree)"
+    x: week_dt
     y: code_lines
     y_label: "source lines"
     color: major

@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: fct_branch_size_weekly
+    description: >
+      Weekly periodic-snapshot fact ->
+      ../data/derived/fct_branch_size_weekly.csv: the STATE (size) of each stable
+      branch's tree sampled at each week's end -- the codebase growth curve over
+      calendar time. Conforms to dim_date on week_start and dim_major on
+      dim_major_key. code_lines is the total across the source globs; doc_lines
+      (.sgml) and test_lines (src/test) are subsets. A per-major stock, never
+      summed across majors. Flow (churn / commit counts) lives in fct_commits, not
+      here. Grain = (dim_major_key, week_start).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [dim_major_key, week_start]
+    columns:
+      - name: dim_major_key
+        description: FK to dim_major -- the stable branch / major line this tree belongs to.
+        tests:
+          - not_null
+          - not_unknown_member
+          - relationships:
+              arguments:
+                to: ref('dim_major')
+                field: dim_major_key
+      - name: week_start
+        description: The snapshot week's Monday (UTC); conforms to dim_date.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: commit_hash
+        description: >
+          The branch HEAD as of the week's end -- the exact commit whose tree was
+          measured (provenance, not an aggregation key). Quiet weeks share a
+          commit_hash.
+        tests: [not_null]
+      - name: code_lines
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: doc_lines
+        tests: [not_null]
+      - name: test_lines
+        tests: [not_null]
+      - name: file_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

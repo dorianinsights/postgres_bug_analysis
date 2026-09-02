@@ -1,10 +1,12 @@
--- Commit-grain fact: one row per commit (per branch — a backpatch is its own
--- commit). Foreign keys into dim_person (author and committer roles) and
--- dim_date (commit day); measures are the representative diff size. Origin and
--- the plumbing/AI flags ride along as degenerate attributes. Each person key is
--- resolved by computing the identity node (person_node macro) and joining
--- int_person_map, so it matches dim_person's connected-component resolution.
--- Grain = (branch, commit_hash). -> ../data/derived/fct_commits.csv
+-- Commit-grain fact: one row per commit (a backpatch is its own commit, with its
+-- own hash). Foreign keys into dim_person (author and committer roles), dim_date
+-- (commit day), dim_release / dim_version (the release+minor it shipped in), and
+-- dim_major (its development line -- the branch, master included). Measures are
+-- the representative diff size; origin and the plumbing/AI flags ride along as
+-- degenerate attributes. Each person key is resolved by computing the identity
+-- node (person_node macro) and joining int_person_map, so it matches
+-- dim_person's connected-component resolution. The branch string is no longer
+-- stored -- it is dim_major.stable_branch. Grain = commit_hash.
 WITH file_stats AS (
   SELECT
     commit_hash,
@@ -30,7 +32,6 @@ release_windows AS (
 )
 
 SELECT
-  gcm.branch,
   gcm.commit_hash,
   COALESCE(pmp_a.person_key, {{ unknown_key() }}) AS author_dim_person_key,
   COALESCE(pmp_c.person_key, {{ unknown_key() }}) AS committer_dim_person_key,
@@ -43,6 +44,12 @@ SELECT
   -- branch string. Not Applicable for master / not-yet-shipped commits (no
   -- shipped version yet), same as dim_release_key.
   COALESCE(dvr.dim_version_key, {{ not_applicable_key() }}) AS dim_version_key,
+  -- the commit's development line (dim_major includes master, so this always
+  -- resolves; the COALESCE only guards an unexpected branch)
+  COALESCE(dmj.dim_major_key, {{ not_applicable_key() }}) AS dim_major_key,
+  -- the full committer instant (TIMESTAMPTZ) for latency/ordering; commit_dt is
+  -- its UTC calendar day, kept for the dim_date FK and day-grain grouping.
+  gcm.commit_ts,
   gcm.commit_dt,
   org.origin,
   igc.is_plumbing,
@@ -71,6 +78,10 @@ LEFT JOIN {{ ref('dim_version') }} AS dvr
   ON
     rwn.dim_release_key = dvr.dim_release_key
     AND TRY_CAST(SPLIT_PART(gcm.branch, '_', 2) AS INTEGER) = dvr.major
+-- the commit's development line (its branch). dim_major now carries master too,
+-- so every branch -- stable or master -- resolves to a real member; the branch
+-- string itself is no longer stored, it lives here as dim_major.stable_branch.
+LEFT JOIN {{ ref('dim_major') }} AS dmj ON gcm.branch = dmj.stable_branch
 LEFT JOIN {{ ref('int_person_map') }} AS pmp_a
   ON pmp_a.node_id = {{ person_node('igc.patch_author_email', 'igc.patch_author_name') }}
 LEFT JOIN {{ ref('int_person_map') }} AS pmp_c

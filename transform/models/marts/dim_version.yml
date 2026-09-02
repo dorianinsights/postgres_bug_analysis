@@ -26,8 +26,34 @@ models:
           - not_null:
               config:
                 where: "version NOT IN ('(unknown)', '(not applicable)')"
-      - name: major_label
-        description: Display label for the major line, e.g. 'PG18'. The single home for this string (faces read it instead of rebuilding 'PG' || major).
+      - name: dim_major_key
+        description: >
+          FK to dim_major (this version's major line). major_label,
+          stable_branch, and the support window live there now, not folded here.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_major')
+                field: dim_major_key
+      - name: item_cnt
+        description: >
+          Parsed changelog-item count for this minor, folded 1:1 onto the
+          dimension (the retired fct_version_items_agg was a one-measure fact at
+          this exact grain — like dim_release's cycle signals). NULL for the .0
+          majors and special members, which have no release-note items.
+        tests:
+          - dbt_utils.accepted_range:
+              config:
+                where: "minor > 0"
+              arguments:
+                min_value: 1
+      - name: is_out_of_band
+        description: >
+          True when this version's release is an out-of-band emergency
+          re-release, inherited 1:1 from dim_release (NOT re-derived per version
+          from item_cnt, which is wrong -- OOB is a release-group property).
+          false for the .0 majors and the special members.
         tests: [not_null]
       - name: minor
         tests:

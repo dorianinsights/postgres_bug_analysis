@@ -5,7 +5,7 @@ models:
     description: >
       Commit-grain fact -> ../data/derived/fct_commits.csv: FKs into dim_person
       (author + committer) and dim_date (commit day), diff-size measures, and
-      origin/plumbing/AI degenerate attributes. Grain = (branch, commit_hash).
+      origin/plumbing/AI degenerate attributes. Grain = commit_hash.
     columns:
       - name: commit_hash
         description: The commit's SHA-1 hash (40 hex chars).
@@ -54,8 +54,24 @@ models:
               arguments:
                 to: ref('dim_version')
                 field: dim_version_key
+      - name: dim_major_key
+        description: >
+          The commit's development line (dim_major) -- its branch, resolved on
+          dim_major.stable_branch. master is a real member now, so every commit
+          resolves to a real row (never Unknown / Not Applicable); the branch
+          string is not stored separately.
+        tests:
+          - not_null
+          - not_unknown_member
+          - relationships:
+              arguments:
+                to: ref('dim_major')
+                field: dim_major_key
+      - name: commit_ts
+        description: The full committer instant (TIMESTAMPTZ) — for latency and within-day ordering.
+        tests: [not_null]
       - name: commit_dt
-        description: The commit's UTC day as a DATE (point-of-use day-trunc; the git face groups on it).
+        description: The commit's UTC day as a DATE (from commit_ts; the dim_date FK and the git face's day grouping).
         tests:
           - not_null
           - relationships:

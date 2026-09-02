@@ -46,16 +46,17 @@ queries:
   releases_by_branch:
     description: >
       Fix items per scheduled minor release, one series per major version.
-      Out-of-band emergency re-releases (< 20 items) are excluded.
+      Out-of-band emergency re-releases are excluded via dim_version.is_out_of_band
+      (a release-group property, not a per-version item-count threshold).
     source: warehouse
     sql: |
       SELECT
         dv.release_dt AS date,
-        dv.major_label AS branch,
-        vi.item_cnt AS n_items
-      FROM fct_version_items_agg AS vi
-      INNER JOIN dim_version AS dv ON vi.dim_version_key = dv.dim_version_key
-      WHERE dv.minor > 0 AND vi.item_cnt >= 20
+        dm.major_label AS branch,
+        dv.item_cnt AS n_items
+      FROM dim_version AS dv
+      INNER JOIN dim_major AS dm ON dv.dim_major_key = dm.dim_major_key
+      WHERE dv.minor > 0 AND NOT dv.is_out_of_band
       ORDER BY 1, dv.major
 
   fct_release_categories_agg:

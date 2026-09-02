@@ -18,6 +18,7 @@ import os
 import re
 import subprocess
 import sys
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import NamedTuple
 
@@ -165,25 +166,98 @@ def tag_records() -> list[TagRecord]:
 CODE_GLOBS = ("*.c", "*.h", "*.y", "*.l", "*.pl", "*.pm", "*.py", "*.sql", "*.sgml", "*.pgc")
 
 
-class TagSizeRecord(NamedTuple):
-    "One release tag with its total source-line count across CODE_GLOBS."
+class BranchSizeRecord(NamedTuple):
+    "One weekly snapshot of a stable branch's tree size (a stock, not a flow)."
 
-    tag: str
-    code_lines: str
+    branch: str
+    week_start: str  # ISO date of the week's Monday
+    commit_hash: str  # branch HEAD as of that week's end
+    code_lines: str  # total source lines across CODE_GLOBS
+    doc_lines: str  # the .sgml documentation subset
+    test_lines: str  # the src/test/ subset
+    file_cnt: str  # number of source files
 
 
-def tag_line_records() -> list[TagSizeRecord]:
-    """Absolute codebase size (total source lines) in the tree at each release
-    tag — one record per REL_MAJOR_MINOR release (prereleases excluded). Counted
-    with `git grep -c '^'` over CODE_GLOBS at each tag; the bare clone lets git
-    read the tree without a worktree. This is the per-branch size over time (a
-    stable branch's REL_1x_N tags), NOT a cross-branch sum — the branches are
-    parallel copies of nearly the same tree.
+def _major_eol(major: int) -> date:
+    # PostgreSQL majors get ~5 years of support; major M's final minor lands
+    # ~November of year 2012 + M. Caps the snapshot span once the corpus reaches
+    # a since-retired major -- no point sampling a frozen branch past its EOL.
+    return date(major + 2012, 11, 30)
+
+
+def _tree_size(rev: str) -> tuple[int, int, int, int]:
+    """(code_lines, doc_lines, test_lines, file_cnt) for the tree at `rev`.
+
+    One `git grep -c '^'` emits `<rev>:<path>:<count>` per matched file, so the
+    total, the file count, and any path-based split all come from a single grep.
     """
-    refs = git("for-each-ref", "--format=%(refname:short)", *TAG_GLOBS).splitlines()
-    records: list[TagSizeRecord] = []
-    for tag in sorted(ref for ref in refs if re.fullmatch(r"REL_\d+_\d+", ref)):
-        out = git("grep", "-I", "-c", "^", tag, "--", *CODE_GLOBS)
-        total = sum(int(line.rpartition(":")[2]) for line in out.splitlines() if line)
-        records.append(TagSizeRecord(tag=tag, code_lines=str(total)))
+    out = git("grep", "-I", "-c", "^", rev, "--", *CODE_GLOBS)
+    code = doc = test = files = 0
+    for line in out.splitlines():
+        if not line:
+            continue
+        prefix, _, count = line.rpartition(":")
+        lines = int(count)
+        path = prefix.partition(":")[2]  # strip the "<rev>:" prefix
+        code += lines
+        files += 1
+        if path.endswith(".sgml"):
+            doc += lines
+        elif path.startswith("src/test/"):
+            test += lines
+    return code, doc, test, files
+
+
+def branch_size_weekly_records(
+    known: frozenset[tuple[str, str]] = frozenset(),
+) -> list[BranchSizeRecord]:
+    """Weekly (branch, week) codebase-size snapshots for every stable branch,
+    from the branch's .0 release to min(today, its ~5-year EOL). A STOCK -- the
+    state of the tree -- sampled at each week's end. Only DISTINCT resolved
+    commits are grepped (quiet weeks share a HEAD), and any (branch, week) in
+    `known` is skipped without grepping: the incremental model passes what it
+    already has, so a normal build measures only the new weeks. Past weeks are
+    immutable, so caching them is safe.
+    """
+    today = datetime.now(UTC).date()
+    records: list[BranchSizeRecord] = []
+    for branch in STABLE_BRANCHES:
+        matched = re.match(r"REL_(\d+)_STABLE$", branch)
+        if not matched:
+            continue
+        major = int(matched.group(1))
+        start_iso = git("log", "-1", "--format=%cI", f"REL_{major}_0").strip()
+        if not start_iso:
+            continue
+        start = date.fromisoformat(start_iso[:10])
+        end = min(today, _major_eol(major))
+        # weekly Mondays covering [branch .0 release, end]
+        monday = start - timedelta(days=start.weekday())
+        todo: list[date] = []
+        while monday <= end:
+            if (branch, monday.isoformat()) not in known:
+                todo.append(monday)
+            monday += timedelta(days=7)
+        # resolve each new week's HEAD (as of the week's end); grep each distinct
+        # commit once
+        week_head: dict[date, str] = {}
+        for week in todo:
+            asof = (week + timedelta(days=7)).isoformat()
+            head = git("rev-list", "-1", f"--before={asof}T00:00:00Z", branch).strip()
+            if head:
+                week_head[week] = head
+        sizes = {head: _tree_size(head) for head in set(week_head.values())}
+        for week, head in week_head.items():
+            code, doc, test, files = sizes[head]
+            records.append(
+                BranchSizeRecord(
+                    branch=branch,
+                    week_start=week.isoformat(),
+                    commit_hash=head,
+                    code_lines=str(code),
+                    doc_lines=str(doc),
+                    test_lines=str(test),
+                    file_cnt=str(files),
+                )
+            )
     return records
