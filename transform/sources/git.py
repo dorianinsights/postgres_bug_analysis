@@ -223,20 +223,23 @@ def tag_records() -> list[TagRecord]:
 
 # Source file types counted as the codebase (the tree is otherwise mostly docs,
 # test data, and build scaffolding). Verbatim line totals; typing in staging.
-CODE_GLOBS = ("*.c", "*.h", "*.y", "*.l", "*.pl", "*.pm", "*.py", "*.sql", "*.sgml", "*.pgc")
-
-
 class BranchSizeRecord(NamedTuple):
-    """One weekly snapshot of ONE subsystem's slice of a stable branch's tree
-    (a stock, not a flow). Long form: a week has one row per subsystem present,
-    so the subsystems sum to the branch's total size that week."""
+    """One weekly snapshot of ONE (subsystem, extension) slice of a stable
+    branch's tree (a stock, not a flow). Long form: a week has one row per
+    (subsystem, extension) present, so the slices sum to the branch's total size
+    that week. The raw file extension is carried verbatim; stg_branch_size_weekly
+    maps it to a file_class (file_class_rules) so a size chart can filter the
+    generated classes (translations, test_fixtures) like the churn charts do.
+    subsystem is the only classification kept here -- it needs the whole path,
+    which the per-file grep output has and the aggregated record does not."""
 
     branch: str
     week_start: str  # ISO date of the week's Monday
     commit_hash: str  # branch HEAD as of that week's end
     subsystem: str  # the subsystem_rules bucket (single taxonomy; see _subsystem_of)
-    code_lines: str  # source lines in this subsystem's files
-    file_cnt: str  # number of source files in this subsystem
+    extension: str  # the file's lower-cased extension (raw; classified in SQL)
+    code_lines: str  # source lines in this slice's files
+    file_cnt: str  # number of files in this slice
 
 
 def _subsystem_rules() -> list[tuple[str, "re.Pattern[str]"]]:
@@ -260,6 +263,12 @@ def _subsystem_of(path: str, rules: list[tuple[str, "re.Pattern[str]"]]) -> str:
     return "other"
 
 
+def _extension_of(path: str) -> str:
+    "The path's lower-cased extension (after the last dot in the basename); '' if none."
+    name = path.rpartition("/")[2]
+    return name.rpartition(".")[2].lower() if "." in name else ""
+
+
 def _major_eol(major: int) -> date:
     # PostgreSQL majors get ~5 years of support; major M's final minor lands
     # ~November of year 2012 + M. Caps the snapshot span once the corpus reaches
@@ -267,22 +276,27 @@ def _major_eol(major: int) -> date:
     return date(major + 2012, 11, 30)
 
 
-def _tree_size_by_subsystem(rev: str, rules: list[tuple[str, "re.Pattern[str]"]]) -> dict[str, tuple[int, int]]:
-    """{subsystem: (code_lines, file_cnt)} for the tree at `rev`, bucketed by the
-    subsystem_rules taxonomy. One `git grep -I -c '^'` emits `<rev>:<path>:<count>`
-    per matched (text) source file; -I keeps binary files out, and CODE_GLOBS
-    keeps it to source extensions, so no binary size is ever counted.
+def _tree_size_by_area(
+    rev: str, sub_rules: list[tuple[str, "re.Pattern[str]"]]
+) -> dict[tuple[str, str], tuple[int, int]]:
+    """{(subsystem, extension): (line_cnt, file_cnt)} for the tree at `rev`.
+    subsystem is classified here (it needs the whole path); the raw extension is
+    carried for stg_branch_size_weekly to map to a file_class in SQL. The whole
+    tree is measured -- NO extension filter -- so every file type flows through
+    the raw layer and the "what counts as codebase" decision lives downstream. One
+    `git grep -I -c '^'` emits `<rev>:<path>:<count>` per matched TEXT file; -I
+    keeps binary files out, so no binary size is ever counted.
     """
-    out = git("grep", "-I", "-c", "^", rev, "--", *CODE_GLOBS)
-    sizes: dict[str, tuple[int, int]] = {}
+    out = git("grep", "-I", "-c", "^", rev)
+    sizes: dict[tuple[str, str], tuple[int, int]] = {}
     for line in out.splitlines():
         if not line:
             continue
         prefix, _, count = line.rpartition(":")
         path = prefix.partition(":")[2]  # strip the "<rev>:" prefix
-        subsystem = _subsystem_of(path, rules)
-        code, files = sizes.get(subsystem, (0, 0))
-        sizes[subsystem] = (code + int(count), files + 1)
+        key = (_subsystem_of(path, sub_rules), _extension_of(path))
+        code, files = sizes.get(key, (0, 0))
+        sizes[key] = (code + int(count), files + 1)
     return sizes
 
 
@@ -312,7 +326,7 @@ def branch_size_weekly_records(
     immutable, so caching them is safe.
     """
     today = datetime.now(UTC).date()
-    rules = _subsystem_rules()
+    sub_rules = _subsystem_rules()
     records: list[BranchSizeRecord] = []
     for branch in all_stable_branches():
         matched = re.match(r"REL_(\d+)_STABLE$", branch)
@@ -338,15 +352,16 @@ def branch_size_weekly_records(
             head = git("rev-list", "-1", f"--before={asof}T00:00:00Z", branch).strip()
             if head:
                 week_head[week] = head
-        sizes = {head: _tree_size_by_subsystem(head, rules) for head in set(week_head.values())}
+        sizes = {head: _tree_size_by_area(head, sub_rules) for head in set(week_head.values())}
         for week, head in week_head.items():
-            for subsystem, (code, files) in sizes[head].items():
+            for (subsystem, extension), (code, files) in sizes[head].items():
                 records.append(
                     BranchSizeRecord(
                         branch=branch,
                         week_start=week.isoformat(),
                         commit_hash=head,
                         subsystem=subsystem,
+                        extension=extension,
                         code_lines=str(code),
                         file_cnt=str(files),
                     )

@@ -4,14 +4,17 @@ models:
   - name: stg_branch_size_weekly
     description: >
       Typed weekly codebase-size snapshots per stable branch, split by subsystem
-      (from raw_branch_size_weekly). code_lines / file_cnt are this subsystem's
-      slice of the tree at the week's end; the subsystems of a week sum to the
-      branch's total size. A per-branch stock, never summed across majors.
-      Grain = (branch, week_start, subsystem).
+      and file_class (from raw_branch_size_weekly). The extension -> file_class
+      classification happens here (join file_class_rules, the same seed the churn
+      side uses), keeping it in SQL rather than the Python source; extensions that
+      share a file_class roll up. code_lines / file_cnt are this slice's share of
+      the tree; the slices of a week sum to the branch's total. A per-branch
+      stock, never summed across majors.
+      Grain = (branch, week_start, subsystem, file_class).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [branch, week_start, subsystem]
+            combination_of_columns: [branch, week_start, subsystem, file_class]
     columns:
       - name: branch
         tests: [not_null]
@@ -20,6 +23,8 @@ models:
       - name: commit_hash
         tests: [not_null]
       - name: subsystem
+        tests: [not_null]
+      - name: file_class
         tests: [not_null]
       - name: code_lines
         tests:

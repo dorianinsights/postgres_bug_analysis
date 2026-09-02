@@ -1,14 +1,16 @@
 # pyright: basic
-"""Raw weekly codebase-size snapshots per stable branch, split by subsystem — the
-source lines in each subsystem's files in the tree at each week's end, read
-straight from the postgres.git clone at build time (one `git grep -c` per
-distinct branch HEAD, bucketed by the subsystem_rules taxonomy).
+"""Raw weekly codebase-size snapshots per stable branch, split by subsystem and
+file extension — the source lines in each (subsystem, extension) slice of the
+tree at each week's end, read straight from the postgres.git clone at build time
+(one `git grep -c` per distinct branch HEAD). subsystem is classified here (it
+needs the whole path); the extension is raw, mapped to a file_class in
+stg_branch_size_weekly (file_class_rules) so classification stays in SQL.
 
 INCREMENTAL: a past (branch, week) snapshot is immutable, so an incremental run
 measures only the weeks it does not already hold — it passes the stored
 (branch, week) keys to the reader, which skips them without grepping. A full
 build (or --full-refresh) backfills every week from each branch's .0 release,
-which is minutes of git grep. One row per (branch, week, subsystem).
+which is minutes of git grep. One row per (branch, week, subsystem, extension).
 """
 
 import sys
@@ -26,6 +28,7 @@ _SCHEMA = pa.schema(
         ("week_start", pa.string()),
         ("commit_hash", pa.string()),
         ("subsystem", pa.string()),
+        ("extension", pa.string()),
         ("code_lines", pa.string()),
         ("file_cnt", pa.string()),
     ]
@@ -33,7 +36,7 @@ _SCHEMA = pa.schema(
 
 
 def model(dbt: Any, session: Any) -> pa.Table:
-    dbt.config(materialized="incremental", unique_key=["branch", "week_start", "subsystem"])
+    dbt.config(materialized="incremental", unique_key=["branch", "week_start", "subsystem", "extension"])
     known: frozenset[tuple[str, str]] = frozenset()
     if dbt.is_incremental:
         # Skip only COMPLETE past weeks (immutable). The current in-progress week

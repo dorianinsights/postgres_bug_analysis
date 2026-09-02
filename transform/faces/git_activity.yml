@@ -92,12 +92,13 @@ queries:
 
   codebase_size:
     description: >
-      Absolute codebase size — total source lines (.c/.h/.y/.l/.pl/.pm/.py/.sql/
-      .sgml/.pgc) in each stable branch's tree, sampled WEEKLY by git grep at the
-      branch HEAD (fct_branch_size_weekly, summed over its subsystem rows). One
-      line per major, a smooth growth curve. NOT summed across majors — they are
-      parallel near-copies of the same tree, so size is read within a major and
-      stepped across majors, never added.
+      Absolute codebase size — source lines in each stable branch's tree, sampled
+      WEEKLY by git grep at the branch HEAD (fct_branch_size_weekly, summed over
+      its slices). One line per major, a smooth growth curve. NOT summed across
+      majors — they are parallel near-copies of the same tree, so size is read
+      within a major and stepped across majors, never added. Hand-written source
+      by default; the generated classes (translation catalogs .po, regression
+      fixtures .out) are excluded unless their toggle is on.
     source: warehouse
     sql: |
       SELECT
@@ -106,6 +107,10 @@ queries:
         SUM(bsz.code_lines) AS code_lines
       FROM fct_branch_size_weekly AS bsz
       INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
+      WHERE
+        bsz.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
+        OR ({{ include_translations }} AND bsz.file_class = 'translations')
+        OR ({{ include_test_fixtures }} AND bsz.file_class = 'test_fixtures')
       GROUP BY bsz.week_start, dm.major_label
       ORDER BY bsz.week_start
 
@@ -129,11 +134,16 @@ queries:
       SELECT
         dm.major_label AS major,
         bsz.subsystem AS subsystem,
-        bsz.code_lines AS code_lines
+        SUM(bsz.code_lines) AS code_lines
       FROM fct_branch_size_weekly AS bsz
       INNER JOIN latest AS lst
         ON bsz.dim_major_key = lst.dim_major_key AND bsz.week_start = lst.week_start
       INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
+      WHERE
+        bsz.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
+        OR ({{ include_translations }} AND bsz.file_class = 'translations')
+        OR ({{ include_test_fixtures }} AND bsz.file_class = 'test_fixtures')
+      GROUP BY dm.major_label, bsz.subsystem
       ORDER BY dm.major_label, bsz.subsystem
 
   churn_by_quarter:

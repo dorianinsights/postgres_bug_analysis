@@ -4,20 +4,22 @@ models:
   - name: fct_branch_size_weekly
     description: >
       Weekly periodic-snapshot fact: the STATE (size) of each stable branch's
-      tree sampled at each week's end, split by subsystem -- the codebase growth
-      curve over calendar time, decomposed by area. Conforms to dim_date on
-      week_start and dim_major on dim_major_key. Each row is one subsystem's
-      slice; the subsystems of a (branch, week) sum to its total, so a total
-      curve is SUM(code_lines) and a composition view reads the subsystems
-      directly. subsystem is the shared subsystem_rules taxonomy. A per-major
-      stock, never summed across majors. Flow (churn / commit counts) lives in
-      fct_commits, not here. Too many rows for a derived CSV twin (over
-      var(derived_csv_max_rows)); query it in the warehouse.
-      Grain = (dim_major_key, week_start, subsystem).
+      tree sampled at each week's end, split by subsystem and file_class -- the
+      codebase growth curve over calendar time, decomposed by area. Conforms to
+      dim_date on week_start and dim_major on dim_major_key. Each row is one
+      (subsystem, file_class) slice; the slices of a (branch, week) sum to its
+      total, so a total curve is SUM(code_lines) and a composition view reads the
+      slices directly. subsystem is the shared subsystem_rules taxonomy;
+      file_class the shared file_class_rules one, so a size chart can filter the
+      generated classes (translations, test_fixtures) in or out like the churn
+      charts. A per-major stock, never summed across majors. Flow (churn / commit
+      counts) lives in fct_commits, not here. Too many rows for a derived CSV twin
+      (over var(derived_csv_max_rows)); query it in the warehouse.
+      Grain = (dim_major_key, week_start, subsystem, file_class).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [dim_major_key, week_start, subsystem]
+            combination_of_columns: [dim_major_key, week_start, subsystem, file_class]
     columns:
       - name: dim_major_key
         description: FK to dim_major -- the stable branch / major line this tree belongs to.
@@ -55,14 +57,40 @@ models:
                   - docs
                   - build_platform
                   - other
+      - name: file_class
+        description: >
+          The file kind for this slice, from the file_class_rules seed (the same
+          extension taxonomy int_commit_files uses). The whole tree is measured
+          (every file type flows through raw); the size charts show the source
+          classes by default, exclude the non-code classes (catalog_data, build,
+          other), and toggle the generated classes (translations = .po,
+          test_fixtures = .out/...) back on demand.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - source_c
+                  - header
+                  - sql
+                  - perl
+                  - python
+                  - grammar
+                  - docs
+                  - embedded_sql
+                  - translations
+                  - test_fixtures
+                  - catalog_data
+                  - build
+                  - other
       - name: commit_hash
         description: >
           The branch HEAD as of the week's end -- the exact commit whose tree was
           measured (provenance, not an aggregation key). Quiet weeks share a
-          commit_hash, and every subsystem row of a (branch, week) shares it.
+          commit_hash, and every slice of a (branch, week) shares it.
         tests: [not_null]
       - name: code_lines
-        description: Source lines in this subsystem's files that week.
+        description: Source lines in this (subsystem, file_class) slice that week.
         tests:
           - not_null
           - dbt_utils.accepted_range:

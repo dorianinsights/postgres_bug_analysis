@@ -102,18 +102,31 @@ def test_subsystem_of_first_match_wins_and_falls_back_to_other() -> None:
     assert gitmod._subsystem_of("Makefile.shlib", _RULES) == "other"
 
 
-def test_tree_size_by_subsystem_buckets_and_sums(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_extension_of_reads_the_last_dot_and_lowercases() -> None:
+    assert gitmod._extension_of("src/backend/executor/a.C") == "c"
+    assert gitmod._extension_of("src/backend/po/fr.po") == "po"
+    assert gitmod._extension_of("src/test/regress/expected/b.out") == "out"
+    # a dot in a parent directory does not count; a name with no dot has no extension
+    assert gitmod._extension_of("src/tools/x.d/Makefile") == ""
+    assert gitmod._extension_of("README") == ""
+
+
+def test_tree_size_by_area_buckets_by_subsystem_and_raw_extension(monkeypatch: pytest.MonkeyPatch) -> None:
     # git grep -I -c '^' emits "<rev>:<path>:<count>" per file; the paths carry
     # colons only in the rev/path split, which rpartition/partition handle.
+    # file_class is NOT decided here -- the raw extension is carried for SQL to map.
     grep_out = (
         "HEAD:src/backend/executor/a.c:100\n"
         "HEAD:src/include/x.h:20\n"
         "HEAD:src/test/regress/b.sql:40\n"
         "HEAD:doc/src/sgml/c.sgml:5\n"
+        "HEAD:src/backend/po/fr.po:1000\n"  # a translation catalog — carried by extension
     )
     _patch_git(monkeypatch, grep_out)
-    sizes = gitmod._tree_size_by_subsystem("HEAD", _RULES)
-    assert sizes["core_server"] == (120, 2)  # a.c + x.h
-    assert sizes["tests"] == (40, 1)
-    assert sizes["docs"] == (5, 1)
-    assert sum(code for code, _ in sizes.values()) == 165  # subsystems sum to the tree
+    sizes = gitmod._tree_size_by_area("HEAD", _RULES)
+    assert sizes[("core_server", "c")] == (100, 1)  # a.c
+    assert sizes[("core_server", "h")] == (20, 1)  # x.h -- distinct extension, same subsystem
+    assert sizes[("tests", "sql")] == (40, 1)
+    assert sizes[("docs", "sgml")] == (5, 1)
+    assert sizes[("core_server", "po")] == (1000, 1)  # the .po, kept separate for SQL to classify
+    assert sum(code for code, _ in sizes.values()) == 1165  # slices sum to the tree
