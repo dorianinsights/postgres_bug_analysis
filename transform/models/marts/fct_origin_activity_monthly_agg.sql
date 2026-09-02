@@ -9,7 +9,7 @@ WITH security_fix_commits AS (
   SELECT DISTINCT fcm.abbrev_hash
   FROM {{ ref('int_fix_commits') }} AS fcm
   INNER JOIN {{ ref('int_fix_reps') }} AS reps ON fcm.group_ord = reps.item_ord
-  WHERE reps.category IN ('Security (CVE)', 'Security hardening (no CVE)')
+  WHERE reps.cves IS NOT null
 ),
 
 master_commits AS (

@@ -7,9 +7,9 @@ WITH fix_counts AS (
   SELECT
     release_dt,
     COUNT(*) AS distinct_fix_cnt,
-    COUNT(*) FILTER (
-      WHERE category IN ('Security (CVE)', 'Security hardening (no CVE)')
-    ) AS security_fix_cnt
+    -- CVE-bearing fixes; security is CVE-anchored now that it is a flag rather
+    -- than a category (is_security_hardening is tracked separately on fct_fixes)
+    COUNT(*) FILTER (WHERE cves IS NOT null) AS security_fix_cnt
   FROM {{ ref('int_fix_reps') }}
   GROUP BY ALL
 ),

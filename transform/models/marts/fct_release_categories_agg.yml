@@ -35,15 +35,15 @@ models:
           - not_null
           - relationships:
               arguments:
-                to: ref('categories')
+                to: ref('content_categories')
                 field: category
       - name: category_order
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
-                min_value: 0
-                max_value: 9
+                min_value: 1
+                max_value: 13
       - name: fix_cnt
         tests:
           - not_null

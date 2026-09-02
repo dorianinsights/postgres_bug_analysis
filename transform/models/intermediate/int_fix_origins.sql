@@ -28,7 +28,7 @@ SELECT
   CASE
     WHEN res.from_bugs THEN 'pgsql-bugs'
     WHEN res.from_hackers THEN 'pgsql-hackers'
-    WHEN reps.category IN ('Security (CVE)', 'Security hardening (no CVE)')
+    WHEN reps.cves IS NOT null
       THEN 'unknown_or_internal_security'
     ELSE 'unknown_or_internal_not_security'
   END AS origin

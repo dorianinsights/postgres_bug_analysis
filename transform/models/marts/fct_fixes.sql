@@ -47,6 +47,8 @@ SELECT
   reps.cves,
   chg.category,
   cats.category_order,
+  reps.is_security_hardening,
+  reps.is_performance,
   chg.dominant_subsystem,
   fio.origin,
   releases.is_out_of_band,
@@ -71,7 +73,7 @@ SELECT
 FROM {{ ref('int_fix_changes') }} AS chg
 INNER JOIN group_sizes AS grp ON chg.item_ord = grp.group_ord
 INNER JOIN {{ ref('int_fix_reps') }} AS reps ON chg.item_ord = reps.item_ord
-INNER JOIN {{ ref('categories') }} AS cats ON chg.category = cats.category
+INNER JOIN {{ ref('content_categories') }} AS cats ON chg.category = cats.category
 INNER JOIN {{ ref('int_releases') }} AS releases ON chg.release_dt = releases.release_dt
 LEFT JOIN {{ ref('int_fix_severity') }} AS sev ON chg.item_ord = sev.item_ord
 LEFT JOIN {{ ref('int_fix_origins') }} AS fio ON chg.item_ord = fio.group_ord

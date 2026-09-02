@@ -14,7 +14,7 @@ WITH agg AS (
     COALESCE(
       org.origin,
       CASE
-        WHEN reps.category IN ('Security (CVE)', 'Security hardening (no CVE)')
+        WHEN reps.cves IS NOT null
           THEN 'unknown_or_internal_security'
         ELSE 'unknown_or_internal_not_security'
       END

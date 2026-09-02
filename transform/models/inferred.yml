@@ -7,13 +7,13 @@ sources:
       the clone, produced offline by a local model (Ollama) and cached so
       `dbt build` reads a stable, committed artifact (the model is NEVER called
       during a build; re-inference is an explicit, incremental run of
-      classify_fixes.py, like re-running a scraper). Currently just
-      fix_categories_llm.csv: one content-category label per distinct fix,
-      auditing the category_rules regex classifier. Read in place via a
+      classify_content.py, like re-running a scraper). fix_content_categories.csv
+      holds the fix content taxonomy — one content-category label plus the
+      orthogonal security-hardening / performance flags per distinct fix — the
+      classifier that replaced the category_rules regex. Read in place via a
       dbt-duckdb external location; numeric-free auto_type_candidates keep
-      confidence a VARCHAR until stg_fix_categories_llm casts it to DECIMAL(3,2).
+      confidence a VARCHAR until stg_fix_content_categories casts it to DECIMAL(3,2).
     meta:
       external_location: "read_csv('../data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'VARCHAR'])"
     tables:
-      - name: fix_categories_llm
       - name: fix_content_categories

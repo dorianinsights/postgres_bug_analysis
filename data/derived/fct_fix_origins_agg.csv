@@ -61,8 +61,8 @@ release_dt,is_out_of_band,origin,fix_cnt,fix_share
 2026-02-26,true,unknown_or_internal_security,1,0.111111
 2026-05-14,false,pgsql-bugs,14,0.191781
 2026-05-14,false,pgsql-hackers,44,0.602740
-2026-05-14,false,unknown_or_internal_not_security,2,0.027397
-2026-05-14,false,unknown_or_internal_security,13,0.178082
+2026-05-14,false,unknown_or_internal_not_security,3,0.041096
+2026-05-14,false,unknown_or_internal_security,12,0.164384
 2026-08-13,false,pgsql-bugs,41,0.288732
 2026-08-13,false,pgsql-hackers,76,0.535211
 2026-08-13,false,unknown_or_internal_not_security,2,0.014085

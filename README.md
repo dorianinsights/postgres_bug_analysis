@@ -90,7 +90,7 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 | `fct_release_categories_agg.csv` | (dim_release_key, category) | distinct-fix counts per category, aggregated from `fct_fixes`; conformed to `dim_release` via `dim_release_key` |
 | `fct_release_contributors_agg.csv` | (dim_release_key, contributor) | credit counts via `bridge_fix_contributor` (the notes' "(Name, Name)" parse lives in `int_fix_contributors`), with first-seen release; conformed to `dim_release` |
 | `projections.csv` | one scenario | next-release scenarios: reversion / trend / regime repeat / escalation |
-| `fct_category_vs_subsystem_agg.csv` | (category, subsystem) | the agreement matrix validating the keyword categorizer against changed-file paths |
+| `fct_category_vs_subsystem_agg.csv` | (category, subsystem) | content category (classify_content.py) cross-tabbed against the changed-file subsystem |
 | `fct_bug_reports_monthly_agg.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
 | `fct_fix_origins_agg.csv` | (release, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
 | `fct_origin_activity_monthly_agg.csv` | (month, origin) | master-branch activity by origin: non-plumbing commits, AI-flagged commits, distinct cited threads |
@@ -218,9 +218,9 @@ every object's name. Layers:
     `fct_fixes` replaced `fix_impact` and `fix_items`; the cycle signals
     (`git_cycle_pace`, `fix_projection_cycles`, `int_cycle_signals`) were unified
     as `fct_release_cycles` and then folded into `dim_release` (`int_release_cycles`).
-- `seeds/` — the classification data: `categories` (bucket + display
-  order), `category_rules` (ordered case-insensitive RE2 patterns; lowest
-  matching `match_order` wins, CVE items bypass the rules),
+- `seeds/` — the classification data: `content_categories` (the 13-category
+  fix taxonomy + definitions; fixes are assigned to it by classify_content.py,
+  which replaced the retired `category_rules` regex classifier),
   `subsystem_rules` (path patterns), and the range-bucket tables
   `latency_windows` / `thread_size_windows` (each range and its label
   defined together; the marts join them, and relationships tests replace
