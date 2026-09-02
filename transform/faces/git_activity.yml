@@ -159,18 +159,18 @@ queries:
     sql: |
       WITH q AS (
         SELECT
-          ca.quarter_dt AS quarter,
-          SUM(ca.lines_added_sum)::BIGINT AS adds,
-          SUM(ca.lines_deleted_sum)::BIGINT AS deletes
-        FROM fct_commit_churn_by_area_agg AS ca
-        WHERE ca.branch_scope = 'stable'
+          DATE_TRUNC('quarter', cf.commit_dt)::DATE AS quarter,
+          SUM(COALESCE(cf.lines_added, 0))::BIGINT AS adds,
+          SUM(COALESCE(cf.lines_deleted, 0))::BIGINT AS deletes
+        FROM fct_commit_files AS cf
+        WHERE cf.branch_scope = 'stable'
           AND (
             -- default: substantive (non-plumbing) source; each toggle adds that
             -- generated class back INCLUDING its plumbing commits (translation
             -- churn is almost all plumbing, so this is what makes it show up)
-            (NOT ca.is_plumbing AND ca.file_class NOT IN ('translations', 'test_fixtures'))
-            OR ({{ include_translations }} AND ca.file_class = 'translations')
-            OR ({{ include_test_fixtures }} AND ca.file_class = 'test_fixtures')
+            (NOT cf.is_plumbing AND cf.file_class NOT IN ('translations', 'test_fixtures'))
+            OR ({{ include_translations }} AND cf.file_class = 'translations')
+            OR ({{ include_test_fixtures }} AND cf.file_class = 'test_fixtures')
           )
         GROUP BY 1
       )
@@ -185,7 +185,7 @@ queries:
   trunk_churn_by_subsystem:
     description: >
       Lines churned per quarter on the development trunk (master), split by
-      subsystem (fct_commit_churn_by_area_agg, branch_scope = trunk) — where
+      subsystem (fct_commit_files aggregated on the fly, branch_scope = trunk) — where
       feature work is happening over time, per file so a cross-area commit splits
       across its areas. Master only, so no backpatch multiplication (the
       released-branch backpatch churn is the chart above). Generated file classes
@@ -194,20 +194,20 @@ queries:
     source: warehouse
     sql: |
       SELECT
-        ca.quarter_dt AS quarter,
-        ca.subsystem AS subsystem,
-        SUM(ca.churn)::BIGINT AS churn
-      FROM fct_commit_churn_by_area_agg AS ca
-      WHERE ca.branch_scope = 'trunk'
+        DATE_TRUNC('quarter', cf.commit_dt)::DATE AS quarter,
+        cf.subsystem AS subsystem,
+        SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS churn
+      FROM fct_commit_files AS cf
+      WHERE cf.branch_scope = 'trunk'
         AND (
           -- default: substantive (non-plumbing) source; each toggle adds that
           -- generated class back INCLUDING its plumbing commits
-          (NOT ca.is_plumbing AND ca.file_class NOT IN ('translations', 'test_fixtures'))
-          OR ({{ include_translations }} AND ca.file_class = 'translations')
-          OR ({{ include_test_fixtures }} AND ca.file_class = 'test_fixtures')
+          (NOT cf.is_plumbing AND cf.file_class NOT IN ('translations', 'test_fixtures'))
+          OR ({{ include_translations }} AND cf.file_class = 'translations')
+          OR ({{ include_test_fixtures }} AND cf.file_class = 'test_fixtures')
         )
-      GROUP BY ca.quarter_dt, ca.subsystem
-      ORDER BY ca.quarter_dt, ca.subsystem
+      GROUP BY DATE_TRUNC('quarter', cf.commit_dt), cf.subsystem
+      ORDER BY quarter, cf.subsystem
 
   ai_credited:
     description: >

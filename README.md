@@ -199,14 +199,18 @@ every object's name. Layers:
     `bridge_fix_cve` / `bridge_fix_bug` / `bridge_fix_contributor` (the last
     fed by `int_fix_contributors`); `fct_release_categories_agg` and `fct_release_contributors_agg`
     are conformed aggregates of `fct_fixes` (+ the contributor bridge). The period aggregates (`fct_bug_reports_monthly_agg`,
-    `fct_origin_activity_monthly_agg`, `fct_commit_churn_by_area_agg`) are aggregate facts rolled up from those
-    grains and conformed on `dim_date` by their month/week/quarter DATE. `fct_commits`
+    `fct_origin_activity_monthly_agg`) are aggregate facts rolled up from those
+    grains and conformed on `dim_date` by their month/week DATE. `fct_commits`
     carries a `dominant_subsystem` (a weighted vote over its files via the
     per-file `int_commit_files`, which classifies each changed file by subsystem
-    and by extension `file_class`); `fct_commit_churn_by_area_agg` rolls that
-    per-file churn up by quarter, branch scope (trunk vs stable), subsystem, and
-    file_class, so the line-count charts can filter generated file classes
-    (translation catalogs, test fixtures) in or out. (Mailing-list
+    and by extension `file_class`). That per-file grain is promoted to the atomic
+    churn fact **`fct_commit_files`** (one row per file per commit — line counts,
+    subsystem, file_class, is_plumbing, branch_scope, conformed to `dim_major` and
+    `dim_date`); every churn metric rolls up from it dynamically rather than from a
+    frozen by-quarter table, and a MetricFlow semantic model
+    (`fct_commit_files_semantic`) exposes the churn measures at any time grain — so
+    the line-count charts aggregate the atomic fact on the fly and filter generated
+    file classes (translation catalogs, test fixtures) in or out. (Mailing-list
     traffic has no materialized agg: the `transform/faces/` boards roll it up
     from the atomic `fct_messages` at query time — the count charts in SQL, the
     non-additive fix-linked share via a MetricFlow ratio metric; see

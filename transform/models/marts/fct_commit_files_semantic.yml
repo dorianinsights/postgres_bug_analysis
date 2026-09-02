@@ -1,0 +1,65 @@
+version: 2
+
+# A MetricFlow semantic model over the atomic churn grain (fct_commit_files) --
+# one file changed by one commit. Churn measures are defined once here and
+# computed dynamically at ANY time grain (day/week/month/quarter/year) and sliced
+# by any degenerate dimension (subsystem, file_class, branch_scope, is_plumbing),
+# instead of being frozen into a pre-aggregated by-quarter table. Consumed by
+# dbt-charts via `type: metricflow` queries; the interactive git_activity churn
+# charts read the same fact directly in SQL (their file-class toggle composes more
+# simply as a SQL predicate than a MetricFlow filter).
+semantic_models:
+  - name: commit_files
+    description: One file changed by one commit; the atomic grain the churn metrics roll up.
+    model: ref('fct_commit_files')
+    defaults:
+      agg_time_dimension: commit_day
+    entities:
+      - name: commit_file
+        type: primary
+        expr: commit_hash || '|' || file_path
+    dimensions:
+      - name: commit_day
+        type: time
+        expr: commit_dt
+        type_params:
+          time_granularity: day
+      - name: subsystem
+        type: categorical
+      - name: file_class
+        type: categorical
+      - name: branch_scope
+        type: categorical
+      - name: is_plumbing
+        type: categorical
+    measures:
+      - name: lines_added_sum
+        agg: sum
+        expr: "COALESCE(lines_added, 0)"
+      - name: lines_deleted_sum
+        agg: sum
+        expr: "COALESCE(lines_deleted, 0)"
+      - name: churn_sum
+        agg: sum
+        expr: "COALESCE(lines_added, 0) + COALESCE(lines_deleted, 0)"
+      - name: changed_commit_count
+        agg: count_distinct
+        expr: commit_hash
+
+metrics:
+  - name: lines_added
+    type: simple
+    label: Lines added
+    type_params: { measure: lines_added_sum }
+  - name: lines_deleted
+    type: simple
+    label: Lines deleted
+    type_params: { measure: lines_deleted_sum }
+  - name: churn
+    type: simple
+    label: Churn (lines added + deleted)
+    type_params: { measure: churn_sum }
+  - name: changed_commits
+    type: simple
+    label: Commits touching files
+    type_params: { measure: changed_commit_count }

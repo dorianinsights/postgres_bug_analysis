@@ -1,0 +1,91 @@
+version: 2
+
+models:
+  - name: fct_commit_files
+    description: >
+      Atomic churn fact: one row per file touched by one commit -- the lowest
+      grain of the git change stream, behind the commit-grain fct_commits. Every
+      churn metric rolls up from here dynamically (by area, file type, branch
+      scope, at any interval), so no metric needs a pre-aggregated table; the
+      fct_commit_files_semantic MetricFlow model exposes the measures at arbitrary
+      time grains. Conforms to dim_major (dim_major_key) and dim_date (commit_dt);
+      subsystem, file_class, is_plumbing, branch_scope are degenerate dimensions.
+      Line counts are NULL for binary files. Too many rows for a derived CSV twin
+      (over var(derived_csv_max_rows)); query it in the warehouse.
+      Grain = (commit_hash, file_path).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [commit_hash, file_path]
+    columns:
+      - name: dim_major_key
+        description: FK to dim_major -- the development line of the commit.
+        tests:
+          - not_null
+          - not_unknown_member
+          - relationships:
+              arguments:
+                to: ref('dim_major')
+                field: dim_major_key
+      - name: commit_dt
+        description: The commit's UTC calendar day; conforms to dim_date.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: commit_hash
+        tests: [not_null]
+      - name: file_path
+        tests: [not_null]
+      - name: branch_scope
+        description: "The commit's major lifecycle folded for churn: trunk (master), stable (released backpatch), beta (in-progress major)."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [trunk, stable, beta, other]
+      - name: is_plumbing
+        description: True for mechanical/non-substantive commits (translation refreshes, catalog bumps, typo sweeps).
+        tests: [not_null]
+      - name: subsystem
+        description: The file's directory-based area (subsystem_rules; 'other' when no rule matches).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - core_server
+                  - client_tools
+                  - extensions_contrib
+                  - replication_recovery
+                  - planner
+                  - tests
+                  - docs
+                  - build_platform
+                  - other
+      - name: file_class
+        description: The file's extension-based kind (file_class_rules; 'other' for extensionless/long-tail).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - source_c
+                  - header
+                  - sql
+                  - perl
+                  - python
+                  - grammar
+                  - docs
+                  - embedded_sql
+                  - catalog_data
+                  - translations
+                  - test_fixtures
+                  - build
+                  - other
+      - name: lines_added
+        description: Lines added to this file by this commit; NULL for binary files.
+      - name: lines_deleted
+        description: Lines deleted from this file by this commit; NULL for binary files.
