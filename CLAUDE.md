@@ -57,6 +57,18 @@ per-session memories, which aren't committed to git.)
   anywhere. So `cd transform && harlequin -r transform.duckdb` (or
   `duckdb -readonly transform.duckdb`).
 
+## Coding conventions
+- **No hardcoded dates or magic numbers** (other than `0` and `1`) in `.sql`
+  or `.py`. Before writing a literal, **check `transform/vars.yml`** for an
+  existing variable and use `{{ var('...') }}` — analysis knobs
+  (`scheduled_release_min_items`, `release_cadence_days`, the `*_window_days`,
+  the sentinel `past_eternity` / `future_eternity` dates, the date-spine bounds,
+  etc.) all live there so a change means the same thing everywhere and is a
+  reviewed edit. If the constant you need isn't a var yet, add it to `vars.yml`
+  rather than inlining it. The sentinel `1900-01-01` / `9999-01-01` are
+  `var('past_eternity')` / `var('future_eternity')`; a "< N items" or "N days"
+  threshold is almost always already a var.
+
 ## Design decisions worth remembering
 - **Identity resolution is connected-components.** `macros/person_node.sql`
   yields a per-(email,name) node key; `int_person_map` merges nodes that share a

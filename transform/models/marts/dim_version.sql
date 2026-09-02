@@ -25,6 +25,23 @@ WITH item_counts AS (
   GROUP BY ALL
 ),
 
+-- first / last commit that shipped in each minor, from the commit->version map
+-- (stable-branch commits only; NULL for the .0 majors, which have no in-window
+-- backpatch commits, and for the special members)
+commit_span AS (
+  SELECT
+    version,
+    MIN(commit_dt) AS first_commit_dt,
+    MIN(commit_ts) AS first_commit_ts,
+    ARG_MIN(commit_hash, commit_ts) AS first_commit_hash,
+    MAX(commit_dt) AS last_commit_dt,
+    MAX(commit_ts) AS last_commit_ts,
+    ARG_MAX(commit_hash, commit_ts) AS last_commit_hash
+  FROM {{ ref('int_commit_versions') }}
+  WHERE version IS NOT null
+  GROUP BY version
+),
+
 real_members AS (
   SELECT
     {{ dbt_utils.generate_surrogate_key(['rel.version']) }} AS dim_version_key,
@@ -42,11 +59,18 @@ real_members AS (
     -- var(scheduled_release_min_items) items -- a release-group property, so read
     -- it here rather than re-deriving it per-version from item_cnt (which is
     -- wrong: a small minor inside a normal release is not out-of-band).
-    COALESCE(irl.is_out_of_band, false) AS is_out_of_band
+    COALESCE(irl.is_out_of_band, false) AS is_out_of_band,
+    csp.first_commit_dt,
+    csp.first_commit_ts,
+    csp.first_commit_hash,
+    csp.last_commit_dt,
+    csp.last_commit_ts,
+    csp.last_commit_hash
   FROM {{ ref('int_versions') }} AS rel
   LEFT JOIN {{ ref('int_releases') }} AS irl ON rel.release_dt = irl.release_dt
   LEFT JOIN {{ ref('dim_major') }} AS dmj ON rel.major = dmj.major
   LEFT JOIN item_counts AS itc ON rel.version = itc.version
+  LEFT JOIN commit_span AS csp ON rel.version = csp.version
 )
 
 SELECT * FROM real_members
@@ -62,7 +86,13 @@ SELECT
   DATE '{{ var('past_eternity') }}' AS wrap_dt,
   DATE '{{ var('past_eternity') }}' AS release_dt,
   null AS item_cnt,
-  false AS is_out_of_band
+  false AS is_out_of_band,
+  null AS first_commit_dt,
+  null AS first_commit_ts,
+  null AS first_commit_hash,
+  null AS last_commit_dt,
+  null AS last_commit_ts,
+  null AS last_commit_hash
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_version_key,
@@ -75,4 +105,10 @@ SELECT
   DATE '{{ var('past_eternity') }}' AS wrap_dt,
   DATE '{{ var('past_eternity') }}' AS release_dt,
   null AS item_cnt,
-  false AS is_out_of_band
+  false AS is_out_of_band,
+  null AS first_commit_dt,
+  null AS first_commit_ts,
+  null AS first_commit_hash,
+  null AS last_commit_dt,
+  null AS last_commit_ts,
+  null AS last_commit_hash

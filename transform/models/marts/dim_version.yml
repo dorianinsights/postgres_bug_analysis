@@ -55,6 +55,31 @@ models:
           from item_cnt, which is wrong -- OOB is a release-group property).
           false for the .0 majors and the special members.
         tests: [not_null]
+      - name: first_commit_dt
+        description: >
+          UTC day of the earliest stable-branch commit that shipped in this minor
+          (from int_commit_versions). NULL for the .0 majors (no in-window
+          backpatch commits) and the special members.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: first_commit_ts
+        description: Full instant of that first commit (TIMESTAMPTZ); NULL as first_commit_dt.
+      - name: first_commit_hash
+        description: SHA of that first commit; NULL as first_commit_dt.
+      - name: last_commit_dt
+        description: UTC day of the latest stable-branch commit that shipped in this minor; NULL as first_commit_dt.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: last_commit_ts
+        description: Full instant of that last commit (TIMESTAMPTZ); NULL as first_commit_dt.
+      - name: last_commit_hash
+        description: SHA of that last commit; NULL as first_commit_dt.
       - name: minor
         tests:
           - not_null:
