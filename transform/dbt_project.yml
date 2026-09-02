@@ -51,3 +51,7 @@ seeds:
 # Export every successfully built mart to its diffable CSV twin.
 on-run-end:
   - "{{ export_marts_csv(results) }}"
+  # sweep tables/views left behind by renamed or deleted models (dbt never drops
+  # a departed model's relation). Sources are never touched; disable with
+  # var('drop_orphaned_relations', false). See macros/drop_orphaned_relations.sql.
+  - "{{ drop_orphaned_relations() }}"
