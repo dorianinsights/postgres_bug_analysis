@@ -24,7 +24,8 @@ SELECT
   ltw.label AS days_to_commit_window,
   -- first scheduled minor whose wrap comes strictly after the report:
   -- the earliest release its fix could ship in
-  cal.scheduled_release_dt AS earliest_ship_release_dt
+  cal.scheduled_release_dt AS earliest_ship_release_dt,
+  false AS is_synthetic_row
 FROM {{ ref('int_bug_outcomes') }} AS ibo
 INNER JOIN {{ ref('int_bug_reports') }} AS rpt ON ibo.bug_number = rpt.bug_number
 LEFT JOIN {{ ref('int_person_map') }} AS pmp
@@ -55,7 +56,8 @@ SELECT
   null AS first_commit_dt,
   null AS days_to_commit,
   null AS days_to_commit_window,
-  DATE '{{ var('past_eternity') }}' AS earliest_ship_release_dt
+  DATE '{{ var('past_eternity') }}' AS earliest_ship_release_dt,
+  true AS is_synthetic_row
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_bug_key,
@@ -71,4 +73,5 @@ SELECT
   null AS first_commit_dt,
   null AS days_to_commit,
   null AS days_to_commit_window,
-  DATE '{{ var('past_eternity') }}' AS earliest_ship_release_dt
+  DATE '{{ var('past_eternity') }}' AS earliest_ship_release_dt,
+  true AS is_synthetic_row

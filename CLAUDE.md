@@ -113,7 +113,14 @@ per-session memories, which aren't committed to git.)
   `dim_date`'s equivalents are its real `past_eternity` (1900-01-01) /
   `future_eternity` (9999-01-01) rows (vars). Append special rows with an
   explicit-column `UNION ALL` — NOT `UNION ALL BY NAME` (sqlfluff AM07 can't
-  parse it).
+  parse it). **Every dimension carries a `not_null` boolean `is_synthetic_row`**
+  — `true` for exactly these synthetic rows (the Unknown / Not Applicable
+  members; `dim_date`'s two eternity sentinels), `false` for every real entity
+  (`master`, the in-development version/release, and `dim_commit`'s rows, which
+  have no special members, are all real → `false`). It is the **canonical filter
+  for dropping synthetic rows in a dashboard** (`WHERE NOT is_synthetic_row`) —
+  prefer it over per-dim natural-key hacks like `bug_number > 0` or
+  `NOT IN ('(unknown)', ...)`.
 - A **release cycle** and a **release** are the same entity at two lifecycle stages
   (a release is a shipped cycle), unified in **`dim_release`** (`status` =
   shipped/open/future; shipped measures NULL for non-shipped). The cycle signals

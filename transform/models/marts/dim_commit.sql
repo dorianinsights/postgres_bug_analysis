@@ -63,7 +63,10 @@ SELECT
   -- the area this commit mostly touched (weighted vote over its files); 'other'
   -- for an empty commit with no file changes
   COALESCE(dsub.dominant_subsystem, 'other') AS dominant_subsystem,
-  gcm.subject
+  gcm.subject,
+  -- no Kimball special members here (built from the commit spine), so every
+  -- row is real; the flag exists for uniformity across all dimensions
+  false AS is_synthetic_row
 FROM {{ ref('stg_git_commits') }} AS gcm
 INNER JOIN {{ ref('int_git_commits') }} AS igc
   ON gcm.branch = igc.branch AND gcm.commit_hash = igc.commit_hash

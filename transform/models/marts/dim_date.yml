@@ -30,3 +30,10 @@ models:
                 max_value: "'{{ var('date_spine_end') }}'"
       - name: is_weekday
         tests: [not_null]
+      - name: is_synthetic_row
+        description: >
+          True for the two eternity sentinels (past_eternity / future_eternity,
+          dim_date's equivalents of the special members), false for every real
+          calendar day. The reliable flag for excluding the synthetic rows from
+          analytics.
+        tests: [not_null]

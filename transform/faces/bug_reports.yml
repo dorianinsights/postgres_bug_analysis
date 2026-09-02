@@ -151,7 +151,12 @@ queries:
       ORDER BY release_quarter
 
   yearly_outcomes:
-    description: Reports vs acted-upon reports per calendar year.
+    description: >
+      Reports vs acted-upon reports per calendar year. Excludes dim_bug's
+      synthetic rows (its two Kimball special members, reported_dt =
+      past_eternity) via is_synthetic_row — real reports only, else the 1900
+      placeholder year blows the x-axis out to a 126-year span and the real
+      bars vanish.
     source: warehouse
     sql: |
       SELECT
@@ -159,6 +164,7 @@ queries:
         outcome,
         COUNT(*) AS reports
       FROM dim_bug
+      WHERE NOT is_synthetic_row
       GROUP BY 1, 2
       ORDER BY 1, 2
 
@@ -193,7 +199,9 @@ queries:
   thread_size:
     description: >
       How much discussion a report draws, split by outcome — acted-upon
-      reports have longer threads.
+      reports have longer threads. Real reports only (NOT is_synthetic_row):
+      dim_bug's two special members have a NULL thread_size_window and a
+      placeholder outcome that would otherwise show as a stray null bucket.
     source: warehouse
     sql: |
       SELECT
@@ -201,6 +209,7 @@ queries:
         outcome,
         COUNT(*) AS reports
       FROM dim_bug
+      WHERE NOT is_synthetic_row
       GROUP BY 1, 2
       ORDER BY 1, 2
 
@@ -215,6 +224,7 @@ queries:
         days_to_commit AS days_to_fix,
         SUBSTR(subject, 1, 90) AS subject
       FROM dim_bug
+      WHERE NOT is_synthetic_row
       -- bug_number (the tiebreak) is not in the select list, so it stays named
       ORDER BY 2 DESC, bug_number
       LIMIT 15

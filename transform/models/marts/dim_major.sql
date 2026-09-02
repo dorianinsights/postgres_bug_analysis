@@ -30,7 +30,8 @@ real_members AS (
     MAKE_DATE(smd.major + 2012, 11, 30) AS eol_dt,
     smd.dev_status = 'released' AS is_released,
     smd.dev_status = 'released' AND CURRENT_DATE <= MAKE_DATE(smd.major + 2012, 11, 30) AS is_supported,
-    smd.dev_status AS lifecycle
+    smd.dev_status AS lifecycle,
+    false AS is_synthetic_row
   FROM {{ ref('stg_major_development') }} AS smd
   LEFT JOIN ga_dates AS gad ON smd.major = gad.major
 )
@@ -48,7 +49,9 @@ SELECT
   DATE '{{ var('future_eternity') }}' AS eol_dt,
   false AS is_released,
   false AS is_supported,
-  'development' AS lifecycle
+  'development' AS lifecycle,
+  -- master is the real development trunk, not a synthetic placeholder
+  false AS is_synthetic_row
 UNION ALL
 SELECT
   {{ unknown_key() }} AS dim_major_key,
@@ -59,7 +62,8 @@ SELECT
   DATE '{{ var('future_eternity') }}' AS eol_dt,
   false AS is_released,
   false AS is_supported,
-  '(unknown)' AS lifecycle
+  '(unknown)' AS lifecycle,
+  true AS is_synthetic_row
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_major_key,
@@ -70,4 +74,5 @@ SELECT
   DATE '{{ var('future_eternity') }}' AS eol_dt,
   false AS is_released,
   false AS is_supported,
-  '(not applicable)' AS lifecycle
+  '(not applicable)' AS lifecycle,
+  true AS is_synthetic_row

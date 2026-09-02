@@ -97,3 +97,10 @@ models:
                   - other
       - name: subject
         tests: [not_null]
+      - name: is_synthetic_row
+        description: >
+          Always false here: dim_commit carries no Kimball special members (it is
+          built from the commit spine), so every row is a real commit. The column
+          exists for uniformity across all dimensions so dashboards can filter on
+          it unconditionally.
+        tests: [not_null]

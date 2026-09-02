@@ -60,7 +60,8 @@ real_members AS (
     pky.is_bug_reporter,
     pky.first_seen_dt,
     pky.last_seen_dt,
-    pky.source_list_cnt
+    pky.source_list_cnt,
+    false AS is_synthetic_row
   FROM per_key AS pky
   LEFT JOIN name_votes AS nvt ON pky.person_key = nvt.person_key
 )
@@ -77,7 +78,8 @@ SELECT
   false AS is_bug_reporter,
   DATE '{{ var('past_eternity') }}' AS first_seen_dt,
   DATE '{{ var('past_eternity') }}' AS last_seen_dt,
-  0::BIGINT AS source_list_cnt
+  0::BIGINT AS source_list_cnt,
+  true AS is_synthetic_row
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_person_key,
@@ -89,4 +91,5 @@ SELECT
   false AS is_bug_reporter,
   DATE '{{ var('past_eternity') }}' AS first_seen_dt,
   DATE '{{ var('past_eternity') }}' AS last_seen_dt,
-  0::BIGINT AS source_list_cnt
+  0::BIGINT AS source_list_cnt,
+  true AS is_synthetic_row

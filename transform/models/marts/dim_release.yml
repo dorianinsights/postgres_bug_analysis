@@ -120,3 +120,10 @@ models:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 0
+      - name: is_synthetic_row
+        description: >
+          True for the two Kimball special members (Unknown / Not Applicable),
+          false for every real release — including the in_development row (a real
+          forward-looking release). The reliable flag for excluding the synthetic
+          rows from analytics.
+        tests: [not_null]

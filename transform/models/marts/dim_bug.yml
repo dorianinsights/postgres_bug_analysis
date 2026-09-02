@@ -81,3 +81,9 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
+      - name: is_synthetic_row
+        description: >
+          True for the two Kimball special members (Unknown / Not Applicable),
+          false for every real numbered report. The reliable flag for excluding
+          the synthetic rows from analytics (replaces bug_number-sign tests).
+        tests: [not_null]

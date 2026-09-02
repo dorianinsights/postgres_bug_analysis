@@ -33,3 +33,9 @@ models:
                 values: [0, 1, 2, 3, 4]
       - name: is_severity_unlisted
         tests: [not_null]
+      - name: is_synthetic_row
+        description: >
+          True for the two Kimball special members (Unknown / Not Applicable),
+          false for every real CVE. The reliable flag for excluding the synthetic
+          rows from analytics.
+        tests: [not_null]

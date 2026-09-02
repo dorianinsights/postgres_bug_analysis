@@ -68,7 +68,8 @@ real_members AS (
     COALESCE(csp.first_commit_hash, CASE WHEN rel.minor = 0 THEN smd.first_dev_commit_hash END) AS first_commit_hash,
     COALESCE(csp.last_commit_dt, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_dt END) AS last_commit_dt,
     COALESCE(csp.last_commit_ts, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_ts END) AS last_commit_ts,
-    COALESCE(csp.last_commit_hash, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_hash END) AS last_commit_hash
+    COALESCE(csp.last_commit_hash, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_hash END) AS last_commit_hash,
+    false AS is_synthetic_row
   FROM {{ ref('int_versions') }} AS rel
   LEFT JOIN {{ ref('int_releases') }} AS irl ON rel.release_dt = irl.release_dt
   LEFT JOIN {{ ref('dim_major') }} AS dmj ON rel.major = dmj.major
@@ -99,7 +100,9 @@ in_dev_version AS (
     smd.first_dev_commit_hash AS first_commit_hash,
     smd.last_dev_commit_dt AS last_commit_dt,
     smd.last_dev_commit_ts AS last_commit_ts,
-    smd.last_dev_commit_hash AS last_commit_hash
+    smd.last_dev_commit_hash AS last_commit_hash,
+    -- the in-progress major's GA-to-be is a real forward-looking version
+    false AS is_synthetic_row
   FROM {{ ref('stg_major_development') }} AS smd
   INNER JOIN {{ ref('dim_major') }} AS dmj ON smd.major = dmj.major
   WHERE smd.dev_status = 'beta'
@@ -126,7 +129,8 @@ SELECT
   null AS first_commit_hash,
   null AS last_commit_dt,
   null AS last_commit_ts,
-  null AS last_commit_hash
+  null AS last_commit_hash,
+  true AS is_synthetic_row
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_version_key,
@@ -145,4 +149,5 @@ SELECT
   null AS first_commit_hash,
   null AS last_commit_dt,
   null AS last_commit_ts,
-  null AS last_commit_hash
+  null AS last_commit_hash,
+  true AS is_synthetic_row

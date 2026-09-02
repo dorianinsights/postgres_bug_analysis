@@ -58,3 +58,9 @@ models:
       - name: is_supported
         description: Released AND still inside its ~5-year window (CURRENT_DATE <= eol_dt). False for master and specials.
         tests: [not_null]
+      - name: is_synthetic_row
+        description: >
+          True for the two Kimball special members (Unknown / Not Applicable),
+          false for every real development line — including master (the real
+          trunk). The reliable flag for excluding the synthetic rows from analytics.
+        tests: [not_null]

@@ -19,7 +19,8 @@ real_members AS (
     sev.severity_band_order,
     sev.cvss_vector,
     sev.component,
-    sev.cve_id IS null AS is_severity_unlisted
+    sev.cve_id IS null AS is_severity_unlisted,
+    false AS is_synthetic_row
   FROM corpus_cves AS cvs
   LEFT JOIN {{ ref('stg_cve_severity') }} AS sev ON cvs.cve_id = sev.cve_id
 )
@@ -34,7 +35,8 @@ SELECT
   null AS severity_band_order,
   null AS cvss_vector,
   null AS component,
-  true AS is_severity_unlisted
+  true AS is_severity_unlisted,
+  true AS is_synthetic_row
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_cve_key,
@@ -44,4 +46,5 @@ SELECT
   null AS severity_band_order,
   null AS cvss_vector,
   null AS component,
-  true AS is_severity_unlisted
+  true AS is_severity_unlisted,
+  true AS is_synthetic_row

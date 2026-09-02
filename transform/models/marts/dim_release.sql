@@ -46,7 +46,8 @@ WITH real_members AS (
     -- or the cycle hasn't shipped (distinct_fix_cnt NULL).
     (rrs.distinct_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.early_report_cnt, 0))::DECIMAL(12, 6) AS fix_per_early_report,
     (rrs.distinct_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.early_message_cnt, 0))::DECIMAL(12, 6) AS fix_per_early_message,
-    (rrs.distinct_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.early_fix_cnt, 0))::DECIMAL(12, 6) AS fix_per_early_fix
+    (rrs.distinct_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.early_fix_cnt, 0))::DECIMAL(12, 6) AS fix_per_early_fix,
+    false AS is_synthetic_row
   FROM {{ ref('int_releases') }} AS rel
   LEFT JOIN {{ ref('int_release_summary') }} AS rrs ON rel.release_dt = rrs.release_dt
   LEFT JOIN {{ ref('int_release_cycles') }} AS irc ON rel.release_dt = irc.ships_at_dt
@@ -76,7 +77,8 @@ SELECT
   null AS early_fix_share,
   null AS fix_per_early_report,
   null AS fix_per_early_message,
-  null AS fix_per_early_fix
+  null AS fix_per_early_fix,
+  true AS is_synthetic_row
 UNION ALL
 SELECT
   {{ not_applicable_key() }} AS dim_release_key,
@@ -100,7 +102,8 @@ SELECT
   null AS early_fix_share,
   null AS fix_per_early_report,
   null AS fix_per_early_message,
-  null AS fix_per_early_fix
+  null AS fix_per_early_fix,
+  true AS is_synthetic_row
 UNION ALL
 -- the in-progress major's GA-to-be (e.g. 19.0): a first-class in_development
 -- release. No real date or measures yet (all forward-looking), so date- and
@@ -127,6 +130,8 @@ SELECT
   null AS early_fix_share,
   null AS fix_per_early_report,
   null AS fix_per_early_message,
-  null AS fix_per_early_fix
+  null AS fix_per_early_fix,
+  -- the in-progress major's GA-to-be is a real forward-looking release
+  false AS is_synthetic_row
 FROM {{ ref('stg_major_development') }} AS smd
 WHERE smd.dev_status = 'beta'
