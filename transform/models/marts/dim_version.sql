@@ -60,17 +60,21 @@ real_members AS (
     -- it here rather than re-deriving it per-version from item_cnt (which is
     -- wrong: a small minor inside a normal release is not out-of-band).
     COALESCE(irl.is_out_of_band, false) AS is_out_of_band,
-    csp.first_commit_dt,
-    csp.first_commit_ts,
-    csp.first_commit_hash,
-    csp.last_commit_dt,
-    csp.last_commit_ts,
-    csp.last_commit_hash
+    -- minors: the backpatch commits that shipped in the minor (csp). .0 majors:
+    -- the major's whole feature development (smd, git tag ancestry) -- otherwise a
+    -- .0 has no in-minor commits and would be NULL.
+    COALESCE(csp.first_commit_dt, CASE WHEN rel.minor = 0 THEN smd.first_dev_commit_dt END) AS first_commit_dt,
+    COALESCE(csp.first_commit_ts, CASE WHEN rel.minor = 0 THEN smd.first_dev_commit_ts END) AS first_commit_ts,
+    COALESCE(csp.first_commit_hash, CASE WHEN rel.minor = 0 THEN smd.first_dev_commit_hash END) AS first_commit_hash,
+    COALESCE(csp.last_commit_dt, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_dt END) AS last_commit_dt,
+    COALESCE(csp.last_commit_ts, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_ts END) AS last_commit_ts,
+    COALESCE(csp.last_commit_hash, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_hash END) AS last_commit_hash
   FROM {{ ref('int_versions') }} AS rel
   LEFT JOIN {{ ref('int_releases') }} AS irl ON rel.release_dt = irl.release_dt
   LEFT JOIN {{ ref('dim_major') }} AS dmj ON rel.major = dmj.major
   LEFT JOIN item_counts AS itc ON rel.version = itc.version
   LEFT JOIN commit_span AS csp ON rel.version = csp.version
+  LEFT JOIN {{ ref('stg_major_development') }} AS smd ON rel.major = smd.major
 )
 
 SELECT * FROM real_members

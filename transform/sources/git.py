@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 sys.path.insert(0, str(Path.cwd().parent))
-from corpus import GIT_HISTORY_SINCE, MAJORS, STABLE_BRANCHES
+from corpus import FIRST_MAJOR, GIT_HISTORY_SINCE, MAJORS, STABLE_BRANCHES
 
 CACHE = Path.cwd().parent / ".cache" / "postgres.git"
 BRANCHES = [*STABLE_BRANCHES, "master"]
@@ -300,4 +300,78 @@ def commit_version_records() -> list[CommitVersionRecord]:
                 for commit_hash in git("rev-list", f"{prev_tag}..{tag}").splitlines()
                 if commit_hash
             )
+    return records
+
+
+class MajorDevRecord(NamedTuple):
+    "One major's feature-development activity, by tag ancestry."
+
+    major: str
+    dev_status: str  # 'released' | 'beta'
+    latest_milestone: str  # 'GA' | 'BETA3' | 'RC1' | ...
+    dev_commit_cnt: str
+    first_dev_commit_hash: str
+    first_dev_commit_ts: str
+    last_dev_commit_hash: str
+    last_dev_commit_ts: str
+
+
+def _latest_prerelease(major: int) -> str:
+    """Newest BETA/RC milestone tag for a major (e.g. 'BETA3'), or 'pre-beta'."""
+    refs = git(
+        "for-each-ref", "--sort=-creatordate", "--format=%(refname:short)", f"refs/tags/REL_{major}_*"
+    ).splitlines()
+    for ref in refs:
+        pre = re.fullmatch(rf"REL_{major}_((?:BETA|RC)\d+)", ref)
+        if pre:
+            return pre.group(1)
+    return "pre-beta"
+
+
+def major_dev_records() -> list[MajorDevRecord]:
+    """Each major's feature development by git tag ancestry: the commits reachable
+    from its GA tag REL_M_0 but not the previous major's GA REL_(M-1)_0 -- i.e.
+    everything developed FOR major M. For the in-progress major (a REL_M_STABLE
+    branch exists but no REL_M_0 yet -- e.g. PG19 in beta) the range runs to the
+    branch HEAD, status is 'beta', and latest_milestone is its newest BETA/RC.
+    Covers FIRST_MAJOR..LAST_MAJOR+1. Grain = major.
+    """
+    tags = set(git("tag", "-l", "REL_*").splitlines())
+    branches = set(git("for-each-ref", "--format=%(refname:short)", "refs/heads/*").splitlines())
+    # every major with a stable branch at or above the floor -- released AND the
+    # in-progress one (REL_M_STABLE but no REL_M_0 yet). Discovered from the repo,
+    # so a new major is picked up with no LAST_MAJOR to bump.
+    stable_majors = sorted(
+        int(bm.group(1))
+        for br in branches
+        if (bm := re.fullmatch(r"REL_(\d+)_STABLE", br)) and int(bm.group(1)) >= FIRST_MAJOR
+    )
+    records: list[MajorDevRecord] = []
+    for major in stable_majors:
+        prev = f"REL_{major - 1}_0"
+        if prev not in tags:
+            continue
+        if f"REL_{major}_0" in tags:
+            end, status, milestone = f"REL_{major}_0", "released", "GA"
+        elif f"REL_{major}_STABLE" in branches:
+            end, status, milestone = f"REL_{major}_STABLE", "beta", _latest_prerelease(major)
+        else:
+            continue
+        commits = [ln for ln in git("log", "--format=%H%x00%cI", f"{prev}..{end}").splitlines() if ln]
+        if not commits:
+            continue
+        last_hash, _, last_ts = commits[0].partition("\x00")
+        first_hash, _, first_ts = commits[-1].partition("\x00")
+        records.append(
+            MajorDevRecord(
+                major=str(major),
+                dev_status=status,
+                latest_milestone=milestone,
+                dev_commit_cnt=str(len(commits)),
+                first_dev_commit_hash=first_hash,
+                first_dev_commit_ts=first_ts,
+                last_dev_commit_hash=last_hash,
+                last_dev_commit_ts=last_ts,
+            )
+        )
     return records

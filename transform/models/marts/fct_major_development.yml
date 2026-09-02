@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: fct_major_development
+    description: >
+      Per-major feature-development activity -> ../data/derived/fct_major_development.csv:
+      everything developed for each major by git tag ancestry (REL_(M-1)_0..REL_M_0,
+      or ..HEAD for the in-progress major). dev_status (released/beta), latest
+      milestone (GA/BETA3/...), dev commit count, and first/last dev commit.
+      Includes the in-progress major (e.g. PG19 in beta), discovered from the repo.
+      Distinct from fct_commits (post-GA backpatch minors). Grain = major.
+    columns:
+      - name: major
+        tests: [not_null, unique]
+      - name: major_label
+        tests: [not_null]
+      - name: dev_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["released", "beta"]
+      - name: latest_milestone
+        tests: [not_null]
+      - name: dev_commit_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: first_dev_commit_dt
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: first_dev_commit_hash
+        tests: [not_null]
+      - name: last_dev_commit_dt
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: last_dev_commit_hash
+        tests: [not_null]

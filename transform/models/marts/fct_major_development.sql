@@ -1,0 +1,25 @@
+-- Per-major feature-development activity: everything developed FOR each major,
+-- by exact git tag ancestry (commits in REL_(M-1)_0..REL_M_0, or ..the branch
+-- HEAD for the in-progress major). Carries dev_status (released / beta), the
+-- latest milestone (GA / BETA3 / RC1 / ...), the development commit count, and the
+-- first/last development commit (day, instant, hash). Covers every major at/above
+-- the corpus floor with a stable branch -- INCLUDING the in-progress one (e.g.
+-- PG19 in beta) -- discovered from the repo, so a new major appears with no
+-- LAST_MAJOR to bump. Distinct from fct_commits (post-GA backpatch minors on the
+-- stable branches): this is the pre-GA feature development on master + the
+-- stabilizing branch. major is a degenerate key (the in-progress major is not in
+-- dim_major, which is released majors + master); the dev-commit days conform to
+-- dim_date. Grain = major. -> ../data/derived/fct_major_development.csv
+SELECT
+  major,
+  major_label,
+  dev_status,
+  latest_milestone,
+  dev_commit_cnt,
+  first_dev_commit_dt,
+  first_dev_commit_ts,
+  first_dev_commit_hash,
+  last_dev_commit_dt,
+  last_dev_commit_ts,
+  last_dev_commit_hash
+FROM {{ ref('stg_major_development') }}

@@ -57,11 +57,11 @@ models:
         tests: [not_null]
       - name: first_commit_dt
         description: >
-          UTC day of the earliest stable-branch commit that shipped in this minor
-          (from int_commit_versions -- out-of-band re-releases included, since they
-          tag the branch). Every shipped minor (minor > 0) has one; NULL only for
-          the .0 majors (their commits are pre-branch on master) and the special
-          members.
+          UTC day of the earliest commit that went into this version. For a minor:
+          the earliest stable-branch commit that shipped in it (int_commit_versions,
+          OOB re-releases included). For a .0 major: the earliest commit of the
+          major's whole feature development (fct_major_development, git tag
+          ancestry). NULL only for the special members.
         tests:
           - not_null:
               config:
