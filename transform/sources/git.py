@@ -155,3 +155,32 @@ def tag_records() -> list[TagRecord]:
         tag, _, tag_ts = line.partition("\t")
         records.append(TagRecord(tag=tag, tag_ts=tag_ts))
     return records
+
+
+# Source file types counted as the codebase (the tree is otherwise mostly docs,
+# test data, and build scaffolding). Verbatim line totals; typing in staging.
+CODE_GLOBS = ("*.c", "*.h", "*.y", "*.l", "*.pl", "*.pm", "*.py", "*.sql", "*.sgml", "*.pgc")
+
+
+class TagSizeRecord(NamedTuple):
+    "One release tag with its total source-line count across CODE_GLOBS."
+
+    tag: str
+    code_lines: str
+
+
+def tag_line_records() -> list[TagSizeRecord]:
+    """Absolute codebase size (total source lines) in the tree at each release
+    tag — one record per REL_MAJOR_MINOR release (prereleases excluded). Counted
+    with `git grep -c '^'` over CODE_GLOBS at each tag; the bare clone lets git
+    read the tree without a worktree. This is the per-branch size over time (a
+    stable branch's REL_1x_N tags), NOT a cross-branch sum — the branches are
+    parallel copies of nearly the same tree.
+    """
+    refs = git("for-each-ref", "--format=%(refname:short)", "refs/tags/REL_1[5-9]_*").splitlines()
+    records: list[TagSizeRecord] = []
+    for tag in sorted(ref for ref in refs if re.fullmatch(r"REL_\d+_\d+", ref)):
+        out = git("grep", "-I", "-c", "^", tag, "--", *CODE_GLOBS)
+        total = sum(int(line.rpartition(":")[2]) for line in out.splitlines() if line)
+        records.append(TagSizeRecord(tag=tag, code_lines=str(total)))
+    return records

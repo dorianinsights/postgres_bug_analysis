@@ -71,6 +71,24 @@ queries:
       GROUP BY ALL
       ORDER BY release_seq, major
 
+  codebase_size:
+    description: >
+      Absolute codebase size — total source lines (.c/.h/.y/.l/.pl/.pm/.py/.sql/
+      .sgml/.pgc) in the tree at each release, from git grep at the release tag
+      (fct_version_size_agg). One line per major: each stable branch's tree over
+      its lifetime. NOT summed across majors — they are parallel near-copies of
+      the same tree, so size is read within a major and stepped across majors,
+      never added.
+    source: warehouse
+    sql: |
+      SELECT
+        dv.release_dt AS release_dt,
+        'PG' || dv.major AS major,
+        sz.code_lines AS code_lines
+      FROM fct_version_size_agg AS sz
+      INNER JOIN dim_version AS dv ON sz.dim_version_key = dv.dim_version_key
+      ORDER BY dv.release_dt
+
   churn_by_quarter:
     description: >
       Lines of code churned per calendar quarter on the stable branches (fix
@@ -191,6 +209,17 @@ charts:
     style: { stack: zero }
     height: 380
 
+  codebase_size:
+    type: line
+    query: codebase_size
+    title: "Codebase size over time, by major"
+    subtitle: "Total source lines in the tree at each release (git grep at the release tag); one line per stable branch — never summed across majors (parallel copies of the same tree)"
+    x: release_dt
+    y: code_lines
+    y_label: "source lines"
+    color: major
+    height: 380
+
   churn_by_quarter:
     type: line
     query: churn_by_quarter
@@ -234,6 +263,7 @@ rows:
   - quarterly_distinct
   - quarterly_by_branch
   - commits_per_version
+  - codebase_size
   - churn_by_quarter
   - cols: [ai_credited, cycle_pace]
   - ai_credit_table

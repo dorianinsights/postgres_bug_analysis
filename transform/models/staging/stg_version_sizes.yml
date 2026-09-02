@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_version_sizes
+    description: >
+      Total source lines in the tree at each REL_MAJOR_MINOR release tag (from
+      raw_version_sizes / git grep over the source file types), with derived
+      major/minor/version. The absolute codebase size per shipped version.
+      Grain = version.
+    columns:
+      - name: version
+        tests: [not_null, unique]
+      - name: major
+        tests: [not_null]
+      - name: minor
+        tests: [not_null]
+      - name: code_lines
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
