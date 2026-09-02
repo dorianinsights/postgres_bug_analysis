@@ -221,11 +221,10 @@ queries:
     source: warehouse
     sql: |
       WITH sched AS (
-        SELECT CAST(dv.release_dt AS DATE) AS date, vi.item_cnt AS n_items,
+        SELECT CAST(dv.release_dt AS DATE) AS date, dv.item_cnt AS n_items,
                DATE_DIFF('day', DATE '2022-01-01', CAST(dv.release_dt AS DATE)) AS t
-        FROM fct_version_items_agg AS vi
-        INNER JOIN dim_version AS dv ON vi.dim_version_key = dv.dim_version_key
-        WHERE dv.minor > 0 AND vi.item_cnt >= 20 AND NOT (dv.major = 15 AND dv.minor = 1)
+        FROM dim_version AS dv
+        WHERE dv.minor > 0 AND NOT dv.is_out_of_band AND NOT (dv.major = 15 AND dv.minor = 1)
       ),
       fit_all AS (SELECT REGR_SLOPE(n_items, t) AS b, REGR_INTERCEPT(n_items, t) AS a FROM sched),
       fit_ex AS (
