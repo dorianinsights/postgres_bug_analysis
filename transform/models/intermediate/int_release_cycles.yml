@@ -6,9 +6,10 @@ models:
       Cycle-grain signals for each started release cycle, joined into dim_release
       on ships_at_dt = release_dt (a cycle is a release at an earlier lifecycle
       stage). Early-signal counts over the open cycle's age-window, the
-      like-for-like pace (early vs full distinct backpatched fixes), and the
-      window. Replaces the standalone fct_release_cycles fact. Grain =
-      ships_at_dt.
+      like-for-like pace (early vs full distinct committed fixes, from
+      int_committed_fixes -- each fix already belongs to the release it ships
+      in), and the window. Replaces the standalone fct_release_cycles fact.
+      Grain = ships_at_dt.
     columns:
       - name: ships_at_dt
         tests: [not_null, unique]

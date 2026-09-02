@@ -8,7 +8,13 @@ models:
       retired commit-grain fact; a commit's measures (churn, file count) are
       aggregates of its file rows in fct_commit_files, so only descriptors and FKs
       live here. Conforms to dim_person (author + committer), dim_date (commit_dt),
-      dim_release, dim_version, dim_major. NO special members (deliberate
+      dim_release (the release it shipped in, or the OPEN release for a released
+      major's not-yet-tagged stable-branch commits -- the pending fix stream),
+      dim_version, dim_major. The fix-commit spine rides here: fix_key (the
+      normalized subject, the identity of a fix across its backpatches),
+      is_housekeeping (stamps / translations / notes drafting -- not fixes) and
+      is_documented / documented_item_ord (the release-notes item citing the
+      commit). NO special members (deliberate
       exception): the only referencing fact, fct_commit_files, is built from this
       spine, so its dim_commit_key never misses. Too many rows for a derived CSV
       twin (over var(derived_csv_max_rows)); query it in the warehouse.
@@ -97,6 +103,22 @@ models:
                   - other
       - name: subject
         tests: [not_null]
+      - name: fix_key
+        description: The normalized subject (int_git_commits); COUNT(DISTINCT fix_key) is "distinct fix commits".
+        tests: [not_null]
+      - name: is_housekeeping
+        description: Release mechanics (version stamps, translation refreshes, release-notes drafting, tz data, pgindent), excluded from every fix count.
+        tests: [not_null]
+      - name: is_documented
+        description: Whether a release-notes item cites this commit (int_fix_commits, inverted).
+        tests: [not_null]
+      - name: documented_item_ord
+        description: The citing item's fct_fixes.item_ord; NULL when no item cites the commit (an attribute, not an FK).
+        tests:
+          - relationships:
+              arguments:
+                to: ref('fct_fixes')
+                field: item_ord
       - name: is_synthetic_row
         description: >
           Always false here: dim_commit carries no Kimball special members (it is

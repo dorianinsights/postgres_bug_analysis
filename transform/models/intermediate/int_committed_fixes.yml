@@ -1,0 +1,73 @@
+version: 2
+
+models:
+  - name: int_committed_fixes
+    description: >
+      The COMMITTED-fix population: one row per distinct fix (fix_key, the
+      normalized commit subject) per release it shipped in -- non-housekeeping
+      commits on the released majors' stable branches, assigned to their release
+      by int_commit_versions (tag ancestry; the open release for not-yet-tagged
+      commits). Carries the link to the release-notes item that documents it
+      (is_documented / documented_item_ord via int_fix_commits), the origin on the
+      shared resolve_fix_origin precedence, and the commit span. Counterpart of
+      int_fix_reps (the documented fixes); replaces int_backpatch_fixes and
+      int_pending_fixes. Grain = (release_dt, fix_key).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [release_dt, fix_key]
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: first_commit_dt <= last_commit_dt
+      # a documented fix always has its item; an undocumented one never does
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: is_documented = (documented_item_ord IS NOT NULL)
+    columns:
+      - name: release_dt
+        description: The release this fix shipped in (or is pending for, when open).
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_releases')
+                field: release_dt
+      - name: fix_key
+        tests: [not_null]
+      - name: first_commit_dt
+        tests: [not_null]
+      - name: last_commit_dt
+        tests: [not_null]
+      - name: commit_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: branch_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: is_documented
+        tests: [not_null]
+      - name: documented_item_ord
+        description: The fct_fixes item_ord of the release-notes item citing this fix; NULL when undocumented.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('int_fix_reps')
+                field: item_ord
+      - name: is_security
+        tests: [not_null]
+      - name: origin
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - pgsql-bugs
+                  - pgsql-hackers
+                  - unknown_or_internal_security
+                  - unknown_or_internal_not_security

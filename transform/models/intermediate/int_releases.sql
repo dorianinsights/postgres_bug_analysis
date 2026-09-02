@@ -129,5 +129,20 @@ SELECT
   cmb.versions,
   cmb.release_cnt,
   cmb.is_out_of_band,
-  cmb.is_partial_window
+  cmb.is_partial_window,
+  -- the scheduled release day this release's CYCLE ships at: itself for a
+  -- scheduled (or upcoming) release; for an out-of-band re-release, which ships
+  -- mid-cycle, the NEXT scheduled release. Cycle-grain measures
+  -- (int_release_cycles, the projection comparators) fold an emergency
+  -- release's fixes into the cycle that produced them through this column,
+  -- while release-grain measures keep the exact release.
+  CASE
+    WHEN cmb.is_out_of_band
+      THEN (
+        SELECT MIN(cal.scheduled_release_dt)
+        FROM {{ ref('int_release_calendar') }} AS cal
+        WHERE cal.scheduled_release_dt >= cmb.release_dt
+      )
+    ELSE cmb.release_dt
+  END AS cycle_ships_at_dt
 FROM combined AS cmb

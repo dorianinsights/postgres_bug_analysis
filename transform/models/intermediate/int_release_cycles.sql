@@ -4,19 +4,26 @@
 -- cycle (closed + the open one); joins to dim_release on ships_at_dt =
 -- release_dt. Carries the three early signals over the open cycle's age-window
 -- (for the projections), the like-for-like pace (early vs full distinct
--- backpatched fixes), the window itself, and first_window_fix_cnt over a FIXED
+-- committed fixes), the window itself, and first_window_fix_cnt over a FIXED
 -- window (var seasonality_window_days) for the stable quarterly-seasonality
--- view. The shipped fix count is NOT here
--- -- it is dim_release.distinct_fix_cnt on the same row. All windows are
--- half-open [start, start+N) at the open cycle's age N; the full window runs to
--- the next cycle's wrap (or today). cycle_start_dt is the cycle's beginning
--- (the PRIOR quarter's wrap), distinct from the release's own wrap_dt.
+-- view. The shipped (documented) fix count is NOT here -- it is
+-- dim_release.distinct_fix_cnt on the same row.
+--
+-- The fix signals read int_committed_fixes, where each committed fix already
+-- belongs to the release it ships in (tag ancestry; the open release for
+-- not-yet-tagged commits) -- no date windows here. A cycle's fixes are those
+-- of every release whose int_releases.cycle_ships_at_dt is the cycle's ship
+-- day: the scheduled release itself plus any out-of-band re-release that
+-- shipped mid-cycle (its fixes were produced in this cycle, so the pace and
+-- seasonality views keep them). A fix is early when its first commit landed
+-- within window_days of the cycle start (the PRIOR quarter's wrap). Reports
+-- and messages are still windowed by date -- they have no release to belong
+-- to. cycle_start_dt is distinct from the release's own wrap_dt.
 -- Grain = ships_at_dt.
 WITH cycles AS (
   SELECT
     wrap_dt AS cycle_start_dt,
-    LEAD(scheduled_release_dt) OVER (ORDER BY wrap_dt) AS ships_at_dt,
-    LEAD(wrap_dt) OVER (ORDER BY wrap_dt) AS next_cycle_start_dt
+    LEAD(scheduled_release_dt) OVER (ORDER BY wrap_dt) AS ships_at_dt
   FROM {{ ref('int_release_calendar') }}
 ),
 
@@ -51,27 +58,32 @@ early_messages AS (
   GROUP BY ALL
 ),
 
-early_fixes AS (
+-- the cycle's committed fixes: those of every release shipping in the cycle
+-- (the scheduled one, pending or shipped, plus a mid-cycle out-of-band one)
+cycle_fixes AS (
   SELECT
     cyc.cycle_start_dt,
-    COUNT(DISTINCT bpf.fix_key) AS early_fix_cnt
+    cfx.fix_key,
+    cfx.first_commit_dt
   FROM cycles AS cyc
-  INNER JOIN {{ ref('int_backpatch_fixes') }} AS bpf
-    ON
-      cyc.cycle_start_dt < bpf.commit_dt
-      AND cyc.cycle_start_dt + (SELECT age.window_days FROM age) >= bpf.commit_dt
+  INNER JOIN {{ ref('int_releases') }} AS irl ON cyc.ships_at_dt = irl.cycle_ships_at_dt
+  INNER JOIN {{ ref('int_committed_fixes') }} AS cfx ON irl.release_dt = cfx.release_dt
+),
+
+early_fixes AS (
+  SELECT
+    cycle_start_dt,
+    COUNT(DISTINCT fix_key) AS early_fix_cnt
+  FROM cycle_fixes
+  WHERE cycle_start_dt + (SELECT age.window_days FROM age) >= first_commit_dt
   GROUP BY ALL
 ),
 
 full_fixes AS (
   SELECT
-    cyc.cycle_start_dt,
-    COUNT(DISTINCT bpf.fix_key) AS full_fix_cnt
-  FROM cycles AS cyc
-  INNER JOIN {{ ref('int_backpatch_fixes') }} AS bpf
-    ON
-      cyc.cycle_start_dt < bpf.commit_dt
-      AND LEAST(COALESCE(cyc.next_cycle_start_dt, CURRENT_DATE), CURRENT_DATE) >= bpf.commit_dt
+    cycle_start_dt,
+    COUNT(DISTINCT fix_key) AS full_fix_cnt
+  FROM cycle_fixes
   GROUP BY ALL
 ),
 
@@ -80,13 +92,10 @@ full_fixes AS (
 -- above, which drifts out to the full cycle by release day
 first_window_fixes AS (
   SELECT
-    cyc.cycle_start_dt,
-    COUNT(DISTINCT bpf.fix_key) AS first_window_fix_cnt
-  FROM cycles AS cyc
-  INNER JOIN {{ ref('int_backpatch_fixes') }} AS bpf
-    ON
-      cyc.cycle_start_dt < bpf.commit_dt
-      AND cyc.cycle_start_dt + {{ var('seasonality_window_days') }} >= bpf.commit_dt
+    cycle_start_dt,
+    COUNT(DISTINCT fix_key) AS first_window_fix_cnt
+  FROM cycle_fixes
+  WHERE cycle_start_dt + {{ var('seasonality_window_days') }} >= first_commit_dt
   GROUP BY ALL
 )
 

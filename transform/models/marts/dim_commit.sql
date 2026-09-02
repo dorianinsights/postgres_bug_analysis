@@ -10,6 +10,16 @@
 -- subsystem and the subject ride along as attributes. Each person key resolves via
 -- the identity node (person_node + int_person_map), matching dim_person.
 --
+-- The fix-commit spine: fix_key (normalized subject, the identity of a committed
+-- fix across its backpatches -- COUNT(DISTINCT fix_key) is "distinct fixes") and
+-- is_housekeeping (stamps, translations, notes drafting: commits that are not
+-- fixes) come from int_git_commits; is_documented / documented_item_ord say
+-- whether a release-notes item cites this commit (the int_fix_commits bridge,
+-- inverted). dim_release_key resolves through int_commit_versions: exact tag
+-- ancestry for shipped commits, and the OPEN release for a released major's
+-- stable-branch commits after its latest tag (the pending fix stream) -- so
+-- "committed toward the next release" is a plain filter on this key.
+--
 -- NO Kimball special members (the deliberate exception, like dim_date): the only
 -- fact that references this dimension, fct_commit_files, is BUILT from the commit
 -- spine (every file row belongs to a real commit), so its dim_commit_key is
@@ -33,16 +43,30 @@ WITH dominant_subsystem AS (
     PARTITION BY commit_hash
     ORDER BY (subsystem IN ('tests', 'docs')) ASC, file_cnt DESC, line_sum DESC, subsystem ASC
   ) = 1
+),
+
+-- the release-notes item citing each commit (the lowest item when a combined
+-- commit is annotated under several)
+documented AS (
+  SELECT
+    commit_hash,
+    MIN(group_ord) AS documented_item_ord
+  FROM {{ ref('int_fix_commits') }}
+  WHERE commit_hash IS NOT null
+  GROUP BY ALL
 )
 
 SELECT
   {{ dbt_utils.generate_surrogate_key(['gcm.commit_hash']) }} AS dim_commit_key,
   COALESCE(pmp_a.person_key, {{ unknown_key() }}) AS author_dim_person_key,
   COALESCE(pmp_c.person_key, {{ unknown_key() }}) AS committer_dim_person_key,
-  -- the minor this commit shipped in (int_commit_versions -> dim_version by exact
-  -- tag ancestry), and its release from that version's row. master and
-  -- not-yet-shipped commits miss -> Not Applicable.
-  COALESCE(dvr.dim_release_key, {{ not_applicable_key() }}) AS dim_release_key,
+  -- the release this commit shipped in, or is pending for (int_commit_versions
+  -- -> int_releases, which mints the key dim_release conforms to). The beta
+  -- branch's commits fall through to their version's in_development release
+  -- (dim_version's 19.0 row); master misses -> Not Applicable.
+  COALESCE(irl.dim_release_key, dvr.dim_release_key, {{ not_applicable_key() }}) AS dim_release_key,
+  -- the minor it shipped in (tag ancestry -> dim_version); pending commits have
+  -- no tag yet -> Not Applicable
   COALESCE(dvr.dim_version_key, {{ not_applicable_key() }}) AS dim_version_key,
   -- the commit's development line (dim_major includes master, so this always
   -- resolves; the COALESCE only guards an unexpected branch)
@@ -64,6 +88,12 @@ SELECT
   -- for an empty commit with no file changes
   COALESCE(dsub.dominant_subsystem, 'other') AS dominant_subsystem,
   gcm.subject,
+  igc.fix_key,
+  igc.is_housekeeping,
+  dfx.documented_item_ord IS NOT null AS is_documented,
+  -- the citing release-notes item (fct_fixes.item_ord); NULL when none cites
+  -- this commit -- an attribute, not an FK, so no special member stands in
+  dfx.documented_item_ord,
   -- no Kimball special members here (built from the commit spine), so every
   -- row is real; the flag exists for uniformity across all dimensions
   false AS is_synthetic_row
@@ -74,8 +104,10 @@ LEFT JOIN {{ ref('int_commit_versions') }} AS icv
   ON gcm.branch = icv.branch AND gcm.commit_hash = icv.commit_hash
 LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
 LEFT JOIN dominant_subsystem AS dsub ON gcm.commit_hash = dsub.commit_hash
--- resolve the version from int_commit_versions' mapping; dim_release_key and
--- dim_version_key ride along (dim_version is 1:1 on version).
+LEFT JOIN documented AS dfx ON gcm.commit_hash = dfx.commit_hash
+-- the release (shipped or open) from the registry that mints its key, and the
+-- shipped minor from dim_version (1:1 on version)
+LEFT JOIN {{ ref('int_releases') }} AS irl ON icv.ship_release_dt = irl.release_dt
 LEFT JOIN {{ ref('dim_version') }} AS dvr ON icv.version = dvr.version
 LEFT JOIN {{ ref('dim_major') }} AS dmj ON gcm.branch = dmj.stable_branch
 LEFT JOIN {{ ref('int_person_map') }} AS pmp_a

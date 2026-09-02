@@ -23,6 +23,11 @@ WITH real_members AS (
     rrs.distinct_fix_cnt,
     rrs.distinct_cve_cnt,
     rrs.security_fix_cnt,
+    -- the committed-fix population that shipped in this release (distinct
+    -- non-housekeeping stable-branch subjects) and how much of it the notes
+    -- documented (distinct_fix_cnt / committed_fix_cnt); shipped rows only
+    rrs.committed_fix_cnt,
+    rrs.documentation_rate,
     -- cycle signals: non-NULL only for the started scheduled cycles, NULL for
     -- out-of-band releases and the not-yet-started future release
     irc.cycle_start_dt,
@@ -67,6 +72,8 @@ SELECT
   null AS distinct_fix_cnt,
   null AS distinct_cve_cnt,
   null AS security_fix_cnt,
+  null AS committed_fix_cnt,
+  null AS documentation_rate,
   null AS cycle_start_dt,
   null AS window_days,
   null AS early_report_cnt,
@@ -92,6 +99,8 @@ SELECT
   null AS distinct_fix_cnt,
   null AS distinct_cve_cnt,
   null AS security_fix_cnt,
+  null AS committed_fix_cnt,
+  null AS documentation_rate,
   null AS cycle_start_dt,
   null AS window_days,
   null AS early_report_cnt,
@@ -120,6 +129,8 @@ SELECT
   null AS distinct_fix_cnt,
   null AS distinct_cve_cnt,
   null AS security_fix_cnt,
+  null AS committed_fix_cnt,
+  null AS documentation_rate,
   null AS cycle_start_dt,
   null AS window_days,
   null AS early_report_cnt,

@@ -1,6 +1,14 @@
 -- Commit-grain enrichment: the analysis flags formerly computed in the
 -- scraper, now derived here from the verbatim subject/body.
 --
+-- fix_key: the normalized subject (lowercased, whitespace collapsed) -- the
+-- identity of a COMMITTED fix. PostgreSQL backpatches by cherry-picking, so the
+-- same fix on N branches is N commits with N hashes but one subject; every
+-- distinct-fix count on the commit side is COUNT(DISTINCT fix_key). Defined
+-- once here (int_committed_fixes, dim_commit and the faces all read it).
+-- is_housekeeping: release mechanics that are commits but not fixes -- version
+-- stamps, translation catalog refreshes, release-notes drafting, time-zone data
+-- refreshes, copyright bumps, pgindent runs. Excluded from every fix count.
 -- ai_credit: the first line of the commit message that credits an AI tool
 -- (trimmed, capped at 200 chars), NULL when none does. The pattern keeps
 -- the LLM signal only — fuzzers are tracked separately in the
@@ -44,5 +52,12 @@ SELECT
   committer_email,
   COALESCE(body_author_name, committer_name) AS patch_author_name,
   COALESCE(body_author_email, committer_email) AS patch_author_email,
+  LOWER(TRIM(REGEXP_REPLACE(subject, '\s+', ' ', 'g'))) AS fix_key,
+  REGEXP_MATCHES(
+    subject,
+    '^(stamp |translation updates|(first-draft |second-draft |last-minute updates for )?release notes'
+    || '|docs?: .*release notes|update time zone data|update copyright|re-?pgindent|bump catversion)',
+    'i'
+  ) AS is_housekeeping,
   LEFT(TRIM(credit_lines[1]), 200) AS ai_credit
 FROM flagged

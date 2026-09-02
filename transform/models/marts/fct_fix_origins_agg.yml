@@ -3,13 +3,33 @@ version: 2
 models:
   - name: fct_fix_origins_agg
     description: >
-      Distinct fixes per release split by origin (pgsql-bugs /
-      pgsql-hackers / unknown_or_internal) ->
-      ../data/derived/fct_fix_origins_agg.csv. Grain = (release_dt, origin).
+      Fixes per release by origin in both populations -> ../data/derived/fct_fix_origins_agg.csv:
+      the documented fixes (fix_cnt, release-notes items) and the committed fixes
+      that shipped in the release (committed_fix_cnt), with documentation_rate
+      between them. Every shipped release and the open one carry all four origins
+      (zero-filled). The open release has no items (fix_cnt NULL); its
+      projected_fix_cnt converts the committed-so-far count into documented units
+      via projection_factor (documented fixes per early committed fix, pooled
+      over the last var(origin_projection_cycles) closed cycles, per origin), or
+      the comparators' average documented count when the origin has no early
+      signal (embargoed security). Replaces fct_pending_fix_origins_agg.
+      Grain = (release_dt, origin).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [release_dt, origin]
+      # exactly the shipped rows carry a documented count ...
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (fix_cnt IS NOT NULL) = (status = 'shipped')
+      # ... and exactly the open rows carry a projection
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (projected_fix_cnt IS NOT NULL) = (status = 'open')
+      # the rate is defined exactly when a shipped release committed something
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (documentation_rate IS NOT NULL) = (status = 'shipped' AND committed_fix_cnt > 0)
     columns:
       - name: release_dt
         tests:
@@ -18,6 +38,19 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
+      - name: dim_release_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_release')
+                field: dim_release_key
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [shipped, open]
       - name: is_out_of_band
         tests: [not_null]
       - name: origin
@@ -31,13 +64,44 @@ models:
                   - unknown_or_internal_security
                   - unknown_or_internal_not_security
       - name: fix_cnt
+        description: Documented fixes (release-notes items) of this origin; zero-filled for shipped releases, NULL for the open one.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: committed_fix_cnt
+        description: Distinct committed fixes of this origin that shipped in (or are pending for) the release; zero-filled.
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
-                min_value: 1
+                min_value: 0
+      - name: documentation_rate
+        description: fix_cnt / committed_fix_cnt, DECIMAL(7,6); shipped rows with commits only.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: projection_factor
+        description: >
+          Open rows: documented fixes per committed fix that had landed by the open
+          cycle's current age, pooled over the comparator cycles; DECIMAL(12,6).
+          NULL when the origin has no early signal (security) or on shipped rows.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: projected_fix_cnt
+        description: >
+          Open rows only -- the projected documented fix count for this origin
+          (committed_fix_cnt x projection_factor, or the comparators' average
+          when the factor is undefined).
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
       - name: fix_share
-        description: The row's share of its release's fixes (fix_cnt / release total); a ratio typed DECIMAL(7,6), summing to 1 per release.
+        description: The row's share of its release's documented (or, for the open release, projected) fixes; DECIMAL(7,6), summing to 1 per release.
         tests:
           - dbt_utils.accepted_range:
               arguments:

@@ -15,6 +15,13 @@ vars:
   pace_comparison_cycles: 3
   # A release's wrap tag is the latest tag within this many days before it.
   wrap_tag_window_days: 7
+  # How many of the most recent closed scheduled cycles the per-origin
+  # projection on fct_fix_origins_agg pools when converting the open release's
+  # committed-so-far fixes into documented units (documented fixes per committed
+  # fix that had landed by the open cycle's current age). One year of cycles, so
+  # the quarterly seasonality averages out while a recent shift in how much of
+  # the commit stream gets documented still shows.
+  origin_projection_cycles: 4
   # The fixed "early cycle" window for the quarterly-seasonality view:
   # dim_release.first_window_fix_cnt (via int_release_cycles) counts distinct
   # backpatched fixes in the first N days after the wrap. FIXED on purpose so the

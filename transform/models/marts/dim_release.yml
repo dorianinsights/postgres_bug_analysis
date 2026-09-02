@@ -76,6 +76,23 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
+      - name: committed_fix_cnt
+        description: >
+          Distinct committed fixes (non-housekeeping stable-branch subjects) that
+          shipped in this release, from int_committed_fixes -- the commit-side
+          counterpart of distinct_fix_cnt (the documented items). Shipped rows only.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: documentation_rate
+        description: >
+          distinct_fix_cnt / committed_fix_cnt: how much of the commit stream the
+          release notes documented. DECIMAL(7,6); NULL for non-shipped rows.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
       - name: first_window_fix_cnt
         description: >
           Distinct backpatched fixes in the FIXED first-N-day window after the

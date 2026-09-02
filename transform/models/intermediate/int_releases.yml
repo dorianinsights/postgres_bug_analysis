@@ -7,6 +7,12 @@ models:
       future), with the surrogate key minted once here so dim_release and
       dim_version both conform to the same dim_release_key. Grain =
       dim_release_key.
+    tests:
+      # a scheduled release IS its own cycle's ship day; only out-of-band
+      # releases fold forward
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(cycle_ships_at_dt = release_dt) = (NOT is_out_of_band)"
     columns:
       - name: dim_release_key
         tests: [not_null, unique]
@@ -39,3 +45,14 @@ models:
         tests: [not_null]
       - name: is_partial_window
         tests: [not_null]
+      - name: cycle_ships_at_dt
+        description: >
+          The scheduled release day this release's cycle ships at: itself for a
+          scheduled/open/future release, the next scheduled release for an
+          out-of-band re-release. Cycle-grain measures fold releases by it.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_release_calendar')
+                field: scheduled_release_dt

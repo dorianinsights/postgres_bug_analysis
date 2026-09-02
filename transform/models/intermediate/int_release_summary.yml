@@ -2,7 +2,11 @@ version: 2
 
 models:
   - name: int_release_summary
-    description: Release-grain rollup of the deduped fixes. Grain = release_dt.
+    description: >
+      Release-grain rollup of the two fix populations: the deduped documented
+      fixes (distinct_fix_cnt + CVE/security counts) and the committed fixes that
+      shipped in the release (committed_fix_cnt), with the documentation rate
+      between them. Grain = release_dt.
     tests:
       # Security fixes are a subset of all fixes. (distinct_cve_cnt is NOT
       # bounded by security_fix_cnt: one item can carry several CVEs — the
@@ -10,6 +14,10 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: security_fix_cnt <= distinct_fix_cnt
+      # the rate is defined exactly when something was committed
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (documentation_rate IS NULL) = (committed_fix_cnt = 0)
     columns:
       - name: release_dt
         tests: [unique, not_null]
@@ -36,6 +44,19 @@ models:
       - name: security_fix_cnt
         tests:
           - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: committed_fix_cnt
+        description: Distinct non-housekeeping stable-branch fix subjects that shipped in the release (int_committed_fixes).
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: documentation_rate
+        description: distinct_fix_cnt / committed_fix_cnt, DECIMAL(7,6); NULL when nothing was committed.
+        tests:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 0
