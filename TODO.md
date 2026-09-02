@@ -1,97 +1,95 @@
 # TODO — outstanding work
 
-Known issues and future work for this repo. See `CLAUDE.md` for standing
-conventions/gotchas and `README.md` for architecture.
+Work still remaining for this repo. See `CLAUDE.md` for standing
+conventions/gotchas and `README.md` for architecture. Keep this file to open
+items only: when something ships, delete its section rather than annotating it.
 
 ## Capture fix `Reported-by:` credits (`bridge_fix_reporter`)
 
-`fct_fixes` drops the `Reported-by:` commit trailers entirely. It only links a
-fix to a reporter via `primary_bug_number` (→ `dim_bug`), which is populated
-only when there's a public `BUG #NNNNN` form. Security fixes never have that —
-they come in embargoed to security@ and credit researchers solely through
-`Reported-by:` trailers — so for every CVE fix the entire reporter list is
-lost. It's not an edge case: **263 corpus fixes carry more than one
-`Reported-by:` trailer** (e.g. commit `4fafe2380` / CVE-2026-14669 credits 11).
+`fct_fixes` drops the `Reported-by:` commit trailers. A fix links to a reporter
+only via `primary_bug_number` (→ `dim_bug`), which exists only for public
+`BUG #NNNNN` forms. Security fixes never have one — they arrive embargoed and
+credit researchers solely through `Reported-by:` — so every CVE fix loses its
+reporter list, and 263 corpus fixes carry more than one such trailer.
 
-Note this is *not* a `dim_bug` problem: a `BUG #` web-form report has exactly
-one filer (`Logged by:` / `Email address:`), so `dim_bug.reporter_person_key`
-is correct as one-per-bug. The gap is a missing fix→reporter many-to-many.
+This is a missing fix→reporter many-to-many, not a `dim_bug` problem (a web-form
+bug has exactly one filer, so `dim_bug.reporter_person_key` stays one-per-bug).
 
-**Proposed fix** (additive, mirrors `bridge_fix_cve` / `bridge_fix_bug`):
+Plan (additive, mirrors `bridge_fix_cve` / `bridge_fix_bug`):
 - `intermediate/int_fix_reporters.sql` — parse `Reported-by:` trailers from a
-  fix's commits (grain `(item_ord, reporter_name, reporter_email)`).
+  fix's commits; grain `(item_ord, reporter_name, reporter_email)`.
 - `marts/bridge_fix_reporter.sql` — grain `(item_ord, person_key)`, each
   reporter resolved through `int_person_map` → `dim_person`. FKs → `fct_fixes`,
   `dim_person`.
-- optionally denormalize `reporter_cnt` onto `fct_fixes`.
-- tests: `unique_combination_of_columns` on the pair; `relationships` from each
+- Optionally denormalize `reporter_cnt` onto `fct_fixes`.
+- Tests: `unique_combination_of_columns` on the pair; `relationships` from each
   side to its dim and to `fct_fixes`.
 
-## Extend the corpus to PG 19 when it GAs (~Sept/Oct 2026)
+## Classify in-progress-major (beta) branch commits: backport vs beta-only stabilization
 
-PG 19 is in beta (`REL_19_BETA1/2/3`, `REL_19_STABLE` branched, no `REL_19_0`
-yet). Don't include it until GA: the pipeline assumes each corpus major has
-shipped its `.0` — `sources.git.branch_range('REL_19_STABLE')` is
-`REL_19_0..REL_19_STABLE`, which errors (`unknown revision`) until `REL_19_0`
-exists, and there are no minor-release fix waves to analyze during beta anyway.
+After the fork, the in-progress major's stable branch receives cherry-picked
+fixes exactly like the released branches, plus fixes to code new in that major
+and housekeeping. The repo separates the streams only at branch level
+(`sources.git.commit_range`; `int_backpatch_fixes` excludes the in-progress
+branch; `fct_major_development` folds its commits into the major's development
+count). No model labels an individual beta-branch commit, and `fct_fixes` never
+sees them (fixes to unreleased code are not documented in any minor notes).
 
-At GA it's essentially a **one-line, reviewed change**: `LAST_MAJOR = 19` in
-`corpus.py`. Much already anticipates it — `stg_git_tags` scans `REL_1[5-9]_*`
-and filters prereleases out, so `REL_19_0` flows into `int_releases`
-automatically; `branch_range` resolves; and the open-release version projection
-(`active_majors` = `MAX(minor)+1`) picks up `19.1` the moment `REL_19_0` is
-tagged. Tags never rename: `REL_19_BETAn`/`REL_19_RC1` are permanent, GA adds a
-separate `REL_19_0`.
-
-Separate, larger option (NOT a corpus bump): track **19 beta development
-activity** now — would need `branch_range` special-cased for an unreleased major
-(range from the branch point or `REL_19_BETA1` instead of `REL_19_0`), living
-outside the minor-wave models.
+Plan (additive; no change to `fct_fixes` or the projections):
+- `intermediate/int_beta_commit_classes.sql` (or a column on `dim_commit`),
+  grain `(branch, commit_hash)` for the `dev_status <> 'released'` branch, with
+  `commit_class` in {`backport`, `beta_stabilization`, `housekeeping`} from three
+  signals, in precedence:
+  1. Normalized-subject twin on a released stable branch (the
+     `int_backpatch_fixes` `fix_key` rule — exact string, so a reworded subject
+     slips through) → `backport`.
+  2. Backpatch wording in the body (`Backpatch-through: NN` / `Back-patch to
+     all supported`). Naming only the beta major → `beta_stabilization`; naming
+     an older major → `backport`.
+  3. Origin trailers via `int_commit_origins` (pgsql-bugs → bug fix regardless
+     of branch) as a tiebreaker / attribute.
+  No master twin at all → `housekeeping` (version stamps, translations).
+- The same split applies to master (most master commits have no released-branch
+  twin: features, refactoring, fixes to unreleased code) and could be a second
+  consumer.
+- Possible surfaces: a per-class series on the major-development chart; a
+  "beta fixes so far" companion to the pending-release bar, clearly on the
+  commit scale rather than the documented-item scale (see the changelog
+  upcoming-release item below).
 
 ## Parquet-cache the immutable raw parses (mbox + git)
 
 `raw_list_messages` (mbox) and `raw_commit_files` (git) re-parse the entire
-history on every build. They're now parallelized across a process `Pool`
-(`sources/mail.py` ~257s→~43s, ~6x; `sources/git.py` ~33s→~25s — the git side is
-bounded by `master`, the one branch a per-branch fan-out can't split), but the
-work is still redone every run.
+history on every build. Both are parallelized across a process `Pool`, but the
+work is still redone every run; the mbox parse is the dominant build cost and
+`raw_commit_files` is next (bounded by `master`, the one branch a per-branch
+fan-out can't split). `raw_branch_size_weekly` is already incremental and is
+the pattern to follow.
 
-The bigger lever is to **cache the immutable parses as Parquet and only re-parse
-what changed** — the highest-payoff win for repeated builds, on top of the
-parallelization:
+Cache the immutable parses as Parquet and re-parse only what changed:
 - **mbox:** monthly files at `.cache/mbox/<list>/YYYYMM.mbox` are immutable once
-  a month is past (the sync only re-fetches the current month). Parse each month
-  once to `.cache/mbox_parsed/<list>/YYYYMM.parquet` (skip when the parquet is
-  newer than its mbox); re-parse only the current month. Rebuilds then read the
-  rest straight from Parquet (DuckDB reads it natively/fast) → the mail side
-  drops to ~seconds.
-- **git:** history below `GIT_HISTORY_SINCE` is immutable; only recent commits
-  are added. Cache per-branch numstat/log parses keyed by the branch tip SHA
-  (or an incremental `dbt` materialization), re-parsing only the new commits
-  since the cached tip.
+  the month is past (the sync re-fetches only the current month). Parse each
+  month once to `.cache/mbox_parsed/<list>/YYYYMM.parquet` (skip when the
+  parquet is newer than its mbox); re-parse only the current month. DuckDB reads
+  Parquet natively, so the mail side drops to seconds.
+- **git:** history below `GIT_HISTORY_SINCE` is immutable. Cache per-branch
+  numstat/log parses keyed by the branch tip SHA (or make the model
+  incremental), re-parsing only commits since the cached tip.
 
-Both keep byte-identical output (parse-once, read-back). Consider making
-`raw_list_messages` / `raw_commit_files` incremental `dbt` models, or doing the
-mtime/SHA-keyed caching inside `sources/mail.py` / `sources/git.py`.
+Output must stay byte-identical (parse once, read back). Either incremental
+`dbt` models or mtime/SHA-keyed caching inside `sources/mail.py` /
+`sources/git.py`.
 
 ## Coerce naive email `Date` timestamps to UTC in `sources/mail.py`
 
-A `-0000` `Date` header (RFC 5322: "UTC, but local zone unknown") makes Python's
+A `-0000` `Date` header (RFC 5322: UTC, local zone unknown) makes
 `email.utils.parsedate_to_datetime` return a *naive* datetime, so `_sent_ts`'s
 `.isoformat()` emits no offset and `stg_list_messages.sent_ts::TIMESTAMPTZ`
-falls back to the **build machine's session timezone**. That value is then both
-wrong (read as HST instead of UTC on Josh's machine) and **non-deterministic**
-across build environments — a CI build in UTC would store a different instant.
+falls back to the build machine's session timezone — wrong, and
+non-deterministic across build environments. The other timestamped raw sources
+preserve their offset; only the mail reader is affected.
 
-Currently exactly **1 of 159,714** messages hits this
-(`<7f6fabaa-3f8f-49ab-89ca-59fbfe633105@me.com>`, renans.l@icloud.com,
-2022-02-18; its `sent_dt` lands on 2022-02-19 instead of 2022-02-18).
-Negligible for aggregates, but a latent correctness + reproducibility defect
-that spreads silently if more `-0000` senders appear. Audited 2026-08-31; the
-other timestamped raw sources (`raw_git_commits`/`%cI`, `raw_git_tags`/iso-strict,
-`raw_item_commits` via `STRPTIME %z`) all preserve their offset correctly.
-
-Fix (one place, the reader) — default a naive parse to UTC:
+Fix in the reader — default a naive parse to UTC:
 
 ```python
 from datetime import timezone   # add to imports
@@ -106,80 +104,36 @@ def _sent_ts(message: EmailMessage) -> str | None:
     return parsed.isoformat()
 ```
 
-Rebuilds change exactly that one row (`sent_ts` gains `+00:00`, `sent_dt`
-2022-02-19 → 2022-02-18), rippling into `fct_messages` and possibly a ±1 in a
-message-day count — all corrections.
+Regression check: message `<7f6fabaa-3f8f-49ab-89ca-59fbfe633105@me.com>`
+(2022-02-18) is the one known `-0000` row; after the fix its `sent_ts` carries
+`+00:00` and its `sent_dt` is 2022-02-18 (currently 2022-02-19 on an HST
+machine). Expect a ±1 in at most one message-day count downstream.
 
 ## dbt-charts (dct) `{{ ref() }}` doesn't resolve in the render path (v0.5.0)
 
-We wanted faces to reference models via `{{ ref('model') }}` instead of bare
-table names + the `duckdb` search-path source. It half-works and is NOT usable
-for boards today:
+Faces use bare table names + the `duckdb` `warehouse` source because `dct
+render` / `dct serve` throw `ERR-JINJA-ERROR: 'ref' is undefined` on
+`{{ ref('model') }}`: the render pipeline runs the variable Jinja pass
+(StrictUndefined) over the raw SQL *before* ref resolution. `dct query` resolves
+refs fine on both the `warehouse` and `metrics` sources, so it is purely the
+render-path ordering. 0.5.0 is the latest release on PyPI.
 
-- `dct query` **resolves** `{{ ref('fct_fixes') }}` -- and, now that the project
-  is co-located (dbt_project.yml is a sibling, so the manifest is found), on BOTH
-  the `warehouse` (duckdb) and `metrics` (dbt_profile) sources (re-verified
-  2026-08-31: each returns 1128).
-- But `dct render` / `dct serve` — the actual dashboard path — still throws
-  `ERR-JINJA-ERROR: 'ref' is undefined`, even co-located. The render pipeline
-  runs the variable Jinja pass (StrictUndefined) over the raw SQL *before* ref
-  resolution, so `{{ ref() }}` trips it. Only the code path differs (`dct query`
-  resolves first; `dct render` doesn't) — it is independent of layout.
-
-v0.5.0 is the latest on PyPI (only 0.0.1 and 0.5.0 exist), so no upgrade fixes
-it. Verified 2026-08-31. Revisit when a dct release resolves refs in the render
-path (the fix is ordering ref-resolution before the variable pass). Until then,
-keep bare table names + the `duckdb` source for SQL boards (renders fine).
-
-Note: `dbt_charts.yml` + `faces/` now live under `transform/` (beside
-`dbt_project.yml`), so the dbt manifest + semantic layer resolve natively -- but
-that alone does NOT fix the render-path `ref()` bug above (it's the Jinja
-ordering, independent of layout). The co-location DID enable `type: metricflow`
-boards, which render correctly (a `dbt_profile` `metrics` source is configured);
-see the MetricFlow proof below.
-
-## MetricFlow foundation (proven; charts not yet migrated)
-
-Non-additive ratios (shares, rates) can't be re-aggregated from a stored
-per-grain value -- `AVG(monthly shares) != SUM(num)/SUM(denom)`. MetricFlow
-solves this by computing the ratio at query grain from additive measures, and
-it runs fully locally on DuckDB (no dbt Cloud, no hosting).
-
-Proven 2026-08-31: one semantic model over the atomic `fct_messages` grain
-(`models/marts/list_traffic_semantic.yml`) reproduces BOTH materialized traffic
-aggs EXACTLY -- month vs `fct_list_traffic_monthly_agg` 118/118 rows 0 mismatch,
-week vs `fct_list_traffic_weekly_agg` 514/514 rows 0 mismatch -- and gives any
-other grain (day/quarter/year) for free, with `fix_linked_share` correct at each
-grain (pooled 0.4777 vs the wrong avg-of-monthly-shares 0.4347). It renders in
-dct via a `type: metricflow` query against the `metrics` (`dbt_profile`) source.
-
-Foundation committed: the `metrics` source in `dbt_charts.yml`, the `dim_date`
-time-spine config, and the semantic model. dct's render uses the bundled
-`metricflow` lib -- no `dbt-metricflow` needed (install `dbt-metricflow[duckdb]`
-only if you want the `mf query` CLI for debugging).
-
-Next (optional migration): repoint the ~6 traffic charts in `faces/origins.yml`
-to `type: metricflow` queries and retire `fct_list_traffic_monthly_agg` +
-`_weekly_agg` (and their CSVs). Gotchas: dimensions are referenced by entity
-(`message__list_name`), time via `metric_time__<grain>`; a `type: metricflow`
-query needs the `dbt_profile` source, not `duckdb`.
-
----
+Revisit when a dct release resolves refs before the variable pass, then migrate
+the faces from bare table names to `{{ ref() }}`. Until then keep bare table
+names for SQL boards.
 
 ## Upcoming release on the changelog "Fixes per Scheduled Minor Release" chart
 
-The chart plots documented changelog `item_cnt` (shipped releases only). The
-upcoming (open) release has no release notes yet, so it is absent. We CAN show a
-"fixes so far" point for it (the `early_fix_cnt` KPI proves the data exists), but
-measured empirically the committed distinct-fix count runs ~1.5-2.6x the eventual
-documented `item_cnt` (per major, recent releases), so dropping it onto the same
-lines would show the upcoming release ~2x too tall.
+The chart plots documented changelog `item_cnt` for shipped releases only, so
+the upcoming (open) release is absent from the lines. The KPI tiles already show
+its committed "fixes so far" (`early_fix_cnt`), but the committed distinct-fix
+count runs ~1.5–2.6x the eventual documented `item_cnt` per major, so dropping
+it onto the same lines would plot the upcoming release ~2x too tall.
 
 Decide + implement one of:
-1. Feather (dashed) a per-major COMMITTED-fixes-so-far point at the open release,
-   clearly labeled as a commit-scale leading indicator (~2x documented). Closest
-   to "accumulating now"; sits on a different scale than the rest of the line.
-2. Feather a per-major PROJECTED documented-item count (from the projection
-   models) -- same scale as the lines, but a forecast not the live count.
+1. Feather (dashed) a per-major COMMITTED-fixes-so-far point at the open
+   release, labeled as a commit-scale leading indicator (~2x documented).
+2. Feather a per-major PROJECTED documented-item count from the projection
+   models — same scale as the lines, but a forecast rather than the live count.
 3. A dedicated small "upcoming release: fixes committed so far, per major" chart
-   in the commit measure, separate from the item-count lines.
+   on the commit measure, separate from the item-count lines.

@@ -9,6 +9,9 @@ per-session memories, which aren't committed to git.)
 - **Never `git commit` or push without asking first and getting explicit
   confirmation.** Finish and verify the work (dbt build / tests / lint), leave
   it uncommitted, and propose a commit message — then wait.
+- **Commit directly on `main`. Do NOT create feature branches** — the user works
+  trunk-based here; don't branch before committing even though `main` is the
+  default branch.
 - Commit-message trailers this repo uses are set by the environment; keep them.
 
 ## Operational gotchas
