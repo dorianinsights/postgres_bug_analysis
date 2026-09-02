@@ -11,21 +11,6 @@ description: >
   release). Parsed from the postgres.git clone at build time by the transform/
   dbt project (sources.git).
 
-variables:
-  include_translations:
-    input: checkbox
-    label: "Include translation catalogs (.po)"
-    description: >
-      Off by default: generated GNU gettext message catalogs are not
-      hand-written code. On, this adds all .po churn — mostly large mechanical
-      (plumbing) catalog refreshes, so it moves the total a lot.
-    default: false
-  include_test_fixtures:
-    input: checkbox
-    label: "Include regression test fixtures (.out)"
-    description: "Off by default: expected-output fixtures are generated, not source."
-    default: false
-
 queries:
   quarterly_distinct:
     description: >
@@ -97,8 +82,8 @@ queries:
       its slices). One line per major, a smooth growth curve. NOT summed across
       majors — they are parallel near-copies of the same tree, so size is read
       within a major and stepped across majors, never added. Hand-written source
-      by default; the generated classes (translation catalogs .po, regression
-      fixtures .out) are excluded unless their toggle is on.
+      only: the generated classes (translation catalogs .po, regression fixtures
+      .out) and non-code files are excluded.
     source: warehouse
     sql: |
       SELECT
@@ -107,10 +92,10 @@ queries:
         SUM(bsz.code_lines) AS code_lines
       FROM fct_branch_size_weekly AS bsz
       INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
-      WHERE
-        bsz.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
-        OR ({{ include_translations }} AND bsz.file_class = 'translations')
-        OR ({{ include_test_fixtures }} AND bsz.file_class = 'test_fixtures')
+      -- hand-written source only (default): the generated classes -- translation
+      -- catalogs and regression fixtures -- are measured in the fact but excluded
+      -- here, as are the non-code classes (catalog_data, build, other).
+      WHERE bsz.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
       GROUP BY bsz.week_start, dm.major_label
       ORDER BY bsz.week_start
 
@@ -139,10 +124,10 @@ queries:
       INNER JOIN latest AS lst
         ON bsz.dim_major_key = lst.dim_major_key AND bsz.week_start = lst.week_start
       INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
-      WHERE
-        bsz.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
-        OR ({{ include_translations }} AND bsz.file_class = 'translations')
-        OR ({{ include_test_fixtures }} AND bsz.file_class = 'test_fixtures')
+      -- hand-written source only (default): the generated classes -- translation
+      -- catalogs and regression fixtures -- are measured in the fact but excluded
+      -- here, as are the non-code classes (catalog_data, build, other).
+      WHERE bsz.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
       GROUP BY dm.major_label, bsz.subsystem
       ORDER BY dm.major_label, bsz.subsystem
 
@@ -153,8 +138,8 @@ queries:
       deletes), additions, and deletions. Backpatches count per branch (like the
       per-branch commit chart), so a fix landed on several majors contributes its
       churn once per branch. Generated file classes (translation catalogs .po,
-      regression fixtures .out) are excluded by default -- toggle them back with
-      the controls above. The current quarter is partial.
+      regression fixtures .out) are excluded -- source churn only. The current
+      quarter is partial.
     source: warehouse
     sql: |
       WITH q AS (
@@ -164,15 +149,11 @@ queries:
           SUM(COALESCE(cf.lines_deleted, 0))::BIGINT AS deletes
         FROM fct_commit_files AS cf
         INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
+        -- substantive (non-plumbing) source churn: plumbing commits and the
+        -- generated file classes (translations, regression fixtures) are excluded.
         WHERE dc.branch_scope = 'stable'
-          AND (
-            -- default: substantive (non-plumbing) source; each toggle adds that
-            -- generated class back INCLUDING its plumbing commits (translation
-            -- churn is almost all plumbing, so this is what makes it show up)
-            (NOT dc.is_plumbing AND cf.file_class NOT IN ('translations', 'test_fixtures'))
-            OR ({{ include_translations }} AND cf.file_class = 'translations')
-            OR ({{ include_test_fixtures }} AND cf.file_class = 'test_fixtures')
-          )
+          AND NOT dc.is_plumbing
+          AND cf.file_class NOT IN ('translations', 'test_fixtures')
         GROUP BY 1
       )
 
@@ -190,7 +171,7 @@ queries:
       feature work is happening over time, per file so a cross-area commit splits
       across its areas. Master only, so no backpatch multiplication (the
       released-branch backpatch churn is the chart above). Generated file classes
-      (.po, .out) excluded by default — toggle them back with the controls above.
+      (.po, .out) are excluded -- source churn only.
       The current quarter is partial.
     source: warehouse
     sql: |
@@ -200,14 +181,11 @@ queries:
         SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS churn
       FROM fct_commit_files AS cf
       INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
+      -- substantive (non-plumbing) source churn: plumbing commits and the
+      -- generated file classes (translations, regression fixtures) are excluded.
       WHERE dc.branch_scope = 'trunk'
-        AND (
-          -- default: substantive (non-plumbing) source; each toggle adds that
-          -- generated class back INCLUDING its plumbing commits
-          (NOT dc.is_plumbing AND cf.file_class NOT IN ('translations', 'test_fixtures'))
-          OR ({{ include_translations }} AND cf.file_class = 'translations')
-          OR ({{ include_test_fixtures }} AND cf.file_class = 'test_fixtures')
-        )
+        AND NOT dc.is_plumbing
+        AND cf.file_class NOT IN ('translations', 'test_fixtures')
       GROUP BY DATE_TRUNC('quarter', cf.commit_dt), cf.subsystem
       ORDER BY quarter, cf.subsystem
 
@@ -265,6 +243,43 @@ queries:
       FROM dim_release
       WHERE status = 'open'
       ORDER BY cycle_seq, pace_window
+
+  commits_by_hour:
+    description: >
+      Distribution of commits across the hour of the UTC day (0-23), by committer
+      timestamp -- when in the day commits actually land. All commits in
+      dim_commit. A round-the-clock shape from a global contributor base with a
+      broad afternoon-UTC peak (US morning + Europe afternoon).
+    source: warehouse
+    sql: |
+      SELECT
+        EXTRACT(hour FROM commit_ts AT TIME ZONE 'UTC')::INTEGER AS hour_utc,
+        COUNT(*)::BIGINT AS commit_cnt
+      FROM dim_commit
+      GROUP BY 1
+      ORDER BY 1
+
+  commit_hour_stats:
+    description: The mean and median commit time of day (UTC), as HH:MM, over all commits.
+    source: warehouse
+    sql: |
+      WITH minutes AS (
+        SELECT EXTRACT(hour FROM commit_ts AT TIME ZONE 'UTC') * 60
+          + EXTRACT(minute FROM commit_ts AT TIME ZONE 'UTC') AS minute_of_day
+        FROM dim_commit
+      ),
+
+      stats AS (
+        SELECT
+          ROUND(AVG(minute_of_day))::BIGINT AS mean_min,
+          ROUND(MEDIAN(minute_of_day))::BIGINT AS median_min
+        FROM minutes
+      )
+
+      SELECT
+        LPAD((mean_min // 60)::VARCHAR, 2, '0') || ':' || LPAD((mean_min % 60)::VARCHAR, 2, '0') AS mean_hhmm,
+        LPAD((median_min // 60)::VARCHAR, 2, '0') || ':' || LPAD((median_min % 60)::VARCHAR, 2, '0') AS median_hhmm
+      FROM stats
 
 charts:
   quarterly_distinct:
@@ -379,6 +394,29 @@ charts:
     query: ai_credit_lines
     title: "AI-credited fix commits"
 
+  commits_by_hour:
+    type: bar
+    query: commits_by_hour
+    title: "Commits by hour of day (UTC)"
+    subtitle: "When commits land across the 24h UTC day (committer timestamp, all commits) — round-the-clock from a global contributor base, peaking mid/late-afternoon UTC"
+    x: hour_utc
+    y: commit_cnt
+    x_label: "hour of day (UTC)"
+    y_label: "commits"
+    height: 340
+
+  mean_commit_hour:
+    type: kpi
+    query: commit_hour_stats
+    label: "Mean commit time (UTC)"
+    value: mean_hhmm
+
+  median_commit_hour:
+    type: kpi
+    query: commit_hour_stats
+    label: "Median commit time (UTC)"
+    value: median_hhmm
+
 rows:
   - quarterly_distinct
   - quarterly_by_branch
@@ -389,3 +427,4 @@ rows:
   - trunk_churn_by_subsystem
   - cols: [ai_credited, cycle_pace]
   - ai_credit_table
+  - cols: [commits_by_hour, { rows: [mean_commit_hour, median_commit_hour] }]
