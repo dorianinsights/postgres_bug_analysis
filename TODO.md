@@ -30,7 +30,7 @@ Plan (additive, mirrors `bridge_fix_cve` / `bridge_fix_bug`):
 After the fork, the in-progress major's stable branch receives cherry-picked
 fixes exactly like the released branches, plus fixes to code new in that major
 and housekeeping. The repo separates the streams only at branch level
-(`sources.git.commit_range`; `int_backpatch_fixes` excludes the in-progress
+(`sources.git.commit_range`; `int_commit_versions` leaves the in-progress
 branch; `fct_major_development` folds its commits into the major's development
 count). No model labels an individual beta-branch commit, and `fct_fixes` never
 sees them (fixes to unreleased code are not documented in any minor notes).
@@ -41,7 +41,7 @@ Plan (additive; no change to `fct_fixes` or the projections):
   `commit_class` in {`backport`, `beta_stabilization`, `housekeeping`} from three
   signals, in precedence:
   1. Normalized-subject twin on a released stable branch (the
-     `int_backpatch_fixes` `fix_key` rule — exact string, so a reworded subject
+     `dim_commit.fix_key` rule — exact string, so a reworded subject
      slips through) → `backport`.
   2. Backpatch wording in the body (`Backpatch-through: NN` / `Back-patch to
      all supported`). Naming only the beta major → `beta_stabilization`; naming
@@ -130,10 +130,14 @@ its committed "fixes so far" (`early_fix_cnt`), but the committed distinct-fix
 count runs ~1.5–2.6x the eventual documented `item_cnt` per major, so dropping
 it onto the same lines would plot the upcoming release ~2x too tall.
 
-Decide + implement one of:
-1. Feather (dashed) a per-major COMMITTED-fixes-so-far point at the open
-   release, labeled as a commit-scale leading indicator (~2x documented).
-2. Feather a per-major PROJECTED documented-item count from the projection
-   models — same scale as the lines, but a forecast rather than the live count.
-3. A dedicated small "upcoming release: fixes committed so far, per major" chart
-   on the commit measure, separate from the item-count lines.
+The origins face settled the same question by NOT mixing populations: its
+documented chart stops at the last shipped release, and a separate "Fix commits
+per release" chart carries the committed measure for every release including
+the open one's so-far bar (a dashed-outline bar layer; note dct 0.5 drops an
+explicit `sort:` once a chart has layers, so the query's ORDER BY orders the
+axis). Follow that here: keep this chart documented-only and add a per-major
+committed-fixes-per-release chart with the so-far point
+(`dim_commit.dim_release_key` = the open release gives the committed-so-far
+count per major). `fct_fix_origins_agg.projected_fix_cnt` (per-origin
+documented-per-early-committed factors over `origin_projection_cycles` cycles)
+exists if a documented-units projection is ever wanted instead.

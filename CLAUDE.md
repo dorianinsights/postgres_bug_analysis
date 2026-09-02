@@ -124,6 +124,20 @@ per-session memories, which aren't committed to git.)
   for dropping synthetic rows in a dashboard** (`WHERE NOT is_synthetic_row`) —
   prefer it over per-dim natural-key hacks like `bug_number > 0` or
   `NOT IN ('(unknown)', ...)`.
+- **One commit → release mapping, two fix populations.** `int_commit_versions`
+  is the only place a commit is assigned to a release: exact git tag ancestry
+  for shipped commits, and the OPEN release for a released major's stable-branch
+  commits after its latest tag (`release_status = 'open'`). Never re-derive it
+  with date windows. `int_git_commits` defines `fix_key` (normalized subject —
+  the identity of a fix across its backpatches) and `is_housekeeping` (stamps,
+  translations, notes drafting, tz data: not fixes) once; every "distinct fix
+  commits" count is `COUNT(DISTINCT fix_key) ... WHERE NOT is_housekeeping`
+  (the faces read them off `dim_commit`). `int_committed_fixes` is the
+  committed-fix population (grain release × fix_key) and `int_fix_reps` the
+  documented one; `resolve_fix_origin` classifies both. Cycle-grain measures
+  fold an out-of-band release into its cycle via
+  `int_releases.cycle_ships_at_dt`; release-grain measures keep the exact
+  release.
 - A **release cycle** and a **release** are the same entity at two lifecycle stages
   (a release is a shipped cycle), unified in **`dim_release`** (`status` =
   shipped/open/future; shipped measures NULL for non-shipped). The cycle signals

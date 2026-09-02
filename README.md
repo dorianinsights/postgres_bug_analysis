@@ -92,9 +92,8 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 | `projections.csv` | one scenario | next-release scenarios: reversion / trend / regime repeat / escalation |
 | `fct_category_vs_subsystem_agg.csv` | (category, subsystem) | content category (int_fix_content_categories) cross-tabbed against the changed-file subsystem |
 | `fct_bug_reports_monthly_agg.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
-| `fct_fix_origins_agg.csv` | (release, origin) | distinct fixes traced via Discussion:/Bug: trailers to pgsql-bugs, pgsql-hackers, or unknown/other/internal |
+| `fct_fix_origins_agg.csv` | (release, origin) | fixes per release by origin (Discussion:/Bug: trailers → pgsql-bugs, pgsql-hackers, or no public trail split security/not) in BOTH populations: documented (`fix_cnt`) and committed (`committed_fix_cnt`) with their `documentation_rate`; the open release carries the committed-so-far count (the dashed bar on the origins face's fix-commits chart) and a `projected_fix_cnt` in documented units for anyone projecting |
 | `fct_origin_activity_monthly_agg.csv` | (month, origin) | master-branch activity by origin: commit count, AI-flagged commits, distinct cited threads |
-| `fct_pending_fix_origins_agg.csv` | (ships_at, origin) | the in-progress next release: backpatched fixes committed since the last wrap but not yet released, by origin — the "committed so far" bar on the origins chart (no security yet: embargoed until wrap) |
 | `dim_version.csv` | one version | version dimension: one row per individual minor (e.g. `18.6`) below the release — major/minor, wrap + announced date, `dim_release_key` → `dim_release` (NULL for `.0` majors), and its dates conform to `dim_date` |
 | `fct_version_items_agg.csv` | one version | aggregate fact: changelog item count per minor, conformed to `dim_version` (the date/major/minor attributes live in the dimension) |
 | `dim_cve.csv` | one CVE | CVE dimension: CVSS v3 base score + band + vector + component for every CVE a corpus fix cites |
@@ -167,7 +166,12 @@ every object's name. Layers:
   grain + flags), `int_fix_items` (fix items + dedup keys + derived CVEs),
   `int_fix_groups` (cross-branch dedup as recursive-CTE connected
   components), `int_fix_reps` (one categorized representative per distinct
-  fix), `int_release_summary`, `int_git_commits` (AI-credit flag).
+  fix), `int_git_commits` (the commit spine's `fix_key` / `is_housekeeping` /
+  AI-credit flags), `int_commit_versions` (the ONE commit → release mapping:
+  tag ancestry, plus the open release for a released major's not-yet-tagged
+  stable commits), `int_committed_fixes` (the committed-fix population: one
+  row per distinct fix per release, linked to its release-notes item),
+  `int_release_summary` (both populations per release + documentation rate).
 - `models/marts/` — the typed tables the faces and CSV exports read: the
   item-grain `fix_items` fact, the file-grain `fct_commit_files` churn fact
   (with its `dim_commit` spine), the release/projection/pace rollups, and the
@@ -234,7 +238,10 @@ every object's name. Layers:
     singular tests pin each fact's row count to its grain. Several older marts were superseded as the star grew —
     `fct_fixes` replaced `fix_impact` and `fix_items`; the cycle signals
     (`git_cycle_pace`, `fix_projection_cycles`, `int_cycle_signals`) were unified
-    as `fct_release_cycles` and then folded into `dim_release` (`int_release_cycles`).
+    as `fct_release_cycles` and then folded into `dim_release` (`int_release_cycles`);
+    `int_backpatch_fixes` / `int_pending_fixes` / `fct_pending_fix_origins_agg`
+    (calendar-windowed commit counts) were retired into `int_committed_fixes` +
+    `fct_fix_origins_agg` once every commit resolved to its release.
 - `seeds/` — the classification data: `content_categories` (the 13-category
   fix taxonomy + definitions; fixes are assigned to it by int_fix_content_categories,
   which replaced the retired `category_rules` regex classifier),
@@ -338,6 +345,20 @@ carry no separate unit tests.
   staging (`_ts` columns, TIMESTAMPTZ); truncation to a calendar day
   (`_dt`) happens as far downstream as possible, at the point of use, and
   buckets by UTC day.
+- **Two fix populations, one link.** A *documented* fix is a release-notes item
+  (`fct_fixes`, via `int_fix_reps`): it exists only once the release ships and
+  the notes author decides what gets an item. A *committed* fix is a distinct
+  non-housekeeping stable-branch commit subject (`dim_commit.fix_key`,
+  `int_committed_fixes`): it exists the moment it lands, and belongs to the
+  release it ships in (tag ancestry) or to the open release (not yet tagged).
+  The notes fold several commits into one item and document only ~40-60% of
+  committed subjects (`dim_release.documentation_rate`), so the two counts are
+  never equal; the notes' commit annotations link them (`is_documented`). The
+  origins face keeps the two apart: "Fix origins per release" plots documented
+  fixes for shipped releases, "Fix commits per release" plots committed fixes
+  for every release including the open one's so-far bar, so each chart compares
+  like with like (`fct_fix_origins_agg` carries both, plus a per-origin
+  `projected_fix_cnt` that converts the so-far count into documented units).
 - **Reports link to fixes exactly, not fuzzily**: commit messages carry
   `Discussion: https://postgr.es/m/<message-id>` trailers (and sometimes
   `Bug: #NNNNN`), extracted by `int_commit_discussions` /
