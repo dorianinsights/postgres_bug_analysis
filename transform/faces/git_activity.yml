@@ -1,6 +1,6 @@
 title: "PostgreSQL Fix Velocity — Git Commits"
 description: >
-  Commit-level view of PostgreSQL's stable branches (majors 15-18) plus master,
+  Commit-level view of PostgreSQL's stable branches (majors 14-18) plus master,
   straight from the git history: backpatch commit volume per quarter, AI-tool-
   credited commits, and the pace of the open release cycle. IMPORTANT: every
   count here is GIT COMMITS (deduplicated by commit subject), NOT the curated,
@@ -15,8 +15,8 @@ queries:
   quarterly_distinct:
     description: >
       Distinct fix COMMITS on the stable branches per calendar quarter (subjects
-      deduplicated across branches, so a fix backpatched to all four majors
-      counts once; release plumbing excluded). A git-history count — roughly 2x
+      deduplicated across branches, so a fix backpatched across every stable
+      major counts once; release plumbing excluded). A git-history count — roughly 2x
       the Changelog's documented per-release fixes, since only ~half of fix
       commits become a release-note item. The current quarter is partial.
     source: warehouse
@@ -46,28 +46,23 @@ queries:
       ORDER BY 1, 2
 
   commits_per_version:
-    ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_version is N:1 (one version per (release, major)); COUNTs verified to reconcile
+    ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_version is N:1 (one version per commit); COUNTs verified to reconcile
     description: >
-      Non-plumbing stable-branch fix commits binned by the minor release they
-      shipped in (via the new fct_commits.dim_release_key), split by major to give
-      the exact released version — REL_15_STABLE commits in the Feb 2026 release
-      are 15.16, and so on. Shipped releases only; a fix backpatched to four
-      majors shows once under each. This is the release-binned counterpart of the
-      per-quarter commit chart above.
+      Non-plumbing stable-branch fix commits binned by the exact minor release
+      they shipped in, via fct_commits.dim_version_key — REL_15_STABLE commits in
+      the Feb 2026 release are 15.16, and so on. Shipped releases only; a fix
+      backpatched to several majors shows once under each. This is the
+      release-binned counterpart of the per-quarter commit chart above.
     source: warehouse
     sql: |
       SELECT
         STRFTIME(dv.release_dt, '%b %y') AS release,
         EPOCH(dv.release_dt)::BIGINT AS release_seq,
-        'PG' || dv.major AS major,
+        dv.major_label AS major,
         COUNT(*)::BIGINT AS commit_cnt
       FROM fct_commits AS fc
-      INNER JOIN dim_version AS dv
-        ON
-          fc.dim_release_key = dv.dim_release_key
-          AND CAST(SPLIT_PART(fc.branch, '_', 2) AS INTEGER) = dv.major
-      WHERE fc.branch != 'master' AND NOT fc.is_plumbing
-        AND dv.minor > 0 AND dv.release_dt <= CURRENT_DATE
+      INNER JOIN dim_version AS dv ON fc.dim_version_key = dv.dim_version_key
+      WHERE NOT fc.is_plumbing AND dv.minor > 0
       GROUP BY ALL
       ORDER BY release_seq, major
 
@@ -83,7 +78,7 @@ queries:
     sql: |
       SELECT
         dv.release_dt AS release_dt,
-        'PG' || dv.major AS major,
+        dv.major_label AS major,
         sz.code_lines AS code_lines
       FROM fct_version_size_agg AS sz
       INNER JOIN dim_version AS dv ON sz.dim_version_key = dv.dim_version_key
@@ -94,8 +89,8 @@ queries:
       Lines of code churned per calendar quarter on the stable branches (fix
       commits, plumbing excluded), as three series: total churn (adds +
       deletes), additions, and deletions. Backpatches count per branch (like the
-      per-branch commit chart), so a fix landed on four majors contributes its
-      churn four times. The current quarter is partial.
+      per-branch commit chart), so a fix landed on several majors contributes its
+      churn once per branch. The current quarter is partial.
     source: warehouse
     sql: |
       WITH q AS (
@@ -176,7 +171,7 @@ charts:
     query: quarterly_distinct
     title: "Distinct fix commits per quarter"
     subtitle: >
-      Git commits on REL_15..18_STABLE, deduplicated by subject across branches —
+      Git commits on REL_14..18_STABLE, deduplicated by subject across branches —
       a superset of the Changelog's documented fixes (~2x); calendar quarters,
       current one partial
     x: quarter
@@ -189,7 +184,7 @@ charts:
     type: line
     query: quarterly_by_branch
     title: "Fix commits per stable branch per quarter"
-    subtitle: "Each branch counts its own backpatch, so one fix landed on all four majors is four commits here; newer branches carry more; every branch jumps in Q3 2026"
+    subtitle: "Each branch counts its own backpatch, so one fix landed on every stable major is one commit per branch here; newer branches carry more; every branch jumps in Q3 2026"
     x: quarter
     y: fix_commits
     y_label: "fix commits"

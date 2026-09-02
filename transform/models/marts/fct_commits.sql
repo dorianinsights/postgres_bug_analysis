@@ -37,6 +37,12 @@ SELECT
   -- the release this commit shipped in; master and not-yet-shipped commits have
   -- no scheduled minor release -> Not Applicable
   COALESCE(rwn.dim_release_key, {{ not_applicable_key() }}) AS dim_release_key,
+  -- the exact minor this commit shipped in = (its release) x (its branch's
+  -- major); resolved ONCE here so consumers join a single surrogate instead of
+  -- reconstructing the version from dim_release_key + a major parsed out of the
+  -- branch string. Not Applicable for master / not-yet-shipped commits (no
+  -- shipped version yet), same as dim_release_key.
+  COALESCE(dvr.dim_version_key, {{ not_applicable_key() }}) AS dim_version_key,
   gcm.commit_dt,
   org.origin,
   igc.is_plumbing,
@@ -56,6 +62,15 @@ LEFT JOIN release_windows AS rwn
     gcm.commit_dt > rwn.win_start
     AND gcm.commit_dt <= rwn.win_end
     AND gcm.branch != 'master'
+-- resolve the commit's minor version = its release window x its branch's major.
+-- TRY_CAST yields NULL for 'master' (no '_N_'), and rwn.dim_release_key is NULL
+-- off a window, so both non-stable and in-flight commits fall through to the
+-- COALESCE Not Applicable above. (dim_release_key, major) is unique per shipped
+-- minor, so this stays 1:1 -- no fan-out.
+LEFT JOIN {{ ref('dim_version') }} AS dvr
+  ON
+    rwn.dim_release_key = dvr.dim_release_key
+    AND TRY_CAST(SPLIT_PART(gcm.branch, '_', 2) AS INTEGER) = dvr.major
 LEFT JOIN {{ ref('int_person_map') }} AS pmp_a
   ON pmp_a.node_id = {{ person_node('igc.patch_author_email', 'igc.patch_author_name') }}
 LEFT JOIN {{ ref('int_person_map') }} AS pmp_c

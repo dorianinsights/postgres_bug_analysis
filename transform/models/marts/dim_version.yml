@@ -26,6 +26,9 @@ models:
           - not_null:
               config:
                 where: "version NOT IN ('(unknown)', '(not applicable)')"
+      - name: major_label
+        description: Display label for the major line, e.g. 'PG18'. The single home for this string (faces read it instead of rebuilding 'PG' || major).
+        tests: [not_null]
       - name: minor
         tests:
           - not_null:

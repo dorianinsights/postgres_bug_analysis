@@ -1,6 +1,6 @@
 title: "PostgreSQL Fix Velocity — Changelog"
 description: >
-  Every minor release of PostgreSQL majors 15-18, scraped from the official
+  Every minor release of PostgreSQL majors 14-18, scraped from the official
   release notes: fix volume per quarterly release, fix categories,
   security fixes, contributors, and next-release projection scenarios.
   Data are produced by the transform/ dbt project (release notes parsed from
@@ -51,7 +51,7 @@ queries:
     sql: |
       SELECT
         dv.release_dt AS date,
-        'PG' || dv.major AS branch,
+        dv.major_label AS branch,
         vi.item_cnt AS n_items
       FROM fct_version_items_agg AS vi
       INNER JOIN dim_version AS dv ON vi.dim_version_key = dv.dim_version_key
