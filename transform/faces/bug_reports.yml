@@ -96,36 +96,21 @@ queries:
       QUALIFY report_week >= (DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY)::DATE
       ORDER BY 1
 
-  monthly_acted_pct:
+  monthly_acted_data:
     description: >
-      Acted-upon share per month (raw percentage points, 0-100) and its 3-month
-      trailing average, as two series -- the right-axis lines. The trailing
-      months sag because their fixes haven't landed yet.
+      Per month: reports fixed (count, the bars), the acted-upon share (%) and
+      its 3-month trailing average (the two right-axis lines). Wide (one row per
+      month) so a hover shows all three at once; the two % lines share one axis
+      via a y-list. Trailing months sag because their fixes haven't landed yet.
     source: warehouse
     sql: |
       SELECT
         report_month_dt AS report_month,
-        'acted upon (%)' AS series,
-        acted_upon_pct AS pct
-      FROM fct_bug_reports_monthly_agg
-      UNION ALL
-      SELECT
-        report_month_dt AS report_month,
-        '3-month rolling average' AS series,
+        acted_upon_cnt AS "reports fixed",
+        acted_upon_pct AS "acted upon (%)",
         AVG(acted_upon_pct) OVER (
           ORDER BY report_month_dt ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-        ) AS pct
-      FROM fct_bug_reports_monthly_agg
-      ORDER BY report_month, series
-
-  monthly_acted_cnt:
-    description: Count of each month's reports later linked to a fix commit (the acted-upon count).
-    source: warehouse
-    sql: |
-      SELECT
-        report_month_dt AS report_month,
-        'reports fixed' AS series,
-        acted_upon_cnt
+        ) AS "3-month rolling average"
       FROM fct_bug_reports_monthly_agg
       ORDER BY 1
 
@@ -269,23 +254,25 @@ charts:
 
   monthly_acted:
     type: bar
-    query: monthly_acted_cnt
+    query: monthly_acted_data
     title: "Bug reports acted upon, by month"
     subtitle: "Bars: reports later linked to a fix (count, left axis). Lines: acted-upon share (%, right axis) with its 3-month rolling average. Lower bound (exact links only); trailing months right-censored."
     x: report_month
-    y: acted_upon_cnt
-    y_label: "reports fixed"
-    color: series
+    y: "reports fixed"
     height: 340
+    # the two % lines are distinct columns (so a hover reads both, plus the bar);
+    # both right axes are pinned to the same [0, 50] domain so they coincide as
+    # one shared secondary scale (dct can't merge two layer axes otherwise)
     layers:
-      # both % series share one right axis (one query, coloured by series), so
-      # they can't fight over two competing secondary scales
       - type: line
-        query: monthly_acted_pct
         x: report_month
-        y: pct
-        color: series
-        axis_y: { position: right, title: "acted upon (%)" }
+        y: "acted upon (%)"
+        axis_y: { position: right, title: "acted upon (%)", scale: { domain: [0, 50] } }
+      - type: line
+        x: report_month
+        y: "3-month rolling average"
+        axis_y: { position: right, title: "acted upon (%)", scale: { domain: [0, 50] } }
+        style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
 
   seasonality_counts:
     type: bar
