@@ -82,8 +82,8 @@ Derived (`data/derived/`, the CSV audit exports of the mart tables, written
 by the transform's on-run-end hook — rerun `dbt build` to change analysis
 rules without re-scraping; one `.csv` per mart, same name). Only marts under
 `var('derived_csv_max_rows')` (1000) rows get a twin — the heavier ones
-(`fct_messages`, `fct_commits`, `dim_person`, `dim_date`, `dim_bug`,
-`fct_fixes`, `bridge_fix_contributor`) live only as typed tables in the warehouse:
+(`fct_messages`, `fct_commit_files`, `dim_commit`, `dim_person`, `dim_date`,
+`dim_bug`, `fct_fixes`, `bridge_fix_contributor`) live only as typed tables in the warehouse:
 
 | File | Grain | Notes |
 |---|---|---|
@@ -169,9 +169,9 @@ every object's name. Layers:
   components), `int_fix_reps` (one categorized representative per distinct
   fix), `int_release_summary`, `int_git_commits` (plumbing/AI-credit flags).
 - `models/marts/` — the typed tables the faces and CSV exports read: the
-  item-grain `fix_items` fact, the commit-grain `fct_commits`
-  fact, the release/projection/pace rollups, and the star (dims + facts)
-  described below. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
+  item-grain `fix_items` fact, the file-grain `fct_commit_files` churn fact
+  (with its `dim_commit` spine), the release/projection/pace rollups, and the
+  star (dims + facts) described below. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
   which downstream writers silently turn into DOUBLE — cast count-like
   sums to `::BIGINT` at the aggregation site.
   - **Star schema (Kimball).** Alongside those analysis-shaped marts, a
@@ -179,9 +179,14 @@ every object's name. Layers:
     authors + committers + list senders unified to one person, keyed by the
     shared `person_node()` macro + `int_person_map` connected-component
     resolution so several emails collapse to one person), `dim_date`,
-    `dim_release` (shipped releases + open/future cycles, status-flagged), `dim_cve` and `dim_bug`, with the
-    facts `fct_commits` (commit grain), `fct_messages` (message grain), and
-    `fct_fixes` (fix grain). `dim_version` sits one grain below `dim_release`:
+    `dim_release` (shipped releases + open/future cycles, status-flagged), `dim_cve`, `dim_bug`, and
+    `dim_commit` (one row per git commit — its attributes + conformed keys, no
+    measures), with the facts `fct_commit_files` (commit-file grain: churn),
+    `fct_messages` (message grain), and `fct_fixes` (fix grain). A commit's
+    measures are aggregates of its `fct_commit_files` rows, so the commit-grain
+    fact was retired into `dim_commit` + the atomic file fact; distinct-commit
+    counts (non-additive) come from the MetricFlow semantic layer over that grain,
+    not a stored table. `dim_version` sits one grain below `dim_release`:
     one row per individual minor (e.g. `18.6`), conformed up to its release via
     `dim_release_key` (NULL for the `.0` majors that ship alone); `fct_fixes` and
     `fct_version_items_agg` carry a `dim_version_key` FK to it.
@@ -200,17 +205,19 @@ every object's name. Layers:
     fed by `int_fix_contributors`); `fct_release_categories_agg` and `fct_release_contributors_agg`
     are conformed aggregates of `fct_fixes` (+ the contributor bridge). The period aggregates (`fct_bug_reports_monthly_agg`,
     `fct_origin_activity_monthly_agg`) are aggregate facts rolled up from those
-    grains and conformed on `dim_date` by their month/week DATE. `fct_commits`
+    grains and conformed on `dim_date` by their month/week DATE. `dim_commit`
     carries a `dominant_subsystem` (a weighted vote over its files via the
     per-file `int_commit_files`, which classifies each changed file by subsystem
-    and by extension `file_class`). That per-file grain is promoted to the atomic
-    churn fact **`fct_commit_files`** (one row per file per commit — line counts,
-    subsystem, file_class, is_plumbing, branch_scope, conformed to `dim_major` and
-    `dim_date`); every churn metric rolls up from it dynamically rather than from a
-    frozen by-quarter table, and a MetricFlow semantic model
-    (`fct_commit_files_semantic`) exposes the churn measures at any time grain — so
-    the line-count charts aggregate the atomic fact on the fly and filter generated
-    file classes (translation catalogs, test fixtures) in or out. (Mailing-list
+    and by extension `file_class`), plus `branch_scope` (trunk/stable/beta) and
+    the plumbing/AI/origin flags. The atomic churn fact **`fct_commit_files`** (one
+    row per file per commit — line counts + subsystem + file_class, FK to
+    `dim_commit`, conformed to `dim_date`) is where every churn metric rolls up
+    from dynamically rather than from a frozen by-quarter table. Two MetricFlow
+    semantic models (`fct_commit_files_semantic`, `dim_commit_semantic`), joined on
+    the `commit` entity, expose churn and distinct-commit measures at any time
+    grain and any commit/file slice — so the line-count charts aggregate the atomic
+    fact on the fly and filter generated file classes (translation catalogs, test
+    fixtures) in or out. (Mailing-list
     traffic has no materialized agg: the `transform/faces/` boards roll it up
     from the atomic `fct_messages` at query time — the count charts in SQL, the
     non-additive fix-linked share via a MetricFlow ratio metric; see

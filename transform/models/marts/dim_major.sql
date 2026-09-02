@@ -4,11 +4,11 @@
 -- line-level attributes: display label, branch name, the ~5-year support window
 -- (ga_dt -> eol_dt), and lifecycle (released / beta / development). is_released
 -- separates the released majors; is_supported is the released-and-still-in-window
--- subset. Every fct_commits.branch value resolves to a real row (no NULL/Unknown
+-- subset. Every commit's branch value resolves to a real row (no NULL/Unknown
 -- FK). Sourced from stg_major_development, which discovers released AND
 -- in-progress majors from the repo, with ga_dt from int_versions and master
 -- appended. dim_major_key is a generate_surrogate_key hash of the natural key;
--- conforms to dim_version, fct_commits, fct_branch_size_weekly,
+-- conforms to dim_version, dim_commit, fct_branch_size_weekly,
 -- fct_major_development. Grain = major line. -> ../data/derived/dim_major.csv
 WITH ga_dates AS (
   SELECT

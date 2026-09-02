@@ -4,7 +4,7 @@
 -- heuristic; out-of-band re-releases need zero special-casing (they are ordinary
 -- tags). master and open-cycle commits (after the latest tag, not yet released)
 -- resolve to NULL. This is the SINGLE home for the commit -> version (and ->
--- ship release) mapping: fct_commits reads it for dim_release_key /
+-- ship release) mapping: dim_commit reads it for dim_release_key /
 -- dim_version_key, and dim_version reads it (aggregated) for the first/last
 -- commit of each version. Grain = (branch, commit_hash).
 SELECT

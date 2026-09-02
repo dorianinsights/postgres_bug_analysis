@@ -13,7 +13,7 @@ models:
       file_class the shared file_class_rules one, so a size chart can filter the
       generated classes (translations, test_fixtures) in or out like the churn
       charts. A per-major stock, never summed across majors. Flow (churn / commit
-      counts) lives in fct_commits, not here. Too many rows for a derived CSV twin
+      counts) lives in fct_commit_files, not here. Too many rows for a derived CSV twin
       (over var(derived_csv_max_rows)); query it in the warehouse.
       Grain = (dim_major_key, week_start, subsystem, file_class).
     tests:

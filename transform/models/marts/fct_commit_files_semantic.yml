@@ -3,11 +3,11 @@ version: 2
 # A MetricFlow semantic model over the atomic churn grain (fct_commit_files) --
 # one file changed by one commit. Churn measures are defined once here and
 # computed dynamically at ANY time grain (day/week/month/quarter/year) and sliced
-# by any degenerate dimension (subsystem, file_class, branch_scope, is_plumbing),
-# instead of being frozen into a pre-aggregated by-quarter table. Consumed by
-# dbt-charts via `type: metricflow` queries; the interactive git_activity churn
-# charts read the same fact directly in SQL (their file-class toggle composes more
-# simply as a SQL predicate than a MetricFlow filter).
+# by any file dimension (subsystem, file_class) or -- via the `commit` entity join
+# to dim_commit -- any commit dimension (branch_scope, is_plumbing, author, ...).
+# No pre-aggregated by-quarter table. Consumed by dbt-charts via `type: metricflow`
+# queries; the interactive git_activity churn charts read the fact directly in SQL
+# (their file-class toggle composes more simply as a SQL predicate).
 semantic_models:
   - name: commit_files
     description: One file changed by one commit; the atomic grain the churn metrics roll up.
@@ -17,7 +17,10 @@ semantic_models:
     entities:
       - name: commit_file
         type: primary
-        expr: commit_hash || '|' || file_path
+        expr: dim_commit_key || '|' || file_path
+      - name: commit
+        type: foreign
+        expr: dim_commit_key
     dimensions:
       - name: commit_day
         type: time
@@ -27,10 +30,6 @@ semantic_models:
       - name: subsystem
         type: categorical
       - name: file_class
-        type: categorical
-      - name: branch_scope
-        type: categorical
-      - name: is_plumbing
         type: categorical
     measures:
       - name: lines_added_sum
@@ -44,7 +43,7 @@ semantic_models:
         expr: "COALESCE(lines_added, 0) + COALESCE(lines_deleted, 0)"
       - name: changed_commit_count
         agg: count_distinct
-        expr: commit_hash
+        expr: dim_commit_key
 
 metrics:
   - name: lines_added

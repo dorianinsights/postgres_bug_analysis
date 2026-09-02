@@ -40,7 +40,7 @@ queries:
         DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
         'distinct fix commits' AS series,
         COUNT(DISTINCT LOWER(TRIM(fc.subject))) AS distinct_fix_cnt
-      FROM fct_commits AS fc
+      FROM dim_commit AS fc
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
       WHERE dm.is_released AND NOT fc.is_plumbing
       GROUP BY 1
@@ -57,7 +57,7 @@ queries:
         DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
         dm.stable_branch AS branch,
         COUNT(*) AS fix_commits
-      FROM fct_commits AS fc
+      FROM dim_commit AS fc
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
       WHERE dm.is_released AND NOT fc.is_plumbing
       GROUP BY 1, 2
@@ -67,7 +67,7 @@ queries:
     ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_version is N:1 (one version per commit); COUNTs verified to reconcile
     description: >
       Non-plumbing stable-branch fix commits binned by the minor release they
-      shipped in (via fct_commits.dim_version_key, resolved by exact git tag
+      shipped in (via dim_commit.dim_version_key, resolved by exact git tag
       ancestry) — REL_15_STABLE commits in the Feb 2026 release are 15.16, and so
       on. Grouped by release month + major, so an out-of-band re-release folds into
       its month's scheduled bar. Shipped releases only; a fix backpatched to
@@ -80,7 +80,7 @@ queries:
         MIN(EPOCH(dv.release_dt))::BIGINT AS release_seq,
         dm.major_label AS major,
         COUNT(*)::BIGINT AS commit_cnt
-      FROM fct_commits AS fc
+      FROM dim_commit AS fc
       INNER JOIN dim_version AS dv ON fc.dim_version_key = dv.dim_version_key
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
       WHERE NOT fc.is_plumbing AND dv.minor > 0
@@ -163,12 +163,13 @@ queries:
           SUM(COALESCE(cf.lines_added, 0))::BIGINT AS adds,
           SUM(COALESCE(cf.lines_deleted, 0))::BIGINT AS deletes
         FROM fct_commit_files AS cf
-        WHERE cf.branch_scope = 'stable'
+        INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
+        WHERE dc.branch_scope = 'stable'
           AND (
             -- default: substantive (non-plumbing) source; each toggle adds that
             -- generated class back INCLUDING its plumbing commits (translation
             -- churn is almost all plumbing, so this is what makes it show up)
-            (NOT cf.is_plumbing AND cf.file_class NOT IN ('translations', 'test_fixtures'))
+            (NOT dc.is_plumbing AND cf.file_class NOT IN ('translations', 'test_fixtures'))
             OR ({{ include_translations }} AND cf.file_class = 'translations')
             OR ({{ include_test_fixtures }} AND cf.file_class = 'test_fixtures')
           )
@@ -198,11 +199,12 @@ queries:
         cf.subsystem AS subsystem,
         SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS churn
       FROM fct_commit_files AS cf
-      WHERE cf.branch_scope = 'trunk'
+      INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
+      WHERE dc.branch_scope = 'trunk'
         AND (
           -- default: substantive (non-plumbing) source; each toggle adds that
           -- generated class back INCLUDING its plumbing commits
-          (NOT cf.is_plumbing AND cf.file_class NOT IN ('translations', 'test_fixtures'))
+          (NOT dc.is_plumbing AND cf.file_class NOT IN ('translations', 'test_fixtures'))
           OR ({{ include_translations }} AND cf.file_class = 'translations')
           OR ({{ include_test_fixtures }} AND cf.file_class = 'test_fixtures')
         )
@@ -219,7 +221,7 @@ queries:
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
         'AI-credited commits' AS series,
         COUNT(DISTINCT LOWER(TRIM(subject))) AS ai_credited_commits
-      FROM fct_commits
+      FROM dim_commit
       WHERE ai_credit IS NOT NULL
       GROUP BY 1
       ORDER BY 1
@@ -232,7 +234,7 @@ queries:
         MIN(commit_dt) AS commit_dt,
         subject,
         MIN(ai_credit) AS credit_line
-      FROM fct_commits
+      FROM dim_commit
       WHERE ai_credit IS NOT NULL
       GROUP BY 2
       ORDER BY 1 DESC
@@ -294,7 +296,7 @@ charts:
     type: bar
     query: commits_per_version
     title: "Fix commits per released version"
-    subtitle: "Stable-branch fix commits binned by the release they shipped in (fct_commits.dim_release_key), split by major; shipped releases only"
+    subtitle: "Stable-branch fix commits binned by the release they shipped in (dim_commit.dim_release_key), split by major; shipped releases only"
     x: release
     y: commit_cnt
     y_label: "fix commits"

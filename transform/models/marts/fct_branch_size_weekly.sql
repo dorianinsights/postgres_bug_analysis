@@ -10,7 +10,7 @@
 -- codebase's exact size AT a release tag (the retired fct_version_size_agg): this
 -- is size over CALENDAR time -- the growth curve. A per-major stock, NEVER summed
 -- across majors (parallel copies of one tree). FLOW (churn, commit counts) lives
--- in fct_commits, joined on the same grain. commit_hash is the exact tree measured
+-- in fct_commit_files / dim_commit, joined on the same major line. commit_hash is the exact tree measured
 -- (the branch HEAD as of the week's end): a provenance pointer, not an aggregation
 -- key. Grain = (dim_major_key, week_start, subsystem, file_class).
 SELECT

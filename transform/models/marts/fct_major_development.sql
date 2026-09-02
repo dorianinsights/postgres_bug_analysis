@@ -5,8 +5,8 @@
 -- first/last development commit (day, instant, hash). Covers every major at/above
 -- the corpus floor with a stable branch -- INCLUDING the in-progress one (e.g.
 -- PG19 in beta) -- discovered from the repo, so a new major appears with no
--- LAST_MAJOR to bump. Distinct from fct_commits (post-GA backpatch minors on the
--- stable branches): this is the pre-GA feature development on master + the
+-- LAST_MAJOR to bump. Distinct from fct_commit_files (post-GA backpatch minors on
+-- the stable branches): this is the pre-GA feature development on master + the
 -- stabilizing branch. major is a degenerate key (the in-progress major is not in
 -- dim_major, which is released majors + master); the dev-commit days conform to
 -- dim_date. Grain = major. -> ../data/derived/fct_major_development.csv

@@ -3,8 +3,7 @@
 -- fct_branch_size_weekly use, lowest match_order wins, 'other' fallback) and by
 -- EXTENSION into a file_class (file_class_rules -- what KIND of file it is). Where
 -- a change lives vs what kind of file it is. The per-commit area signal:
--- fct_commits reads it for dominant_subsystem, and churn-by-area aggregates roll
--- it up. Line counts are NULL for binary files (git numstat emits '-'), so binary
+-- dim_commit reads it for dominant_subsystem, and fct_commit_files is built on it. Line counts are NULL for binary files (git numstat emits '-'), so binary
 -- churn is never counted. Grain = (commit_hash, file_path).
 WITH file_rules AS (
   SELECT

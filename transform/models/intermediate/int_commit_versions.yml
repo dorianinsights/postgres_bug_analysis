@@ -7,7 +7,7 @@ models:
       between consecutive release tags; see stg_commit_versions / sources.git) --
       no date windows, out-of-band re-releases handled as ordinary tags.
       ship_release_dt / version are NULL for master and open-cycle (not-yet-tagged)
-      commits. The single source for the resolution: fct_commits reads it for
+      commits. The single source for the resolution: dim_commit reads it for
       dim_release_key/dim_version_key, dim_version aggregates it for each version's
       first/last commit. Grain = (branch, commit_hash).
     tests:

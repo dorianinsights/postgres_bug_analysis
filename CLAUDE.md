@@ -74,16 +74,16 @@ per-session memories, which aren't committed to git.)
   yields a per-(email,name) node key; `int_person_map` merges nodes that share a
   normalized email OR name (transitively, à la `int_fix_groups`) into one
   `person_key`. Facts compute the node key and JOIN `int_person_map`;
-  `dim_person`, `dim_bug` reporters, and `fct_commits` authors all resolve
+  `dim_person`, `dim_bug` reporters, and `dim_commit` authors all resolve
   through it. Real patch authors come from the commit body's `Author:` trailer,
   real bug reporters from the form body's `Logged by:` — not the git `%an` /
   From headers.
 - **Big marts have NO derived CSV twin** by design. `macros/export_marts_csv.sql`
   (on-run-end) writes a `data/derived/<mart>.csv` audit twin only for marts with
   fewer than `var('derived_csv_max_rows')` (1000) rows — a bigger table's diff is
-  unreviewable and bloats the repo. So `fct_messages` (~160k), `fct_commits`,
-  `dim_person`, `dim_date`, `dim_bug`, and `fct_fixes` have no CSV; query them in
-  the warehouse, not `data/derived/`. The gate skips *writing* but can't *delete*,
+  unreviewable and bloats the repo. So `fct_messages` (~160k), `fct_commit_files`
+  (~100k), `dim_commit` (~23k), `dim_person`, `dim_date`, `dim_bug`, and
+  `fct_fixes` have no CSV; query them in the warehouse, not `data/derived/`. The gate skips *writing* but can't *delete*,
   so if a mart grows past the threshold, `git rm` its now-stale CSV once.
 - **Naming: dimensions singular, facts plural** is intentional (Kimball). Don't
   "fix" `fct_*` to singular.

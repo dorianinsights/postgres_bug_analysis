@@ -1,0 +1,102 @@
+version: 2
+
+models:
+  - name: dim_commit
+    description: >
+      Commit dimension: one row per git commit -- the single home for commit-level
+      attributes and the conformed keys resolved once per commit. Replaces the
+      retired commit-grain fact; a commit's measures (churn, file count) are
+      aggregates of its file rows in fct_commit_files, so only descriptors and FKs
+      live here. Conforms to dim_person (author + committer), dim_date (commit_dt),
+      dim_release, dim_version, dim_major. NO special members (deliberate
+      exception): the only referencing fact, fct_commit_files, is built from this
+      spine, so its dim_commit_key never misses. Too many rows for a derived CSV
+      twin (over var(derived_csv_max_rows)); query it in the warehouse.
+      Grain = commit_hash.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [commit_hash]
+    columns:
+      - name: dim_commit_key
+        tests: [not_null, unique]
+      - name: commit_hash
+        tests: [not_null, unique]
+      - name: author_dim_person_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_person')
+                field: dim_person_key
+      - name: committer_dim_person_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_person')
+                field: dim_person_key
+      - name: dim_release_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_release')
+                field: dim_release_key
+      - name: dim_version_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_version')
+                field: dim_version_key
+      - name: dim_major_key
+        tests:
+          - not_null
+          - not_unknown_member
+          - relationships:
+              arguments:
+                to: ref('dim_major')
+                field: dim_major_key
+      - name: commit_dt
+        description: The commit's UTC calendar day; conforms to dim_date.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: commit_ts
+        tests: [not_null]
+      - name: branch_scope
+        description: "The major lifecycle folded for churn views: trunk (master), stable (released), beta (in-progress), other."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [trunk, stable, beta, other]
+      - name: origin
+        tests: [not_null]
+      - name: is_plumbing
+        description: True for mechanical/non-substantive commits (translation refreshes, catalog bumps, typo sweeps).
+        tests: [not_null]
+      - name: has_ai_credit
+        tests: [not_null]
+      - name: dominant_subsystem
+        description: The area this commit mostly touched -- a weighted vote over its files (int_commit_files).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - core_server
+                  - client_tools
+                  - extensions_contrib
+                  - replication_recovery
+                  - planner
+                  - tests
+                  - docs
+                  - build_platform
+                  - other
+      - name: subject
+        tests: [not_null]

@@ -1,26 +1,22 @@
--- Commit-grain fact: one row per commit (a backpatch is its own commit, with its
--- own hash). Foreign keys into dim_person (author and committer roles), dim_date
--- (commit day), dim_release / dim_version (the release+minor it shipped in), and
--- dim_major (its development line -- the branch, master included). Measures are
--- the representative diff size; origin and the plumbing/AI flags ride along as
--- degenerate attributes. Each person key is resolved by computing the identity
--- node (person_node macro) and joining int_person_map, so it matches
--- dim_person's connected-component resolution. The branch string is no longer
--- stored -- it is dim_major.stable_branch. Grain = commit_hash.
-WITH file_stats AS (
-  SELECT
-    commit_hash,
-    COUNT(*)::BIGINT AS file_cnt,
-    SUM(COALESCE(lines_added, 0))::BIGINT AS lines_added_sum,
-    SUM(COALESCE(lines_deleted, 0))::BIGINT AS lines_deleted_sum
-  FROM {{ ref('stg_commit_files') }}
-  GROUP BY ALL
-),
-
--- the commit's dominant subsystem: a weighted vote over its files (int_commit_files),
--- same rule as a fix's dominant_subsystem -- most files then most churn, and
--- tests/docs win only when nothing else changed.
-dominant_subsystem AS (
+-- Commit dimension: one row per git commit (a backpatch is its own commit, with
+-- its own hash) -- the single home for commit-level attributes and the conformed
+-- keys resolved once per commit. It replaces the retired commit-grain fact: a
+-- commit's MEASURES (churn, file count) are aggregates of its file rows in
+-- fct_commit_files, so nothing measured lives here; only descriptors and FKs.
+-- Foreign keys into dim_person (author + committer roles), dim_date (commit day),
+-- dim_release / dim_version (the release + minor it shipped in) and dim_major (its
+-- development line -- master included). branch_scope folds the major lifecycle for
+-- churn views (trunk / stable / beta). origin, the plumbing/AI flags, the dominant
+-- subsystem and the subject ride along as attributes. Each person key resolves via
+-- the identity node (person_node + int_person_map), matching dim_person.
+--
+-- NO Kimball special members (the deliberate exception, like dim_date): the only
+-- fact that references this dimension, fct_commit_files, is BUILT from the commit
+-- spine (every file row belongs to a real commit), so its dim_commit_key is
+-- mandatory by construction and never resolves to Unknown / Not Applicable.
+-- dim_commit_key is a generate_surrogate_key hash of commit_hash, computed ONCE
+-- here; fct_commit_files conforms by joining on commit_hash. Grain = commit_hash.
+WITH dominant_subsystem AS (
   SELECT
     commit_hash,
     subsystem AS dominant_subsystem
@@ -40,22 +36,27 @@ dominant_subsystem AS (
 )
 
 SELECT
-  gcm.commit_hash,
+  {{ dbt_utils.generate_surrogate_key(['gcm.commit_hash']) }} AS dim_commit_key,
   COALESCE(pmp_a.person_key, {{ unknown_key() }}) AS author_dim_person_key,
   COALESCE(pmp_c.person_key, {{ unknown_key() }}) AS committer_dim_person_key,
   -- the minor this commit shipped in (int_commit_versions -> dim_version by exact
-  -- tag ancestry), and its release taken straight from that version's row (so the
-  -- in-development 19.0 commits get 19.0's in_development release, not a scheduled
-  -- one). master and not-yet-shipped commits miss -> Not Applicable.
+  -- tag ancestry), and its release from that version's row. master and
+  -- not-yet-shipped commits miss -> Not Applicable.
   COALESCE(dvr.dim_release_key, {{ not_applicable_key() }}) AS dim_release_key,
   COALESCE(dvr.dim_version_key, {{ not_applicable_key() }}) AS dim_version_key,
   -- the commit's development line (dim_major includes master, so this always
   -- resolves; the COALESCE only guards an unexpected branch)
   COALESCE(dmj.dim_major_key, {{ not_applicable_key() }}) AS dim_major_key,
-  -- commit_dt (the UTC calendar day) is the dim_date FK and leads with the other
-  -- keys; commit_ts is the full committer instant kept alongside for latency.
   gcm.commit_dt,
+  gcm.commit_hash,
   gcm.commit_ts,
+  -- the major lifecycle folded for churn views
+  CASE dmj.lifecycle
+    WHEN 'development' THEN 'trunk'
+    WHEN 'released' THEN 'stable'
+    WHEN 'beta' THEN 'beta'
+    ELSE 'other'
+  END AS branch_scope,
   org.origin,
   igc.is_plumbing,
   igc.ai_credit IS NOT null AS has_ai_credit,
@@ -63,9 +64,6 @@ SELECT
   -- the area this commit mostly touched (weighted vote over its files); 'other'
   -- for an empty commit with no file changes
   COALESCE(dsub.dominant_subsystem, 'other') AS dominant_subsystem,
-  COALESCE(fst.file_cnt, 0) AS file_cnt,
-  COALESCE(fst.lines_added_sum, 0) AS lines_added_sum,
-  COALESCE(fst.lines_deleted_sum, 0) AS lines_deleted_sum,
   gcm.subject
 FROM {{ ref('stg_git_commits') }} AS gcm
 INNER JOIN {{ ref('int_git_commits') }} AS igc
@@ -73,13 +71,10 @@ INNER JOIN {{ ref('int_git_commits') }} AS igc
 LEFT JOIN {{ ref('int_commit_versions') }} AS icv
   ON gcm.branch = icv.branch AND gcm.commit_hash = icv.commit_hash
 LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
-LEFT JOIN file_stats AS fst ON gcm.commit_hash = fst.commit_hash
 LEFT JOIN dominant_subsystem AS dsub ON gcm.commit_hash = dsub.commit_hash
--- resolve the version from int_commit_versions' mapping; its dim_release_key and
--- dim_version_key ride along (dim_version is 1:1 on version). A NULL version
--- (master, not-yet-shipped) misses and falls through to Not Applicable above.
+-- resolve the version from int_commit_versions' mapping; dim_release_key and
+-- dim_version_key ride along (dim_version is 1:1 on version).
 LEFT JOIN {{ ref('dim_version') }} AS dvr ON icv.version = dvr.version
--- the commit's development line (its branch); dim_major carries master too.
 LEFT JOIN {{ ref('dim_major') }} AS dmj ON gcm.branch = dmj.stable_branch
 LEFT JOIN {{ ref('int_person_map') }} AS pmp_a
   ON pmp_a.node_id = {{ person_node('igc.patch_author_email', 'igc.patch_author_name') }}

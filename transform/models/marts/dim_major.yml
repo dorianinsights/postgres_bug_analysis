@@ -7,7 +7,7 @@ models:
       PostgreSQL major (its stable branch / release line, e.g. PG18) -- the grain
       above a version. The single home for major-level attributes: major_label,
       stable_branch, and the ~5-year support window (ga_dt, eol_dt, is_supported).
-      Conforms to dim_version, fct_commits, and fct_branch_size_weekly on
+      Conforms to dim_version, dim_commit, and fct_branch_size_weekly on
       dim_major_key. Grain = major.
     columns:
       - name: dim_major_key
@@ -43,7 +43,7 @@ models:
         description: >
           True for the five released majors; false for master (the development
           trunk) and the special members. The clean "released majors only"
-          filter, replacing the old fct_commits.branch != 'master' string test.
+          filter, replacing an older branch-string test.
         tests: [not_null]
       - name: lifecycle
         description: >

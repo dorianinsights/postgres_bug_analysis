@@ -22,7 +22,7 @@ master_commits AS (
     END AS origin,
     fcm.is_plumbing,
     fcm.ai_credit
-  FROM {{ ref('fct_commits') }} AS fcm
+  FROM {{ ref('dim_commit') }} AS fcm
   INNER JOIN {{ ref('dim_major') }} AS dmj ON fcm.dim_major_key = dmj.dim_major_key
   LEFT JOIN security_fix_commits AS sfc ON LEFT(fcm.commit_hash, 9) = sfc.abbrev_hash
   -- master (the development trunk) only. NOT is_released is no longer a proxy for

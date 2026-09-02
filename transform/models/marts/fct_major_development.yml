@@ -8,7 +8,7 @@ models:
       or ..HEAD for the in-progress major). dev_status (released/beta), latest
       milestone (GA/BETA3/...), dev commit count, and first/last dev commit.
       Includes the in-progress major (e.g. PG19 in beta), discovered from the repo.
-      Distinct from fct_commits (post-GA backpatch minors). Grain = major.
+      Distinct from fct_commit_files (post-GA backpatch minors). Grain = major.
     columns:
       - name: dim_major_key
         tests:

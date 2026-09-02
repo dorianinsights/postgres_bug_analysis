@@ -5,7 +5,7 @@ models:
     description: >
       Every file touched by every commit, classified by subsystem (directory,
       subsystem_rules) and file_class (extension, file_class_rules). The per-file
-      area/type grain behind fct_commits.dominant_subsystem and the
+      area/type grain behind dim_commit.dominant_subsystem and the
       churn-by-area rollups. Line counts are NULL for binary files (excluded from
       churn). Grain = (commit_hash, file_path).
     tests:
