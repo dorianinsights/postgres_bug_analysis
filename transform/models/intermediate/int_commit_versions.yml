@@ -24,9 +24,12 @@ models:
       - name: commit_dt
         tests: [not_null]
       - name: version
-        description: The minor this commit shipped in; NULL for master / out-of-band / not-yet-shipped.
+        description: >
+          The version this commit shipped in; NULL for master / open-cycle. Includes
+          the in-progress major's 19.0 (in dim_version but not the tag-only
+          int_versions), so this conforms to dim_version.
         tests:
           - relationships:
               arguments:
-                to: ref('int_versions')
+                to: ref('dim_version')
                 field: version

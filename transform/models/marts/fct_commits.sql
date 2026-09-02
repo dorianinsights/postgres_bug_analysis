@@ -21,10 +21,11 @@ SELECT
   gcm.commit_hash,
   COALESCE(pmp_a.person_key, {{ unknown_key() }}) AS author_dim_person_key,
   COALESCE(pmp_c.person_key, {{ unknown_key() }}) AS committer_dim_person_key,
-  -- the release / minor this commit shipped in, resolved once in
-  -- int_commit_versions (branch's major x its cycle window); master and
-  -- not-yet-shipped commits have no scheduled release -> Not Applicable
-  COALESCE(drl.dim_release_key, {{ not_applicable_key() }}) AS dim_release_key,
+  -- the minor this commit shipped in (int_commit_versions -> dim_version by exact
+  -- tag ancestry), and its release taken straight from that version's row (so the
+  -- in-development 19.0 commits get 19.0's in_development release, not a scheduled
+  -- one). master and not-yet-shipped commits miss -> Not Applicable.
+  COALESCE(dvr.dim_release_key, {{ not_applicable_key() }}) AS dim_release_key,
   COALESCE(dvr.dim_version_key, {{ not_applicable_key() }}) AS dim_version_key,
   -- the commit's development line (dim_major includes master, so this always
   -- resolves; the COALESCE only guards an unexpected branch)
@@ -48,10 +49,9 @@ LEFT JOIN {{ ref('int_commit_versions') }} AS icv
   ON gcm.branch = icv.branch AND gcm.commit_hash = icv.commit_hash
 LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
 LEFT JOIN file_stats AS fst ON gcm.commit_hash = fst.commit_hash
--- surrogate keys resolved from the dims (defined once there) on the mapping's
--- natural keys; a NULL ship_release_dt / version (master, not-yet-shipped) misses
--- and falls through to Not Applicable above. Each dim is 1:1 on its natural key.
-LEFT JOIN {{ ref('dim_release') }} AS drl ON icv.ship_release_dt = drl.release_dt
+-- resolve the version from int_commit_versions' mapping; its dim_release_key and
+-- dim_version_key ride along (dim_version is 1:1 on version). A NULL version
+-- (master, not-yet-shipped) misses and falls through to Not Applicable above.
 LEFT JOIN {{ ref('dim_version') }} AS dvr ON icv.version = dvr.version
 -- the commit's development line (its branch); dim_major carries master too.
 LEFT JOIN {{ ref('dim_major') }} AS dmj ON gcm.branch = dmj.stable_branch

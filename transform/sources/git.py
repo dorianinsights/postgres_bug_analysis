@@ -76,10 +76,23 @@ def git(*args: str) -> str:
 
 
 def branch_range(branch: str) -> str:
-    # Stable branches: only commits after the major's .0 release (the
-    # backpatch stream) — the shared pre-branch history belongs to master.
+    # Released stable branch: only commits after the major's .0 release (the
+    # backpatch stream) — the shared pre-branch history belongs to master. A pure
+    # transform (in-progress branches, which have no .0 yet, go through
+    # commit_range instead).
     m = re.match(r"REL_(\d+)_STABLE$", branch)
     return f"REL_{m.group(1)}_0..{branch}" if m else branch
+
+
+def commit_range(branch: str) -> str:
+    # The rev range whose commits belong to a branch, git-aware: a released stable
+    # branch uses branch_range (REL_M_0..); the in-progress stable branch (no .0
+    # tag) uses its post-fork commits (merge-base with master .. HEAD), i.e. its
+    # beta stabilization; master is everything.
+    m = re.match(r"REL_(\d+)_STABLE$", branch)
+    if m and not git("tag", "-l", f"REL_{m.group(1)}_0").strip():
+        return f"{git('merge-base', 'master', branch).strip()}..{branch}"
+    return branch_range(branch)
 
 
 def released_majors() -> list[int]:
@@ -96,14 +109,34 @@ def released_majors() -> list[int]:
     return sorted(majors)
 
 
+def in_development_majors() -> list[int]:
+    """Majors >= FIRST_MAJOR that have a stable branch but no GA tag yet -- the
+    in-progress major (e.g. PG19 in beta). Discovered from the repo alongside the
+    released ones, so it needs no configuration."""
+    released = set(released_majors())
+    majors = [
+        int(m.group(1))
+        for branch in git("for-each-ref", "--format=%(refname:short)", "refs/heads/REL_*_STABLE").splitlines()
+        if (m := re.fullmatch(r"REL_(\d+)_STABLE", branch))
+        and int(m.group(1)) >= FIRST_MAJOR
+        and int(m.group(1)) not in released
+    ]
+    return sorted(majors)
+
+
 def stable_branches() -> list[str]:
     "The released majors' stable branches (the backpatch streams)."
     return [f"REL_{major}_STABLE" for major in released_majors()]
 
 
+def all_stable_branches() -> list[str]:
+    "Released AND in-progress stable branches (the latter carries its beta stabilization)."
+    return [f"REL_{major}_STABLE" for major in sorted(released_majors() + in_development_majors())]
+
+
 def all_branches() -> list[str]:
-    "Stable branches plus master."
-    return [*stable_branches(), "master"]
+    "Every stable branch (released + in-progress) plus master."
+    return [*all_stable_branches(), "master"]
 
 
 def tag_globs() -> list[str]:
@@ -122,7 +155,7 @@ def commit_records() -> list[CommitRecord]:
             # the subject; the multi-line body stays last so it can't be
             # confused with a delimited field.
             "--format=%H%x00%cI%x00%an%x00%ae%x00%cn%x00%ce%x00%s%x00%b%x01",
-            branch_range(branch),
+            commit_range(branch),
         )
         for record in log.split("\x01"):
             record = record.strip("\n")
@@ -151,7 +184,7 @@ def _file_records_for_branch(branch: str) -> list[CommitFileRecord]:
     """One record per (commit, file) for one branch. Module-level so a worker
     process can run it."""
     records: list[CommitFileRecord] = []
-    log = git("log", SINCE_FILTER, "--format=%x01%H", "--numstat", branch_range(branch))
+    log = git("log", SINCE_FILTER, "--format=%x01%H", "--numstat", commit_range(branch))
     commit_hash = ""
     for line in log.splitlines():
         if line.startswith("\x01"):
@@ -303,11 +336,13 @@ def commit_version_records() -> list[CommitVersionRecord]:
     branch, `git rev-list REL_M_(N-1)..REL_M_N` is exactly the commits reachable
     from REL_M_N but not REL_M_(N-1) -- i.e. the ones that shipped in REL_M_N. No
     date windows, no wrap heuristic; out-of-band re-releases are ordinary tags.
-    master carries no release tags, and open-cycle commits (after the latest tag,
-    not yet released) are unmapped. Grain = (branch, commit_hash).
+    master carries no release tags; open-cycle commits (after the latest tag, not
+    yet released) are unmapped. For the in-progress major (a stable branch with no
+    minor tags yet), all of its post-fork stabilization commits (commit_range) map
+    to the upcoming M.0. Grain = (branch, commit_hash).
     """
     records: list[CommitVersionRecord] = []
-    for branch in stable_branches():
+    for branch in all_stable_branches():
         matched = re.match(r"REL_(\d+)_STABLE$", branch)
         if not matched:
             continue
@@ -319,6 +354,15 @@ def commit_version_records() -> list[CommitVersionRecord]:
             if tag_match:
                 minors.append((int(tag_match.group(1)), ref))
         minors.sort()
+        if not minors:
+            # in-progress major (no released minor tags): its beta-stabilization
+            # commits all belong to the upcoming M.0.
+            records.extend(
+                CommitVersionRecord(branch=branch, commit_hash=commit_hash, version=f"{major}.0")
+                for commit_hash in git("rev-list", commit_range(branch)).splitlines()
+                if commit_hash
+            )
+            continue
         for (_, prev_tag), (minor, tag) in zip(minors, minors[1:], strict=False):
             version = f"{major}.{minor}"
             records.extend(
