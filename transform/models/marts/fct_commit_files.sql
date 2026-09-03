@@ -5,13 +5,15 @@
 -- exposes the measures, joined to dim_commit on the commit entity for commit-level
 -- slicing. Conforms to dim_commit (dim_commit_key -- the commit's attributes,
 -- keys and branch_scope live there) and to dim_date on commit_dt (the
--- fact carries its own event day). subsystem and file_class ride along as
+-- fact carries its own event day, plus the full commit_ts instant so sub-day
+-- analysis needs no join back). subsystem and file_class ride along as
 -- file-grain degenerate dimensions. Line counts are NULL for binary files (git
 -- numstat '-'), so SUMs naturally exclude binary churn.
 -- Grain = (dim_commit_key, file_path).
 SELECT
   dcm.dim_commit_key,
   dcm.commit_dt,
+  dcm.commit_ts,
   icf.file_path,
   icf.subsystem,
   icf.file_class,

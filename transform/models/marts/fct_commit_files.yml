@@ -34,6 +34,9 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
+      - name: commit_ts
+        description: The commit's full committer instant (TIMESTAMPTZ), carried from dim_commit so sub-day analysis needs no join.
+        tests: [not_null]
       - name: file_path
         tests: [not_null]
       - name: subsystem
