@@ -7,9 +7,10 @@ title: "PostgreSQL Bug Reports"
 description: >
   What arrives on the pgsql-bugs mailing list and what happens to it:
   monthly report volume (every new pgsql-bugs thread, form or free-form),
-  how many of the BUG # form reports get acted upon (linked to a fix
-  commit via the thread's Discussion: trailer or a Bug: #NNNNN mention),
-  and how fast. Data files are produced by mailing_list_sync.py + the
+  how many get acted upon (linked to a fix commit via the thread's
+  Discussion: trailer or, for form reports, a Bug: #NNNNN mention), and how
+  fast (the outcome, latency and thread-size charts still cover the BUG #
+  form reports of dim_bug). Data files are produced by mailing_list_sync.py + the
   transform/ dbt project. Acted-upon is a LOWER BOUND (only exact links
   count), and recent months are right-censored — fixes for fresh reports
   haven't landed yet.
@@ -55,27 +56,32 @@ queries:
       ORDER BY 1
 
   weekly_reports:
+    # the week x kind spine is a deliberate cross join (zero-fill both series)
+    ignore: ["WARN-MISSING-JOIN-PREDICATE"]
     description: >
-      BUG #NNNNN reports opened per COMPLETE week over the last three
-      rolling months: the window starts at the first full week on or
-      after (today - 3 months) and ends with the last finished week, so
-      no partial week distorts the series. The week spine is generated so
-      a zero-report week still plots as 0.
+      Bug reports (new pgsql-bugs threads, form + free-form, from fct_threads)
+      opened per COMPLETE week over the last three rolling months: the window
+      starts at the first full week on or after (today - 3 months) and ends
+      with the last finished week, so no partial week distorts the series.
+      The week spine is generated so a zero-report week still plots as 0.
     source: warehouse
     sql: |
       SELECT
         gsr.wk::DATE AS report_week,
-        'bug reports' AS series,
-        COUNT(bro.bug_number) AS report_cnt
+        CASE WHEN thr.is_form_report THEN 'BUG # form reports' ELSE 'free-form reports' END AS series,
+        COUNT(thr.root_message_id) AS report_cnt
       FROM GENERATE_SERIES(
         DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY,
         DATE_TRUNC('week', CURRENT_DATE) - INTERVAL 7 DAY,
         INTERVAL 7 DAY
       ) AS gsr (wk)
-      LEFT JOIN dim_bug AS bro
-        ON DATE_TRUNC('week', bro.reported_dt) = gsr.wk
-      GROUP BY 1
-      ORDER BY 1
+      CROSS JOIN (SELECT UNNEST([true, false]) AS is_form_report) AS kinds
+      LEFT JOIN fct_threads AS thr
+        ON DATE_TRUNC('week', thr.started_dt) = gsr.wk
+        AND thr.is_form_report = kinds.is_form_report
+        AND thr.list_name = 'pgsql-bugs' AND thr.is_new_thread
+      GROUP BY 1, 2
+      ORDER BY 1, 2
 
   weekly_trend:
     # both diagnostics are false positives here: the spine LEFT JOIN is
@@ -83,22 +89,24 @@ queries:
     # what a rolling average is
     ignore: ["WARN-FANOUT-RISK", "WARN-REAGGREGATION"]
     description: >
-      Trailing 3-week average of complete-week report volume. The
-      underlying series starts two weeks before the displayed window so
-      every displayed point averages three real complete weeks.
+      Trailing 3-week average of complete-week report volume (all reports,
+      form + free-form). The underlying series starts two weeks before the
+      displayed window so every displayed point averages three real complete
+      weeks.
     source: warehouse
     sql: |
       WITH weekly AS (
         SELECT
           gsr.wk::DATE AS report_week,
-          COUNT(bro.bug_number) AS report_cnt
+          COUNT(thr.root_message_id) AS report_cnt
         FROM GENERATE_SERIES(
           DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) - INTERVAL 7 DAY,
           DATE_TRUNC('week', CURRENT_DATE) - INTERVAL 7 DAY,
           INTERVAL 7 DAY
         ) AS gsr (wk)
-        LEFT JOIN dim_bug AS bro
-          ON DATE_TRUNC('week', bro.reported_dt) = gsr.wk
+        LEFT JOIN fct_threads AS thr
+          ON DATE_TRUNC('week', thr.started_dt) = gsr.wk
+          AND thr.list_name = 'pgsql-bugs' AND thr.is_new_thread
         GROUP BY 1
       )
 
@@ -113,24 +121,38 @@ queries:
       ORDER BY 1
 
   monthly_acted_data:
+    # AVG over the monthly share is exactly what a rolling average is
+    ignore: ["WARN-REAGGREGATION"]
     description: >
-      Per month: reports fixed (count, the bars), the acted-upon share and its
-      3-month trailing average (the two right-axis lines). The two share columns
-      are emitted as FRACTIONS (0-1), not percentage points, so the chart's
-      per-layer axis_y.label.format ".1%" renders them as real percentages on the
-      right axis AND in the tooltip (d3's % type multiplies by 100). Wide (one row
-      per month) so a hover shows all three at once. Trailing months sag because
-      their fixes haven't landed yet.
+      Per month, over ALL bug reports (new pgsql-bugs threads, form +
+      free-form, fct_threads): reports acted upon (count, the bars -- the
+      thread was cited by a commit's Discussion: trailer, or a form report was
+      named by a Bug: # trailer), the acted-upon share and its 3-month trailing
+      average (the two right-axis lines). The two share columns are emitted as
+      FRACTIONS (0-1), not percentage points, so the chart's per-layer
+      axis_y.label.format ".1%" renders them as real percentages on the right
+      axis AND in the tooltip (d3's % type multiplies by 100). Wide (one row
+      per month) so a hover shows all three at once. Trailing months sag
+      because their fixes haven't landed yet.
     source: warehouse
     sql: |
+      WITH monthly AS (
+        SELECT
+          DATE_TRUNC('month', started_dt)::DATE AS report_month,
+          COUNT(*) AS report_cnt,
+          COUNT(*) FILTER (WHERE is_acted_upon) AS acted_cnt
+        FROM fct_threads
+        WHERE list_name = 'pgsql-bugs' AND is_new_thread
+        GROUP BY 1
+      )
       SELECT
-        report_month_dt AS report_month,
-        acted_upon_cnt AS "reports fixed",
-        acted_upon_pct / 100.0 AS "acted upon (%)",
-        AVG(acted_upon_pct / 100.0) OVER (
-          ORDER BY report_month_dt ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        report_month,
+        acted_cnt AS "reports acted upon",
+        acted_cnt / report_cnt AS "acted upon (%)",
+        AVG(acted_cnt / report_cnt) OVER (
+          ORDER BY report_month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
         ) AS "3-month rolling average"
-      FROM fct_bug_reports_monthly_agg
+      FROM monthly
       ORDER BY 1
 
   seasonality_counts:
@@ -271,10 +293,11 @@ charts:
     type: bar
     query: weekly_reports
     title: "Bug reports per week"
-    subtitle: "Complete weeks only, last three rolling months, with a trailing 3-week average"
+    subtitle: "New pgsql-bugs threads, form + free-form; complete weeks only, last three rolling months, with a trailing 3-week average of both"
     x: report_week
     y: report_cnt
     color: series
+    style: { stack: zero }
     height: 300
     layers:
       - type: line
@@ -287,9 +310,9 @@ charts:
     type: bar
     query: monthly_acted_data
     title: "Bug reports acted upon, by month"
-    subtitle: "Bars: reports later linked to a fix (count, left axis). Lines: acted-upon share (%, right axis) with its 3-month rolling average. Lower bound (exact links only); trailing months right-censored."
+    subtitle: "All reports (form + free-form). Bars: reports later linked to a fix commit (count, left axis). Lines: acted-upon share (right axis) with its 3-month rolling average. Lower bound (exact links only); trailing months right-censored"
     x: report_month
-    y: "reports fixed"
+    y: "reports acted upon"
     height: 340
     # the two % lines are distinct columns (so a hover reads both, plus the bar);
     # both share the same right axis, pinned to [0, 0.5] (the data is fractions)

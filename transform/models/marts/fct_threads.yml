@@ -32,6 +32,13 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: "(outcome = 'not cited') = NOT is_cited"
+      # acted upon is cited widened by the form reports' Bug: # trailer link
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: NOT is_cited OR is_acted_upon
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(days_to_action IS NOT NULL) = is_acted_upon"
       # a form report is a pgsql-bugs thread with a real bug key
       - dbt_utils.expression_is_true:
           arguments:
@@ -79,6 +86,16 @@ models:
               arguments:
                 to: ref('dim_date')
                 field: date_day
+      - name: first_action_dt
+        description: >
+          The earlier of the first citing commit and, for form reports, the first
+          commit naming the bug in a Bug trailer; future_eternity when neither.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
       - name: started_ts
         description: The root's send instant in UTC wall-clock (a plain TIMESTAMP, like fct_messages.sent_ts).
         tests: [not_null]
@@ -115,3 +132,10 @@ models:
                 values: [backpatched fix, beta stabilization, trunk work, not cited]
       - name: days_to_first_cite
         description: Days from the thread root to the first citing commit; NULL when never cited.
+      - name: is_acted_upon
+        description: >
+          is_cited, or a BUG # form report named by a commit's Bug trailer
+          (dim_bug) -- the "linked to a fix" flag for every bug report.
+        tests: [not_null]
+      - name: days_to_action
+        description: Days from the thread root to first_action_dt; NULL when not acted upon.
