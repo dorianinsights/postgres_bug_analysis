@@ -62,7 +62,9 @@ queries:
         COUNT(DISTINCT fc.fix_key) AS distinct_fix_cnt
       FROM dim_commit AS fc
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-      WHERE dm.is_released AND NOT fc.is_housekeeping
+      -- the backpatch stream only (branch_scope): a released major's branch also
+      -- carries its own pre-GA beta work, which is development, not fixes
+      WHERE dm.is_released AND fc.branch_scope = 'stable' AND NOT fc.is_housekeeping
       GROUP BY 1
       ORDER BY 1
 
@@ -70,7 +72,11 @@ queries:
     ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_major is N:1 (dim_major_key is its PK); COUNT not inflated
     description: >
       Fix commits per non-master branch per quarter (each branch counts its own
-      backpatches; housekeeping commits excluded).
+      backpatches; housekeeping commits excluded). Released majors' branches count
+      their backpatch stream (branch_scope = stable); the in-progress major's
+      branch counts its beta stabilization, so the newest line starts at its fork.
+      (Every released major has its own beta period on its branch too -- drop the
+      branch_scope condition to include those.)
     source: warehouse
     sql: |
       SELECT
@@ -79,7 +85,9 @@ queries:
         COUNT(*) AS fix_commits
       FROM dim_commit AS fc
       INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
-      WHERE dm.lifecycle IN ('released', 'beta') AND NOT fc.is_housekeeping
+      WHERE
+        (fc.branch_scope = 'stable' OR (fc.branch_scope = 'beta' AND dm.lifecycle = 'beta'))
+        AND NOT fc.is_housekeeping
       GROUP BY 1, 2
       ORDER BY 1, 2
 

@@ -1,10 +1,11 @@
 # pyright: basic
-"""Raw commit -> shipped-minor mapping by EXACT git tag ancestry, read from the
-postgres.git clone at build time (git rev-list between consecutive release tags
-per stable branch -- see sources.git.commit_version_records). No date windows.
-One row per (branch, commit) that shipped in a tagged minor; open-cycle commits
-(after the latest tag) and master are absent. Cheap (~one rev-list per tag), so a
-full table each build -- no incrementality needed.
+"""Raw commit -> version mapping by EXACT git tag ancestry, read from the
+postgres.git clone at build time (see sources.git.commit_version_records): a
+shipped minor M.N for a stable branch's backpatch stream, or M.0 for a major's
+development -- master between consecutive fork points plus the branch's pre-GA
+stabilization. No date windows. Pending commits (after a branch's latest tag)
+and master after the newest fork are absent. Cheap (~one rev-list per tag), so
+a full table each build -- no incrementality needed.
 """
 
 import sys

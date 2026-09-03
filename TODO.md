@@ -30,9 +30,9 @@ Plan (additive, mirrors `bridge_fix_cve` / `bridge_fix_bug`):
 After the fork, the in-progress major's stable branch receives cherry-picked
 fixes exactly like the released branches, plus fixes to code new in that major
 and housekeeping. The repo separates the streams only at branch level
-(`sources.git.commit_range`; `int_commit_versions` leaves the in-progress
-branch; `fct_major_development` folds its commits into the major's development
-count). No model labels an individual beta-branch commit, and `fct_fixes` never
+(`sources.git.commit_range`; `int_commit_versions` labels the in-progress
+branch's commits `development` (version 19.0), and `int_major_development` folds
+them into the major's development count). No model labels an individual beta-branch commit, and `fct_fixes` never
 sees them (fixes to unreleased code are not documented in any minor notes).
 
 Plan (additive; no change to `fct_fixes` or the projections):

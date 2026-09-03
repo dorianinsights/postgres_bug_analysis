@@ -29,8 +29,9 @@ WITH stable_commits AS (
   FROM {{ ref('int_git_commits') }} AS igc
   INNER JOIN {{ ref('int_commit_versions') }} AS icv
     ON igc.branch = icv.branch AND igc.commit_hash = icv.commit_hash
-  -- release_status is set only for released majors' stable branches
-  WHERE icv.release_status IS NOT null AND NOT igc.is_housekeeping
+  -- the backpatch stream only: shipped in a minor, or pending for the open one
+  -- (a major's pre-GA 'development' commits are not minor-release fixes)
+  WHERE icv.release_status IN ('shipped', 'open') AND NOT igc.is_housekeeping
 ),
 
 commit_facts AS (

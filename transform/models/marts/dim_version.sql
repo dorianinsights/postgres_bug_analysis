@@ -25,9 +25,10 @@ WITH item_counts AS (
   GROUP BY ALL
 ),
 
--- first / last commit that shipped in each minor, from the commit->version map
--- (stable-branch commits only; NULL for the .0 majors, which have no in-window
--- backpatch commits, and for the special members)
+-- first / last commit of each version, from the commit->version map: the
+-- backpatch commits that shipped in a minor, or the major's whole development
+-- (master between fork points + pre-GA stabilization) for a .0 -- including the
+-- in-progress major's. NULL only for the special members.
 commit_span AS (
   SELECT
     version,
@@ -60,22 +61,18 @@ real_members AS (
     -- it here rather than re-deriving it per-version from item_cnt (which is
     -- wrong: a small minor inside a normal release is not out-of-band).
     COALESCE(irl.is_out_of_band, false) AS is_out_of_band,
-    -- minors: the backpatch commits that shipped in the minor (csp). .0 majors:
-    -- the major's whole feature development (smd, git tag ancestry) -- otherwise a
-    -- .0 has no in-minor commits and would be NULL.
-    COALESCE(csp.first_commit_dt, CASE WHEN rel.minor = 0 THEN smd.first_dev_commit_dt END) AS first_commit_dt,
-    COALESCE(csp.first_commit_ts, CASE WHEN rel.minor = 0 THEN smd.first_dev_commit_ts END) AS first_commit_ts,
-    COALESCE(csp.first_commit_hash, CASE WHEN rel.minor = 0 THEN smd.first_dev_commit_hash END) AS first_commit_hash,
-    COALESCE(csp.last_commit_dt, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_dt END) AS last_commit_dt,
-    COALESCE(csp.last_commit_ts, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_ts END) AS last_commit_ts,
-    COALESCE(csp.last_commit_hash, CASE WHEN rel.minor = 0 THEN smd.last_dev_commit_hash END) AS last_commit_hash,
+    csp.first_commit_dt,
+    csp.first_commit_ts,
+    csp.first_commit_hash,
+    csp.last_commit_dt,
+    csp.last_commit_ts,
+    csp.last_commit_hash,
     false AS is_synthetic_row
   FROM {{ ref('int_versions') }} AS rel
   LEFT JOIN {{ ref('int_releases') }} AS irl ON rel.release_dt = irl.release_dt
   LEFT JOIN {{ ref('dim_major') }} AS dmj ON rel.major = dmj.major
   LEFT JOIN item_counts AS itc ON rel.version = itc.version
   LEFT JOIN commit_span AS csp ON rel.version = csp.version
-  LEFT JOIN {{ ref('stg_major_development') }} AS smd ON rel.major = smd.major
 ),
 
 -- the in-progress major's GA-to-be (e.g. 19.0): a first-class in-development
@@ -103,7 +100,7 @@ in_dev_version AS (
     smd.last_dev_commit_hash AS last_commit_hash,
     -- the in-progress major's GA-to-be is a real forward-looking version
     false AS is_synthetic_row
-  FROM {{ ref('stg_major_development') }} AS smd
+  FROM {{ ref('int_major_development') }} AS smd
   INNER JOIN {{ ref('dim_major') }} AS dmj ON smd.major = dmj.major
   WHERE smd.dev_status = 'beta'
 )

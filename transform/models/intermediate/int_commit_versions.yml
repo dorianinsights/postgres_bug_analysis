@@ -3,33 +3,38 @@ version: 2
 models:
   - name: int_commit_versions
     description: >
-      The commit -> release mapping, the single source for it: shipped commits by
-      EXACT git tag ancestry (rev-list between consecutive release tags; see
-      stg_commit_versions / sources.git -- no date windows, out-of-band
-      re-releases handled as ordinary tags), and a released major's stable-branch
-      commits after its latest tag as pending for the OPEN release
-      (release_status = 'open', ship_release_dt = the next scheduled release day,
-      version NULL). master and the in-progress major's beta branch never resolve
-      (NULLs). dim_commit reads it for dim_release_key / dim_version_key,
-      dim_version aggregates it for each version's first/last commit,
-      int_committed_fixes builds the committed-fix population on it.
+      The commit -> version / release mapping, the single source for it, trunk
+      included: EXACT git tag ancestry (stg_commit_versions / sources.git) gives a
+      shipped minor M.N for the backpatch stream or M.0 for a major's development
+      (master between fork points + the branch's pre-GA stabilization); a released
+      major's stable-branch commits after its latest tag are pending for the OPEN
+      release. release_status = shipped / open / development / NULL (master after
+      the newest fork). dim_commit reads it for dim_release_key / dim_version_key
+      and branch_scope, dim_version aggregates it for each version's first/last
+      commit, int_committed_fixes builds the committed-fix population on it, and
+      int_major_development aggregates the development commits per major.
       Grain = (branch, commit_hash).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [branch, commit_hash]
-      # a resolved status always comes with its release day, and vice versa
+      # a release day exists exactly for the commits counting toward a minor
+      # release: shipped (its release) or open (the next scheduled one)
       - dbt_utils.expression_is_true:
           arguments:
-            expression: (release_status IS NULL) = (ship_release_dt IS NULL)
-      # a shipped commit has its minor; an open (pending) one has none yet. (The
-      # beta branch's commits carry a version label -- the in-progress 19.0 --
-      # with no release, so the converse does not hold.)
+            expression: "(ship_release_dt IS NOT NULL) = (release_status IN ('shipped', 'open'))"
+      # shipped commits have their minor; pending ones have no tag yet;
+      # development commits carry the major's .0
       - dbt_utils.expression_is_true:
           arguments:
             expression: >
               (release_status IS DISTINCT FROM 'shipped' OR version IS NOT NULL)
               AND (release_status IS DISTINCT FROM 'open' OR version IS NULL)
+              AND (release_status IS DISTINCT FROM 'development' OR version LIKE '%.0')
+      # master never ships a minor and is never pending for one
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "branch <> 'master' OR release_status IS NULL OR release_status = 'development'"
     columns:
       - name: branch
         tests: [not_null]
@@ -41,21 +46,21 @@ models:
         tests: [not_null]
       - name: version
         description: >
-          The version this commit shipped in; NULL for master and pending
-          (open-release) commits. The beta branch's commits carry the in-progress
-          major's label (e.g. 19.0, in dim_version but not the tag-only
-          int_versions). Conforms to dim_version.
+          The version this commit shipped in (M.N) or was developed for (M.0);
+          NULL for pending (open-release) commits and master after the newest
+          fork. Conforms to dim_version, whose in-development row covers the
+          in-progress major's M.0.
         tests:
           - relationships:
               arguments:
                 to: ref('dim_version')
                 field: version
       - name: release_status
-        description: "'shipped' (tagged), 'open' (pending for the next release), NULL (master / beta)."
+        description: "'shipped' (tagged minor), 'open' (pending for the next release), 'development' (a major's .0), NULL (master after the newest fork)."
         tests:
           - accepted_values:
               arguments:
-                values: [shipped, open]
+                values: [shipped, open, development]
       - name: ship_release_dt
         description: The release day the commit shipped in, or the open release's day for pending commits.
         tests:

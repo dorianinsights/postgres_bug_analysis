@@ -22,5 +22,5 @@ SELECT
   smd.last_dev_commit_dt,
   smd.last_dev_commit_ts,
   smd.last_dev_commit_hash
-FROM {{ ref('stg_major_development') }} AS smd
+FROM {{ ref('int_major_development') }} AS smd
 INNER JOIN {{ ref('dim_major') }} AS dmj ON smd.major = dmj.major

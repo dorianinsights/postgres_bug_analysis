@@ -5,7 +5,7 @@
 -- (ga_dt -> eol_dt), and lifecycle (released / beta / development). is_released
 -- separates the released majors; is_supported is the released-and-still-in-window
 -- subset. Every commit's branch value resolves to a real row (no NULL/Unknown
--- FK). Sourced from stg_major_development, which discovers released AND
+-- FK). Sourced from int_major_development, which discovers released AND
 -- in-progress majors from the repo, with ga_dt from int_versions and master
 -- appended. dim_major_key is a generate_surrogate_key hash of the natural key;
 -- conforms to dim_version, dim_commit, fct_branch_size_weekly,
@@ -32,7 +32,7 @@ real_members AS (
     smd.dev_status = 'released' AND CURRENT_DATE <= MAKE_DATE(smd.major + 2012, 11, 30) AS is_supported,
     smd.dev_status AS lifecycle,
     false AS is_synthetic_row
-  FROM {{ ref('stg_major_development') }} AS smd
+  FROM {{ ref('int_major_development') }} AS smd
   LEFT JOIN ga_dates AS gad ON smd.major = gad.major
 )
 

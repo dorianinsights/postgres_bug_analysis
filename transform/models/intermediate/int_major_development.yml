@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: int_major_development
+    description: >
+      Per-major feature-development activity aggregated from int_commit_versions
+      (the commits whose version is the major's .0: master between fork points
+      plus the branch's pre-GA stabilization -- exactly REL_(M-1)_0..REL_M_0),
+      with dev_status from the GA tag and latest_milestone from the newest
+      BETA/RC tag. One row per major (released or in-progress) at/above the
+      corpus floor. Grain = major.
+    columns:
+      - name: major
+        tests: [not_null, unique]
+      - name: dev_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["released", "beta"]
+      - name: latest_milestone
+        tests: [not_null]
+      - name: dev_commit_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: first_dev_commit_ts
+        tests: [not_null]
+      - name: last_dev_commit_ts
+        tests: [not_null]

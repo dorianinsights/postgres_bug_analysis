@@ -72,29 +72,24 @@ def git(*args: str) -> str:
     return subprocess.run(["git", "-C", str(CACHE), *args], capture_output=True, text=True, check=True).stdout
 
 
-def branch_range(branch: str) -> str:
-    # Released stable branch: only commits after the major's .0 release (the
-    # backpatch stream) — the shared pre-branch history belongs to master. master:
-    # everything since the previous major branched off, i.e. since FIRST_MAJOR's
-    # development began (HISTORY_FLOOR_TAG.. -- the previous major's GA tag
-    # contains all of master up to that branch point and nothing after it). A pure
-    # transform (in-progress branches, which have no .0 yet, go through
-    # commit_range instead).
-    m = re.match(r"REL_(\d+)_STABLE$", branch)
-    if m:
-        return f"REL_{m.group(1)}_0..{branch}"
-    return f"{HISTORY_FLOOR_TAG}..{branch}" if branch == "master" else branch
+def fork_point(branch: str) -> str:
+    "The commit where a stable branch diverged from master (their merge-base)."
+    return git("merge-base", "master", branch).strip()
 
 
 def commit_range(branch: str) -> str:
-    # The rev range whose commits belong to a branch, git-aware: a released stable
-    # branch uses branch_range (REL_M_0..); the in-progress stable branch (no .0
-    # tag) uses its post-fork commits (merge-base with master .. HEAD), i.e. its
-    # beta stabilization; master runs from the corpus floor tag (branch_range).
-    m = re.match(r"REL_(\d+)_STABLE$", branch)
-    if m and not git("tag", "-l", f"REL_{m.group(1)}_0").strip():
-        return f"{git('merge-base', 'master', branch).strip()}..{branch}"
-    return branch_range(branch)
+    # The rev range whose commits belong to a branch -- ONE rule, tag ancestry:
+    # a stable branch (released or in-progress alike) owns everything since it
+    # forked off master (fork_point..branch: its pre-GA stabilization AND its
+    # post-GA backpatch stream -- commit_version_records tells the two apart by
+    # version, M.0 vs M.N); master owns everything since the previous major
+    # branched off, i.e. since FIRST_MAJOR's development began
+    # (HISTORY_FLOOR_TAG..master -- the previous major's GA tag contains all of
+    # master up to that branch point and nothing after it). The shared
+    # pre-fork history belongs to master, never to a branch.
+    if re.match(r"REL_(\d+)_STABLE$", branch):
+        return f"{fork_point(branch)}..{branch}"
+    return f"{HISTORY_FLOOR_TAG}..{branch}" if branch == "master" else branch
 
 
 def released_majors() -> list[int]:
@@ -126,11 +121,6 @@ def in_development_majors() -> list[int]:
     return sorted(majors)
 
 
-def stable_branches() -> list[str]:
-    "The released majors' stable branches (the backpatch streams)."
-    return [f"REL_{major}_STABLE" for major in released_majors()]
-
-
 def all_stable_branches() -> list[str]:
     "Released AND in-progress stable branches (the latter carries its beta stabilization)."
     return [f"REL_{major}_STABLE" for major in sorted(released_majors() + in_development_majors())]
@@ -142,12 +132,16 @@ def all_branches() -> list[str]:
 
 
 def tag_globs() -> list[str]:
-    "One for-each-ref pattern per released major, so the tag readers track the repo."
-    return [f"refs/tags/REL_{major}_*" for major in released_majors()]
+    """One for-each-ref pattern per major with a stable branch (released AND
+    in-progress -- the beta major's BETA/RC milestones live in its tags), so the
+    tag readers track the repo."""
+    return [f"refs/tags/REL_{major}_*" for major in sorted(released_majors() + in_development_majors())]
 
 
 def commit_records() -> list[CommitRecord]:
-    """One record per commit per branch over the branch's corpus range (commit_range)."""
+    """One record per commit per branch over the branch's corpus range (commit_range):
+    a stable branch since its fork (pre-GA stabilization + backpatches), master
+    since the corpus floor."""
     records: list[CommitRecord] = []
     for branch in all_branches():
         log = git(
@@ -370,23 +364,36 @@ def branch_size_weekly_records(
 
 
 class CommitVersionRecord(NamedTuple):
-    "One commit mapped to the minor it shipped in, by git tag ancestry."
+    "One commit mapped to the version it first shipped in (or is developing), by git tag ancestry."
 
     branch: str
     commit_hash: str
     version: str
 
 
+def _rev_list(rev_range: str) -> list[str]:
+    return [commit_hash for commit_hash in git("rev-list", rev_range).splitlines() if commit_hash]
+
+
 def commit_version_records() -> list[CommitVersionRecord]:
-    """Each stable-branch commit mapped to the minor it FIRST shipped in, by EXACT
-    git tag ancestry: for consecutive release tags REL_M_(N-1), REL_M_N on a
-    branch, `git rev-list REL_M_(N-1)..REL_M_N` is exactly the commits reachable
-    from REL_M_N but not REL_M_(N-1) -- i.e. the ones that shipped in REL_M_N. No
-    date windows, no wrap heuristic; out-of-band re-releases are ordinary tags.
-    master carries no release tags; open-cycle commits (after the latest tag, not
-    yet released) are unmapped. For the in-progress major (a stable branch with no
-    minor tags yet), all of its post-fork stabilization commits (commit_range) map
-    to the upcoming M.0. Grain = (branch, commit_hash).
+    """Every corpus commit that belongs to a version, by EXACT git tag ancestry --
+    the single commit -> version mapping, trunk included:
+
+    - A stable branch's pre-GA commits (fork_point..REL_M_0, or ..HEAD for the
+      in-progress major with no GA tag yet) are M.0: the major's stabilization.
+    - Its post-GA commits map to the minor they FIRST shipped in: for consecutive
+      release tags REL_M_(N-1), REL_M_N, `git rev-list REL_M_(N-1)..REL_M_N` is
+      exactly the commits reachable from REL_M_N but not REL_M_(N-1). No date
+      windows, no wrap heuristic; out-of-band re-releases are ordinary tags.
+      Commits after the branch's latest tag are unmapped (pending).
+    - master's commits between two consecutive majors' fork points were
+      developed FOR the later one: fork_point(M-1)..fork_point(M) is M.0 (for
+      FIRST_MAJOR, the earlier fork is the corpus floor). Together with the
+      branch's pre-GA segment that is precisely REL_(M-1)_0..REL_M_0, the
+      per-major development set. master commits after the newest fork (the next,
+      not-yet-branched major) are unmapped.
+
+    Grain = (branch, commit_hash).
     """
     records: list[CommitVersionRecord] = []
     for branch in all_stable_branches():
@@ -394,6 +401,14 @@ def commit_version_records() -> list[CommitVersionRecord]:
         if not matched:
             continue
         major = int(matched.group(1))
+        ga_version = f"{major}.0"
+        fork = fork_point(branch)
+        # the previous major's fork point: where this major's master development began
+        prev_fork = fork_point(f"REL_{major - 1}_STABLE")
+        records.extend(
+            CommitVersionRecord(branch="master", commit_hash=commit_hash, version=ga_version)
+            for commit_hash in _rev_list(f"{prev_fork}..{fork}")
+        )
         refs = git("for-each-ref", "--format=%(refname:short)", f"refs/tags/REL_{major}_*").splitlines()
         minors: list[tuple[int, str]] = []
         for ref in refs:
@@ -401,94 +416,17 @@ def commit_version_records() -> list[CommitVersionRecord]:
             if tag_match:
                 minors.append((int(tag_match.group(1)), ref))
         minors.sort()
-        if not minors:
-            # in-progress major (no released minor tags): its beta-stabilization
-            # commits all belong to the upcoming M.0.
-            records.extend(
-                CommitVersionRecord(branch=branch, commit_hash=commit_hash, version=f"{major}.0")
-                for commit_hash in git("rev-list", commit_range(branch)).splitlines()
-                if commit_hash
-            )
-            continue
+        # pre-GA stabilization on the branch: up to the GA tag, or all of it for
+        # the in-progress major
+        pre_ga_end = minors[0][1] if minors else branch
+        records.extend(
+            CommitVersionRecord(branch=branch, commit_hash=commit_hash, version=ga_version)
+            for commit_hash in _rev_list(f"{fork}..{pre_ga_end}")
+        )
         for (_, prev_tag), (minor, tag) in zip(minors, minors[1:], strict=False):
             version = f"{major}.{minor}"
             records.extend(
                 CommitVersionRecord(branch=branch, commit_hash=commit_hash, version=version)
-                for commit_hash in git("rev-list", f"{prev_tag}..{tag}").splitlines()
-                if commit_hash
+                for commit_hash in _rev_list(f"{prev_tag}..{tag}")
             )
-    return records
-
-
-class MajorDevRecord(NamedTuple):
-    "One major's feature-development activity, by tag ancestry."
-
-    major: str
-    dev_status: str  # 'released' | 'beta'
-    latest_milestone: str  # 'GA' | 'BETA3' | 'RC1' | ...
-    dev_commit_cnt: str
-    first_dev_commit_hash: str
-    first_dev_commit_ts: str
-    last_dev_commit_hash: str
-    last_dev_commit_ts: str
-
-
-def _latest_prerelease(major: int) -> str:
-    """Newest BETA/RC milestone tag for a major (e.g. 'BETA3'), or 'pre-beta'."""
-    refs = git(
-        "for-each-ref", "--sort=-creatordate", "--format=%(refname:short)", f"refs/tags/REL_{major}_*"
-    ).splitlines()
-    for ref in refs:
-        pre = re.fullmatch(rf"REL_{major}_((?:BETA|RC)\d+)", ref)
-        if pre:
-            return pre.group(1)
-    return "pre-beta"
-
-
-def major_dev_records() -> list[MajorDevRecord]:
-    """Each major's feature development by git tag ancestry: the commits reachable
-    from its GA tag REL_M_0 but not the previous major's GA REL_(M-1)_0 -- i.e.
-    everything developed FOR major M. For the in-progress major (a REL_M_STABLE
-    branch exists but no REL_M_0 yet -- e.g. PG19 in beta) the range runs to the
-    branch HEAD, status is 'beta', and latest_milestone is its newest BETA/RC.
-    Covers every major with a stable branch at/above the floor. Grain = major.
-    """
-    tags = set(git("tag", "-l", "REL_*").splitlines())
-    branches = set(git("for-each-ref", "--format=%(refname:short)", "refs/heads/*").splitlines())
-    # every major with a stable branch at or above the floor -- released AND the
-    # in-progress one (REL_M_STABLE but no REL_M_0 yet). Discovered from the repo,
-    # so a new major is picked up with no LAST_MAJOR to bump.
-    stable_majors = sorted(
-        int(bm.group(1))
-        for br in branches
-        if (bm := re.fullmatch(r"REL_(\d+)_STABLE", br)) and int(bm.group(1)) >= FIRST_MAJOR
-    )
-    records: list[MajorDevRecord] = []
-    for major in stable_majors:
-        prev = f"REL_{major - 1}_0"
-        if prev not in tags:
-            continue
-        if f"REL_{major}_0" in tags:
-            end, status, milestone = f"REL_{major}_0", "released", "GA"
-        elif f"REL_{major}_STABLE" in branches:
-            end, status, milestone = f"REL_{major}_STABLE", "beta", _latest_prerelease(major)
-        else:
-            continue
-        commits = [ln for ln in git("log", "--format=%H%x00%cI", f"{prev}..{end}").splitlines() if ln]
-        if not commits:
-            continue
-        last_hash, _, last_ts = commits[0].partition("\x00")
-        first_hash, _, first_ts = commits[-1].partition("\x00")
-        records.append(
-            MajorDevRecord(
-                major=str(major),
-                dev_status=status,
-                latest_milestone=milestone,
-                dev_commit_cnt=str(len(commits)),
-                first_dev_commit_hash=first_hash,
-                first_dev_commit_ts=first_ts,
-                last_dev_commit_hash=last_hash,
-                last_dev_commit_ts=last_ts,
-            )
-        )
     return records

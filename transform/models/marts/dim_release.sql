@@ -144,5 +144,5 @@ SELECT
   null AS fix_per_early_fix,
   -- the in-progress major's GA-to-be is a real forward-looking release
   false AS is_synthetic_row
-FROM {{ ref('stg_major_development') }} AS smd
+FROM {{ ref('int_major_development') }} AS smd
 WHERE smd.dev_status = 'beta'

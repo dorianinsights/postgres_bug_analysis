@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: stg_git_prerelease_tags
+    description: >
+      One BETA / RC milestone tag (the prereleases stg_git_tags filters out),
+      with its major and milestone name parsed from the tag. Grain = tag.
+    columns:
+      - name: tag
+        tests:
+          - unique
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^REL_\d+_(BETA|RC)\d+$'
+      - name: major
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "{{ var('test_floor_major') }}"
+      - name: milestone
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^(BETA|RC)\d+$'
+      - name: tag_ts
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "{{ var('test_floor_git_ts') }}"
+                max_value: current_date + 2
+      - name: tag_dt
+        tests: [not_null]

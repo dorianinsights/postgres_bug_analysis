@@ -5,8 +5,10 @@
 -- fct_commit_files, so nothing measured lives here; only descriptors and FKs.
 -- Foreign keys into dim_person (author + committer roles), dim_date (commit day),
 -- dim_release / dim_version (the release + minor it shipped in) and dim_major (its
--- development line -- master included). branch_scope folds the major lifecycle for
--- churn views (trunk / stable / beta). origin, the AI-credit flag, the dominant
+-- development line -- master included). branch_scope is the commit's own
+-- lifecycle scope for churn views (trunk / beta / stable -- a stable branch holds
+-- both its pre-GA beta work and its backpatch stream, told apart by
+-- int_commit_versions). origin, the AI-credit flag, the dominant
 -- subsystem and the subject ride along as attributes. Each person key resolves via
 -- the identity node (person_node + int_person_map), matching dim_person.
 --
@@ -74,11 +76,17 @@ SELECT
   gcm.commit_dt,
   gcm.commit_hash,
   gcm.commit_ts,
-  -- the major lifecycle folded for churn views
-  CASE dmj.lifecycle
-    WHEN 'development' THEN 'trunk'
-    WHEN 'released' THEN 'stable'
-    WHEN 'beta' THEN 'beta'
+  -- the commit's lifecycle scope for churn views, per COMMIT (a stable branch
+  -- carries both its pre-GA stabilization and its backpatch stream):
+  --   trunk   master
+  --   beta    a major's pre-GA work on its stable branch (version M.0), for
+  --           every major -- the in-progress one and each released one's
+  --           own beta period
+  --   stable  the backpatch stream: shipped in, or pending for, a minor
+  CASE
+    WHEN gcm.branch = 'master' THEN 'trunk'
+    WHEN icv.release_status = 'development' THEN 'beta'
+    WHEN icv.release_status IN ('shipped', 'open') THEN 'stable'
     ELSE 'other'
   END AS branch_scope,
   org.origin,

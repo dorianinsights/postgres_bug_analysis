@@ -167,9 +167,11 @@ every object's name. Layers:
   `int_fix_groups` (cross-branch dedup as recursive-CTE connected
   components), `int_fix_reps` (one categorized representative per distinct
   fix), `int_git_commits` (the commit spine's `fix_key` / `is_housekeeping` /
-  AI-credit flags), `int_commit_versions` (the ONE commit → release mapping:
-  tag ancestry, plus the open release for a released major's not-yet-tagged
-  stable commits), `int_committed_fixes` (the committed-fix population: one
+  AI-credit flags), `int_commit_versions` (the ONE commit → version/release
+  mapping, trunk included: tag ancestry gives a shipped minor or a major's `.0`
+  development, plus the open release for a released major's not-yet-tagged
+  stable commits), `int_major_development` (per-major development activity,
+  aggregated from it), `int_committed_fixes` (the committed-fix population: one
   row per distinct fix per release, linked to its release-notes item),
   `int_release_summary` (both populations per release + documentation rate).
 - `models/marts/` — the typed tables the faces and CSV exports read: the

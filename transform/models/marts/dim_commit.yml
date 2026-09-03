@@ -75,7 +75,11 @@ models:
       - name: commit_ts
         tests: [not_null]
       - name: branch_scope
-        description: "The major lifecycle folded for churn views: trunk (master), stable (released), beta (in-progress), other."
+        description: >
+          The commit's own lifecycle scope for churn views: trunk (master), beta
+          (a major's pre-GA stabilization on its stable branch -- every major's,
+          not only the in-progress one), stable (the backpatch stream: shipped
+          in, or pending for, a minor), other.
         tests:
           - not_null
           - accepted_values:

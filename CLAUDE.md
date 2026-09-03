@@ -125,10 +125,16 @@ per-session memories, which aren't committed to git.)
   prefer it over per-dim natural-key hacks like `bug_number > 0` or
   `NOT IN ('(unknown)', ...)`.
 - **One commit → release mapping, two fix populations.** `int_commit_versions`
-  is the only place a commit is assigned to a release: exact git tag ancestry
-  for shipped commits, and the OPEN release for a released major's stable-branch
-  commits after its latest tag (`release_status = 'open'`). Never re-derive it
-  with date windows. `int_git_commits` defines `fix_key` (normalized subject —
+  is the only place a commit is assigned to a version/release, trunk included:
+  exact git tag ancestry gives a shipped minor (`release_status = 'shipped'`) or
+  a major's `.0` (`'development'`: master between two fork points plus the
+  branch's pre-GA stabilization), and a released major's stable-branch commits
+  after its latest tag are pending for the OPEN release (`'open'`). Every
+  branch's corpus range is tag-bounded too (`sources.git.commit_range`: a
+  stable branch from its fork, master from `corpus.HISTORY_FLOOR_TAG`) -- there
+  is no history date anywhere. Never re-derive any of this with date windows.
+  `dim_commit.branch_scope` (trunk/beta/stable) is per COMMIT from that status,
+  and `int_major_development` is an aggregate of it (no separate git walk). `int_git_commits` defines `fix_key` (normalized subject —
   the identity of a fix across its backpatches) and `is_housekeeping` (stamps,
   translations, notes drafting, tz data: not fixes) once; every "distinct fix
   commits" count is `COUNT(DISTINCT fix_key) ... WHERE NOT is_housekeeping`

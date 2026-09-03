@@ -13,7 +13,7 @@ import pytest
 
 import corpus
 import sources.git as gitmod
-from sources.git import branch_range
+from sources.git import commit_range
 
 # git log --format uses \x00 between fields and \x01 to terminate each record.
 _COMMIT_LOG = (
@@ -37,21 +37,23 @@ def _patch_git(monkeypatch: pytest.MonkeyPatch, output: str) -> None:
     monkeypatch.setattr(gitmod, "git", fake_git)
 
 
-def test_branch_range_scopes_stable_branches_to_their_backpatch_stream() -> None:
-    # Pure regex transform, independent of the current corpus — works for any
-    # major, including ones outside today's window (e.g. an extended timeline).
-    assert branch_range("REL_15_STABLE") == "REL_15_0..REL_15_STABLE"
-    assert branch_range("REL_11_STABLE") == "REL_11_0..REL_11_STABLE"
+def test_commit_range_scopes_stable_branches_from_their_fork(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A stable branch owns everything since it forked off master (merge-base),
+    # released or in-progress alike -- works for any major, including ones
+    # outside today's window (e.g. an extended timeline).
+    _patch_git(monkeypatch, "f0rkp01nt\n")
+    assert commit_range("REL_15_STABLE") == "f0rkp01nt..REL_15_STABLE"
+    assert commit_range("REL_11_STABLE") == "f0rkp01nt..REL_11_STABLE"
 
 
-def test_branch_range_bounds_master_by_the_corpus_floor_tag() -> None:
-    # master has no .0 of its own: its corpus range starts at the previous
+def test_commit_range_bounds_master_by_the_corpus_floor_tag() -> None:
+    # master has no fork of its own: its corpus range starts at the previous
     # major's GA tag (corpus.HISTORY_FLOOR_TAG), i.e. FIRST_MAJOR's branch point.
-    assert branch_range("master") == f"{corpus.HISTORY_FLOOR_TAG}..master"
+    assert commit_range("master") == f"{corpus.HISTORY_FLOOR_TAG}..master"
 
 
-def test_branch_range_leaves_non_matches_untouched() -> None:
-    assert branch_range("REL_15_STABLEX") == "REL_15_STABLEX"  # anchored, no partial match
+def test_commit_range_leaves_non_matches_untouched() -> None:
+    assert commit_range("REL_15_STABLEX") == "REL_15_STABLEX"  # anchored, no partial match
 
 
 def test_commit_records_split_fields_and_pad_empty_body(monkeypatch: pytest.MonkeyPatch) -> None:
