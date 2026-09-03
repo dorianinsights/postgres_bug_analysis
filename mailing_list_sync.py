@@ -29,7 +29,7 @@ from pathlib import Path
 import requests
 from dotenv import dotenv_values
 
-from corpus import GIT_HISTORY_SINCE
+from corpus import history_floor
 
 LISTS = ("pgsql-bugs", "pgsql-hackers")
 LOGIN_URL = "https://www.postgresql.org/account/login/"
@@ -62,8 +62,10 @@ def refetch_months(now: datetime) -> set[tuple[int, int]]:
 
 
 def month_range() -> list[tuple[int, int]]:
-    """Every (year, month) from the corpus history floor through this month."""
-    start = datetime.strptime(GIT_HISTORY_SINCE, "%Y-%m-%d").replace(tzinfo=UTC)
+    """Every (year, month) from the corpus history floor's month through this
+    month. The floor is read from the git clone (corpus.history_floor: the day
+    FIRST_MAJOR's development branched off), so run postgres_clone.py first."""
+    start = history_floor()
     now = datetime.now(UTC)
     months: list[tuple[int, int]] = []
     year, month = start.year, start.month

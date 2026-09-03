@@ -3,30 +3,38 @@
 
 FIRST_MAJOR anchors the floor; the upper bound is discovered from the repo
 (sources.git.released_majors), so there is no LAST_MAJOR / MAJORS / STABLE_BRANCHES
-to assert here. These check only what must hold for ANY FIRST_MAJOR: the >= 10
-floor and the history-floor derivation. Deliberately NO hardcoded (14..18) /
-"2020-10-01" snapshot — that would break on a legitimate, reviewed FIRST_MAJOR
+to assert here. These check only what must hold for ANY FIRST_MAJOR: the
+MIN_FIRST_MAJOR floor and the history-floor derivation (a tag, not a date; the
+one calendar day is read from the clone). Deliberately NO hardcoded (14..18) /
+"REL_13_0" snapshot — that would break on a legitimate, reviewed FIRST_MAJOR
 change.
 """
 
-from datetime import UTC, datetime
+import pytest
 
 import corpus
 
 
-def test_first_major_is_a_modern_single_part_release() -> None:
-    # PG 10+ only — 9.x used two-part majors the scrapers don't support, and
-    # corpus.py documents 10 as the floor for FIRST_MAJOR.
-    assert corpus.FIRST_MAJOR >= 10
+def test_first_major_is_at_least_the_supported_floor() -> None:
+    # The floor tag is the PREVIOUS major's GA, and PG 9.x tags are named
+    # REL9_6_0 rather than REL_9_6_0, so the derivation needs FIRST_MAJOR >= 11.
+    assert corpus.MIN_FIRST_MAJOR == 11
+    assert corpus.FIRST_MAJOR >= corpus.MIN_FIRST_MAJOR
 
 
-def test_git_history_since_is_october_before_first_major_release() -> None:
-    # Major N ships in year 2007 + N; the floor is Oct 1 of the year BEFORE
-    # FIRST_MAJOR's release year. Derived from FIRST_MAJOR so it tracks any pin.
-    since = corpus.GIT_HISTORY_SINCE
-    assert since == f"{2006 + corpus.FIRST_MAJOR}-10-01"
+def test_history_floor_tag_is_previous_major_ga() -> None:
+    # master's corpus range is HISTORY_FLOOR_TAG..master: the previous major's GA
+    # tag contains all of master up to that major's branch point, so the range
+    # is exactly FIRST_MAJOR's development onward. Derived from FIRST_MAJOR.
+    assert f"REL_{corpus.FIRST_MAJOR - 1}_0" == corpus.HISTORY_FLOOR_TAG
+    assert f"REL_{corpus.FIRST_MAJOR - 1}_STABLE" == corpus.HISTORY_FLOOR_BRANCH
 
 
-def test_git_history_since_is_a_valid_first_of_month_date() -> None:
-    floor = datetime.strptime(corpus.GIT_HISTORY_SINCE, "%Y-%m-%d").replace(tzinfo=UTC)
-    assert floor.day == 1
+@pytest.mark.skipif(not corpus.CLONE.is_dir(), reason="needs the postgres clone (postgres_clone.py)")
+def test_history_floor_is_the_previous_majors_branch_point() -> None:
+    # Major N ships in year 2007 + N and branches off master around June of the
+    # year before, so the floor day (where master and the previous major's
+    # stable branch diverged) falls in mid-year of 2006 + FIRST_MAJOR.
+    floor = corpus.history_floor()
+    assert floor.year == 2006 + corpus.FIRST_MAJOR
+    assert 5 <= floor.month <= 8

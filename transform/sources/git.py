@@ -24,19 +24,15 @@ from pathlib import Path
 from typing import NamedTuple
 
 sys.path.insert(0, str(Path.cwd().parent))
-from corpus import FIRST_MAJOR, GIT_HISTORY_SINCE
+from corpus import FIRST_MAJOR, HISTORY_FLOOR_TAG
 
 CACHE = Path.cwd().parent / ".cache" / "postgres.git"
 
-# The history floor as an exact instant. Two git date gotchas make the bare
-# GIT_HISTORY_SINCE date nondeterministic: approxidate fills a missing
-# time-of-day with the CURRENT wall-clock time (so the cutoff moved with
-# every build — observed as boundary commits flapping in/out of
-# git_commits_enriched.csv), and plain --since is a walk-termination
-# heuristic rather than a filter. Pin midnight UTC and use
-# --since-as-filter (git >= 2.37), which walks everything and filters by
-# date exactly.
-SINCE_FILTER = f"--since-as-filter={GIT_HISTORY_SINCE}T00:00:00Z"
+# No date floor anywhere in the git side: every branch's corpus range is bounded
+# by tag ancestry (branch_range / commit_range below), master included. A
+# --since date was both redundant for the tag-bounded stable branches and wrong
+# for master (it started months after FIRST_MAJOR's development began); tag
+# ancestry is exact and moves with FIRST_MAJOR.
 
 
 class CommitRecord(NamedTuple):
@@ -78,18 +74,23 @@ def git(*args: str) -> str:
 
 def branch_range(branch: str) -> str:
     # Released stable branch: only commits after the major's .0 release (the
-    # backpatch stream) — the shared pre-branch history belongs to master. A pure
+    # backpatch stream) — the shared pre-branch history belongs to master. master:
+    # everything since the previous major branched off, i.e. since FIRST_MAJOR's
+    # development began (HISTORY_FLOOR_TAG.. -- the previous major's GA tag
+    # contains all of master up to that branch point and nothing after it). A pure
     # transform (in-progress branches, which have no .0 yet, go through
     # commit_range instead).
     m = re.match(r"REL_(\d+)_STABLE$", branch)
-    return f"REL_{m.group(1)}_0..{branch}" if m else branch
+    if m:
+        return f"REL_{m.group(1)}_0..{branch}"
+    return f"{HISTORY_FLOOR_TAG}..{branch}" if branch == "master" else branch
 
 
 def commit_range(branch: str) -> str:
     # The rev range whose commits belong to a branch, git-aware: a released stable
     # branch uses branch_range (REL_M_0..); the in-progress stable branch (no .0
     # tag) uses its post-fork commits (merge-base with master .. HEAD), i.e. its
-    # beta stabilization; master is everything.
+    # beta stabilization; master runs from the corpus floor tag (branch_range).
     m = re.match(r"REL_(\d+)_STABLE$", branch)
     if m and not git("tag", "-l", f"REL_{m.group(1)}_0").strip():
         return f"{git('merge-base', 'master', branch).strip()}..{branch}"
@@ -146,12 +147,11 @@ def tag_globs() -> list[str]:
 
 
 def commit_records() -> list[CommitRecord]:
-    """One record per commit per branch since the corpus history floor."""
+    """One record per commit per branch over the branch's corpus range (commit_range)."""
     records: list[CommitRecord] = []
     for branch in all_branches():
         log = git(
             "log",
-            SINCE_FILTER,
             # author (%an/%ae) and committer (%cn/%ce) identities land before
             # the subject; the multi-line body stays last so it can't be
             # confused with a delimited field.
@@ -185,7 +185,7 @@ def _file_records_for_branch(branch: str) -> list[CommitFileRecord]:
     """One record per (commit, file) for one branch. Module-level so a worker
     process can run it."""
     records: list[CommitFileRecord] = []
-    log = git("log", SINCE_FILTER, "--format=%x01%H", "--numstat", commit_range(branch))
+    log = git("log", "--format=%x01%H", "--numstat", commit_range(branch))
     commit_hash = ""
     for line in log.splitlines():
         if line.startswith("\x01"):

@@ -326,10 +326,16 @@ carry no separate unit tests.
 
 ## Analysis conventions
 
-- **The corpus is defined in `corpus.py`** (majors 15-18 and the git-history
-  floor) and shared by all three scrapers so their datasets can never
-  diverge. Extending the analysis back in time is an edit there — a
-  deliberate, versioned commit, not a flag or an env var.
+- **The corpus is defined in `corpus.py`** (`FIRST_MAJOR`; the upper bound is
+  discovered from the clone) and shared by every reader so their datasets can
+  never diverge. There is no history *date*: master is bounded by tag ancestry
+  (`HISTORY_FLOOR_TAG..master`, the previous major's GA tag, i.e. exactly
+  `FIRST_MAJOR`'s development onward -- the same rule as the stable branches'
+  `REL_M_0..`), and the one consumer that needs a calendar day, the mailing-list
+  sync, reads the branch point from the clone (`corpus.history_floor()`).
+  Extending the analysis back in time is an edit there — a deliberate,
+  versioned commit, not a flag or an env var (`FIRST_MAJOR >= 11`: the floor
+  tag is the previous major's GA and PG 9.x tags are not `REL_M_N`-shaped).
 - `.0` feature releases are not fixes; "update time zone data files" items are
   routine refreshes — both excluded.
 - A release is **out-of-band** (emergency re-release) when its largest release has

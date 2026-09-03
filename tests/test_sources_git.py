@@ -11,6 +11,7 @@ import re
 
 import pytest
 
+import corpus
 import sources.git as gitmod
 from sources.git import branch_range
 
@@ -43,8 +44,13 @@ def test_branch_range_scopes_stable_branches_to_their_backpatch_stream() -> None
     assert branch_range("REL_11_STABLE") == "REL_11_0..REL_11_STABLE"
 
 
-def test_branch_range_leaves_master_and_non_matches_untouched() -> None:
-    assert branch_range("master") == "master"
+def test_branch_range_bounds_master_by_the_corpus_floor_tag() -> None:
+    # master has no .0 of its own: its corpus range starts at the previous
+    # major's GA tag (corpus.HISTORY_FLOOR_TAG), i.e. FIRST_MAJOR's branch point.
+    assert branch_range("master") == f"{corpus.HISTORY_FLOOR_TAG}..master"
+
+
+def test_branch_range_leaves_non_matches_untouched() -> None:
     assert branch_range("REL_15_STABLEX") == "REL_15_STABLEX"  # anchored, no partial match
 
 

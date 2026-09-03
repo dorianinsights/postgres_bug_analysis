@@ -72,7 +72,7 @@ Cache the immutable parses as Parquet and re-parse only what changed:
   month once to `.cache/mbox_parsed/<list>/YYYYMM.parquet` (skip when the
   parquet is newer than its mbox); re-parse only the current month. DuckDB reads
   Parquet natively, so the mail side drops to seconds.
-- **git:** history below `GIT_HISTORY_SINCE` is immutable. Cache per-branch
+- **git:** history behind each branch's tip is immutable. Cache per-branch
   numstat/log parses keyed by the branch tip SHA (or make the model
   incremental), re-parsing only commits since the cached tip.
 

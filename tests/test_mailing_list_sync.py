@@ -36,9 +36,10 @@ def test_refetch_months_always_two_and_includes_current() -> None:
 
 
 def test_month_range_starts_at_the_history_floor() -> None:
-    # Derived from the corpus floor, not hardcoded, so it holds if the timeline
-    # is extended further back (a lower FIRST_MAJOR / earlier GIT_HISTORY_SINCE).
-    floor = datetime.strptime(corpus.GIT_HISTORY_SINCE, "%Y-%m-%d").replace(tzinfo=UTC)
+    # Derived from the corpus floor (the branch point read from the clone), not
+    # hardcoded, so it holds if the timeline is extended further back (a lower
+    # FIRST_MAJOR).
+    floor = corpus.history_floor()
     assert mls.month_range()[0] == (floor.year, floor.month)
 
 

@@ -48,9 +48,10 @@ vars:
   # fail the build if the corpus ever outgrows this span -- widen the var and
   # rebuild when it does.
   # Covers the lowest allowed corpus floor AND the release calendar's own start
-  # (int_release_calendar generates from 2016-08 so the earliest corpus release
-  # has a prior cycle). Set wide enough that pushing FIRST_MAJOR back never needs
-  # a change here; those relationships tests guard it.
+  # (int_release_calendar anchors a year before the earliest corpus release tag,
+  # so the earliest corpus release has a prior cycle). Set wide enough that
+  # pushing FIRST_MAJOR back never needs a change here; those relationships
+  # tests guard it.
   date_spine_start: "2016-07-01"
   date_spine_end: "2029-01-01"
   # -- Sentinel "eternity" dates carried as real dim_date rows (outside the
