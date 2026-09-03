@@ -15,7 +15,9 @@
 -- The fix-commit spine: fix_key (normalized subject, the identity of a committed
 -- fix across its backpatches -- COUNT(DISTINCT fix_key) is "distinct fixes") and
 -- is_housekeeping (stamps, translations, notes drafting: commits that are not
--- fixes) come from int_git_commits; is_documented / documented_item_ord say
+-- fixes) come from int_git_commits; is_representative_commit picks one
+-- backpatch per fix so per-commit sums (churn) are not multiplied by the
+-- number of branches in the corpus; is_documented / documented_item_ord say
 -- whether a release-notes item cites this commit (the int_fix_commits bridge,
 -- inverted). dim_release_key resolves through int_commit_versions: exact tag
 -- ancestry for shipped commits, and the OPEN release for a released major's
@@ -45,6 +47,16 @@ WITH dominant_subsystem AS (
     PARTITION BY commit_hash
     ORDER BY (subsystem IN ('tests', 'docs')) ASC, file_cnt DESC, line_sum DESC, subsystem ASC
   ) = 1
+),
+
+-- each commit's total churn (all files), the size a fix's representative
+-- backpatch is chosen by
+commit_churn AS (
+  SELECT
+    commit_hash,
+    SUM(COALESCE(lines_added, 0) + COALESCE(lines_deleted, 0)) AS churn
+  FROM {{ ref('int_commit_files') }}
+  GROUP BY ALL
 ),
 
 -- the release-notes item citing each commit (the lowest item when a combined
@@ -98,6 +110,21 @@ SELECT
   gcm.subject,
   igc.fix_key,
   igc.is_housekeeping,
+  -- ONE commit per backpatched fix: within the stable (backpatch) scope, the
+  -- fix_key's LARGEST backpatch by total churn (an older branch's version can
+  -- carry extra conflict-resolution lines, so this is the fix's full size),
+  -- newest major then newest commit as the tiebreaks. A fix backpatched to N
+  -- branches is N commits, and the number of branches inside the corpus grew
+  -- from one (2021) to five (2025+), so anything summed per commit inflates
+  -- with the corpus rather than the work; churn views sum the representatives
+  -- instead. False outside the backpatch stream.
+  (
+    COALESCE(icv.release_status IN ('shipped', 'open'), false)
+    AND ROW_NUMBER() OVER (
+      PARTITION BY igc.fix_key, COALESCE(icv.release_status IN ('shipped', 'open'), false)
+      ORDER BY COALESCE(cch.churn, 0) DESC, dmj.major DESC, gcm.commit_ts DESC, gcm.commit_hash ASC
+    ) = 1
+  ) AS is_representative_commit,
   dfx.documented_item_ord IS NOT null AS is_documented,
   -- the citing release-notes item (fct_fixes.item_ord); NULL when none cites
   -- this commit -- an attribute, not an FK, so no special member stands in
@@ -112,6 +139,7 @@ LEFT JOIN {{ ref('int_commit_versions') }} AS icv
   ON gcm.branch = icv.branch AND gcm.commit_hash = icv.commit_hash
 LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
 LEFT JOIN dominant_subsystem AS dsub ON gcm.commit_hash = dsub.commit_hash
+LEFT JOIN commit_churn AS cch ON gcm.commit_hash = cch.commit_hash
 LEFT JOIN documented AS dfx ON gcm.commit_hash = dfx.commit_hash
 -- the release (shipped or open) from the registry that mints its key, and the
 -- shipped minor from dim_version (1:1 on version)

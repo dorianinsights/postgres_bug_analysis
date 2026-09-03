@@ -109,10 +109,29 @@ models:
         tests: [not_null]
       - name: fix_key
         description: The normalized subject (int_git_commits); COUNT(DISTINCT fix_key) is "distinct fix commits".
-        tests: [not_null]
+        tests:
+          - not_null
+          # exactly one representative commit per backpatched fix
+          - unique:
+              config:
+                where: is_representative_commit
       - name: is_housekeeping
         description: Release mechanics (version stamps, translation refreshes, release-notes drafting, tz data, pgindent), excluded from every fix count.
         tests: [not_null]
+      - name: is_representative_commit
+        description: >
+          One commit per backpatched fix: within the stable (backpatch) scope,
+          the fix_key's largest backpatch by total churn (newest major, then
+          newest commit, as tiebreaks). Sum churn over these to measure work
+          per fix rather than per backpatch, since the number of stable
+          branches in the corpus grew from one to five. False outside the
+          backpatch stream.
+        tests:
+          - not_null
+          # only the backpatch stream has representatives ...
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "= false OR branch_scope = 'stable'"
       - name: is_documented
         description: Whether a release-notes item cites this commit (int_fix_commits, inverted).
         tests: [not_null]

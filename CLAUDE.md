@@ -134,7 +134,14 @@ per-session memories, which aren't committed to git.)
   stable branch from its fork, master from `corpus.HISTORY_FLOOR_TAG`) -- there
   is no history date anywhere. Never re-derive any of this with date windows.
   `dim_commit.branch_scope` (trunk/beta/stable) is per COMMIT from that status,
-  and `int_major_development` is an aggregate of it (no separate git walk). `int_git_commits` defines `fix_key` (normalized subject —
+  and `int_major_development` is an aggregate of it (no separate git walk).
+  **Never SUM anything per stable-branch commit across branches** (churn, file
+  counts): a fix is one commit per branch it was backpatched to, and the number
+  of branches inside the corpus grew from one (2021) to five (2025+), so the
+  sum tracks the corpus, not the work. Sum over
+  `dim_commit.is_representative_commit` (one backpatch per fix, its largest
+  by churn) instead; the
+  per-branch charts are comparable only from Q3 2025 on. `int_git_commits` defines `fix_key` (normalized subject —
   the identity of a fix across its backpatches) and `is_housekeeping` (stamps,
   translations, notes drafting, tz data: not fixes) once; every "distinct fix
   commits" count is `COUNT(DISTINCT fix_key) ... WHERE NOT is_housekeeping`

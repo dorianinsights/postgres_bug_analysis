@@ -173,11 +173,15 @@ queries:
 
   churn_by_quarter:
     description: >
-      Lines of code churned per calendar quarter on the stable branches (fix
-      commits), as three series: total churn (adds +
-      deletes), additions, and deletions. Backpatches count per branch (like the
-      per-branch commit chart), so a fix landed on several majors contributes its
-      churn once per branch. Generated file classes (translation catalogs .po,
+      Lines of code churned per calendar quarter by backpatched fixes, as three
+      series: total churn (adds + deletes), additions, and deletions. ONE commit
+      per fix (dim_commit.is_representative_commit: the fix's largest backpatch
+      by churn, since an older branch's version can carry extra
+      conflict-resolution lines), so a fix landed on five majors counts its
+      churn once. Summing every backpatch instead would inflate the series with the
+      corpus, not the work: the number of stable branches inside the corpus
+      grew from one in 2021 to five since mid-2025 (see the backpatch-breadth
+      chart below). Generated file classes (translation catalogs .po,
       regression fixtures .out) are excluded -- source churn only -- and so are
       housekeeping commits (the release-notes SGML drafts are the largest single
       churn items of a cycle and scale with the fix count, not with the work).
@@ -193,7 +197,7 @@ queries:
         INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
         -- churn in the file classes chosen by the per-chart dropdown
         -- (defaults to hand-written source).
-        WHERE dc.branch_scope = 'stable'
+        WHERE dc.is_representative_commit
           AND NOT dc.is_housekeeping
           AND {{ filter('cf.file_class', stable_churn_classes) }}
         GROUP BY 1
@@ -205,6 +209,26 @@ queries:
       UNION ALL
       SELECT q.quarter, 'lines deleted' AS series, q.deletes FROM q
       ORDER BY 1, 2
+
+  backpatch_breadth:
+    description: >
+      How many stable branches each backpatched fix landed on, per quarter:
+      stable-branch fix commits divided by distinct fixes (fix_key). This is
+      the multiplier the per-branch charts carry. It climbs with the corpus,
+      not the project -- one branch in 2021 (only REL_14 is inside the corpus
+      floor), five since mid-2025 -- which is why churn is summed per fix
+      above and why the per-branch charts are comparable only from Q3 2025 on.
+      The current quarter is partial.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
+        'branches per fix' AS series,
+        ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT fc.fix_key), 2) AS branches_per_fix
+      FROM dim_commit AS fc
+      WHERE fc.branch_scope = 'stable' AND NOT fc.is_housekeeping
+      GROUP BY 1
+      ORDER BY 1
 
   trunk_churn_by_subsystem:
     description: >
@@ -343,7 +367,7 @@ charts:
     type: line
     query: quarterly_by_branch
     title: "Fix commits per non-master branch per quarter"
-    subtitle: "Each branch counts its own backpatches, so one fix landed on every stable major is one commit per branch here; newer branches carry more; every branch jumps in Q3 2026"
+    subtitle: "Each branch counts its own backpatches, so one fix landed on every stable major is one commit per branch here. Read each line on its own, not their sum: branches enter the corpus as majors ship, so all five are present only from Q3 2025"
     x: quarter
     y: fix_commits
     y_label: "fix commits"
@@ -354,7 +378,7 @@ charts:
     type: bar
     query: commits_per_version
     title: "Fix commits per released version"
-    subtitle: "Stable-branch fix commits (housekeeping excluded) binned by the release they shipped in (dim_commit.dim_release_key), split by major; shipped releases only"
+    subtitle: "Stable-branch fix commits (housekeeping excluded) binned by the release they shipped in, split by major; shipped releases only. Bar height grows a layer per major entering the corpus -- comparable from Nov 2025 (five majors) on"
     x: release
     y: commit_cnt
     y_label: "fix commits"
@@ -390,12 +414,23 @@ charts:
     type: line
     query: churn_by_quarter
     title: "Lines of code churned per quarter"
-    subtitle: "Stable-branch fix commits (housekeeping excluded); total churn, additions, and deletions; backpatches counted per branch; current quarter partial"
+    subtitle: "One backpatch per fix, its largest (housekeeping excluded); total churn, additions, and deletions -- work per fix, not per branch; current quarter partial"
     x: quarter
     y: lines
     y_label: "lines changed"
     color: series
     height: 380
+
+  backpatch_breadth:
+    type: line
+    query: backpatch_breadth
+    title: "Backpatch breadth per quarter"
+    subtitle: "Stable-branch fix commits per distinct fix. Rises with the corpus (one branch in 2021, five since mid-2025), not the project -- the multiplier behind per-branch counts; current quarter partial"
+    x: quarter
+    y: branches_per_fix
+    y_label: "branches per fix"
+    color: series
+    height: 300
 
   trunk_churn_by_subsystem:
     type: bar
@@ -469,6 +504,7 @@ rows:
   - codebase_size
   - codebase_composition
   - churn_by_quarter
+  - backpatch_breadth
   - trunk_churn_by_subsystem
   - cols: [ai_credited, cycle_pace]
   - ai_credit_table
