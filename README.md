@@ -118,10 +118,15 @@ is the interface, and `export_marts_csv` skips it.)
   6-month average, weekly volume with a 3-week average, acted-upon
   share, outcome and latency breakdowns, discussion volume by outcome,
   and the most-discussed reports table.
-- `origins.yml` — source attribution: fixes per release by origin (counts
-  and share, with an in-progress bar for the next release's fixes committed so
-  far), cited discussion threads per month by source, AI-flagged commits by
-  origin — the grounding for report-volume -> fix-volume projections.
+- `origins.yml` — source attribution: documented fixes per release by origin
+  (counts and share), committed fix commits per release by origin with the
+  next release's so-far bar, and AI-flagged master commits by origin — the
+  grounding for report-volume -> fix-volume projections.
+- `email_list_analysis.yml` — the mailing lists themselves: monthly and
+  weekly traffic vs the fix-linked subset, the fix-linked share (MetricFlow),
+  new pgsql-hackers threads by what they led to (backpatched fix / beta
+  stabilization / trunk work / not cited) with latency and cited-share KPIs,
+  and the discussion threads cited by master commits per month.
 - `fix_impact.yml` — impact & severity: security fixes by CVSS band, fix
   size and backpatch breadth by severity, and time-to-fix vs change size —
   how a fix's size and severity relate to its timeline and reach.

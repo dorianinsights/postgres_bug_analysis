@@ -1,11 +1,12 @@
-# Where PostgreSQL's fixes and development discussions actually come
-# from: filed pgsql-bugs reports vs pgsql-hackers threads vs work with no
-# public trail (embargoed security, uningested lists, no trailer).
+# Where PostgreSQL's fixes and development commits actually come from:
+# filed pgsql-bugs reports vs pgsql-hackers threads vs work with no public
+# trail (embargoed security, uningested lists, no trailer). The mailing
+# lists themselves (traffic, thread outcomes, cited threads) are on the
+# Email List Analysis face.
 #
 # Release bars use short "Mon YY" labels on a categorical axis with an
 # explicit chronological sort key (temporal bar axes label every bar with
-# wide two-line labels that collide at narrow widths). Monthly series use
-# areas — bars would label all ~58 months.
+# wide two-line labels that collide at narrow widths).
 title: "PostgreSQL Fix Origins"
 description: >
   Source attribution for fixes and development activity: each fix and
@@ -15,7 +16,8 @@ description: >
   projections of how bug-report volume translates into fix volume. Data
   from the transform/ dbt project (fct_fix_origins_agg -- documented and
   committed fixes per release by origin, the open release's committed-so-far
-  count included -- and fct_origin_activity_monthly_agg).
+  count included -- and fct_origin_activity_monthly_agg). The lists
+  themselves are on the Email List Analysis face.
 
 queries:
 
@@ -102,70 +104,6 @@ queries:
       WHERE status = 'shipped' AND NOT is_out_of_band
       ORDER BY 2, 3
 
-  hackers_threads:
-    description: >
-      New pgsql-hackers threads per month (fct_threads: root with no reply
-      header) by what became of them -- cited by a backpatched stable-branch
-      fix, by beta stabilization, by trunk feature work, or not cited (yet).
-      One outcome per thread, ranked stable > beta > trunk. Complete months
-      only. Recent months are right-censored: threads take a while to be
-      cited, see the median latency KPI beside the chart.
-    source: warehouse
-    sql: |
-      SELECT
-        DATE_TRUNC('month', started_dt)::DATE AS month_dt,
-        outcome,
-        COUNT(*) AS thread_cnt
-      FROM fct_threads
-      WHERE list_name = 'pgsql-hackers' AND is_new_thread
-        AND DATE_TRUNC('month', started_dt) < DATE_TRUNC('month', CURRENT_DATE)
-      GROUP BY 1, 2
-      ORDER BY 1, 2
-
-  hackers_cite_latency:
-    description: >
-      Median days from a new pgsql-hackers thread's start to the first commit
-      citing it, over cited threads -- the horizon within which the outcome
-      split above is roughly settled.
-    source: warehouse
-    sql: |
-      SELECT
-        MEDIAN(days_to_first_cite)::INTEGER AS median_days,
-        COUNT(*) AS cited_threads
-      FROM fct_threads
-      WHERE list_name = 'pgsql-hackers' AND is_new_thread AND is_cited
-
-  hackers_cited_share:
-    description: >
-      Of the new pgsql-hackers threads started in the last complete calendar
-      year (old enough to be settled), the share cited by any commit, and by a
-      backpatched fix.
-    source: warehouse
-    sql: |
-      SELECT
-        ROUND(AVG(is_cited::INTEGER), 3) AS cited_share,
-        ROUND(AVG(is_cited_by_stable::INTEGER), 3) AS fix_share,
-        COUNT(*) AS threads
-      FROM fct_threads
-      WHERE list_name = 'pgsql-hackers' AND is_new_thread
-        AND started_dt >= DATE_TRUNC('year', CURRENT_DATE) - INTERVAL 1 YEAR
-        AND started_dt < DATE_TRUNC('year', CURRENT_DATE)
-
-  cited_threads:
-    description: Distinct discussion threads cited by master commits, per month by source.
-    source: warehouse
-    sql: |
-      SELECT
-        month_dt,
-        CASE origin
-          WHEN 'unknown_or_internal_security' THEN 'embargoed security'
-          WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
-          ELSE origin
-        END AS origin,
-        cited_thread_cnt
-      FROM fct_origin_activity_monthly_agg
-      ORDER BY 1, 2
-
   ai_commits:
     description: AI-flagged master commits per month by origin.
     source: warehouse
@@ -181,136 +119,6 @@ queries:
       FROM fct_origin_activity_monthly_agg
       WHERE month_dt >= DATE '2026-01-01'
       ORDER BY 1, 2
-
-  monthly_traffic:
-    description: >
-      Monthly messages per list over the whole archive, split into all
-      traffic vs the fix-linked subset (messages whose thread a commit
-      eventually cites). Complete months only.
-    source: warehouse
-    sql: |
-      WITH monthly AS (
-        SELECT
-          DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
-          list_name,
-          COUNT(*) AS message_cnt,
-          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
-        FROM fct_messages
-        GROUP BY ALL
-      )
-      SELECT month_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM monthly
-      WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
-      UNION ALL
-      SELECT month_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM monthly
-      WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
-      ORDER BY 1, 2
-
-  monthly_traffic_partial_tail:
-    description: >
-      The dashed "still filling" tail for monthly_traffic: two points per
-      series — the last COMPLETE month and the in-progress CURRENT month
-      (only a few days in, so its level is not yet comparable). Overlaid as a
-      dashed segment so the current month reads as provisional, not absent or
-      a traffic collapse.
-    source: warehouse
-    sql: |
-      WITH monthly AS (
-        SELECT
-          DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
-          list_name,
-          COUNT(*) AS message_cnt,
-          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
-        FROM fct_messages
-        WHERE sent_dt >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL 1 MONTH
-        GROUP BY ALL
-      )
-      SELECT month_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM monthly
-      UNION ALL
-      SELECT month_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM monthly
-      ORDER BY 1, 2
-
-  monthly_linked_share:
-    description: >
-      Share of each month's messages that belong to commit-cited threads.
-      The sag in recent months is right-censoring, not less fix work —
-      their threads haven't been cited YET. Computed by MetricFlow from the
-      atomic message grain (the fix_linked_share ratio metric) -- a non-additive
-      ratio, correct at whatever grain is asked, not a stored per-row value.
-    source: metrics
-    type: metricflow
-    metrics: [fix_linked_share]
-    dimensions: [message__list_name]
-    time_grain: month
-    where: ["metric_time__month < date_trunc('month', current_date)"]
-
-  recent_weekly_traffic:
-    description: >
-      The same traffic split per week over the last three rolling months,
-      complete weeks only — the near-term zoom of monthly_traffic.
-    source: warehouse
-    sql: |
-      WITH weekly AS (
-        SELECT
-          DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
-          list_name,
-          COUNT(*) AS message_cnt,
-          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
-        FROM fct_messages
-        GROUP BY ALL
-      )
-      SELECT week_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM weekly
-      WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
-        AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
-      UNION ALL
-      SELECT week_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM weekly
-      WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
-        AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
-      ORDER BY 1, 2
-
-  recent_weekly_traffic_partial_tail:
-    description: >
-      The dashed "still filling" tail for recent_weekly_traffic: two points
-      per series — the last COMPLETE week and the in-progress CURRENT week.
-      Overlaid dashed so the current week reads as provisional.
-    source: warehouse
-    sql: |
-      WITH weekly AS (
-        SELECT
-          DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
-          list_name,
-          COUNT(*) AS message_cnt,
-          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
-        FROM fct_messages
-        WHERE sent_dt >= DATE_TRUNC('week', CURRENT_DATE) - INTERVAL 7 DAY
-        GROUP BY ALL
-      )
-      SELECT week_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM weekly
-      UNION ALL
-      SELECT week_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM weekly
-      ORDER BY 1, 2
-
-  recent_weekly_share:
-    description: >
-      Fix-linked share per week over the last three rolling months.
-      Heavily right-censored — these threads have had little time to be
-      cited by commits. Computed by MetricFlow from the atomic message grain
-      (the fix_linked_share ratio metric).
-    source: metrics
-    type: metricflow
-    metrics: [fix_linked_share]
-    dimensions: [message__list_name]
-    time_grain: week
-    where:
-      - "metric_time__week >= date_trunc('week', current_date - interval 3 month) + interval 7 day"
-      - "metric_time__week < date_trunc('week', current_date)"
 
 charts:
 
@@ -371,47 +179,6 @@ charts:
           format: ".1%"
     height: 360
 
-  hackers_threads:
-    type: area
-    query: hackers_threads
-    title: "New pgsql-hackers threads per month, by outcome"
-    subtitle: "Threads started, stacked by what they led to: a backpatched fix, beta stabilization, trunk feature work, or no citing commit (yet). Recent months right-censored"
-    x: month_dt
-    y: thread_cnt
-    color: outcome
-    style: { stack: zero }
-    height: 340
-
-  hackers_cite_latency:
-    type: kpi
-    query: hackers_cite_latency
-    label: "Median days: thread start to first citing commit"
-    value: median_days
-
-  hackers_cited_share:
-    type: kpi
-    query: hackers_cited_share
-    label: "Last year's new threads cited by a commit"
-    value: cited_share
-    style: { value: { format: ".0%" } }
-
-  hackers_fix_share:
-    type: kpi
-    query: hackers_cited_share
-    label: "Last year's new threads cited by a backpatched fix"
-    value: fix_share
-    style: { value: { format: ".0%" } }
-
-  cited_threads:
-    type: area
-    query: cited_threads
-    title: "Cited discussion threads per month, by source"
-    subtitle: "Distinct threads referenced by master commits' Discussion: trailers (UTC months)"
-    x: month_dt
-    y: cited_thread_cnt
-    color: origin
-    height: 340
-
   ai_commits:
     type: area
     query: ai_commits
@@ -425,89 +192,8 @@ charts:
     style: { stack: zero }
     height: 340
 
-  monthly_traffic:
-    type: line
-    query: monthly_traffic
-    title: "Monthly list traffic vs fix-linked traffic"
-    subtitle: "Messages per month, whole archive; fix-linked = the thread is eventually cited by a commit (recent months right-censored). Dashed tail = the current month, still filling — a partial count, not a drop"
-    x: month_dt
-    y: messages
-    color: series
-    height: 380
-    # Solid line covers complete months only; this overlay draws a dashed
-    # segment from the last complete month into the in-progress current month
-    # so it reads as provisional rather than absent. Same series names => the
-    # dashes inherit each line's color.
-    layers:
-      - type: line
-        query: monthly_traffic_partial_tail
-        x: month_dt
-        y: messages
-        color: series
-        style:
-          marks:
-            line:
-              stroke:
-                dasharray: "5 3"
-
-  monthly_linked_share:
-    type: line
-    query: monthly_linked_share
-    title: "Fix-linked share of monthly traffic"
-    subtitle: "Percent of each month's messages in commit-cited threads; the recent sag is right-censoring, not less fix work"
-    x: metric_time__month
-    y: fix_linked_share
-    color: message__list_name
-    style:
-      axis_y:
-        labels:
-          format: ".1%"
-    height: 340
-
-  recent_weekly_traffic:
-    type: line
-    query: recent_weekly_traffic
-    title: "Weekly list traffic, last three months"
-    subtitle: "Near-term zoom: messages per complete week vs the fix-linked subset. Dashed tail = the current week, still filling (partial)"
-    x: week_dt
-    y: messages
-    color: series
-    height: 340
-    layers:
-      - type: line
-        query: recent_weekly_traffic_partial_tail
-        x: week_dt
-        y: messages
-        color: series
-        style:
-          marks:
-            line:
-              stroke:
-                dasharray: "5 3"
-
-  recent_weekly_share:
-    type: line
-    query: recent_weekly_share
-    title: "Fix-linked share of weekly traffic, last three months"
-    subtitle: "Heavily right-censored — recent threads have had little time to be cited"
-    x: metric_time__week
-    y: fix_linked_share
-    color: message__list_name
-    style:
-      axis_y:
-        labels:
-          format: ".1%"
-    height: 340
-
 rows:
   - fix_origin_counts
   - fix_commit_origins
   - fix_origin_share
-  - monthly_traffic
-  - monthly_linked_share
-  - hackers_threads
-  - cols: [hackers_cite_latency, hackers_cited_share, hackers_fix_share]
-  - recent_weekly_traffic
-  - recent_weekly_share
-  - cited_threads
   - ai_commits
