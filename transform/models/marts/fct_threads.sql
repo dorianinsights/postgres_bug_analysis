@@ -10,8 +10,10 @@
 -- BUG # form reports with dim_bug's other exact link, a commit's Bug: #NNNNN
 -- trailer (int_bug_outcomes), so it is the chart-facing "linked to a fix" flag
 -- for every bug report, form or free-form; first_action_dt / days_to_action are
--- the earlier of the two links. Recent threads are right-censored: they have
--- had little time to be cited.
+-- the earlier of the two links, with action_outcome / days_to_action_window /
+-- thread_size_window the chart-facing labels (the same latency_windows and
+-- thread_size_windows seeds dim_bug uses, so the two grains bucket alike).
+-- Recent threads are right-censored: they have had little time to be cited.
 --
 -- Conforms to dim_person (the starter), dim_date (started_dt, first_cite_dt --
 -- future_eternity when never cited, so the FK is never NULL), and dim_bug (the
@@ -96,12 +98,27 @@ SELECT
   cte.first_cite_dt - fmg.sent_dt AS days_to_first_cite,
   -- cited, or (a form report) linked by a commit's Bug: # trailer
   cte.root_id IS NOT null OR COALESCE(dbg.is_acted_upon, false) AS is_acted_upon,
+  CASE
+    WHEN cte.root_id IS NOT null OR COALESCE(dbg.is_acted_upon, false) THEN 'linked to a fix commit'
+    ELSE 'no linked commit'
+  END AS action_outcome,
   LEAST(cte.first_cite_dt, CASE WHEN dbg.is_acted_upon THEN dbg.first_commit_dt END) - fmg.sent_dt
     AS days_to_action,
+  ltw.label AS days_to_action_window,
+  tsw.label AS thread_size_window,
   fmg.subject
 FROM {{ ref('fct_messages') }} AS fmg
 INNER JOIN rollup AS rlp ON fmg.list_name = rlp.list_name AND fmg.message_id = rlp.root_id
 LEFT JOIN cite_rollup AS cte ON fmg.list_name = cte.list_name AND fmg.message_id = cte.root_id
 -- the form report's own outcome (Discussion OR Bug: # link), for is_acted_upon
 LEFT JOIN {{ ref('dim_bug') }} AS dbg ON fmg.dim_bug_key = dbg.dim_bug_key
+-- the shared bucket seeds (open-ended top buckets have a NULL max)
+LEFT JOIN {{ ref('latency_windows') }} AS ltw
+  ON
+    LEAST(cte.first_cite_dt, CASE WHEN dbg.is_acted_upon THEN dbg.first_commit_dt END) - fmg.sent_dt
+    >= ltw.min_days
+    AND LEAST(cte.first_cite_dt, CASE WHEN dbg.is_acted_upon THEN dbg.first_commit_dt END) - fmg.sent_dt
+    <= COALESCE(ltw.max_days, LEAST(cte.first_cite_dt, CASE WHEN dbg.is_acted_upon THEN dbg.first_commit_dt END) - fmg.sent_dt)
+LEFT JOIN {{ ref('thread_size_windows') }} AS tsw
+  ON rlp.message_cnt >= tsw.min_messages AND rlp.message_cnt <= COALESCE(tsw.max_messages, rlp.message_cnt)
 WHERE fmg.is_thread_root

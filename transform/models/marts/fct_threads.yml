@@ -39,6 +39,12 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: "(days_to_action IS NOT NULL) = is_acted_upon"
+      # a latency bucket exists for every non-negative latency. A negative one is
+      # a fragment of an older thread (a "Re:" root whose BUG # was fixed before
+      # the fragment began) and gets no bucket.
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(days_to_action_window IS NOT NULL) = (is_acted_upon AND days_to_action >= 0)"
       # a form report is a pgsql-bugs thread with a real bug key
       - dbt_utils.expression_is_true:
           arguments:
@@ -137,5 +143,17 @@ models:
           is_cited, or a BUG # form report named by a commit's Bug trailer
           (dim_bug) -- the "linked to a fix" flag for every bug report.
         tests: [not_null]
+      - name: action_outcome
+        description: Chart label for is_acted_upon, matching dim_bug.outcome's wording.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [linked to a fix commit, no linked commit]
       - name: days_to_action
         description: Days from the thread root to first_action_dt; NULL when not acted upon.
+      - name: days_to_action_window
+        description: days_to_action bucketed by the latency_windows seed; NULL when not acted upon or when the latency is negative (a fragment of an older, already-fixed thread).
+      - name: thread_size_window
+        description: message_cnt bucketed by the thread_size_windows seed.
+        tests: [not_null]

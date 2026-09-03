@@ -9,8 +9,8 @@ description: >
   monthly report volume (every new pgsql-bugs thread, form or free-form),
   how many get acted upon (linked to a fix commit via the thread's
   Discussion: trailer or, for form reports, a Bug: #NNNNN mention), and how
-  fast (the outcome, latency and thread-size charts still cover the BUG #
-  form reports of dim_bug). Data files are produced by mailing_list_sync.py + the
+  fast -- every chart on one definition of a report: a new pgsql-bugs
+  thread (fct_threads), form or free-form. Data files are produced by mailing_list_sync.py + the
   transform/ dbt project. Acted-upon is a LOWER BOUND (only exact links
   count), and recent months are right-censored — fixes for fresh reports
   haven't landed yet.
@@ -193,86 +193,83 @@ queries:
 
   yearly_outcomes:
     description: >
-      Reports vs acted-upon reports per calendar year. Excludes dim_bug's
-      synthetic rows (its two Kimball special members, reported_dt =
-      past_eternity) via is_synthetic_row — real reports only, else the 1900
-      placeholder year blows the x-axis out to a 126-year span and the real
-      bars vanish.
+      Bug reports (new pgsql-bugs threads, form + free-form, fct_threads) vs
+      those later linked to a fix commit, per calendar year.
     source: warehouse
     sql: |
       SELECT
-        CAST(YEAR(reported_dt) AS VARCHAR) AS report_year,
-        outcome,
+        CAST(YEAR(started_dt) AS VARCHAR) AS report_year,
+        action_outcome AS outcome,
         COUNT(*) AS reports
-      FROM dim_bug
-      WHERE NOT is_synthetic_row
+      FROM fct_threads
+      WHERE list_name = 'pgsql-bugs' AND is_new_thread
       GROUP BY 1, 2
       ORDER BY 1, 2
 
   fix_latency:
     description: >
-      Report-to-first-commit latency for acted-upon reports, using the
-      mart's days_to_commit_window buckets.
+      Report-to-first-linked-commit latency for acted-upon reports (all bug
+      reports, fct_threads), in the latency_windows seed's buckets.
     source: warehouse
     sql: |
       SELECT
-        days_to_commit_window,
+        days_to_action_window AS days_to_commit_window,
         'acted-upon reports' AS series,
         COUNT(*) AS reports
-      FROM dim_bug
-      WHERE is_acted_upon
+      FROM fct_threads
+      WHERE list_name = 'pgsql-bugs' AND is_new_thread AND is_acted_upon AND days_to_action >= 0
       GROUP BY 1
       ORDER BY 1
 
   yearly_latency:
-    description: Median days from report to first linked commit, per year.
+    description: Median days from report to first linked commit, per year (all bug reports).
     source: warehouse
     sql: |
       SELECT
-        CAST(YEAR(reported_dt) AS VARCHAR) AS report_year,
+        CAST(YEAR(started_dt) AS VARCHAR) AS report_year,
         'median days to commit' AS series,
-        MEDIAN(days_to_commit) AS median_days
-      FROM dim_bug
-      WHERE is_acted_upon
+        MEDIAN(days_to_action) AS median_days
+      FROM fct_threads
+      WHERE list_name = 'pgsql-bugs' AND is_new_thread AND is_acted_upon AND days_to_action >= 0
       GROUP BY 1
       ORDER BY 1
 
   thread_size:
     description: >
       How much discussion a report draws, split by outcome — acted-upon
-      reports have longer threads. Real reports only (NOT is_synthetic_row):
-      dim_bug's two special members have a NULL thread_size_window and a
-      placeholder outcome that would otherwise show as a stray null bucket.
+      reports have longer threads. All bug reports (fct_threads), in the
+      thread_size_windows seed's buckets.
     source: warehouse
     sql: |
       SELECT
         thread_size_window,
-        outcome,
+        action_outcome AS outcome,
         COUNT(*) AS reports
-      FROM dim_bug
-      WHERE NOT is_synthetic_row
+      FROM fct_threads
+      WHERE list_name = 'pgsql-bugs' AND is_new_thread
       GROUP BY 1, 2
       ORDER BY 1, 2
 
   most_discussed:
-    description: The 15 most-discussed bug reports in the corpus.
+    description: The 15 most-discussed bug reports in the corpus, form or free-form.
     source: warehouse
     sql: |
       SELECT
-        reported_dt AS reported,
-        thread_message_cnt AS messages,
+        started_dt AS reported,
+        CASE WHEN is_form_report THEN 'BUG # form' ELSE 'free-form' END AS kind,
+        message_cnt AS messages,
         CASE WHEN is_acted_upon THEN 'fixed' ELSE '-' END AS outcome,
-        days_to_commit AS days_to_fix,
+        days_to_action AS days_to_fix,
         SUBSTR(subject, 1, 90) AS subject
-      FROM dim_bug
-      WHERE NOT is_synthetic_row
-      -- bug_number (the tiebreak) is not in the select list, so it stays named
-      ORDER BY 2 DESC, bug_number
+      FROM fct_threads
+      WHERE list_name = 'pgsql-bugs' AND is_new_thread
+      -- root_message_id (the tiebreak) is not in the select list, so it stays named
+      ORDER BY 3 DESC, root_message_id
       LIMIT 15
 
 charts:
   monthly_reports:
-    type: area
+    type: bar
     query: monthly_reports
     title: "Bug reports per month"
     subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails (about a third of reports); line = 6-month average of both"
@@ -366,7 +363,7 @@ charts:
     type: bar
     query: yearly_outcomes
     title: "Report outcomes per year"
-    subtitle: "Roughly one in four reports ends up linked to a fix commit"
+    subtitle: "All bug reports (form + free-form); roughly one in four ends up linked to a fix commit"
     x: report_year
     y: reports
     color: outcome
@@ -376,7 +373,7 @@ charts:
     type: bar
     query: fix_latency
     title: "How fast fixes land"
-    subtitle: "Days from report to its first linked commit; most fixes land within a week"
+    subtitle: "All bug reports; days from report to its first linked commit -- most fixes land within a week"
     x: days_to_commit_window
     y: reports
     color: series
@@ -386,7 +383,7 @@ charts:
     type: bar
     query: yearly_latency
     title: "Median report-to-fix latency per year"
-    subtitle: "Acted-upon reports only"
+    subtitle: "Acted-upon reports only, form + free-form"
     x: report_year
     y: median_days
     color: series
@@ -396,7 +393,7 @@ charts:
     type: bar
     query: thread_size
     title: "Discussion volume by outcome"
-    subtitle: "Reports that get fixed draw longer threads"
+    subtitle: "All bug reports; reports that get fixed draw longer threads"
     x: thread_size_window
     y: reports
     color: outcome
