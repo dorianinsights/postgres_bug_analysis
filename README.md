@@ -347,8 +347,10 @@ carry no separate unit tests.
   stripped) OR their exact annotated commit-hash set matches, transitively
   (connected components in `int_fix_groups.sql` — its header comment
   documents the four real-world cases behind the rule).
-- The corpus's first release (15.1, Nov 2022) accumulated only ~4 weeks of fixes
-  and is flagged `is_partial_window`; projection fits exclude it.
+- The corpus's first shipped release accumulated only a partial cycle of fixes
+  (with FIRST_MAJOR = 14 that is 14.1, Nov 2021, six weeks after 14.0) and is
+  flagged `is_partial_window` on `dim_release` -- derived as the earliest shipped
+  release, never named -- so projection fits and the trend charts exclude it.
 - Timestamps keep full fidelity (ISO 8601 with offset) through raw and
   staging (`_ts` columns, TIMESTAMPTZ); truncation to a calendar day
   (`_dt`) happens as far downstream as possible, at the point of use, and

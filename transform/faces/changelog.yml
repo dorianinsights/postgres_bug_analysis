@@ -1,6 +1,7 @@
 title: "PostgreSQL Fix Velocity — Changelog"
 description: >
-  Every minor release of PostgreSQL majors 14-18, scraped from the official
+  Every minor release of the corpus majors (PG14 onward, the upper bound
+  discovered from the clone), parsed from the official
   release notes: fix volume per quarterly release, fix categories,
   security fixes, contributors, and next-release projection scenarios.
   Data are produced by the transform/ dbt project (release notes parsed from
@@ -219,14 +220,20 @@ queries:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]
     description: >
       Pooled trendlines over scheduled per-release fix counts (all branches
-      together; 15.1's partial window excluded), against calendar time.
+      together; the corpus's partial-window first release excluded via
+      dim_release.is_partial_window, not by name), against calendar time. The
+      regression's day index counts from the earliest included release, so
+      there is no epoch literal to drift when the corpus floor moves.
     source: warehouse
     sql: |
       WITH sched AS (
-        SELECT CAST(dv.release_dt AS DATE) AS date, dv.item_cnt AS n_items,
-               DATE_DIFF('day', DATE '2022-01-01', CAST(dv.release_dt AS DATE)) AS t
+        SELECT
+          CAST(dv.release_dt AS DATE) AS date,
+          dv.item_cnt AS n_items,
+          DATE_DIFF('day', MIN(CAST(dv.release_dt AS DATE)) OVER (), CAST(dv.release_dt AS DATE)) AS t
         FROM dim_version AS dv
-        WHERE dv.minor > 0 AND NOT dv.is_out_of_band AND NOT (dv.major = 15 AND dv.minor = 1)
+        INNER JOIN dim_release AS dr ON dv.dim_release_key = dr.dim_release_key
+        WHERE dv.minor > 0 AND NOT dv.is_out_of_band AND NOT dr.is_partial_window
       ),
       fit_all AS (SELECT REGR_SLOPE(n_items, t) AS b, REGR_INTERCEPT(n_items, t) AS a FROM sched),
       fit_ex AS (
