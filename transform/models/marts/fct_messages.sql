@@ -30,6 +30,8 @@ SELECT
   (imt.sent_ts AT TIME ZONE 'utc') AS sent_ts,
   imt.root_id,
   imt.is_thread_start,
+  -- the earliest archived message of its thread -- the grain of fct_threads
+  imt.is_thread_root,
   imt.is_fix_linked,
   imt.earliest_ship_release_dt,
   imt.subject

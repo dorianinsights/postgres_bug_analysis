@@ -3,20 +3,41 @@ version: 2
 models:
   - name: int_message_threads
     description: >
-      Every archived message with its resolved thread root (References
-      header, then In-Reply-To, then itself), whether it starts a thread,
-      and whether its thread was eventually cited by a commit
-      Discussion: trailer. Grain = (list_name, message_id).
+      Every archived message with its thread resolved TRANSITIVELY: the direct
+      parent (In-Reply-To, else the last References id), the thread root (the
+      topmost archived ancestor reached by climbing the parent chain within the
+      list), whether it starts a thread (no parent header), whether it is its
+      thread's root (the earliest archived message), and whether its thread was
+      eventually cited by a commit Discussion: trailer.
+      Grain = (list_name, message_id).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [list_name, message_id]
+      # a new thread's start is its own root
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: NOT is_thread_start OR is_thread_root
+      # the root is a message of this thread
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: NOT is_thread_root OR root_id = message_id
     columns:
       - name: message_id
         tests: [not_null]
+      - name: parent_id
+        description: The direct parent's message id; NULL when the message carries no reply header.
       - name: root_id
-        tests: [not_null]
+        description: The thread root's message id -- always an archived message on the same list.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_message_threads')
+                field: message_id
       - name: is_thread_start
+        tests: [not_null]
+      - name: is_thread_root
         tests: [not_null]
       - name: is_fix_linked
         tests: [not_null]

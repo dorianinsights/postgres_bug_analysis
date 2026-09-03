@@ -71,6 +71,10 @@ models:
                 to: ref('dim_release')
                 field: dim_release_key
       - name: is_thread_start
+        description: A genuinely new thread (no reply header); see int_message_threads.
+        tests: [not_null]
+      - name: is_thread_root
+        description: The earliest archived message of its thread -- one per thread, the grain fct_threads is built on.
         tests: [not_null]
       - name: is_fix_linked
         tests: [not_null]
