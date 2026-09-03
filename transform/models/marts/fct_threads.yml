@@ -1,0 +1,117 @@
+version: 2
+
+models:
+  - name: fct_threads
+    description: >
+      Thread-grain fact: one row per mailing-list thread (root = the earliest
+      archived message), the grain above fct_messages. Thread starts per list
+      (a pgsql-bugs thread is a bug report, form or free-form), the thread's
+      size, and its outcome: cited by a commit at all, by which commit scope
+      (trunk work / beta stabilization / backpatched fix), and the days to the
+      first citation. FKs to dim_person (starter), dim_date (started_dt,
+      first_cite_dt -- future_eternity when never cited) and dim_bug (the
+      BUG # report the root names). Recent threads are right-censored. No
+      derived CSV twin (too many rows). Grain = (list_name, root_message_id).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [list_name, root_message_id]
+      # exactly one row per thread root in the message fact
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          arguments:
+            compare_model: ref('fct_messages')
+            compare_row_condition: is_thread_root
+      # cited means cited by at least one classified scope
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: is_cited = (is_cited_by_trunk OR is_cited_by_stable OR is_cited_by_beta)
+      # the citation day and the latency are defined together
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(days_to_first_cite IS NOT NULL) = is_cited"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(outcome = 'not cited') = NOT is_cited"
+      # a form report is a pgsql-bugs thread with a real bug key
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: NOT is_form_report OR list_name = 'pgsql-bugs'
+    columns:
+      - name: list_name
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pgsql-bugs, pgsql-hackers]
+      - name: root_message_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_messages')
+                field: message_id
+      - name: starter_dim_person_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_person')
+                field: dim_person_key
+      - name: dim_bug_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_bug')
+                field: dim_bug_key
+      - name: started_dt
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: first_cite_dt
+        description: The first citing commit's UTC day; the future_eternity sentinel row of dim_date when never cited.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: started_ts
+        description: The root's send instant in UTC wall-clock (a plain TIMESTAMP, like fct_messages.sent_ts).
+        tests: [not_null]
+      - name: is_new_thread
+        tests: [not_null]
+      - name: is_form_report
+        tests: [not_null]
+      - name: message_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: last_message_dt
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: is_cited
+        tests: [not_null]
+      - name: is_cited_by_trunk
+        tests: [not_null]
+      - name: is_cited_by_stable
+        tests: [not_null]
+      - name: is_cited_by_beta
+        tests: [not_null]
+      - name: outcome
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [backpatched fix, beta stabilization, trunk work, not cited]
+      - name: days_to_first_cite
+        description: Days from the thread root to the first citing commit; NULL when never cited.

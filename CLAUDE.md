@@ -144,6 +144,13 @@ per-session memories, which aren't committed to git.)
   fold an out-of-band release into its cycle via
   `int_releases.cycle_ships_at_dt`; release-grain measures keep the exact
   release.
+- **Thread identity is transitive** (`int_message_threads`): parent = In-Reply-To
+  else the last References id; root = the topmost archived ancestor, climbed
+  with a recursive CTE per list. Never take "the first References id" as the
+  root (clients send partial chains; it fragments threads). `is_thread_start`
+  = no reply header (a genuinely new thread); `is_thread_root` = the earliest
+  archived message of its thread (the grain of `fct_threads`, which is also
+  where "bug reports" incl. free-form ones and thread outcomes live).
 - A **release cycle** and a **release** are the same entity at two lifecycle stages
   (a release is a shipped cycle), unified in **`dim_release`** (`status` =
   shipped/open/future; shipped measures NULL for non-shipped). The cycle signals

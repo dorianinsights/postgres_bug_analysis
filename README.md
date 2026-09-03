@@ -83,7 +83,7 @@ by the transform's on-run-end hook — rerun `dbt build` to change analysis
 rules without re-scraping; one `.csv` per mart, same name). Only marts under
 `var('derived_csv_max_rows')` (1000) rows get a twin — the heavier ones
 (`fct_messages`, `fct_commit_files`, `dim_commit`, `dim_person`, `dim_date`,
-`dim_bug`, `fct_fixes`, `bridge_fix_contributor`) live only as typed tables in the warehouse:
+`dim_bug`, `fct_fixes`, `fct_threads`, `bridge_fix_contributor`) live only as typed tables in the warehouse:
 
 | File | Grain | Notes |
 |---|---|---|
@@ -188,7 +188,10 @@ every object's name. Layers:
     `dim_release` (shipped releases + open/future cycles, status-flagged), `dim_cve`, `dim_bug`, and
     `dim_commit` (one row per git commit — its attributes + conformed keys, no
     measures), with the facts `fct_commit_files` (commit-file grain: churn),
-    `fct_messages` (message grain), and `fct_fixes` (fix grain). A commit's
+    `fct_messages` (message grain), `fct_threads` (thread grain: one row per
+    mailing-list thread with its start, size and outcome -- cited by a
+    backpatched fix, beta stabilization, trunk work, or not), and `fct_fixes`
+    (fix grain). A commit's
     measures are aggregates of its `fct_commit_files` rows, so the commit-grain
     fact was retired into `dim_commit` + the atomic file fact; distinct-commit
     counts (non-additive) come from the MetricFlow semantic layer over that grain,
@@ -369,6 +372,15 @@ carry no separate unit tests.
   for every release including the open one's so-far bar, so each chart compares
   like with like (`fct_fix_origins_agg` carries both, plus a per-origin
   `projected_fix_cnt` that converts the so-far count into documented units).
+- **Thread identity is transitive.** A message's parent is its In-Reply-To
+  (else the last References id) and the thread root is the topmost archived
+  ancestor reached by climbing that chain within the list
+  (`int_message_threads`). Taking the first References id as the root -- the
+  former rule -- split threads whenever a client sent only the parent, which
+  fragmented pgsql-hackers into ~27.5k "threads" instead of ~12.8k and left the
+  fix-linked share of messages at ~48% instead of ~66%. A *bug report* is a new
+  pgsql-bugs thread (`fct_threads.is_new_thread`), form or free-form; the BUG #
+  form reports alone (`dim_bug`) are about two thirds of them.
 - **Reports link to fixes exactly, not fuzzily**: commit messages carry
   `Discussion: https://postgr.es/m/<message-id>` trailers (and sometimes
   `Bug: #NNNNN`), extracted by `int_commit_discussions` /

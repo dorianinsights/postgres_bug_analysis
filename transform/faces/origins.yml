@@ -102,6 +102,55 @@ queries:
       WHERE status = 'shipped' AND NOT is_out_of_band
       ORDER BY 2, 3
 
+  hackers_threads:
+    description: >
+      New pgsql-hackers threads per month (fct_threads: root with no reply
+      header) by what became of them -- cited by a backpatched stable-branch
+      fix, by beta stabilization, by trunk feature work, or not cited (yet).
+      One outcome per thread, ranked stable > beta > trunk. Complete months
+      only. Recent months are right-censored: threads take a while to be
+      cited, see the median latency KPI beside the chart.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('month', started_dt)::DATE AS month_dt,
+        outcome,
+        COUNT(*) AS thread_cnt
+      FROM fct_threads
+      WHERE list_name = 'pgsql-hackers' AND is_new_thread
+        AND DATE_TRUNC('month', started_dt) < DATE_TRUNC('month', CURRENT_DATE)
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+
+  hackers_cite_latency:
+    description: >
+      Median days from a new pgsql-hackers thread's start to the first commit
+      citing it, over cited threads -- the horizon within which the outcome
+      split above is roughly settled.
+    source: warehouse
+    sql: |
+      SELECT
+        MEDIAN(days_to_first_cite)::INTEGER AS median_days,
+        COUNT(*) AS cited_threads
+      FROM fct_threads
+      WHERE list_name = 'pgsql-hackers' AND is_new_thread AND is_cited
+
+  hackers_cited_share:
+    description: >
+      Of the new pgsql-hackers threads started in the last complete calendar
+      year (old enough to be settled), the share cited by any commit, and by a
+      backpatched fix.
+    source: warehouse
+    sql: |
+      SELECT
+        ROUND(AVG(is_cited::INTEGER), 3) AS cited_share,
+        ROUND(AVG(is_cited_by_stable::INTEGER), 3) AS fix_share,
+        COUNT(*) AS threads
+      FROM fct_threads
+      WHERE list_name = 'pgsql-hackers' AND is_new_thread
+        AND started_dt >= DATE_TRUNC('year', CURRENT_DATE) - INTERVAL 1 YEAR
+        AND started_dt < DATE_TRUNC('year', CURRENT_DATE)
+
   cited_threads:
     description: Distinct discussion threads cited by master commits, per month by source.
     source: warehouse
@@ -322,6 +371,37 @@ charts:
           format: ".1%"
     height: 360
 
+  hackers_threads:
+    type: area
+    query: hackers_threads
+    title: "New pgsql-hackers threads per month, by outcome"
+    subtitle: "Threads started, stacked by what they led to: a backpatched fix, beta stabilization, trunk feature work, or no citing commit (yet). Recent months right-censored"
+    x: month_dt
+    y: thread_cnt
+    color: outcome
+    style: { stack: zero }
+    height: 340
+
+  hackers_cite_latency:
+    type: kpi
+    query: hackers_cite_latency
+    label: "Median days: thread start to first citing commit"
+    value: median_days
+
+  hackers_cited_share:
+    type: kpi
+    query: hackers_cited_share
+    label: "Last year's new threads cited by a commit"
+    value: cited_share
+    style: { value: { format: ".0%" } }
+
+  hackers_fix_share:
+    type: kpi
+    query: hackers_cited_share
+    label: "Last year's new threads cited by a backpatched fix"
+    value: fix_share
+    style: { value: { format: ".0%" } }
+
   cited_threads:
     type: area
     query: cited_threads
@@ -425,6 +505,8 @@ rows:
   - fix_origin_share
   - monthly_traffic
   - monthly_linked_share
+  - hackers_threads
+  - cols: [hackers_cite_latency, hackers_cited_share, hackers_fix_share]
   - recent_weekly_traffic
   - recent_weekly_share
   - cited_threads
