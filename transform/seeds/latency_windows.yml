@@ -13,6 +13,15 @@ seeds:
         label: VARCHAR
         min_days: INTEGER
         max_days: INTEGER
+    tests:
+      # the buckets tile the day line: inclusive integer ranges, so the
+      # exclusive upper bound is max_days + 1 and must equal the next min_days
+      # (the open-ended top bucket gets a one-day span so it is never empty)
+      - dbt_utils.mutually_exclusive_ranges:
+          arguments:
+            lower_bound_column: min_days
+            upper_bound_column: "COALESCE(max_days, min_days) + 1"
+            gaps: not_allowed
     columns:
       - name: label
         tests: [unique, not_null]

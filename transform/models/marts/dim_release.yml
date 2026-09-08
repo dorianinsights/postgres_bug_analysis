@@ -26,6 +26,25 @@ models:
           arguments:
             value: 1
             row_condition: "status = 'open'"
+      # the scheduled cycles tile time with no gap and no overlap: each cycle
+      # runs from the prior wrap to its own wrap, and the next cycle starts
+      # exactly where this one ends
+      - dbt_utils.mutually_exclusive_ranges:
+          config:
+            where: "cycle_start_dt IS NOT NULL"
+          arguments:
+            lower_bound_column: cycle_start_dt
+            upper_bound_column: wrap_dt
+            gaps: not_allowed
+      # no two releases (scheduled or out-of-band) are being wrapped at once:
+      # the wrap-to-announcement spans never overlap
+      - dbt_utils.mutually_exclusive_ranges:
+          config:
+            where: "NOT is_synthetic_row AND status <> 'in_development'"
+          arguments:
+            lower_bound_column: wrap_dt
+            upper_bound_column: release_dt
+            gaps: allowed
     columns:
       - name: dim_release_key
         tests: [not_null, unique]

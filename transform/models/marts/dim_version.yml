@@ -18,6 +18,21 @@ models:
             where: "version NOT IN ('(unknown)', '(not applicable)') AND release_dt <= CURRENT_DATE"
           arguments:
             expression: ISODOW(release_dt) = 4
+      # within a major, consecutive versions' commit spans never overlap: tag
+      # ancestry hands each commit to exactly one version, and a stable branch
+      # is linear, so a later minor's first commit follows the earlier minor's
+      # last (the .0's development span ends at GA, before its first minor).
+      # Gaps (the days between a tag and the next backpatch) are expected; a
+      # one-commit version is a zero-length span.
+      - dbt_utils.mutually_exclusive_ranges:
+          config:
+            where: "NOT is_synthetic_row AND first_commit_dt IS NOT NULL"
+          arguments:
+            lower_bound_column: first_commit_dt
+            upper_bound_column: last_commit_dt
+            partition_by: major
+            gaps: allowed
+            zero_length_range_allowed: true
     columns:
       - name: dim_version_key
         tests: [not_null, unique]

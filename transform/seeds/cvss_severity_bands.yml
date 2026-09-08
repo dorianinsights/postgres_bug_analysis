@@ -17,6 +17,16 @@ seeds:
         severity_band_order: INTEGER
         min_base_score: DECIMAL(3, 1)
         max_base_score: DECIMAL(3, 1)
+    tests:
+      # the bands tile the 0.0-10.0 score line: inclusive one-decimal ranges,
+      # so the exclusive upper bound is max + 0.1 (DECIMAL arithmetic, exact)
+      # and must equal the next band's min (the open-ended CRITICAL band gets a
+      # 0.1 span; NONE is the single score 0.0)
+      - dbt_utils.mutually_exclusive_ranges:
+          arguments:
+            lower_bound_column: min_base_score
+            upper_bound_column: "(COALESCE(max_base_score, min_base_score) + 0.1)::DECIMAL(3, 1)"
+            gaps: not_allowed
     columns:
       - name: severity_band
         tests: [unique, not_null]
