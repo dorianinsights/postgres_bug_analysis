@@ -8,10 +8,11 @@
 -- the supply-side estimator (committed pace) is what caught the Aug 2026 surge;
 -- the seasonal baseline is the floor those surge estimators can overshoot --
 -- e.g. November has shipped ~70 fixes every year regardless of early activity.
+-- the open release from the registry (the one source of "next"), not the clock
 WITH ships AS (
-  SELECT MIN(scheduled_release_dt) AS ships_at_dt
-  FROM {{ ref('int_release_calendar') }}
-  WHERE scheduled_release_dt > CURRENT_DATE
+  SELECT release_dt AS ships_at_dt
+  FROM {{ ref('int_releases') }}
+  WHERE status = 'open'
 ),
 
 -- shipped-per-signal ratios over the closed cycles (with all three signals

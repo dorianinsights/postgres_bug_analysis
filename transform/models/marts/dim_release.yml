@@ -54,6 +54,17 @@ models:
         tests: [not_null]
       - name: is_partial_window
         tests: [not_null]
+      - name: is_announced
+        description: >
+          The release day has arrived (as of the build's as_of_date). False for a
+          just-tagged release between its wrap Monday and its Thursday, and for
+          the open / future / in_development rows.
+        tests:
+          - not_null
+          # only shipped releases can be announced
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "= false OR status = 'shipped'"
       - name: window_days
         description: >
           The open cycle's current age in days, the window every cycle's

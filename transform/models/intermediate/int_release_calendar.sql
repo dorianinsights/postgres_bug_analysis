@@ -25,7 +25,7 @@ month_starts AS (
   FROM anchor
   CROSS JOIN GENERATE_SERIES(
     anchor.grid_start,
-    DATE_TRUNC('month', CURRENT_DATE + INTERVAL 6 MONTH),
+    DATE_TRUNC('month', {{ as_of_date() }} + INTERVAL 6 MONTH),
     INTERVAL 3 MONTH
   ) AS gsr (month_start)
 ),

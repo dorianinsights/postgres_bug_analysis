@@ -18,6 +18,9 @@ WITH real_members AS (
     rel.status,
     rel.is_out_of_band,
     rel.is_partial_window,
+    -- false for a just-tagged release until its announcement day, and for the
+    -- open / future ones
+    rel.is_announced,
     rel.versions,
     rel.release_cnt,
     rrs.distinct_fix_cnt,
@@ -67,6 +70,7 @@ SELECT
   'unknown' AS status,
   false AS is_out_of_band,
   false AS is_partial_window,
+  false AS is_announced,
   'Unknown' AS versions,
   null AS release_cnt,
   null AS distinct_fix_cnt,
@@ -94,6 +98,7 @@ SELECT
   'not applicable' AS status,
   false AS is_out_of_band,
   false AS is_partial_window,
+  false AS is_announced,
   'Not applicable' AS versions,
   null AS release_cnt,
   null AS distinct_fix_cnt,
@@ -124,6 +129,7 @@ SELECT
   'in_development' AS status,
   false AS is_out_of_band,
   false AS is_partial_window,
+  false AS is_announced,
   smd.major || '.0' AS versions,
   1::BIGINT AS release_cnt,
   null AS distinct_fix_cnt,

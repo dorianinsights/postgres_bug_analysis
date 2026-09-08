@@ -29,7 +29,7 @@ real_members AS (
     -- ~5-year support window: major M's final minor lands ~Nov of 2012 + M
     MAKE_DATE(smd.major + 2012, 11, 30) AS eol_dt,
     smd.dev_status = 'released' AS is_released,
-    smd.dev_status = 'released' AND CURRENT_DATE <= MAKE_DATE(smd.major + 2012, 11, 30) AS is_supported,
+    smd.dev_status = 'released' AND {{ as_of_date() }} <= MAKE_DATE(smd.major + 2012, 11, 30) AS is_supported,
     smd.dev_status AS lifecycle,
     false AS is_synthetic_row
   FROM {{ ref('int_major_development') }} AS smd

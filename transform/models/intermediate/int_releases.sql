@@ -4,7 +4,13 @@
 --   status  shipped (past, scheduled OR out-of-band) / open (in-flight, ships
 --           next) / future (an upcoming scheduled release not yet started)
 -- Shipped releases are grouped from the version tags (int_versions, minors
--- only; ".0" feature releases excluded); a release is out-of-band (emergency
+-- only; ".0" feature releases excluded). The OPEN release is the first
+-- scheduled release AFTER the latest tagged one -- defined by the registry,
+-- not by today's date: between a wrap Monday's tag and the Thursday
+-- announcement the just-tagged release is already shipped here (is_announced
+-- false until its day), and open is the next quarter's, so no release day is
+-- ever both. (Keying open on CURRENT_DATE, as this once did, made those three
+-- days produce the same release_dt twice.) A release is out-of-band (emergency
 -- re-release) when its LARGEST release has fewer than
 -- var(scheduled_release_min_items) items (from stg_release_items; the tag
 -- registry and the parsed notes are reconciled both ways by the version
@@ -70,10 +76,16 @@ shipped AS (
   LEFT JOIN version_wraps AS vwr ON grp.release_dt = vwr.release_dt
 ),
 
+-- the latest tagged release: everything scheduled after it is upcoming
+latest_shipped AS (
+  SELECT MAX(release_dt) AS release_dt
+  FROM grouped
+),
+
 next_release AS (
-  SELECT MIN(scheduled_release_dt) AS release_dt
-  FROM {{ ref('int_release_calendar') }}
-  WHERE scheduled_release_dt > CURRENT_DATE
+  SELECT MIN(cal.scheduled_release_dt) AS release_dt
+  FROM {{ ref('int_release_calendar') }} AS cal
+  WHERE cal.scheduled_release_dt > (SELECT lsh.release_dt FROM latest_shipped AS lsh)
 ),
 
 -- each active major's next minor is its latest release tag's minor + 1; the
@@ -93,7 +105,7 @@ upcoming_dates AS (
     CASE WHEN cal.scheduled_release_dt = nxt.release_dt THEN 'open' ELSE 'future' END AS status,
     ROW_NUMBER() OVER (ORDER BY cal.scheduled_release_dt) AS release_offset
   FROM {{ ref('int_release_calendar') }} AS cal, next_release AS nxt
-  WHERE cal.scheduled_release_dt > CURRENT_DATE
+  WHERE cal.scheduled_release_dt > (SELECT lsh.release_dt FROM latest_shipped AS lsh)
 ),
 
 upcoming AS (
@@ -131,6 +143,9 @@ SELECT
   cmb.release_cnt,
   cmb.is_out_of_band,
   cmb.is_partial_window,
+  -- announced = its release day has arrived; false for a just-tagged release
+  -- in the wrap-to-Thursday window and for every upcoming release
+  cmb.release_dt <= {{ as_of_date() }} AS is_announced,
   -- the scheduled release day this release's CYCLE ships at: itself for a
   -- scheduled (or upcoming) release; for an out-of-band re-release, which ships
   -- mid-cycle, the NEXT scheduled release. Cycle-grain measures

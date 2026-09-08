@@ -158,6 +158,14 @@ per-session memories, which aren't committed to git.)
   = no reply header (a genuinely new thread); `is_thread_root` = the earliest
   archived message of its thread (the grain of `fct_threads`, which is also
   where "bug reports" incl. free-form ones and thread outcomes live).
+- **The OPEN release is defined by the registry, not the clock**
+  (`int_releases`): the first scheduled release after the latest TAGGED one.
+  Between a wrap Monday's tag and its Thursday the just-tagged release is
+  already `shipped` with `is_announced = false`; keying "open" on today's date
+  produced the same `release_dt` twice in that window. Every model that reads
+  the clock goes through the `as_of_date()` macro (`var('as_of_date')`, null =
+  `CURRENT_DATE`) so a dbt unit test can pin the day; never set the var for a
+  real build.
 - A **release cycle** and a **release** are the same entity at two lifecycle stages
   (a release is a shipped cycle), unified in **`dim_release`** (`status` =
   shipped/open/future; shipped measures NULL for non-shipped). The cycle signals

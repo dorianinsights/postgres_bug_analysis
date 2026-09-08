@@ -28,6 +28,10 @@ vars:
   # metric is stable across builds — unlike dim_release's early_fix_cnt, which
   # tracks the open cycle's moving age (used by the projection).
   seasonality_window_days: 20
+  # -- The build's "today" (macros/as_of_date.sql): null = CURRENT_DATE. Set it
+  # (a bare ISO date) to pin the clock -- dbt unit tests do, to replay the
+  # wrap-Monday-to-Thursday window; never set it for a real build.
+  as_of_date: null
   # -- Loose sanity floors shared by the date/major range tests. These are
   # deliberately NOT the corpus bounds (corpus.py owns those; a dbt copy
   # could silently drift) — just "obviously wrong data" backstops.

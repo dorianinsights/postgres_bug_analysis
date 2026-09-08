@@ -27,10 +27,12 @@ WITH cycles AS (
   FROM {{ ref('int_release_calendar') }}
 ),
 
+-- the open cycle's age; at least one day, so the windows are never empty on
+-- wrap Monday itself (a zero-day window would fail the window_days floor)
 age AS (
-  SELECT (CURRENT_DATE - MAX(cycle_start_dt))::INTEGER AS window_days
+  SELECT GREATEST(({{ as_of_date() }} - MAX(cycle_start_dt))::INTEGER, 1) AS window_days
   FROM cycles
-  WHERE cycle_start_dt <= CURRENT_DATE
+  WHERE cycle_start_dt <= {{ as_of_date() }}
 ),
 
 early_reports AS (
@@ -117,5 +119,5 @@ LEFT JOIN first_window_fixes AS fwf ON cyc.cycle_start_dt = fwf.cycle_start_dt
 -- started cycles only, and only those shipping a corpus release (or still open)
 -- — cycles shipping a pre-corpus scheduled date have no release and are noise
 WHERE
-  cyc.cycle_start_dt <= CURRENT_DATE
+  cyc.cycle_start_dt <= {{ as_of_date() }}
   AND cyc.ships_at_dt >= (SELECT MIN(iws.release_dt) FROM {{ ref('int_release_summary') }} AS iws)
