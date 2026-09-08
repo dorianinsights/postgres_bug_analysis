@@ -20,7 +20,7 @@ master_commits AS (
       WHEN sfc.abbrev_hash IS NOT null THEN 'unknown_or_internal_security'
       ELSE 'unknown_or_internal_not_security'
     END AS origin,
-    fcm.ai_credit
+    fcm.has_ai_involvement
   FROM {{ ref('dim_commit') }} AS fcm
   INNER JOIN {{ ref('dim_major') }} AS dmj ON fcm.dim_major_key = dmj.dim_major_key
   LEFT JOIN security_fix_commits AS sfc ON LEFT(fcm.commit_hash, 9) = sfc.abbrev_hash
@@ -36,7 +36,7 @@ commit_rollup AS (
     month_dt,
     origin,
     COUNT(*) AS commit_cnt,
-    COUNT(*) FILTER (WHERE ai_credit IS NOT null) AS ai_commit_cnt
+    COUNT(*) FILTER (WHERE has_ai_involvement) AS ai_commit_cnt
   FROM master_commits
   GROUP BY ALL
 ),

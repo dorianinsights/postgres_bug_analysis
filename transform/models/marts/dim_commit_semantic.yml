@@ -25,7 +25,7 @@ semantic_models:
         type: categorical
       - name: origin
         type: categorical
-      - name: has_ai_credit
+      - name: has_ai_involvement
         type: categorical
       - name: dominant_subsystem
         type: categorical

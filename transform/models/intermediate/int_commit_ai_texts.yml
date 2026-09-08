@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: int_commit_ai_texts
+    description: >
+      The text the AI-involvement classifier reads per committed fix: the longest
+      commit message among a fix_key's backpatches, subject + body, capped at
+      var(ai_involvement_text_cap_chars). Every commit is in scope (no keyword
+      pre-filter). Grain = fix_key.
+    columns:
+      - name: fix_key
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('int_git_commits')
+                field: fix_key
+      - name: text_commit_hash
+        tests: [not_null]
+      - name: ai_text
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "<> ''"

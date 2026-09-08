@@ -46,10 +46,14 @@ SELECT
   reps.summary,
   reps.full_text,
   reps.cves,
-  cls.category_content AS category,
+  -- 'unclassified' when the build ran in cached-only mode (Ollama absent) and
+  -- this fix's text was new: an explicit bucket rather than a dropped row, so
+  -- the fact keeps its one-row-per-fix grain; is_classified says which
+  COALESCE(cls.category_content, 'unclassified') AS category,
   cats.category_order,
   cls.is_security_hardening,
   cls.is_performance,
+  cls.is_classified,
   chg.dominant_subsystem,
   fio.origin,
   releases.is_out_of_band,
@@ -74,7 +78,7 @@ FROM {{ ref('int_fix_changes') }} AS chg
 INNER JOIN group_sizes AS grp ON chg.item_ord = grp.group_ord
 INNER JOIN {{ ref('int_fix_reps') }} AS reps ON chg.item_ord = reps.item_ord
 INNER JOIN {{ ref('int_fix_content_categories') }} AS cls ON chg.item_ord = cls.item_ord
-INNER JOIN {{ ref('content_categories') }} AS cats ON cls.category_content = cats.category
+LEFT JOIN {{ ref('content_categories') }} AS cats ON cls.category_content = cats.category
 INNER JOIN {{ ref('int_releases') }} AS releases ON chg.release_dt = releases.release_dt
 LEFT JOIN {{ ref('int_fix_severity') }} AS sev ON chg.item_ord = sev.item_ord
 LEFT JOIN {{ ref('int_fix_origins') }} AS fio ON chg.item_ord = fio.group_ord

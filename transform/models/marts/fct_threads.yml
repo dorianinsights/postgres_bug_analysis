@@ -157,3 +157,38 @@ models:
       - name: thread_size_window
         description: message_cnt bucketed by the thread_size_windows seed.
         tests: [not_null]
+      - name: has_ai_involvement
+        description: >
+          Disclosed AI involvement in the thread's root message
+          (int_thread_ai_labels): a vendor AND at least one work role.
+          ai_found / ai_analyzed / ai_authored / ai_tooling are independent
+          flags; ai_mentioned_only is a reference without involvement.
+        tests: [not_null]
+      - name: ai_found
+        tests: [not_null]
+      - name: ai_analyzed
+        tests: [not_null]
+      - name: ai_authored
+        tests: [not_null]
+      - name: ai_tooling
+        tests: [not_null]
+      - name: ai_mentioned_only
+        tests: [not_null]
+      - name: ai_vendor
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [anthropic, openai, google, microsoft, other, unspecified, none]
+      - name: ai_disclosure_form
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [trailer, prose, disclaimer, none]
+      - name: ai_label_source
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [review, model, unclassified]

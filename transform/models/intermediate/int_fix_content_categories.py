@@ -26,10 +26,20 @@ from typing import Any
 import pyarrow as pa
 
 sys.path.insert(0, str(Path.cwd()))
-from sources.classify import PROMPT_VERSION, build_schema, classify_one, content_hash, taxonomy_prompt
+from sources.classify import (
+    PROMPT_VERSION,
+    build_schema,
+    classify_one,
+    content_hash,
+    ollama_unavailable_reason,
+    taxonomy_prompt,
+)
 
 MODEL_TAG = "qwen3:30b-a3b"
 
+# is_classified: false for a fix that was neither cached nor classifiable
+# (cached-only mode -- Ollama or the model absent, probed at build time); such
+# a row carries NULL labels and is excluded from the CSV export by the post_hook
 COLS = [
     "item_ord",
     "content_hash",
@@ -40,6 +50,7 @@ COLS = [
     "is_security_hardening",
     "is_performance",
     "rationale",
+    "is_classified",
 ]
 _SCHEMA = pa.schema(
     [
@@ -52,6 +63,7 @@ _SCHEMA = pa.schema(
         ("is_security_hardening", pa.bool_()),
         ("is_performance", pa.bool_()),
         ("rationale", pa.string()),
+        ("is_classified", pa.bool_()),
     ]
 )
 
@@ -77,6 +89,11 @@ def model(dbt: Any, session: Any) -> pa.Table:
     ).fetchall():
         cache[str(r[0])] = r
 
+    # cached-only mode when Ollama or the model is absent (probed, not configured)
+    unavailable = ollama_unavailable_reason(MODEL_TAG)
+    if unavailable is not None:
+        print(f"cached-only mode: {unavailable}; unseen fixes are emitted with is_classified = false", file=sys.stderr)
+
     out: list[tuple[Any, ...]] = []
     for item_ord, full_text in ((int(r[0]), str(r[1])) for r in reps):
         digest = content_hash(full_text, MODEL_TAG)
@@ -93,8 +110,12 @@ def model(dbt: Any, session: Any) -> pa.Table:
                     _as_bool(seen[3]),
                     _as_bool(seen[4]),
                     str(seen[5]),
+                    True,
                 )
             )
+            continue
+        if unavailable is not None:
+            out.append((item_ord, digest, MODEL_TAG, PROMPT_VERSION, None, None, None, None, None, False))
             continue
         label = classify_one(full_text, MODEL_TAG, names, prompt_block, schema)
         out.append(
@@ -108,6 +129,7 @@ def model(dbt: Any, session: Any) -> pa.Table:
                 label.is_security_hardening,
                 label.is_performance,
                 label.rationale,
+                True,
             )
         )
 

@@ -87,8 +87,42 @@ models:
                 values: [trunk, stable, beta, other]
       - name: origin
         tests: [not_null]
-      - name: has_ai_credit
+      - name: has_ai_involvement
+        description: >
+          Disclosed AI involvement in this commit's fix (int_commit_ai_labels,
+          per fix_key): a vendor AND at least one work role. The roles ai_found /
+          ai_analyzed / ai_authored / ai_tooling are independent flags;
+          ai_mentioned_only is a reference without involvement.
         tests: [not_null]
+      - name: ai_found
+        tests: [not_null]
+      - name: ai_analyzed
+        tests: [not_null]
+      - name: ai_authored
+        tests: [not_null]
+      - name: ai_tooling
+        tests: [not_null]
+      - name: ai_mentioned_only
+        tests: [not_null]
+      - name: ai_vendor
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [anthropic, openai, google, microsoft, other, unspecified, none]
+      - name: ai_disclosure_form
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [trailer, prose, disclaimer, none]
+      - name: ai_label_source
+        description: review (hand-verified) / model / unclassified (cached-only build).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [review, model, unclassified]
       - name: dominant_subsystem
         description: The area this commit mostly touched -- a weighted vote over its files (int_commit_files).
         tests:

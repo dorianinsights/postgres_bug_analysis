@@ -12,7 +12,14 @@ sources:
       (its post_hook re-writes this file), so it stays current. Read in place via
       a dbt-duckdb external location; numeric-free auto_type_candidates keep
       confidence a VARCHAR until it is cast to DECIMAL(3,2).
+      commit_ai_involvement.csv / thread_ai_involvement.csv are the same
+      arrangement for the AI-involvement classifier (int_commit_ai_involvement
+      at fix_key grain, int_thread_ai_involvement at thread-root grain): the
+      committed label cache each model reads by content hash and re-exports.
+      Bulk-populated by backfill_ai_involvement.py.
     meta:
       external_location: "read_csv('../data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'VARCHAR'])"
     tables:
       - name: fix_content_categories
+      - name: commit_ai_involvement
+      - name: thread_ai_involvement

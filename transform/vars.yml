@@ -28,6 +28,17 @@ vars:
   # metric is stable across builds — unlike dim_release's early_fix_cnt, which
   # tracks the open cycle's moving age (used by the projection).
   seasonality_window_days: 20
+  # -- AI-involvement classification (int_*_ai_texts / int_*_ai_involvement).
+  # A text longer than this many characters is truncated before it reaches the
+  # local LLM: a disclosure lives in the first screen of a message, a few
+  # archived messages run to hundreds of thousands of characters (attached
+  # logs), and prompt processing is the per-item cost.
+  ai_involvement_text_cap_chars: 8000
+  # How many not-yet-classified texts a dbt build will classify INLINE (each is
+  # ~2s against Ollama). More than this means a bulk change (a fresh clone, a
+  # prompt-version bump, a new major) and the build fails fast with a pointer
+  # to the resumable backfill_ai_involvement.py instead of running for hours.
+  ai_involvement_max_inline_classifications: 300
   # -- The build's "today" (macros/as_of_date.sql): null = CURRENT_DATE. Set it
   # (a bare ISO date) to pin the clock -- dbt unit tests do, to replay the
   # wrap-Monday-to-Thursday window; never set it for a real build.

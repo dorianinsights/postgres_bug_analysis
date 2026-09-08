@@ -3,7 +3,20 @@
 (the Ollama call itself, classify_one, is network I/O and isn't unit-tested here).
 """
 
-from sources.classify import build_schema, content_hash, taxonomy_prompt
+from sources.classify import build_schema, content_hash, installed_models, model_matches, taxonomy_prompt
+
+
+def test_installed_models_reads_an_api_tags_answer() -> None:
+    tags = {"models": [{"name": "qwen3:30b-a3b", "size": 1}, {"model": "gemma4:12b"}, {}]}
+    assert installed_models(tags) == ["qwen3:30b-a3b", "gemma4:12b", ""]
+    assert installed_models({}) == []
+
+
+def test_model_matches_is_exact_except_for_an_implied_latest_tag() -> None:
+    assert model_matches("qwen3:30b-a3b", "qwen3:30b-a3b")
+    assert not model_matches("qwen3:30b", "qwen3:30b-a3b")  # a different tag is a different model
+    assert model_matches("llama3.2:latest", "llama3.2")  # a bare name means :latest
+    assert not model_matches("llama3.2:1b", "llama3.2")
 
 
 def test_content_hash_is_stable_and_16_hex() -> None:

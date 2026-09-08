@@ -8,8 +8,9 @@
 -- development line -- master included). branch_scope is the commit's own
 -- lifecycle scope for churn views (trunk / beta / stable -- a stable branch holds
 -- both its pre-GA beta work and its backpatch stream, told apart by
--- int_commit_versions). origin, the AI-credit flag, the dominant
--- subsystem and the subject ride along as attributes. Each person key resolves via
+-- int_commit_versions). origin, the reviewed AI-involvement labels
+-- (int_commit_ai_labels, per fix), the dominant subsystem and the subject ride
+-- along as attributes. Each person key resolves via
 -- the identity node (person_node + int_person_map), matching dim_person.
 --
 -- The fix-commit spine: fix_key (normalized subject, the identity of a committed
@@ -102,8 +103,19 @@ SELECT
     ELSE 'other'
   END AS branch_scope,
   org.origin,
-  igc.ai_credit IS NOT null AS has_ai_credit,
-  igc.ai_credit,
+  -- disclosed AI involvement, per FIX (a backpatch shares its fix's labels):
+  -- the reviewed local-LLM labels from int_commit_ai_labels. has_ai_involvement
+  -- = a vendor AND a work role; the roles are independent flags
+  ail.has_ai_involvement,
+  ail.ai_found,
+  ail.ai_analyzed,
+  ail.ai_authored,
+  ail.ai_tooling,
+  ail.ai_mentioned_only,
+  ail.ai_vendor,
+  ail.ai_disclosure_form,
+  ail.ai_label_source,
+  ail.ai_rationale,
   -- the area this commit mostly touched (weighted vote over its files); 'other'
   -- for an empty commit with no file changes
   COALESCE(dsub.dominant_subsystem, 'other') AS dominant_subsystem,
@@ -141,6 +153,8 @@ LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit
 LEFT JOIN dominant_subsystem AS dsub ON gcm.commit_hash = dsub.commit_hash
 LEFT JOIN commit_churn AS cch ON gcm.commit_hash = cch.commit_hash
 LEFT JOIN documented AS dfx ON gcm.commit_hash = dfx.commit_hash
+-- one label row per fix_key (int_commit_ai_texts covers every commit)
+LEFT JOIN {{ ref('int_commit_ai_labels') }} AS ail ON igc.fix_key = ail.fix_key
 -- the release (shipped or open) from the registry that mints its key, and the
 -- shipped minor from dim_version (1:1 on version)
 LEFT JOIN {{ ref('int_releases') }} AS irl ON icv.ship_release_dt = irl.release_dt

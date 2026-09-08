@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: int_thread_ai_texts
+    description: >
+      The text the AI-involvement classifier reads per mailing-list thread: the
+      root message's subject + body, capped at var(ai_involvement_text_cap_chars).
+      Every thread on every ingested list is in scope (no keyword pre-filter).
+      Grain = (list_name, root_message_id).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [list_name, root_message_id]
+      # one text per thread, exactly the fct_threads population
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          arguments:
+            compare_model: ref('fct_threads')
+    columns:
+      - name: list_name
+        tests: [not_null]
+      - name: root_message_id
+        tests: [not_null]
+      - name: root_sent_dt
+        tests: [not_null]
+      - name: ai_text
+        tests: [not_null]

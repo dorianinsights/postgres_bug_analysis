@@ -51,10 +51,45 @@ python3.12 -m venv venv
 (cd transform && ../venv/bin/dct serve)   # or: live preview in the browser
 ```
 
+## Optional dependency: Ollama (the local LLM)
+
+Three models are **classify-once** LLM classifiers that run a local model
+through [Ollama](https://ollama.com): `int_fix_content_categories` (the fix
+content taxonomy), and `int_commit_ai_involvement` / `int_thread_ai_involvement`
+(disclosed AI involvement per committed fix and per mailing-list thread). Each
+keeps its labels in a committed CSV under `data/raw/`, keyed by a content hash
+of the text, so **a clone with current CSVs needs no Ollama at all**: every
+text is already labeled and the build reads the cache. Ollama is only needed
+for texts the cache has never seen -- new commits, threads and release-notes
+items that arrive after the CSVs were last committed.
+
+**Without Ollama, or without the model tag (`qwen3:30b-a3b`, an ~18 GB pull
+that wants ~20 GB of memory)**, nothing is configured and nothing fails: at
+build time each classifier probes `OLLAMA_HOST` (default
+`http://localhost:11434`) and, if the server is unreachable or the tag is not
+installed, switches to **cached-only mode** -- it emits the cached labels, gives
+every unseen text `is_classified = false` with NULL labels, prints the reason
+into the dbt log, and the build **succeeds with a WARN** whose count is the
+number of texts waiting. In the marts an unclassified fix shows its `category`
+as `'unclassified'` (the row is kept, so `fct_fixes` stays one row per fix) and
+`fct_fixes.is_classified` says which. Nothing unclassified is ever written to
+the CSVs, so the next build with Ollama available classifies exactly those
+texts and the WARN clears.
+
+To classify locally: install Ollama, `ollama pull qwen3:30b-a3b`, and rebuild --
+a build classifies up to `var('ai_involvement_max_inline_classifications')`
+new texts inline (~2 s each); more than that (a prompt-version bump, a new
+major, a fresh scan) is a bulk job for the resumable
+`backfill_ai_involvement.py` / `backfill_classifications.py`, which refuse to
+start without Ollama and the model.
+
 ## Data files (`data/`)
 
-Two subdirectories, one per pipeline direction: `data/raw/` holds the one
-external CSV (`cve_severity.csv`) read by a dbt source; `data/derived/` holds the
+Two subdirectories, one per pipeline direction: `data/raw/` holds the
+external CSV (`cve_severity.csv`) and the three LLM-inferred label caches
+(`fix_content_categories.csv`, `commit_ai_involvement.csv`,
+`thread_ai_involvement.csv` — each both the fresh-build fallback and the
+committed export of its classify-once model) read by dbt sources; `data/derived/` holds the
 CSV **audit exports** of the mart tables — committed and line-diffable in
 review, but read back by nothing (the faces read the typed mart tables in
 `transform/transform.duckdb` instead, so DATE/DOUBLE/BIGINT typing survives
@@ -178,7 +213,21 @@ every object's name. Layers:
   stable commits), `int_major_development` (per-major development activity,
   aggregated from it), `int_committed_fixes` (the committed-fix population: one
   row per distinct fix per release, linked to its release-notes item),
-  `int_release_summary` (both populations per release + documentation rate).
+  `int_release_summary` (both populations per release + documentation rate),
+  `int_commit_ai_texts` / `int_thread_ai_texts` (the text the AI-involvement
+  classifier reads: one per committed fix, one per thread root, capped at
+  `var('ai_involvement_text_cap_chars')`, NO keyword pre-filter) and
+  `int_commit_ai_involvement` / `int_thread_ai_involvement` (the local-LLM
+  labels: the four work-role flags `ai_found` / `ai_analyzed` / `ai_authored` /
+  `ai_tooling`, the exclusive `mentioned_only`, vendor, disclosure form,
+  confidence, rationale — classify-once by content hash, cached in
+  `data/raw/*_ai_involvement.csv`, bulk-populated by
+  `backfill_ai_involvement.py`; a build classifies at most
+  `var('ai_involvement_max_inline_classifications')` new texts inline), and
+  `int_commit_ai_labels` / `int_thread_ai_labels` (the FINAL labels: the model
+  overridden by the hand review seed `ai_involvement_reviews`, with
+  `has_ai_involvement` = a vendor AND a work role, and `ai_label_source` =
+  review / model / unclassified -- what `dim_commit` and `fct_threads` carry).
 - `models/marts/` — the typed tables the faces and CSV exports read: the
   item-grain `fix_items` fact, the file-grain `fct_commit_files` churn fact
   (with its `dim_commit` spine), the release/projection/pace rollups, and the
@@ -255,6 +304,10 @@ every object's name. Layers:
 - `seeds/` — the classification data: `content_categories` (the 13-category
   fix taxonomy + definitions; fixes are assigned to it by int_fix_content_categories,
   which replaced the retired `category_rules` regex classifier),
+  `ai_involvement_roles` (the disclosed-AI role definitions the
+  `int_*_ai_involvement` prompts are built from), `ai_involvement_reviews`
+  (the hand review of every text the model tied to an AI plus every rejected
+  keyword hit -- 182 rows -- whose final labels override the model),
   `subsystem_rules` (path patterns; the directory area) and `file_class_rules`
   (extension -> file kind; the orthogonal what-kind-of-file taxonomy — both
   applied per file in `int_commit_files` and per weekly tree in

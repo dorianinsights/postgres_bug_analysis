@@ -1,0 +1,25 @@
+version: 2
+
+seeds:
+  - name: ai_involvement_roles
+    description: >
+      The AI-involvement roles the local LLM assigns to a commit message or a
+      thread's first message -- what a DISCLOSED AI tool did (found the bug,
+      analyzed it, wrote the code, produced a side tool) or that it was merely
+      mentioned. int_commit_ai_involvement / int_thread_ai_involvement read the
+      definitions to prompt the model; the four work roles are independent
+      flags, mentioned_only is exclusive with them. No prior study separates
+      finding from writing, which is the split the AI-acceleration hypothesis
+      needs.
+    columns:
+      - name: role_order
+        tests: [not_null, unique]
+      - name: role
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: [ai_found, ai_analyzed, ai_authored, ai_tooling, mentioned_only]
+      - name: definition
+        tests: [not_null]

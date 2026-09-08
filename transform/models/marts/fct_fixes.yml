@@ -55,18 +55,35 @@ models:
                 field: dim_version_key
           - not_unknown_member
       - name: category
-        description: The fix's content category (int_fix_content_categories, via the content_categories taxonomy).
+        description: >
+          The fix's content category (int_fix_content_categories, via the
+          content_categories taxonomy); 'unclassified' when the build ran in
+          cached-only mode (Ollama absent) and this fix's text was new.
         tests:
           - not_null
           - relationships:
+              config:
+                where: "is_classified"
               arguments:
                 to: ref('content_categories')
                 field: category
       - name: is_security_hardening
         description: The fix's essence is closing a security/memory-safety weakness (LLM flag); orthogonal to category and is_cve.
-        tests: [not_null]
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
       - name: is_performance
         description: The fix is primarily a performance improvement (LLM flag); orthogonal to category.
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+      - name: is_classified
+        description: >
+          False for a fix whose content labels are missing because the build ran
+          in cached-only mode (see int_fix_content_categories); its category is
+          'unclassified' and the two flags are NULL.
         tests: [not_null]
       - name: origin
         tests:

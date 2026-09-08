@@ -151,6 +151,42 @@ per-session memories, which aren't committed to git.)
   fold an out-of-band release into its cycle via
   `int_releases.cycle_ships_at_dt`; release-grain measures keep the exact
   release.
+- **AI involvement is DISCLOSED involvement, read by a local LLM -- never a
+  keyword filter.** `int_commit_ai_texts` (one text per `fix_key`) and
+  `int_thread_ai_texts` (one per thread root) put EVERY commit and thread in
+  scope; `int_commit_ai_involvement` / `int_thread_ai_involvement` (Python,
+  `sources/ai_involvement.py`) ask qwen3:30b-a3b for the four independent
+  work-role flags (`ai_found` / `ai_analyzed` / `ai_authored` / `ai_tooling`),
+  the exclusive `mentioned_only`, vendor, disclosure form, confidence and a
+  one-sentence rationale, from the `ai_involvement_roles` seed definitions.
+  Classify-once by content hash (text + model + `AI_PROMPT_VERSION`), cached in
+  the committed `data/raw/{commit,thread}_ai_involvement.csv` (also the
+  fresh-build fallback). A build classifies at most
+  `var('ai_involvement_max_inline_classifications')` new texts inline and
+  otherwise fails fast pointing at the resumable `backfill_ai_involvement.py`
+  (~2s/text; the full corpus is ~14h). **Cached-only mode is automatic, not
+  configured:** every classify-once model (these two and
+  `int_fix_content_categories`) probes Ollama at build time
+  (`sources.classify.ollama_unavailable_reason`: server reachable AND the tag
+  installed); if not, it emits the cache and marks unseen texts
+  `is_classified = false` with NULL labels -- the build succeeds with a WARN
+  count, `fct_fixes.category` shows `'unclassified'`, and the CSV export skips
+  those rows so the next Ollama build classifies exactly them. Never write an
+  unclassified row to a cache CSV (it would be "cached" as unclassified forever).
+  **The charts never read the model tables directly:** `int_commit_ai_labels` /
+  `int_thread_ai_labels` apply the hand-review seed `ai_involvement_reviews`
+  (every model positive + every rejected keyword hit was read by a person) on
+  top of the model, and `dim_commit` / `fct_threads` carry those. The
+  chart-facing flag is `has_ai_involvement` (a vendor AND a work role;
+  `ai_mentioned_only` is a reference, not involvement); the roles are
+  independent, so a role breakdown counts role-mentions, not fixes. A prompt
+  change means a full re-scan: batch prompt fixes in TODO.md and bump once.
+  Bumping `AI_PROMPT_VERSION` re-infers everything; tune the prompt against the
+  hand-labeled set BEFORE a full scan. The regex `ai_credit` on
+  `int_git_commits` is the legacy single-boolean signal (role-blind; vendor
+  list only) and is superseded by these flags. The model cannot see undisclosed
+  AI use: a rising line partly measures disclosure norms (PostgreSQL had no AI
+  policy as of mid-2026), which is why `disclosure_form` is recorded.
 - **Thread identity is transitive** (`int_message_threads`): parent = In-Reply-To
   else the last References id; root = the topmost archived ancestor, climbed
   with a recursive CTE per list. Never take "the first References id" as the

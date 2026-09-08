@@ -211,6 +211,66 @@ queries:
       FROM fct_origin_activity_monthly_agg
       ORDER BY 1, 2
 
+  ai_threads:
+    description: >
+      Threads whose first message discloses AI involvement (a vendor and a work
+      role; reviewed local-LLM labels on fct_threads), per month, split by what
+      the AI did. A thread with two roles counts in both.
+    source: warehouse
+    sql: |
+      WITH roles AS (
+        SELECT started_dt, list_name, root_message_id, 'found the bug' AS role FROM fct_threads WHERE has_ai_involvement AND ai_found
+        UNION ALL
+        SELECT started_dt, list_name, root_message_id, 'analyzed it' FROM fct_threads WHERE has_ai_involvement AND ai_analyzed
+        UNION ALL
+        SELECT started_dt, list_name, root_message_id, 'wrote the code' FROM fct_threads WHERE has_ai_involvement AND ai_authored
+        UNION ALL
+        SELECT started_dt, list_name, root_message_id, 'built a tool' FROM fct_threads WHERE has_ai_involvement AND ai_tooling
+      )
+      SELECT
+        DATE_TRUNC('month', started_dt)::DATE AS month_dt,
+        role,
+        COUNT(*) AS threads
+      FROM roles
+      WHERE started_dt >= DATE '2025-01-01'
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+
+  ai_threads_by_list:
+    description: AI-involved threads per month by list, with the share of all new threads that month.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('month', started_dt)::DATE AS month_dt,
+        list_name,
+        COUNT(*) FILTER (WHERE has_ai_involvement) AS ai_threads,
+        ROUND(COUNT(*) FILTER (WHERE has_ai_involvement) * 1.0 / COUNT(*), 4) AS ai_share
+      FROM fct_threads
+      WHERE started_dt >= DATE '2025-01-01'
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+
+  ai_thread_lines:
+    description: The AI-involved threads with their roles, vendor and the model's evidence, newest first.
+    source: warehouse
+    sql: |
+      SELECT
+        started_dt,
+        list_name,
+        subject,
+        CONCAT_WS(' + ',
+          CASE WHEN ai_found THEN 'found' END,
+          CASE WHEN ai_analyzed THEN 'analyzed' END,
+          CASE WHEN ai_authored THEN 'authored' END,
+          CASE WHEN ai_tooling THEN 'tooling' END) AS roles,
+        ai_vendor AS vendor,
+        ai_disclosure_form AS form,
+        ai_label_source AS label_source,
+        is_acted_upon
+      FROM fct_threads
+      WHERE has_ai_involvement
+      ORDER BY 1 DESC
+
 charts:
 
   monthly_traffic:
@@ -328,6 +388,33 @@ charts:
     color: origin
     height: 340
 
+  ai_threads:
+    type: bar
+    query: ai_threads
+    title: "Threads disclosing AI involvement, by role"
+    subtitle: "First message names an AI tool and what it did; reviewed by hand. A thread can carry several roles"
+    x: month_dt
+    y: threads
+    color: role
+    style: { stack: zero }
+    height: 340
+
+  ai_threads_by_list:
+    type: bar
+    query: ai_threads_by_list
+    title: "AI-involved threads per month, by list"
+    subtitle: "Count of new threads whose first message discloses AI involvement"
+    x: month_dt
+    y: ai_threads
+    color: list_name
+    style: { stack: zero }
+    height: 340
+
+  ai_thread_table:
+    type: table
+    query: ai_thread_lines
+    title: "AI-involved threads"
+
 rows:
   - monthly_traffic
   - monthly_linked_share
@@ -336,3 +423,5 @@ rows:
   - hackers_threads
   - cols: [hackers_cite_latency, hackers_cited_share, hackers_fix_share]
   - cited_threads
+  - cols: [ai_threads, ai_threads_by_list]
+  - ai_thread_table

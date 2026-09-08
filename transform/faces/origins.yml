@@ -105,7 +105,7 @@ queries:
       ORDER BY 2, 3
 
   ai_commits:
-    description: AI-flagged master commits per month by origin.
+    description: Master commits disclosing AI involvement (reviewed labels) per month by origin.
     source: warehouse
     sql: |
       SELECT
@@ -183,7 +183,7 @@ charts:
     type: area
     query: ai_commits
     title: "AI-flagged commits per month, by origin"
-    subtitle: "Master commits crediting an AI tool; stacked, so the top edge is the monthly total"
+    subtitle: "Master commits whose message discloses AI involvement (a vendor and a work role); stacked, so the top edge is the monthly total"
     x: month_dt
     y: ai_commit_cnt
     color: origin

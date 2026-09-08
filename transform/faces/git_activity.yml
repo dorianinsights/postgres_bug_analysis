@@ -255,31 +255,63 @@ queries:
       GROUP BY DATE_TRUNC('quarter', cf.commit_dt), cf.subsystem
       ORDER BY quarter, cf.subsystem
 
-  ai_credited:
+  ai_involved:
     description: >
-      Distinct commits whose message credits an AI tool (Claude, ChatGPT,
-      Copilot, ...), per quarter, across stable branches and master.
+      Distinct fix commits whose message discloses AI involvement (a vendor and
+      a work role, reviewed local-LLM labels on dim_commit), per quarter, across
+      stable branches and master.
     source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
-        'AI-credited commits' AS series,
-        COUNT(DISTINCT fix_key) AS ai_credited_commits
+        'AI-involved fix commits' AS series,
+        COUNT(DISTINCT fix_key) AS fixes
       FROM dim_commit
-      WHERE ai_credit IS NOT NULL
+      WHERE has_ai_involvement AND NOT is_housekeeping
       GROUP BY 1
       ORDER BY 1
 
-  ai_credit_lines:
-    description: The AI-credited fix commits with their credit lines, newest first.
+  ai_roles:
+    description: >
+      The same commits split by what the AI did; a fix with two roles counts in
+      both, so the stack's top edge is role-mentions, not fixes.
+    source: warehouse
+    sql: |
+      WITH roles AS (
+        SELECT commit_dt, fix_key, 'found the bug' AS role FROM dim_commit WHERE has_ai_involvement AND ai_found
+        UNION ALL
+        SELECT commit_dt, fix_key, 'analyzed it' FROM dim_commit WHERE has_ai_involvement AND ai_analyzed
+        UNION ALL
+        SELECT commit_dt, fix_key, 'wrote the code' FROM dim_commit WHERE has_ai_involvement AND ai_authored
+        UNION ALL
+        SELECT commit_dt, fix_key, 'built a tool' FROM dim_commit WHERE has_ai_involvement AND ai_tooling
+      )
+      SELECT
+        DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
+        role,
+        COUNT(DISTINCT fix_key) AS fixes
+      FROM roles
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+
+  ai_involved_lines:
+    description: The AI-involved fix commits with their roles, vendor and the model's evidence, newest first.
     source: warehouse
     sql: |
       SELECT
         MIN(commit_dt) AS commit_dt,
         subject,
-        MIN(ai_credit) AS credit_line
+        CONCAT_WS(' + ',
+          CASE WHEN BOOL_OR(ai_found) THEN 'found' END,
+          CASE WHEN BOOL_OR(ai_analyzed) THEN 'analyzed' END,
+          CASE WHEN BOOL_OR(ai_authored) THEN 'authored' END,
+          CASE WHEN BOOL_OR(ai_tooling) THEN 'tooling' END) AS roles,
+        MIN(ai_vendor) AS vendor,
+        MIN(ai_disclosure_form) AS form,
+        MIN(ai_label_source) AS label_source,
+        MIN(ai_rationale) AS evidence
       FROM dim_commit
-      WHERE ai_credit IS NOT NULL
+      WHERE has_ai_involvement
       GROUP BY 2
       ORDER BY 1 DESC
 
@@ -444,14 +476,25 @@ charts:
     style: { stack: zero }
     height: 380
 
-  ai_credited:
+  ai_involved:
     type: bar
-    query: ai_credited
-    title: "Commits crediting an AI tool"
-    subtitle: "Zero before 2026; accelerating since the Aug 2026 wrap"
+    query: ai_involved
+    title: "Fix commits disclosing AI involvement"
+    subtitle: "A vendor and a work role, reviewed by hand; zero before 2026, accelerating since the Aug 2026 wrap"
     x: quarter
-    y: ai_credited_commits
+    y: fixes
     color: series
+    height: 340
+
+  ai_roles:
+    type: bar
+    query: ai_roles
+    title: "What the AI did, per quarter"
+    subtitle: "Role mentions per fix commit: found / analyzed / wrote the code / built a tool (a fix can carry several)"
+    x: quarter
+    y: fixes
+    color: role
+    style: { stack: zero }
     height: 340
 
   cycle_pace:
@@ -467,10 +510,10 @@ charts:
     style: { stack: none, orientation: vertical }
     height: 340
 
-  ai_credit_table:
+  ai_involved_table:
     type: table
-    query: ai_credit_lines
-    title: "AI-credited fix commits"
+    query: ai_involved_lines
+    title: "AI-involved fix commits"
 
   commits_by_hour:
     type: bar
@@ -506,6 +549,7 @@ rows:
   - churn_by_quarter
   - backpatch_breadth
   - trunk_churn_by_subsystem
-  - cols: [ai_credited, cycle_pace]
-  - ai_credit_table
+  - cols: [ai_involved, ai_roles]
+  - cycle_pace
+  - ai_involved_table
   - cols: [commits_by_hour, { rows: [mean_commit_hour, median_commit_hour] }]

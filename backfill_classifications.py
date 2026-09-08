@@ -26,7 +26,14 @@ from typing import Any
 import duckdb
 
 sys.path.insert(0, str(Path(__file__).parent / "transform"))
-from sources.classify import PROMPT_VERSION, build_schema, classify_one, content_hash, taxonomy_prompt
+from sources.classify import (
+    PROMPT_VERSION,
+    build_schema,
+    classify_one,
+    content_hash,
+    ollama_unavailable_reason,
+    taxonomy_prompt,
+)
 
 ROOT = Path(__file__).parent
 WAREHOUSE = ROOT / "transform" / "transform.duckdb"
@@ -69,6 +76,9 @@ def write_cache(rows: dict[int, list[str]]) -> None:
 def main() -> int:
     if not WAREHOUSE.is_file():
         sys.exit(f"warehouse not found at {WAREHOUSE} — run `dbt run --select int_fix_reps` first")
+    unavailable = ollama_unavailable_reason(MODEL_TAG)
+    if unavailable is not None:
+        sys.exit(f"cannot classify: {unavailable}")
 
     with TAXONOMY_SEED.open(newline="") as handle:
         tax = [(int(r["category_order"]), r["category"], r["definition"]) for r in csv.DictReader(handle)]

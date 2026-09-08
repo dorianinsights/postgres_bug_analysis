@@ -106,8 +106,22 @@ SELECT
     AS days_to_action,
   ltw.label AS days_to_action_window,
   tsw.label AS thread_size_window,
+  -- disclosed AI involvement in the thread's root message: the reviewed
+  -- local-LLM labels (int_thread_ai_labels). has_ai_involvement = a vendor AND
+  -- a work role; the roles are independent flags
+  COALESCE(ail.has_ai_involvement, false) AS has_ai_involvement,
+  COALESCE(ail.ai_found, false) AS ai_found,
+  COALESCE(ail.ai_analyzed, false) AS ai_analyzed,
+  COALESCE(ail.ai_authored, false) AS ai_authored,
+  COALESCE(ail.ai_tooling, false) AS ai_tooling,
+  COALESCE(ail.ai_mentioned_only, false) AS ai_mentioned_only,
+  COALESCE(ail.ai_vendor, 'none') AS ai_vendor,
+  COALESCE(ail.ai_disclosure_form, 'none') AS ai_disclosure_form,
+  COALESCE(ail.ai_label_source, 'unclassified') AS ai_label_source,
   fmg.subject
 FROM {{ ref('fct_messages') }} AS fmg
+LEFT JOIN {{ ref('int_thread_ai_labels') }} AS ail
+  ON fmg.list_name = ail.list_name AND fmg.message_id = ail.root_message_id
 INNER JOIN rollup AS rlp ON fmg.list_name = rlp.list_name AND fmg.message_id = rlp.root_id
 LEFT JOIN cite_rollup AS cte ON fmg.list_name = cte.list_name AND fmg.message_id = cte.root_id
 -- the form report's own outcome (Discussion OR Bug: # link), for is_acted_upon
