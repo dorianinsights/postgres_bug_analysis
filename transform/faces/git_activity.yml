@@ -1,5 +1,6 @@
+_schema_version: "0.6.0"  # written automatically by dct migrate
 title: "PostgreSQL Fix Velocity — Git Commits"
-description: >
+notes: >
   Commit-level view of PostgreSQL's released majors' stable branches plus master,
   straight from the git history: backpatch commit volume per quarter, AI-tool-
   credited commits, and the pace of the open release cycle. IMPORTANT: every
@@ -47,7 +48,7 @@ variables:
 
 queries:
   quarterly_distinct:
-    description: >
+    notes: >
       Distinct fix COMMITS on the stable branches per calendar quarter
       (dim_commit.fix_key deduplicates across branches, so a fix backpatched
       across every stable major counts once; housekeeping commits excluded). A
@@ -60,8 +61,8 @@ queries:
         DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
         'distinct fix commits' AS series,
         COUNT(DISTINCT fc.fix_key) AS distinct_fix_cnt
-      FROM dim_commit AS fc
-      INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
+      FROM {{ ref('dim_commit') }} AS fc
+      INNER JOIN {{ ref('dim_major') }} AS dm ON fc.dim_major_key = dm.dim_major_key
       -- the backpatch stream only (branch_scope): a released major's branch also
       -- carries its own pre-GA beta work, which is development, not fixes
       WHERE dm.is_released AND fc.branch_scope = 'stable' AND NOT fc.is_housekeeping
@@ -70,7 +71,7 @@ queries:
 
   quarterly_by_branch:
     ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_major is N:1 (dim_major_key is its PK); COUNT not inflated
-    description: >
+    notes: >
       Fix commits per non-master branch per quarter (each branch counts its own
       backpatches; housekeeping commits excluded). Released majors' branches count
       their backpatch stream (branch_scope = stable); the in-progress major's
@@ -83,8 +84,8 @@ queries:
         DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
         dm.stable_branch AS branch,
         COUNT(*) AS fix_commits
-      FROM dim_commit AS fc
-      INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
+      FROM {{ ref('dim_commit') }} AS fc
+      INNER JOIN {{ ref('dim_major') }} AS dm ON fc.dim_major_key = dm.dim_major_key
       WHERE
         (fc.branch_scope = 'stable' OR (fc.branch_scope = 'beta' AND dm.lifecycle = 'beta'))
         AND NOT fc.is_housekeeping
@@ -93,7 +94,7 @@ queries:
 
   commits_per_version:
     ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_version is N:1 (one version per commit); COUNTs verified to reconcile
-    description: >
+    notes: >
       Stable-branch fix commits binned by the minor release they
       shipped in (via dim_commit.dim_version_key, resolved by exact git tag
       ancestry) — REL_15_STABLE commits in the Feb 2026 release are 15.16, and so
@@ -108,9 +109,9 @@ queries:
         MIN(EPOCH(dv.release_dt))::BIGINT AS release_seq,
         dm.major_label AS major,
         COUNT(*)::BIGINT AS commit_cnt
-      FROM dim_commit AS fc
-      INNER JOIN dim_version AS dv ON fc.dim_version_key = dv.dim_version_key
-      INNER JOIN dim_major AS dm ON fc.dim_major_key = dm.dim_major_key
+      FROM {{ ref('dim_commit') }} AS fc
+      INNER JOIN {{ ref('dim_version') }} AS dv ON fc.dim_version_key = dv.dim_version_key
+      INNER JOIN {{ ref('dim_major') }} AS dm ON fc.dim_major_key = dm.dim_major_key
       WHERE dv.minor > 0 AND NOT fc.is_housekeeping
       -- by month + major: an out-of-band re-release shares its calendar month with
       -- the scheduled release (e.g. 18.2 and OOB 18.3 both "Feb 26"), so fold them
@@ -119,7 +120,7 @@ queries:
       ORDER BY release_seq, major
 
   codebase_size:
-    description: >
+    notes: >
       Absolute codebase size — source lines in each stable branch's tree, sampled
       WEEKLY by git grep at the branch HEAD (fct_branch_size_weekly, summed over
       its slices). One line per major, a smooth growth curve. NOT summed across
@@ -133,8 +134,8 @@ queries:
         bsz.week_start AS week_dt,
         dm.major_label AS major,
         SUM(bsz.code_lines) AS code_lines
-      FROM fct_branch_size_weekly AS bsz
-      INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
+      FROM {{ ref('fct_branch_size_weekly') }} AS bsz
+      INNER JOIN {{ ref('dim_major') }} AS dm ON bsz.dim_major_key = dm.dim_major_key
       -- file classes chosen by the per-chart dropdown (defaults to hand-written
       -- source; add translations / test_fixtures to include them here)
       WHERE {{ filter('bsz.file_class', size_classes) }}
@@ -142,7 +143,7 @@ queries:
       ORDER BY bsz.week_start
 
   codebase_composition:
-    description: >
+    notes: >
       The LATEST weekly snapshot of each major's tree, broken into subsystems
       (fct_branch_size_weekly, the shared subsystem_rules taxonomy) — a stacked
       bar per major so each version's total size AND where the lines live are
@@ -155,24 +156,24 @@ queries:
         SELECT
           dim_major_key,
           MAX(week_start) AS week_start
-        FROM fct_branch_size_weekly
+        FROM {{ ref('fct_branch_size_weekly') }}
         GROUP BY dim_major_key
       )
       SELECT
         dm.major_label AS major,
         bsz.subsystem AS subsystem,
         SUM(bsz.code_lines) AS code_lines
-      FROM fct_branch_size_weekly AS bsz
+      FROM {{ ref('fct_branch_size_weekly') }} AS bsz
       INNER JOIN latest AS lst
         ON bsz.dim_major_key = lst.dim_major_key AND bsz.week_start = lst.week_start
-      INNER JOIN dim_major AS dm ON bsz.dim_major_key = dm.dim_major_key
+      INNER JOIN {{ ref('dim_major') }} AS dm ON bsz.dim_major_key = dm.dim_major_key
       -- file classes chosen by the per-chart dropdown (defaults to hand-written source)
       WHERE {{ filter('bsz.file_class', composition_classes) }}
       GROUP BY dm.major_label, bsz.subsystem
       ORDER BY dm.major_label, bsz.subsystem
 
   churn_by_quarter:
-    description: >
+    notes: >
       Lines of code churned per calendar quarter by backpatched fixes, as three
       series: total churn (adds + deletes), additions, and deletions. ONE commit
       per fix (dim_commit.is_representative_commit: the fix's largest backpatch
@@ -193,8 +194,8 @@ queries:
           DATE_TRUNC('quarter', cf.commit_dt)::DATE AS quarter,
           SUM(COALESCE(cf.lines_added, 0))::BIGINT AS adds,
           SUM(COALESCE(cf.lines_deleted, 0))::BIGINT AS deletes
-        FROM fct_commit_files AS cf
-        INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
+        FROM {{ ref('fct_commit_files') }} AS cf
+        INNER JOIN {{ ref('dim_commit') }} AS dc ON cf.dim_commit_key = dc.dim_commit_key
         -- churn in the file classes chosen by the per-chart dropdown
         -- (defaults to hand-written source).
         WHERE dc.is_representative_commit
@@ -211,7 +212,7 @@ queries:
       ORDER BY 1, 2
 
   backpatch_breadth:
-    description: >
+    notes: >
       How many stable branches each backpatched fix landed on, per quarter:
       stable-branch fix commits divided by distinct fixes (fix_key). This is
       the multiplier the per-branch charts carry. It climbs with the corpus,
@@ -225,13 +226,13 @@ queries:
         DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
         'branches per fix' AS series,
         ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT fc.fix_key), 2) AS branches_per_fix
-      FROM dim_commit AS fc
+      FROM {{ ref('dim_commit') }} AS fc
       WHERE fc.branch_scope = 'stable' AND NOT fc.is_housekeeping
       GROUP BY 1
       ORDER BY 1
 
   trunk_churn_by_subsystem:
-    description: >
+    notes: >
       Lines churned per quarter on the development trunk (master), split by
       subsystem (fct_commit_files aggregated on the fly, branch_scope = trunk) — where
       feature work is happening over time, per file so a cross-area commit splits
@@ -245,8 +246,8 @@ queries:
         DATE_TRUNC('quarter', cf.commit_dt)::DATE AS quarter,
         cf.subsystem AS subsystem,
         SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS churn
-      FROM fct_commit_files AS cf
-      INNER JOIN dim_commit AS dc ON cf.dim_commit_key = dc.dim_commit_key
+      FROM {{ ref('fct_commit_files') }} AS cf
+      INNER JOIN {{ ref('dim_commit') }} AS dc ON cf.dim_commit_key = dc.dim_commit_key
       -- churn in the file classes chosen by the per-chart dropdown
       -- (defaults to hand-written source)
       WHERE dc.branch_scope = 'trunk'
@@ -256,7 +257,7 @@ queries:
       ORDER BY quarter, cf.subsystem
 
   ai_involved:
-    description: >
+    notes: >
       Distinct fix commits whose message discloses AI involvement (a vendor and
       a work role, reviewed local-LLM labels on dim_commit), per quarter, across
       stable branches and master.
@@ -266,25 +267,25 @@ queries:
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
         'AI-involved fix commits' AS series,
         COUNT(DISTINCT fix_key) AS fixes
-      FROM dim_commit
+      FROM {{ ref('dim_commit') }}
       WHERE has_ai_involvement AND NOT is_housekeeping
       GROUP BY 1
       ORDER BY 1
 
   ai_roles:
-    description: >
+    notes: >
       The same commits split by what the AI did; a fix with two roles counts in
       both, so the stack's top edge is role-mentions, not fixes.
     source: warehouse
     sql: |
       WITH roles AS (
-        SELECT commit_dt, fix_key, 'found the bug' AS role FROM dim_commit WHERE has_ai_involvement AND ai_found
+        SELECT commit_dt, fix_key, 'found the bug' AS role FROM {{ ref('dim_commit') }} WHERE has_ai_involvement AND ai_found
         UNION ALL
-        SELECT commit_dt, fix_key, 'analyzed it' FROM dim_commit WHERE has_ai_involvement AND ai_analyzed
+        SELECT commit_dt, fix_key, 'analyzed it' FROM {{ ref('dim_commit') }} WHERE has_ai_involvement AND ai_analyzed
         UNION ALL
-        SELECT commit_dt, fix_key, 'wrote the code' FROM dim_commit WHERE has_ai_involvement AND ai_authored
+        SELECT commit_dt, fix_key, 'wrote the code' FROM {{ ref('dim_commit') }} WHERE has_ai_involvement AND ai_authored
         UNION ALL
-        SELECT commit_dt, fix_key, 'built a tool' FROM dim_commit WHERE has_ai_involvement AND ai_tooling
+        SELECT commit_dt, fix_key, 'built a tool' FROM {{ ref('dim_commit') }} WHERE has_ai_involvement AND ai_tooling
       )
       SELECT
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
@@ -295,7 +296,7 @@ queries:
       ORDER BY 1, 2
 
   ai_involved_lines:
-    description: The AI-involved fix commits with their roles, vendor and the model's evidence, newest first.
+    notes: The AI-involved fix commits with their roles, vendor and the model's evidence, newest first.
     source: warehouse
     sql: |
       SELECT
@@ -310,13 +311,13 @@ queries:
         MIN(ai_disclosure_form) AS form,
         MIN(ai_label_source) AS label_source,
         MIN(ai_rationale) AS evidence
-      FROM dim_commit
+      FROM {{ ref('dim_commit') }}
       WHERE has_ai_involvement
       GROUP BY 2
       ORDER BY 1 DESC
 
   cycle_pace:
-    description: >
+    notes: >
       Like-for-like release-cycle pace, in COMMITS: distinct stable-branch fix
       commits in the first N days after each scheduled wrap (N = the age of the
       open cycle) next to each closed cycle's full-cycle commit total. Binned per
@@ -330,20 +331,20 @@ queries:
       -- isn't in yet). The long ISO "wrap" labels crammed the axis when 17
       -- cycles share a half-width chart.
       SELECT STRFTIME(cycle_start_dt, '%b %y') AS cycle, EPOCH(cycle_start_dt)::BIGINT AS cycle_seq, 'first ' || window_days || ' days' AS pace_window, early_fix_cnt AS fixes
-      FROM dim_release
+      FROM {{ ref('dim_release') }}
       WHERE cycle_start_dt IS NOT NULL
       UNION ALL
       SELECT STRFTIME(cycle_start_dt, '%b %y') AS cycle, EPOCH(cycle_start_dt)::BIGINT AS cycle_seq, 'full cycle' AS pace_window, full_fix_cnt AS fixes
-      FROM dim_release
+      FROM {{ ref('dim_release') }}
       WHERE cycle_start_dt IS NOT NULL AND status <> 'open'
       UNION ALL
       SELECT STRFTIME(cycle_start_dt, '%b %y') AS cycle, EPOCH(cycle_start_dt)::BIGINT AS cycle_seq, 'full cycle' AS pace_window, 0 AS fixes
-      FROM dim_release
+      FROM {{ ref('dim_release') }}
       WHERE status = 'open'
       ORDER BY cycle_seq, pace_window
 
   commits_by_hour:
-    description: >
+    notes: >
       Distribution of commits across the hour of the UTC day (0-23), by committer
       timestamp -- when in the day commits actually land. All commits in
       dim_commit. A round-the-clock shape from a global contributor base with a
@@ -354,18 +355,18 @@ queries:
         EXTRACT(year FROM commit_ts AT TIME ZONE 'UTC')::INTEGER AS year_utc,
         EXTRACT(hour FROM commit_ts AT TIME ZONE 'UTC')::INTEGER AS hour_utc,
         COUNT(*)::BIGINT AS commit_cnt
-      FROM dim_commit
+      FROM {{ ref('dim_commit') }}
       GROUP BY 1, 2
       ORDER BY 1, 2
 
   commit_hour_stats:
-    description: The mean and median commit time of day (UTC), as HH:MM, over all commits.
+    notes: The mean and median commit time of day (UTC), as HH:MM, over all commits.
     source: warehouse
     sql: |
       WITH minutes AS (
         SELECT EXTRACT(hour FROM commit_ts AT TIME ZONE 'UTC') * 60
           + EXTRACT(minute FROM commit_ts AT TIME ZONE 'UTC') AS minute_of_day
-        FROM dim_commit
+        FROM {{ ref('dim_commit') }}
       ),
 
       stats AS (
@@ -523,8 +524,10 @@ charts:
     x: hour_utc
     y: commit_cnt
     x_label: "hour of day (UTC)"
-    y_label: "commits"
-    height: 340
+    # no y_label: each facet panel repeats it rotated and wraps it; the title
+    # says commits. One panel per year shares the height, so it grows with the
+    # corpus (~110px per year keeps the bars and y ticks readable)
+    height: 770
     multiples:
       rows: year_utc
 

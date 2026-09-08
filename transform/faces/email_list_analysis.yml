@@ -1,3 +1,4 @@
+_schema_version: "0.6.0"  # written automatically by dct migrate
 # The mailing lists themselves: how much traffic pgsql-bugs and pgsql-hackers
 # carry, how much of it turns into committed work, what becomes of the threads
 # people start, and which threads commits cite. Fix attribution BY source
@@ -6,19 +7,19 @@
 #
 # Monthly series use areas/lines — bars would label all ~70 months.
 title: "PostgreSQL Mailing Lists"
-description: >
+notes: >
   Email-list analysis of pgsql-bugs and pgsql-hackers: monthly and weekly
   traffic vs the fix-linked subset (messages whose thread a commit eventually
   cites), the fix-linked share, new pgsql-hackers threads by what they led
   to, and the discussion threads cited by master commits. Data from the
-  transform/ dbt project (fct_messages, fct_threads,
-  fct_origin_activity_monthly_agg, and the MetricFlow fix_linked_share metric
-  over the message grain).
+  transform/ dbt project (fct_messages, fct_threads and
+  fct_origin_activity_monthly_agg; the fix-linked share is computed from the
+  message grain at query time).
 
 queries:
 
   monthly_traffic:
-    description: >
+    notes: >
       Monthly messages per list over the whole archive, split into all
       traffic vs the fix-linked subset (messages whose thread a commit
       eventually cites). The last point is the CURRENT month, still filling.
@@ -34,28 +35,32 @@ queries:
           list_name,
           COUNT(*) AS "all",
           COUNT(*) FILTER (WHERE is_fix_linked) AS "fix-linked"
-        FROM fct_messages
+        FROM {{ ref('fct_messages') }}
         GROUP BY ALL
       )
       UNPIVOT (messages FOR kind IN ("all", "fix-linked"))
       ORDER BY 1, 2
 
   monthly_linked_share:
-    description: >
+    notes: >
       Share of each month's messages that belong to commit-cited threads.
-      The sag in recent months is right-censoring, not less fix work —
-      their threads haven't been cited YET. Computed by MetricFlow from the
-      atomic message grain (the fix_linked_share ratio metric) -- a non-additive
-      ratio, correct at whatever grain is asked, not a stored per-row value.
-    source: metrics
-    type: metricflow
-    metrics: [fix_linked_share]
-    dimensions: [message__list_name]
-    time_grain: month
-    where: ["metric_time__month < date_trunc('month', current_date)"]
+      The sag in recent months is right-censoring, not less fix work --
+      their threads haven't been cited YET. A non-additive ratio, so it is
+      computed from the atomic message grain at the month, never re-aggregated
+      from a stored per-period value. Complete months only.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
+        list_name,
+        COUNT(*) FILTER (WHERE is_fix_linked) / COUNT(*)::DOUBLE AS fix_linked_share
+      FROM {{ ref('fct_messages') }}
+      WHERE sent_dt < DATE_TRUNC('month', CURRENT_DATE)
+      GROUP BY 1, 2
+      ORDER BY 1, 2
 
   hackers_threads:
-    description: >
+    notes: >
       New pgsql-hackers threads per month (fct_threads: root with no reply
       header) by what became of them -- cited by a backpatched stable-branch
       fix, by beta stabilization, by trunk feature work, or not cited (yet).
@@ -68,14 +73,14 @@ queries:
         DATE_TRUNC('month', started_dt)::DATE AS month_dt,
         outcome,
         COUNT(*) AS thread_cnt
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE list_name = 'pgsql-hackers' AND is_new_thread
         AND DATE_TRUNC('month', started_dt) < DATE_TRUNC('month', CURRENT_DATE)
       GROUP BY 1, 2
       ORDER BY 1, 2
 
   hackers_cite_latency:
-    description: >
+    notes: >
       Median days from a new pgsql-hackers thread's start to the first commit
       citing it, over cited threads -- the horizon within which the outcome
       split above is roughly settled.
@@ -84,11 +89,11 @@ queries:
       SELECT
         MEDIAN(days_to_first_cite)::INTEGER AS median_days,
         COUNT(*) AS cited_threads
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE list_name = 'pgsql-hackers' AND is_new_thread AND is_cited
 
   hackers_cited_share:
-    description: >
+    notes: >
       Of the new pgsql-hackers threads started in the last complete calendar
       year (old enough to be settled), the share cited by any commit, and by a
       backpatched fix.
@@ -98,13 +103,13 @@ queries:
         ROUND(AVG(is_cited::INTEGER), 3) AS cited_share,
         ROUND(AVG(is_cited_by_stable::INTEGER), 3) AS fix_share,
         COUNT(*) AS threads
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE list_name = 'pgsql-hackers' AND is_new_thread
         AND started_dt >= DATE_TRUNC('year', CURRENT_DATE) - INTERVAL 1 YEAR
         AND started_dt < DATE_TRUNC('year', CURRENT_DATE)
 
   recent_weekly_traffic:
-    description: >
+    notes: >
       The same traffic split per week over the last three rolling months —
       the near-term zoom of monthly_traffic. The last point is the CURRENT
       week, still filling.
@@ -120,7 +125,7 @@ queries:
           list_name,
           COUNT(*) AS "all",
           COUNT(*) FILTER (WHERE is_fix_linked) AS "fix-linked"
-        FROM fct_messages
+        FROM {{ ref('fct_messages') }}
         WHERE sent_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
         GROUP BY ALL
       )
@@ -128,22 +133,25 @@ queries:
       ORDER BY 1, 2
 
   recent_weekly_share:
-    description: >
+    notes: >
       Fix-linked share per week over the last three rolling months.
-      Heavily right-censored — these threads have had little time to be
-      cited by commits. Computed by MetricFlow from the atomic message grain
-      (the fix_linked_share ratio metric).
-    source: metrics
-    type: metricflow
-    metrics: [fix_linked_share]
-    dimensions: [message__list_name]
-    time_grain: week
-    where:
-      - "metric_time__week >= date_trunc('week', current_date - interval 3 month) + interval 7 day"
-      - "metric_time__week < date_trunc('week', current_date)"
+      Heavily right-censored -- these threads have had little time to be
+      cited by commits. Computed from the atomic message grain at the week,
+      like monthly_linked_share. Complete weeks only.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
+        list_name,
+        COUNT(*) FILTER (WHERE is_fix_linked) / COUNT(*)::DOUBLE AS fix_linked_share
+      FROM {{ ref('fct_messages') }}
+      WHERE sent_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
+        AND sent_dt < DATE_TRUNC('week', CURRENT_DATE)
+      GROUP BY 1, 2
+      ORDER BY 1, 2
 
   cited_threads:
-    description: Distinct discussion threads cited by master commits, per month by source.
+    notes: Distinct discussion threads cited by master commits, per month by source.
     source: warehouse
     sql: |
       SELECT
@@ -154,24 +162,24 @@ queries:
           ELSE origin
         END AS origin,
         cited_thread_cnt
-      FROM fct_origin_activity_monthly_agg
+      FROM {{ ref('fct_origin_activity_monthly_agg') }}
       ORDER BY 1, 2
 
   ai_threads:
-    description: >
+    notes: >
       Threads whose first message discloses AI involvement (a vendor and a work
       role; reviewed local-LLM labels on fct_threads), per month, split by what
       the AI did. A thread with two roles counts in both.
     source: warehouse
     sql: |
       WITH roles AS (
-        SELECT started_dt, list_name, root_message_id, 'found the bug' AS role FROM fct_threads WHERE has_ai_involvement AND ai_found
+        SELECT started_dt, list_name, root_message_id, 'found the bug' AS role FROM {{ ref('fct_threads') }} WHERE has_ai_involvement AND ai_found
         UNION ALL
-        SELECT started_dt, list_name, root_message_id, 'analyzed it' FROM fct_threads WHERE has_ai_involvement AND ai_analyzed
+        SELECT started_dt, list_name, root_message_id, 'analyzed it' FROM {{ ref('fct_threads') }} WHERE has_ai_involvement AND ai_analyzed
         UNION ALL
-        SELECT started_dt, list_name, root_message_id, 'wrote the code' FROM fct_threads WHERE has_ai_involvement AND ai_authored
+        SELECT started_dt, list_name, root_message_id, 'wrote the code' FROM {{ ref('fct_threads') }} WHERE has_ai_involvement AND ai_authored
         UNION ALL
-        SELECT started_dt, list_name, root_message_id, 'built a tool' FROM fct_threads WHERE has_ai_involvement AND ai_tooling
+        SELECT started_dt, list_name, root_message_id, 'built a tool' FROM {{ ref('fct_threads') }} WHERE has_ai_involvement AND ai_tooling
       )
       SELECT
         DATE_TRUNC('month', started_dt)::DATE AS month_dt,
@@ -183,7 +191,7 @@ queries:
       ORDER BY 1, 2
 
   ai_threads_by_list:
-    description: AI-involved threads per month by list, with the share of all new threads that month.
+    notes: AI-involved threads per month by list, with the share of all new threads that month.
     source: warehouse
     sql: |
       SELECT
@@ -191,13 +199,13 @@ queries:
         list_name,
         COUNT(*) FILTER (WHERE has_ai_involvement) AS ai_threads,
         ROUND(COUNT(*) FILTER (WHERE has_ai_involvement) * 1.0 / COUNT(*), 4) AS ai_share
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE started_dt >= DATE '2025-01-01'
       GROUP BY 1, 2
       ORDER BY 1, 2
 
   ai_thread_lines:
-    description: The AI-involved threads with their roles, vendor and the model's evidence, newest first.
+    notes: The AI-involved threads with their roles, vendor and the model's evidence, newest first.
     source: warehouse
     sql: |
       SELECT
@@ -213,7 +221,7 @@ queries:
         ai_disclosure_form AS form,
         ai_label_source AS label_source,
         is_acted_upon
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE has_ai_involvement
       ORDER BY 1 DESC
 
@@ -233,9 +241,9 @@ charts:
     query: monthly_linked_share
     title: "Fix-linked share of monthly traffic"
     subtitle: "Percent of each month's messages in commit-cited threads; the recent sag is right-censoring, not less fix work"
-    x: metric_time__month
+    x: month_dt
     y: fix_linked_share
-    color: message__list_name
+    color: list_name
     style:
       axis_y:
         labels:
@@ -287,9 +295,9 @@ charts:
     query: recent_weekly_share
     title: "Fix-linked share of weekly traffic, last three months"
     subtitle: "Heavily right-censored — recent threads have had little time to be cited"
-    x: metric_time__week
+    x: week_dt
     y: fix_linked_share
-    color: message__list_name
+    color: list_name
     style:
       axis_y:
         labels:

@@ -4,14 +4,14 @@ requests==2.34.2
 beautifulsoup4==4.15.0
 lxml==6.1.2
 # The visualization layer — docs at https://docs.dbtcharts.com/, CLI `dct`.
-# 0.5.0 is the first real dbt-charts release on PyPI (the package was
-# previously published as `dataface`, CLI `dft`). Do NOT install `dataface`
-# alongside: both wheels ship the same top-level `d3_format` and `mdsvg`
-# modules, so the wheels clobber each other and uninstalling either breaks
-# the survivor. If `dct` ever fails with "No module named 'd3_format'" or
-# "not enough values to unpack", recover with:
-#   pip install --force-reinstall --no-deps dbt-charts==0.5.0
-dbt-charts==0.5.0
+# 0.6.0 dropped MetricFlow support (the faces are plain SQL + `{{ ref() }}`
+# now) and pins plotext<6. The package was previously published as `dataface`
+# (CLI `dft`). Do NOT install `dataface` alongside: both wheels ship the same
+# top-level `d3_format` and `mdsvg` modules, so the wheels clobber each other
+# and uninstalling either breaks the survivor. If `dct` ever fails with "No
+# module named 'd3_format'" or "not enough values to unpack", recover with:
+#   pip install --force-reinstall --no-deps dbt-charts==0.6.0
+dbt-charts==0.6.0
 # The transform layer (transform/ dbt project targeting DuckDB). Both arrive
 # as dependencies of dbt-charts anyway, but they're direct dependencies now —
 # `dbt build` runs from transform/ — so pin them explicitly.

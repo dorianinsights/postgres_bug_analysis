@@ -158,7 +158,7 @@ is the interface, and `export_marts_csv` skips it.)
   next release's so-far bar, and AI-flagged master commits by origin — the
   grounding for report-volume -> fix-volume projections.
 - `email_list_analysis.yml` — the mailing lists themselves: monthly and
-  weekly traffic vs the fix-linked subset, the fix-linked share (MetricFlow),
+  weekly traffic vs the fix-linked subset, the fix-linked share,
   new pgsql-hackers threads by what they led to (backpatched fix / beta
   stabilization / trunk work / not cited) with latency and cited-share KPIs,
   and the discussion threads cited by master commits per month.
@@ -248,8 +248,8 @@ every object's name. Layers:
     (fix grain). A commit's
     measures are aggregates of its `fct_commit_files` rows, so the commit-grain
     fact was retired into `dim_commit` + the atomic file fact; distinct-commit
-    counts (non-additive) come from the MetricFlow semantic layer over that grain,
-    not a stored table. `dim_version` sits one grain below `dim_release`:
+    counts (non-additive) are `COUNT(DISTINCT ...)` over that grain in the
+    faces' SQL, not a stored table. `dim_version` sits one grain below `dim_release`:
     one row per individual minor (e.g. `18.6`), conformed up to its release via
     `dim_release_key` (NULL for the `.0` majors that ship alone); `fct_fixes` and
     `fct_version_items_agg` carry a `dim_version_key` FK to it.
@@ -275,16 +275,13 @@ every object's name. Layers:
     the AI-credit and origin flags. The atomic churn fact **`fct_commit_files`** (one
     row per file per commit — line counts + subsystem + file_class, FK to
     `dim_commit`, conformed to `dim_date`) is where every churn metric rolls up
-    from dynamically rather than from a frozen by-quarter table. Two MetricFlow
-    semantic models (`fct_commit_files_semantic`, `dim_commit_semantic`), joined on
-    the `commit` entity, expose churn and distinct-commit measures at any time
-    grain and any commit/file slice — so the line-count charts aggregate the atomic
-    fact on the fly and filter generated file classes (translation catalogs, test
-    fixtures) in or out. (Mailing-list
-    traffic has no materialized agg: the `transform/faces/` boards roll it up
-    from the atomic `fct_messages` at query time — the count charts in SQL, the
-    non-additive fix-linked share via a MetricFlow ratio metric; see
-    `models/marts/list_traffic_semantic.yml`.) `dim_date` is keyed on `date_day` (a real DATE) — there is
+    from dynamically rather than from a frozen by-quarter table: the line-count
+    charts aggregate the atomic fact on the fly (any time grain, any commit/file
+    slice) and filter generated file classes (translation catalogs, test
+    fixtures) in or out. (Mailing-list traffic has no materialized agg either:
+    the `transform/faces/` boards roll it up from the atomic `fct_messages` at
+    query time — the counts and the non-additive fix-linked share alike, each
+    computed at the chart's own grain.) `dim_date` is keyed on `date_day` (a real DATE) — there is
     no separate integer date surrogate; every mart's date columns join to it
     directly, and a `relationships` test on each one enforces the conformance.
     Following Kimball, no fact FK is ever NULL: every non-date dimension carries
@@ -469,22 +466,30 @@ carry no separate unit tests.
 ## Tooling note: dbt charts (formerly dataface)
 
 The visualization layer is the tool documented at
-[docs.dbtcharts.com](https://docs.dbtcharts.com/): **`dbt-charts` 0.5.0**,
+[docs.dbtcharts.com](https://docs.dbtcharts.com/): **`dbt-charts` 0.6.0**,
 CLI **`dct`**, project config `dbt_charts.yml`. It was previously published
 on PyPI as `dataface` (0.4.0, CLI `dft`) — never install the two together
 (shared `d3_format`/`mdsvg` modules clobber each other; see requirements.txt).
+0.6.0 removed MetricFlow support, so every face is plain SQL; queries name
+models with `{{ ref('model') }}` (resolved through `target/manifest.json`,
+which also lets `dct validate` check each query's columns against the
+compiled models -- run `dbt parse` after renaming a column) against the
+read-only `warehouse` DuckDB source. Boards carry an informational
+`_schema_version` stamp written by `dct migrate`; never edit it by hand, and
+rerun `dct migrate faces/` after an upgrade.
 
-Quirks that still shape the faces (details in `dbt_charts_bug_report.md`):
+Quirks that still shape the faces:
 
-- Bars on a temporal x-axis overhang the axis end (0.5.0 fixed the left edge
-  and the dropped-labels bug; the right edge still clips). Each bar chart
-  carries an invisible zero-opacity scatter layer (`*_pad` queries) padding
-  the x-scale domain — the note at the top of `transform/faces/changelog.yml` explains
-  the pattern.
 - No native trendlines: the `*_trend` queries compute least-squares fits in
   DuckDB SQL (`REGR_SLOPE`/`REGR_INTERCEPT`) and draw them as dashed line
   layers with explicit stroke colors.
 - Layer labels are appended to the y-axis title; keep them short or a chart
   can collapse to a sliver.
-- Multi-series `y: [a, b]` lists are unreliable — unpivot in SQL and use the
-  `color:` channel; charts take `height:` (no `aspect_ratio:`).
+- Multi-series `y: [a, b]` with `color:` is supported since 0.6.0, but the
+  faces still unpivot in SQL onto one `color:` series column — a single
+  long-format series keeps the tooltip, legend and stack order predictable.
+- An overlay `layers:` entry gets one tooltip identity (its y column), so a
+  multi-series overlay collapses to one tooltip row; see CLAUDE.md.
+- Bars on a temporal x-axis no longer overhang the axis ends (fixed in
+  0.6.0); the `*_pad` invisible scatter layers that padded the domain are
+  gone.

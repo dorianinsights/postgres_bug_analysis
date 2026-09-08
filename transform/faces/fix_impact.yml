@@ -1,3 +1,4 @@
+_schema_version: "0.6.0"  # written automatically by dct migrate
 # How big and how severe each fix was, and whether that shows up in the
 # outcomes — time to fix, backpatch breadth, emergency handling. Size comes
 # from the representative commit's diff (files + line churn); severity from
@@ -11,7 +12,7 @@
 # nature, and the load-bearing severity correlations are size and backpatch
 # breadth (both fully populated for every CVE fix).
 title: "PostgreSQL Fix Impact & Severity"
-description: >
+notes: >
   Rating past fixes by size (files touched, lines added/removed from the
   representative commit) and, for security fixes, CVE severity (CVSS v3
   base score from postgresql.org/support/security), then correlating both
@@ -21,7 +22,7 @@ description: >
 queries:
 
   headline:
-    description: Corpus-wide impact counts, including the embargo gap in CVE latency coverage.
+    notes: Corpus-wide impact counts, including the embargo gap in CVE latency coverage.
     source: warehouse
     sql: |
       SELECT
@@ -33,23 +34,23 @@ queries:
         )::BIGINT AS cve_latency_cnt,
         ROUND(MEDIAN(churn_sum) FILTER (WHERE severity_band IS NOT null), 0) AS cve_churn_median,
         ROUND(MEDIAN(churn_sum) FILTER (WHERE severity_band IS null), 0) AS other_churn_median
-      FROM fct_fixes
+      FROM {{ ref('fct_fixes') }}
 
   severity_distribution:
-    description: CVE-bearing fixes by CVSS v3 severity band.
+    notes: CVE-bearing fixes by CVSS v3 severity band.
     source: warehouse
     sql: |
       SELECT
         severity_band,
         severity_band_order,
         COUNT(*)::BIGINT AS fix_cnt
-      FROM fct_fixes
+      FROM {{ ref('fct_fixes') }}
       WHERE severity_band IS NOT null
       GROUP BY ALL
       ORDER BY 2
 
   churn_by_severity:
-    description: Median line churn (added + deleted) of the representative commit, by severity band.
+    notes: Median line churn (added + deleted) of the representative commit, by severity band.
     source: warehouse
     sql: |
       SELECT
@@ -57,13 +58,13 @@ queries:
         severity_band_order,
         ROUND(MEDIAN(churn_sum), 0) AS churn_median,
         COUNT(*)::BIGINT AS fix_cnt
-      FROM fct_fixes
+      FROM {{ ref('fct_fixes') }}
       WHERE severity_band IS NOT null AND churn_sum IS NOT null
       GROUP BY ALL
       ORDER BY 2
 
   breadth_by_severity:
-    description: >
+    notes: >
       Median backpatch breadth (how many stable branches the fix landed on)
       by severity band — do more severe fixes get carried to more releases?
     source: warehouse
@@ -73,13 +74,13 @@ queries:
         severity_band_order,
         ROUND(MEDIAN(branch_item_cnt), 1) AS breadth_median,
         COUNT(*)::BIGINT AS fix_cnt
-      FROM fct_fixes
+      FROM {{ ref('fct_fixes') }}
       WHERE severity_band IS NOT null
       GROUP BY ALL
       ORDER BY 2
 
   size_vs_latency:
-    description: >
+    notes: >
       Every bug-linked fix: change size (line churn) vs report-to-fix days,
       colored by category. The cloud is mostly non-security work — security
       fixes rarely have a public report to measure latency from.
@@ -89,7 +90,7 @@ queries:
         churn_sum,
         days_to_fix_min,
         category
-      FROM fct_fixes
+      FROM {{ ref('fct_fixes') }}
       WHERE days_to_fix_min IS NOT null
         AND days_to_fix_min >= 0
         AND churn_sum IS NOT null
@@ -97,7 +98,7 @@ queries:
 
   size_latency_trend:
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the single-row fit is a deliberate cross join
-    description: >
+    notes: >
       Power-law (log-log OLS) trend of report-to-fix days on fix size, as a
       fitted curve over the churn range. The fit is essentially flat
       (R^2 ~ 0.007): size explains almost none of the latency. days = churn+1
@@ -109,7 +110,7 @@ queries:
           churn_sum,
           LOG10(churn_sum) AS lx,
           LOG10(days_to_fix_min + 1) AS ly
-        FROM fct_fixes
+        FROM {{ ref('fct_fixes') }}
         WHERE days_to_fix_min IS NOT null
           AND days_to_fix_min >= 0
           AND churn_sum IS NOT null
@@ -130,7 +131,7 @@ queries:
       ORDER BY 1
 
   latency_by_size:
-    description: >
+    notes: >
       Median report-to-fix latency by fix-size bucket (line churn) — does a
       bigger change take longer to land? Bug-linked fixes only.
     source: warehouse
@@ -148,7 +149,7 @@ queries:
         END AS bucket_order,
         ROUND(MEDIAN(days_to_fix_min), 1) AS days_median,
         COUNT(*)::BIGINT AS fix_cnt
-      FROM fct_fixes
+      FROM {{ ref('fct_fixes') }}
       WHERE days_to_fix_min IS NOT null AND days_to_fix_min >= 0 AND churn_sum IS NOT null
       GROUP BY ALL
       ORDER BY 2

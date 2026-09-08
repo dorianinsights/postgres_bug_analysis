@@ -109,19 +109,6 @@ Regression check: message `<7f6fabaa-3f8f-49ab-89ca-59fbfe633105@me.com>`
 `+00:00` and its `sent_dt` is 2022-02-18 (currently 2022-02-19 on an HST
 machine). Expect a ±1 in at most one message-day count downstream.
 
-## dbt-charts (dct) `{{ ref() }}` doesn't resolve in the render path (v0.5.0)
-
-Faces use bare table names + the `duckdb` `warehouse` source because `dct
-render` / `dct serve` throw `ERR-JINJA-ERROR: 'ref' is undefined` on
-`{{ ref('model') }}`: the render pipeline runs the variable Jinja pass
-(StrictUndefined) over the raw SQL *before* ref resolution. `dct query` resolves
-refs fine on both the `warehouse` and `metrics` sources, so it is purely the
-render-path ordering. 0.5.0 is the latest release on PyPI.
-
-Revisit when a dct release resolves refs before the variable pass, then migrate
-the faces from bare table names to `{{ ref() }}`. Until then keep bare table
-names for SQL boards.
-
 ## Upcoming release on the changelog "Fixes per Scheduled Minor Release" chart
 
 The chart plots documented changelog `item_cnt` for shipped releases only, so
@@ -133,9 +120,9 @@ it onto the same lines would plot the upcoming release ~2x too tall.
 The origins face settled the same question by NOT mixing populations: its
 documented chart stops at the last shipped release, and a separate "Fix commits
 per release" chart carries the committed measure for every release including
-the open one's so-far bar (a dashed-outline bar layer; note dct 0.5 drops an
-explicit `sort:` once a chart has layers, so the query's ORDER BY orders the
-axis). Follow that here: keep this chart documented-only and add a per-major
+the open one's so-far bar (a dashed-outline bar layer; note dct turns an
+explicit `sort:` on a layered chart into an alphabetical axis, so the query's
+ORDER BY orders the axis). Follow that here: keep this chart documented-only and add a per-major
 committed-fixes-per-release chart with the so-far point
 (`dim_commit.dim_release_key` = the open release gives the committed-so-far
 count per major). `fct_fix_origins_agg.projected_fix_cnt` (per-origin

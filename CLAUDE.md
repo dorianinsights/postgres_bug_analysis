@@ -66,7 +66,13 @@ per-session memories, which aren't committed to git.)
   x-unified bubble (the "Messages 58" stray row). Use an overlay for one
   reference series only; a "partial current period" is better drawn as the
   last point of the main series with the subtitle saying so (the list-traffic
-  charts do this). A chart with `layers:` also ignores `sort:`.
+  charts do this). Never put `sort:` on a chart with `layers:`: dct (0.6.0
+  still) then orders the x axis ALPHABETICALLY instead; leave it off and the
+  query's ORDER BY orders the axis. Faces name models with `{{ ref() }}`
+  (resolved from `target/manifest.json`, so run `dbt parse` after adding or
+  renaming a model or column, and `dct validate faces/*.yml` checks the
+  queries' columns statically); rerun `dct migrate faces/` after a dct
+  upgrade and keep its `_schema_version` stamp.
 
 ## Coding conventions
 - **No hardcoded dates or magic numbers** (other than `0` and `1`) in `.sql`

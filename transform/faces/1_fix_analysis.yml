@@ -1,5 +1,19 @@
+_schema_version: "0.6.0"  # written automatically by dct migrate
+# one color per origin on every chart of this board: dct 0.6 shares a
+# category scale across charts that bind the same color: field, but a chart
+# with layers: (fix_commit_origins) does not take part, so without the pin the
+# layered chart assigned unsourced/embargoed the opposite colors
+style:
+  charts:
+    category_colors:
+      origin:
+        values:
+          pgsql-hackers: category[1]
+          pgsql-bugs: category[2]
+          unsourced: category[3]
+          embargoed security: category[4]
 title: "PostgreSQL Fix Analysis"
-description: >
+notes: >
   Source attribution for fixes and development activity: each fix and
   master-branch commit is traced through its Discussion: trailers to
   pgsql-bugs (or a Bug: # trailer), pgsql-hackers, or
@@ -20,13 +34,13 @@ queries:
         EPOCH(release_dt)::BIGINT AS release_seq,
         SUM(fix_cnt) AS fix_cnt,
         SUM(committed_fix_cnt) AS committed_fix_cnt
-      FROM fct_fix_origins_agg
+      FROM {{ ref('fct_fix_origins_agg') }}
       WHERE status = 'shipped' AND NOT is_out_of_band
       GROUP BY 1, 2
       ORDER BY 2
 
   fix_origins_count:
-    description: >
+    notes: >
       DOCUMENTED fixes per shipped release by origin: a fix is one release-notes
       item, deduplicated across the branches it was backpatched to (fct_fixes).
       Shipped releases only -- the open release has no notes yet (its committed
@@ -48,12 +62,12 @@ queries:
         fix_cnt,
         committed_fix_cnt,
         documentation_rate AS rate
-      FROM fct_fix_origins_agg
+      FROM {{ ref('fct_fix_origins_agg') }}
       WHERE status = 'shipped' AND NOT is_out_of_band
       ORDER BY 2, 3
 
   fix_commit_origins:
-    description: >
+    notes: >
       COMMITTED fixes per release by origin, the same measure for every bar: a
       fix is one distinct non-housekeeping stable-branch commit subject,
       deduplicated across the branches it was backpatched to
@@ -82,12 +96,12 @@ queries:
         CASE WHEN status = 'open' THEN committed_fix_cnt END AS so_far,
         fix_cnt AS documented_fix_cnt,
         documentation_rate AS rate
-      FROM fct_fix_origins_agg
+      FROM {{ ref('fct_fix_origins_agg') }}
       WHERE NOT is_out_of_band
       ORDER BY 2, 3
 
   fix_origin_shares:
-    description: >
+    notes: >
       True per-release origin shares of the documented fixes (fractions summing
       to 1) so the percent format is honest in the axis AND the tooltip's
       value/Total rows — feeding counts through stack:normalize left the
@@ -104,12 +118,12 @@ queries:
           ELSE origin
         END AS origin,
         ROUND(COALESCE(fix_share, 0), 4) AS fix_share
-      FROM fct_fix_origins_agg
+      FROM {{ ref('fct_fix_origins_agg') }}
       WHERE status = 'shipped' AND NOT is_out_of_band
       ORDER BY 2, 3
 
   ai_commits:
-    description: Master commits disclosing AI involvement (reviewed labels) per month by origin.
+    notes: Master commits disclosing AI involvement (reviewed labels) per month by origin.
     source: warehouse
     sql: |
       SELECT
@@ -120,7 +134,7 @@ queries:
           ELSE origin
         END AS origin,
         ai_commit_cnt
-      FROM fct_origin_activity_monthly_agg
+      FROM {{ ref('fct_origin_activity_monthly_agg') }}
       WHERE month_dt >= DATE '2026-01-01'
       ORDER BY 1, 2
 
@@ -159,8 +173,8 @@ charts:
     x: release
     y: fix_commits
     color: origin
-    # NO sort: key -- with layers present dct 0.5 ignores it and falls back to
-    # alphabetical; the query's ORDER BY release_seq is what orders the axis
+    # NO sort: key -- with layers present dct (0.6.0 still) turns it into an
+    # alphabetical axis; the query's ORDER BY release_seq is what orders the axis
     style: { stack: zero, orientation: vertical }
     height: 360
     # the open release's bar is the same measure, still accumulating: mark it

@@ -1,10 +1,11 @@
+_schema_version: "0.6.0"  # written automatically by dct migrate
 # pgsql-bugs report volume and outcomes.
 #
 # The monthly volume chart is an area, not a bar: bars on a temporal axis
 # label every bar (60 monthly labels collide into mush), while line/area
 # charts get sparse auto time ticks. Categorical bar charts are unaffected.
 title: "PostgreSQL Bug Reports"
-description: >
+notes: >
   What arrives on the pgsql-bugs mailing list and what happens to it:
   monthly report volume (every new pgsql-bugs thread, form or free-form),
   how many get acted upon (linked to a fix commit via the thread's
@@ -17,7 +18,7 @@ description: >
 
 queries:
   monthly_reports:
-    description: >
+    notes: >
       Bug reports opened per month, where a report is a NEW THREAD on
       pgsql-bugs (fct_threads: its root has no reply header), split into the
       BUG #NNNNN web-form submissions and the free-form emails -- about a third
@@ -29,7 +30,7 @@ queries:
         DATE_TRUNC('month', started_dt)::DATE AS report_month,
         CASE WHEN is_form_report THEN 'BUG # form reports' ELSE 'free-form reports' END AS series,
         COUNT(*) AS report_cnt
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE list_name = 'pgsql-bugs' AND is_new_thread
       GROUP BY 1, 2
       ORDER BY 1, 2
@@ -37,12 +38,12 @@ queries:
   monthly_trend:
     # false positive: AVG over the monthly COUNT is exactly what a rolling average is
     ignore: ["WARN-REAGGREGATION"]
-    description: Six-month centered moving average of ALL reports (form + free-form).
+    notes: Six-month centered moving average of ALL reports (form + free-form).
     source: warehouse
     sql: |
       WITH monthly AS (
         SELECT DATE_TRUNC('month', started_dt)::DATE AS report_month, COUNT(*) AS report_cnt
-        FROM fct_threads
+        FROM {{ ref('fct_threads') }}
         WHERE list_name = 'pgsql-bugs' AND is_new_thread
         GROUP BY 1
       )
@@ -58,7 +59,7 @@ queries:
   weekly_reports:
     # the week x kind spine is a deliberate cross join (zero-fill both series)
     ignore: ["WARN-MISSING-JOIN-PREDICATE"]
-    description: >
+    notes: >
       Bug reports (new pgsql-bugs threads, form + free-form, from fct_threads)
       opened per COMPLETE week over the last three rolling months: the window
       starts at the first full week on or after (today - 3 months) and ends
@@ -76,7 +77,7 @@ queries:
         INTERVAL 7 DAY
       ) AS gsr (wk)
       CROSS JOIN (SELECT UNNEST([true, false]) AS is_form_report) AS kinds
-      LEFT JOIN fct_threads AS thr
+      LEFT JOIN {{ ref('fct_threads') }} AS thr
         ON DATE_TRUNC('week', thr.started_dt) = gsr.wk
         AND thr.is_form_report = kinds.is_form_report
         AND thr.list_name = 'pgsql-bugs' AND thr.is_new_thread
@@ -88,7 +89,7 @@ queries:
     # aggregated to week grain, and AVG over the weekly COUNT is exactly
     # what a rolling average is
     ignore: ["WARN-FANOUT-RISK", "WARN-REAGGREGATION"]
-    description: >
+    notes: >
       Trailing 3-week average of complete-week report volume (all reports,
       form + free-form). The underlying series starts two weeks before the
       displayed window so every displayed point averages three real complete
@@ -104,7 +105,7 @@ queries:
           DATE_TRUNC('week', CURRENT_DATE) - INTERVAL 7 DAY,
           INTERVAL 7 DAY
         ) AS gsr (wk)
-        LEFT JOIN fct_threads AS thr
+        LEFT JOIN {{ ref('fct_threads') }} AS thr
           ON DATE_TRUNC('week', thr.started_dt) = gsr.wk
           AND thr.list_name = 'pgsql-bugs' AND thr.is_new_thread
         GROUP BY 1
@@ -123,7 +124,7 @@ queries:
   monthly_acted_data:
     # AVG over the monthly share is exactly what a rolling average is
     ignore: ["WARN-REAGGREGATION"]
-    description: >
+    notes: >
       Per month, over ALL bug reports (new pgsql-bugs threads, form +
       free-form, fct_threads): reports acted upon (count, the bars -- the
       thread was cited by a commit's Discussion: trailer, or a form report was
@@ -141,7 +142,7 @@ queries:
           DATE_TRUNC('month', started_dt)::DATE AS report_month,
           COUNT(*) AS report_cnt,
           COUNT(*) FILTER (WHERE is_acted_upon) AS acted_cnt
-        FROM fct_threads
+        FROM {{ ref('fct_threads') }}
         WHERE list_name = 'pgsql-bugs' AND is_new_thread
         GROUP BY 1
       )
@@ -156,7 +157,7 @@ queries:
       ORDER BY 1
 
   seasonality_counts:
-    description: >
+    notes: >
       Distinct backpatched fixes per release cycle, averaged by release quarter:
       the fixed first-N-day window after the wrap vs the full cycle.
     source: warehouse
@@ -164,7 +165,7 @@ queries:
       WITH cyc AS (
         SELECT STRFTIME(release_dt, '%b') AS release_month, QUARTER(release_dt) AS release_quarter,
                first_window_fix_cnt, full_fix_cnt
-        FROM dim_release
+        FROM {{ ref('dim_release') }}
         WHERE cycle_start_dt IS NOT NULL AND status = 'shipped'
           AND NOT is_out_of_band AND NOT is_partial_window
       )
@@ -178,21 +179,21 @@ queries:
       ORDER BY release_quarter, series
 
   seasonality_share:
-    description: >
+    notes: >
       Front-loading by release quarter: the share of a cycle's backpatched fixes
       that land in the first N days after the wrap.
     source: warehouse
     sql: |
       SELECT STRFTIME(release_dt, '%b') AS release_month, QUARTER(release_dt) AS release_quarter,
              ROUND(AVG(early_fix_share), 4) AS early_share
-      FROM dim_release
+      FROM {{ ref('dim_release') }}
       WHERE cycle_start_dt IS NOT NULL AND status = 'shipped'
         AND NOT is_out_of_band AND NOT is_partial_window
       GROUP BY release_month, release_quarter
       ORDER BY release_quarter
 
   yearly_outcomes:
-    description: >
+    notes: >
       Bug reports (new pgsql-bugs threads, form + free-form, fct_threads) vs
       those later linked to a fix commit, per calendar year.
     source: warehouse
@@ -201,13 +202,13 @@ queries:
         CAST(YEAR(started_dt) AS VARCHAR) AS report_year,
         action_outcome AS outcome,
         COUNT(*) AS reports
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE list_name = 'pgsql-bugs' AND is_new_thread
       GROUP BY 1, 2
       ORDER BY 1, 2
 
   fix_latency:
-    description: >
+    notes: >
       Report-to-first-linked-commit latency for acted-upon reports (all bug
       reports, fct_threads), in the latency_windows seed's buckets.
     source: warehouse
@@ -216,26 +217,26 @@ queries:
         days_to_action_window AS days_to_commit_window,
         'acted-upon reports' AS series,
         COUNT(*) AS reports
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE list_name = 'pgsql-bugs' AND is_new_thread AND is_acted_upon AND days_to_action >= 0
       GROUP BY 1
       ORDER BY 1
 
   yearly_latency:
-    description: Median days from report to first linked commit, per year (all bug reports).
+    notes: Median days from report to first linked commit, per year (all bug reports).
     source: warehouse
     sql: |
       SELECT
         CAST(YEAR(started_dt) AS VARCHAR) AS report_year,
         'median days to commit' AS series,
         MEDIAN(days_to_action) AS median_days
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE list_name = 'pgsql-bugs' AND is_new_thread AND is_acted_upon AND days_to_action >= 0
       GROUP BY 1
       ORDER BY 1
 
   thread_size:
-    description: >
+    notes: >
       How much discussion a report draws, split by outcome — acted-upon
       reports have longer threads. All bug reports (fct_threads), in the
       thread_size_windows seed's buckets.
@@ -245,13 +246,13 @@ queries:
         thread_size_window,
         action_outcome AS outcome,
         COUNT(*) AS reports
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE list_name = 'pgsql-bugs' AND is_new_thread
       GROUP BY 1, 2
       ORDER BY 1, 2
 
   most_discussed:
-    description: The 15 most-discussed bug reports in the corpus, form or free-form.
+    notes: The 15 most-discussed bug reports in the corpus, form or free-form.
     source: warehouse
     sql: |
       SELECT
@@ -261,7 +262,7 @@ queries:
         CASE WHEN is_acted_upon THEN 'fixed' ELSE '-' END AS outcome,
         days_to_action AS days_to_fix,
         SUBSTR(subject, 1, 90) AS subject
-      FROM fct_threads
+      FROM {{ ref('fct_threads') }}
       WHERE list_name = 'pgsql-bugs' AND is_new_thread
       -- root_message_id (the tiebreak) is not in the select list, so it stays named
       ORDER BY 3 DESC, root_message_id
@@ -273,6 +274,9 @@ charts:
     query: monthly_reports
     title: "Bug reports per month"
     subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails (about a third of reports); line = 6-month average of both"
+    # ~75 months on a temporal x: dct labels it by year, so its categorical
+    # "too many x categories" heuristic is a false positive here
+    warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
     x: report_month
     y: report_cnt
     color: series
@@ -308,15 +312,18 @@ charts:
     query: monthly_acted_data
     title: "Bug reports acted upon, by month"
     subtitle: "All reports (form + free-form). Bars: reports later linked to a fix commit (count, left axis). Lines: acted-upon share (right axis) with its 3-month rolling average. Lower bound (exact links only); trailing months right-censored"
+    # ~75 months on a temporal x: dct labels it by year, so its categorical
+    # "too many x categories" heuristic is a false positive here
+    warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
     x: report_month
     y: "reports acted upon"
     height: 340
     # the two % lines are distinct columns (so a hover reads both, plus the bar);
     # both share the same right axis, pinned to [0, 0.5] (the data is fractions)
-    # with a per-layer axis_y.label.format ".1%" -- that scopes the percent
+    # with a per-layer axis_y.labels.format ".1%" -- that scopes the percent
     # formatting to THIS axis and its tooltip entries only, leaving the left
-    # count axis untouched. NOTE the key is `label` (singular) on a layer; the
-    # chart-wide equivalent is `axis_y.labels.format` (plural).
+    # count axis untouched (dct 0.6 spells the layer key `labels`, the same
+    # as the chart-wide `axis_y.labels.format`).
     layers:
       - type: line
         x: report_month
@@ -325,7 +332,7 @@ charts:
           position: right
           title: "acted upon (%)"
           scale: { domain: [0, 0.5] }
-          label: { format: ".1%" }
+          labels: { format: ".1%" }
       - type: line
         x: report_month
         y: "3-month rolling average"
@@ -333,7 +340,7 @@ charts:
           position: right
           title: "acted upon (%)"
           scale: { domain: [0, 0.5] }
-          label: { format: ".1%" }
+          labels: { format: ".1%" }
         style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
 
   seasonality_counts:

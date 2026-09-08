@@ -19,3 +19,6 @@ transform/target/
 transform/logs/
 transform/dbt_packages/
 /logs/
+
+# local bug-report write-ups with rendered screenshots (never committed)
+reports/
