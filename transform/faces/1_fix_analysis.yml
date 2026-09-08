@@ -1,13 +1,4 @@
-# Where PostgreSQL's fixes and development commits actually come from:
-# filed pgsql-bugs reports vs pgsql-hackers threads vs work with no public
-# trail (embargoed security, uningested lists, no trailer). The mailing
-# lists themselves (traffic, thread outcomes, cited threads) are on the
-# Email List Analysis face.
-#
-# Release bars use short "Mon YY" labels on a categorical axis with an
-# explicit chronological sort key (temporal bar axes label every bar with
-# wide two-line labels that collide at narrow widths).
-title: "PostgreSQL Fix Origins"
+title: "PostgreSQL Fix Analysis"
 description: >
   Source attribution for fixes and development activity: each fix and
   master-branch commit is traced through its Discussion: trailers to
@@ -21,7 +12,20 @@ description: >
 
 queries:
 
-  fix_origins:
+  fix_count:
+    source: warehouse
+    sql: |
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        SUM(fix_cnt) AS fix_cnt,
+        SUM(committed_fix_cnt) AS committed_fix_cnt
+      FROM fct_fix_origins_agg
+      WHERE status = 'shipped' AND NOT is_out_of_band
+      GROUP BY 1, 2
+      ORDER BY 2
+
+  fix_origins_count:
     description: >
       DOCUMENTED fixes per shipped release by origin: a fix is one release-notes
       item, deduplicated across the branches it was backpatched to (fct_fixes).
@@ -122,10 +126,22 @@ queries:
 
 charts:
 
+  fix_counts:
+    type: bar
+    query: fix_count
+    title: "Fixes by release"
+    subtitle: "Documented fixes. a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band releases excluded"
+    x: release
+    y: fix_cnt
+    sort: { by: release_seq, order: asc }
+    # string x would auto-flip horizontal; these are time series, keep vertical
+    style: { stack: zero, orientation: vertical }
+    height: 360
+
   fix_origin_counts:
     type: bar
-    query: fix_origins
-    title: "Fix origins per release"
+    query: fix_origins_count
+    title: "Fixes by release by origin"
     subtitle: "Documented fixes by source: a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band releases excluded"
     x: release
     y: fix_cnt
@@ -193,6 +209,7 @@ charts:
     height: 340
 
 rows:
+  - fix_counts
   - fix_origin_counts
   - fix_commit_origins
   - fix_origin_share
