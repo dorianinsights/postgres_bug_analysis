@@ -21,51 +21,23 @@ queries:
     description: >
       Monthly messages per list over the whole archive, split into all
       traffic vs the fix-linked subset (messages whose thread a commit
-      eventually cites). Complete months only.
+      eventually cites). The last point is the CURRENT month, still filling.
     source: warehouse
     sql: |
-      WITH monthly AS (
+      SELECT
+        month_dt,
+        list_name || ' (' || kind || ')' AS series,
+        messages
+      FROM (
         SELECT
           DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
           list_name,
-          COUNT(*) AS message_cnt,
-          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
+          COUNT(*) AS "all",
+          COUNT(*) FILTER (WHERE is_fix_linked) AS "fix-linked"
         FROM fct_messages
         GROUP BY ALL
       )
-      SELECT month_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM monthly
-      WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
-      UNION ALL
-      SELECT month_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM monthly
-      WHERE month_dt < DATE_TRUNC('month', CURRENT_DATE)
-      ORDER BY 1, 2
-
-  monthly_traffic_partial_tail:
-    description: >
-      The dashed "still filling" tail for monthly_traffic: two points per
-      series — the last COMPLETE month and the in-progress CURRENT month
-      (only a few days in, so its level is not yet comparable). Overlaid as a
-      dashed segment so the current month reads as provisional, not absent or
-      a traffic collapse.
-    source: warehouse
-    sql: |
-      WITH monthly AS (
-        SELECT
-          DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
-          list_name,
-          COUNT(*) AS message_cnt,
-          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
-        FROM fct_messages
-        WHERE sent_dt >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL 1 MONTH
-        GROUP BY ALL
-      )
-      SELECT month_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM monthly
-      UNION ALL
-      SELECT month_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM monthly
+      UNPIVOT (messages FOR kind IN ("all", "fix-linked"))
       ORDER BY 1, 2
 
   monthly_linked_share:
@@ -133,52 +105,26 @@ queries:
 
   recent_weekly_traffic:
     description: >
-      The same traffic split per week over the last three rolling months,
-      complete weeks only — the near-term zoom of monthly_traffic.
+      The same traffic split per week over the last three rolling months —
+      the near-term zoom of monthly_traffic. The last point is the CURRENT
+      week, still filling.
     source: warehouse
     sql: |
-      WITH weekly AS (
+      SELECT
+        week_dt,
+        list_name || ' (' || kind || ')' AS series,
+        messages
+      FROM (
         SELECT
           DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
           list_name,
-          COUNT(*) AS message_cnt,
-          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
+          COUNT(*) AS "all",
+          COUNT(*) FILTER (WHERE is_fix_linked) AS "fix-linked"
         FROM fct_messages
+        WHERE sent_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
         GROUP BY ALL
       )
-      SELECT week_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM weekly
-      WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
-        AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
-      UNION ALL
-      SELECT week_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM weekly
-      WHERE week_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
-        AND week_dt < DATE_TRUNC('week', CURRENT_DATE)
-      ORDER BY 1, 2
-
-  recent_weekly_traffic_partial_tail:
-    description: >
-      The dashed "still filling" tail for recent_weekly_traffic: two points
-      per series — the last COMPLETE week and the in-progress CURRENT week.
-      Overlaid dashed so the current week reads as provisional.
-    source: warehouse
-    sql: |
-      WITH weekly AS (
-        SELECT
-          DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
-          list_name,
-          COUNT(*) AS message_cnt,
-          COUNT(*) FILTER (WHERE is_fix_linked) AS fix_linked_message_cnt
-        FROM fct_messages
-        WHERE sent_dt >= DATE_TRUNC('week', CURRENT_DATE) - INTERVAL 7 DAY
-        GROUP BY ALL
-      )
-      SELECT week_dt, list_name || ' (all)' AS series, message_cnt AS messages
-      FROM weekly
-      UNION ALL
-      SELECT week_dt, list_name || ' (fix-linked)' AS series, fix_linked_message_cnt
-      FROM weekly
+      UNPIVOT (messages FOR kind IN ("all", "fix-linked"))
       ORDER BY 1, 2
 
   recent_weekly_share:
@@ -277,27 +223,11 @@ charts:
     type: line
     query: monthly_traffic
     title: "Monthly list traffic vs fix-linked traffic"
-    subtitle: "Messages per month, whole archive; fix-linked = the thread is eventually cited by a commit (recent months right-censored). Dashed tail = the current month, still filling — a partial count, not a drop"
+    subtitle: "Messages per month, whole archive; fix-linked = the thread is eventually cited by a commit (recent months right-censored). The last point is the current month, still filling — a partial count, not a drop"
     x: month_dt
     y: messages
     color: series
     height: 380
-    # Solid line covers complete months only; this overlay draws a dashed
-    # segment from the last complete month into the in-progress current month
-    # so it reads as provisional rather than absent. Same series names => the
-    # dashes inherit each line's color.
-    layers:
-      - type: line
-        query: monthly_traffic_partial_tail
-        x: month_dt
-        y: messages
-        color: series
-        style:
-          marks:
-            line:
-              stroke:
-                dasharray: "5 3"
-
   monthly_linked_share:
     type: line
     query: monthly_linked_share
@@ -347,23 +277,11 @@ charts:
     type: line
     query: recent_weekly_traffic
     title: "Weekly list traffic, last three months"
-    subtitle: "Near-term zoom: messages per complete week vs the fix-linked subset. Dashed tail = the current week, still filling (partial)"
+    subtitle: "Near-term zoom: messages per week vs the fix-linked subset. The last point is the current week, still filling — a partial count, not a drop"
     x: week_dt
     y: messages
     color: series
     height: 340
-    layers:
-      - type: line
-        query: recent_weekly_traffic_partial_tail
-        x: week_dt
-        y: messages
-        color: series
-        style:
-          marks:
-            line:
-              stroke:
-                dasharray: "5 3"
-
   recent_weekly_share:
     type: line
     query: recent_weekly_share

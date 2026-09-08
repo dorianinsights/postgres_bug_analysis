@@ -60,6 +60,14 @@ per-session memories, which aren't committed to git.)
   anywhere. So `cd transform && harlequin -r transform.duckdb` (or
   `duckdb -readonly transform.duckdb`).
 
+- **dct overlay `layers:` get a single-identity tooltip.** An overlay layer's
+  tooltip row is keyed by the layer's LABEL (the y column name), not by its
+  `color` field, so a multi-series overlay collapses to one row in the
+  x-unified bubble (the "Messages 58" stray row). Use an overlay for one
+  reference series only; a "partial current period" is better drawn as the
+  last point of the main series with the subtitle saying so (the list-traffic
+  charts do this). A chart with `layers:` also ignores `sort:`.
+
 ## Coding conventions
 - **No hardcoded dates or magic numbers** (other than `0` and `1`) in `.sql`
   or `.py`. Before writing a literal, **check `transform/vars.yml`** for an
