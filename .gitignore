@@ -22,3 +22,7 @@ transform/dbt_packages/
 
 # local bug-report write-ups with rendered screenshots (never committed)
 reports/
+
+# Excluding third-party-added Claude skills for now
+# Downside of this is that it would also exclude any custom skills you add to the repo, but we can revisit this if needed
+.claude/skills/

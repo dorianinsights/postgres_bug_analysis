@@ -473,7 +473,8 @@ on PyPI as `dataface` (0.4.0, CLI `dft`) — never install the two together
 0.6.0 removed MetricFlow support, so every face is plain SQL; queries name
 models with `{{ ref('model') }}` (resolved through `target/manifest.json`,
 which also lets `dct validate` check each query's columns against the
-compiled models -- run `dbt parse` after renaming a column) against the
+compiled models -- run `dbt parse` after renaming a column, and keep every
+mart's outermost projection explicit so that check can read it) against the
 read-only `warehouse` DuckDB source. Boards carry an informational
 `_schema_version` stamp written by `dct migrate`; never edit it by hand, and
 rerun `dct migrate faces/` after an upgrade.
@@ -485,9 +486,9 @@ Quirks that still shape the faces:
   layers with explicit stroke colors.
 - Layer labels are appended to the y-axis title; keep them short or a chart
   can collapse to a sliver.
-- Multi-series `y: [a, b]` with `color:` is supported since 0.6.0, but the
-  faces still unpivot in SQL onto one `color:` series column — a single
-  long-format series keeps the tooltip, legend and stack order predictable.
+- Multi-series `y: [a, b]` with `color:` (0.6.0) draws one series per
+  measure x category, named "<category> — <measure>"; the list-traffic
+  charts use it instead of unpivoting in SQL.
 - An overlay `layers:` entry gets one tooltip identity (its y column), so a
   multi-series overlay collapses to one tooltip row; see CLAUDE.md.
 - Bars on a temporal x-axis no longer overhang the axis ends (fixed in

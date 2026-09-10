@@ -105,9 +105,49 @@ in_dev_version AS (
   WHERE smd.dev_status = 'beta'
 )
 
-SELECT * FROM real_members
+-- explicit projections (not SELECT *): dct validate derives each model's
+-- columns statically from this SQL to check the faces' queries against them
+SELECT
+  dim_version_key,
+  dim_major_key,
+  dim_release_key,
+  version,
+  major,
+  minor,
+  is_major_release,
+  wrap_dt,
+  release_dt,
+  item_cnt,
+  is_out_of_band,
+  first_commit_dt,
+  first_commit_ts,
+  first_commit_hash,
+  last_commit_dt,
+  last_commit_ts,
+  last_commit_hash,
+  is_synthetic_row
+FROM real_members
 UNION ALL
-SELECT * FROM in_dev_version
+SELECT
+  dim_version_key,
+  dim_major_key,
+  dim_release_key,
+  version,
+  major,
+  minor,
+  is_major_release,
+  wrap_dt,
+  release_dt,
+  item_cnt,
+  is_out_of_band,
+  first_commit_dt,
+  first_commit_ts,
+  first_commit_hash,
+  last_commit_dt,
+  last_commit_ts,
+  last_commit_hash,
+  is_synthetic_row
+FROM in_dev_version
 UNION ALL
 SELECT
   {{ unknown_key() }} AS dim_version_key,

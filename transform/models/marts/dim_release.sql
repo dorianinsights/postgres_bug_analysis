@@ -61,7 +61,36 @@ WITH real_members AS (
   LEFT JOIN {{ ref('int_release_cycles') }} AS irc ON rel.release_dt = irc.ships_at_dt
 )
 
-SELECT * FROM real_members
+-- explicit projection (not SELECT *): dct validate derives each model's
+-- columns statically from this SQL to check the faces' queries against them
+SELECT
+  dim_release_key,
+  release_dt,
+  wrap_dt,
+  status,
+  is_out_of_band,
+  is_partial_window,
+  is_announced,
+  versions,
+  release_cnt,
+  distinct_fix_cnt,
+  distinct_cve_cnt,
+  security_fix_cnt,
+  committed_fix_cnt,
+  documentation_rate,
+  cycle_start_dt,
+  window_days,
+  early_report_cnt,
+  early_message_cnt,
+  early_fix_cnt,
+  full_fix_cnt,
+  first_window_fix_cnt,
+  early_fix_share,
+  fix_per_early_report,
+  fix_per_early_message,
+  fix_per_early_fix,
+  is_synthetic_row
+FROM real_members
 UNION ALL
 SELECT
   {{ unknown_key() }} AS dim_release_key,

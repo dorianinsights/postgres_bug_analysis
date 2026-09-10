@@ -25,7 +25,19 @@ real_members AS (
   LEFT JOIN {{ ref('stg_cve_severity') }} AS sev ON cvs.cve_id = sev.cve_id
 )
 
-SELECT * FROM real_members
+-- explicit projection (not SELECT *): dct validate derives each model's
+-- columns statically from this SQL to check the faces' queries against them
+SELECT
+  dim_cve_key,
+  cve_id,
+  cvss_base_score,
+  severity_band,
+  severity_band_order,
+  cvss_vector,
+  component,
+  is_severity_unlisted,
+  is_synthetic_row
+FROM real_members
 UNION ALL
 SELECT
   {{ unknown_key() }} AS dim_cve_key,

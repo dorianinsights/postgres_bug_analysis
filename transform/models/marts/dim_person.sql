@@ -66,7 +66,21 @@ real_members AS (
   LEFT JOIN name_votes AS nvt ON pky.person_key = nvt.person_key
 )
 
-SELECT * FROM real_members
+-- explicit projection (not SELECT *): dct validate derives each model's
+-- columns statically from this SQL to check the faces' queries against them
+SELECT
+  dim_person_key,
+  canonical_email,
+  canonical_name,
+  is_git_author,
+  is_git_committer,
+  is_list_sender,
+  is_bug_reporter,
+  first_seen_dt,
+  last_seen_dt,
+  source_list_cnt,
+  is_synthetic_row
+FROM real_members
 UNION ALL
 SELECT
   {{ unknown_key() }} AS dim_person_key,

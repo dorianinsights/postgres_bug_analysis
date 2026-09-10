@@ -85,5 +85,14 @@ scenarios AS (
   FROM latest, fit
 )
 
-SELECT *
+-- explicit projection (not SELECT *): dct validate derives each model's
+-- columns statically from this SQL to check the faces' queries against them
+SELECT
+  scenario,
+  scenario_order,
+  projected_dt,
+  distinct_fix_cnt,
+  low,
+  high,
+  assumption
 FROM scenarios

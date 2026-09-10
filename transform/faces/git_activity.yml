@@ -70,7 +70,6 @@ queries:
       ORDER BY 1
 
   quarterly_by_branch:
-    ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_major is N:1 (dim_major_key is its PK); COUNT not inflated
     notes: >
       Fix commits per non-master branch per quarter (each branch counts its own
       backpatches; housekeeping commits excluded). Released majors' branches count
@@ -93,7 +92,6 @@ queries:
       ORDER BY 1, 2
 
   commits_per_version:
-    ignore: ["WARN-FANOUT-RISK"]  # fc -> dim_version is N:1 (one version per commit); COUNTs verified to reconcile
     notes: >
       Stable-branch fix commits binned by the minor release they
       shipped in (via dim_commit.dim_version_key, resolved by exact git tag

@@ -20,25 +20,20 @@ queries:
 
   monthly_traffic:
     notes: >
-      Monthly messages per list over the whole archive, split into all
-      traffic vs the fix-linked subset (messages whose thread a commit
-      eventually cites). The last point is the CURRENT month, still filling.
+      Monthly messages per list over the whole archive: all traffic and the
+      fix-linked subset (messages whose thread a commit eventually cites) as
+      two measures per list; the chart draws one series per measure x list
+      (dct 0.6 multi-y with color). The last point is the CURRENT month,
+      still filling.
     source: warehouse
     sql: |
       SELECT
-        month_dt,
-        list_name || ' (' || kind || ')' AS series,
-        messages
-      FROM (
-        SELECT
-          DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
-          list_name,
-          COUNT(*) AS "all",
-          COUNT(*) FILTER (WHERE is_fix_linked) AS "fix-linked"
-        FROM {{ ref('fct_messages') }}
-        GROUP BY ALL
-      )
-      UNPIVOT (messages FOR kind IN ("all", "fix-linked"))
+        DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
+        list_name,
+        COUNT(*) AS "all",
+        COUNT(*) FILTER (WHERE is_fix_linked) AS "fix-linked"
+      FROM {{ ref('fct_messages') }}
+      GROUP BY ALL
       ORDER BY 1, 2
 
   monthly_linked_share:
@@ -110,26 +105,19 @@ queries:
 
   recent_weekly_traffic:
     notes: >
-      The same traffic split per week over the last three rolling months —
-      the near-term zoom of monthly_traffic. The last point is the CURRENT
-      week, still filling.
+      The same two measures per list per week over the last three rolling
+      months -- the near-term zoom of monthly_traffic. The last point is the
+      CURRENT week, still filling.
     source: warehouse
     sql: |
       SELECT
-        week_dt,
-        list_name || ' (' || kind || ')' AS series,
-        messages
-      FROM (
-        SELECT
-          DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
-          list_name,
-          COUNT(*) AS "all",
-          COUNT(*) FILTER (WHERE is_fix_linked) AS "fix-linked"
-        FROM {{ ref('fct_messages') }}
-        WHERE sent_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
-        GROUP BY ALL
-      )
-      UNPIVOT (messages FOR kind IN ("all", "fix-linked"))
+        DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
+        list_name,
+        COUNT(*) AS "all",
+        COUNT(*) FILTER (WHERE is_fix_linked) AS "fix-linked"
+      FROM {{ ref('fct_messages') }}
+      WHERE sent_dt >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY
+      GROUP BY ALL
       ORDER BY 1, 2
 
   recent_weekly_share:
@@ -233,8 +221,8 @@ charts:
     title: "Monthly list traffic vs fix-linked traffic"
     subtitle: "Messages per month, whole archive; fix-linked = the thread is eventually cited by a commit (recent months right-censored). The last point is the current month, still filling — a partial count, not a drop"
     x: month_dt
-    y: messages
-    color: series
+    y: [all, fix-linked]
+    color: list_name
     height: 380
   monthly_linked_share:
     type: line
@@ -287,8 +275,8 @@ charts:
     title: "Weekly list traffic, last three months"
     subtitle: "Near-term zoom: messages per week vs the fix-linked subset. The last point is the current week, still filling — a partial count, not a drop"
     x: week_dt
-    y: messages
-    color: series
+    y: [all, fix-linked]
+    color: list_name
     height: 340
   recent_weekly_share:
     type: line

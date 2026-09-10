@@ -36,7 +36,20 @@ real_members AS (
   LEFT JOIN ga_dates AS gad ON smd.major = gad.major
 )
 
-SELECT * FROM real_members
+-- explicit projection (not SELECT *): dct validate derives each model's
+-- columns statically from this SQL to check the faces' queries against them
+SELECT
+  dim_major_key,
+  major,
+  major_label,
+  stable_branch,
+  ga_dt,
+  eol_dt,
+  is_released,
+  is_supported,
+  lifecycle,
+  is_synthetic_row
+FROM real_members
 UNION ALL
 -- master: the development trunk (the major AFTER the in-progress one) -- no
 -- numbered major, GA, or EOL yet.

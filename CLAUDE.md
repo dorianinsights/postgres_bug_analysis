@@ -52,6 +52,12 @@ per-session memories, which aren't committed to git.)
   statement (incl. a scalar subquery) references more than one table; reserved
   words (`out`, `map`, `year`, `month`, `quarter`) can't be bare aliases/columns;
   `GROUP BY ALL` can't combine with `QUALIFY` (enumerate the columns there).
+  **Marts end in an explicit column list, never `SELECT *`** (in the final
+  SELECT and every top-level UNION branch): `dct validate` derives a model's
+  columns statically from that projection to check the faces' queries, and a
+  wildcard makes the model unresolvable. Not lint-enforced; run
+  `cd transform && dct validate --strict faces/*.yml` now and then to surface
+  any `WARN-DBT-MODEL-COLUMNS-UNRESOLVED`.
 - **Interactive DuckDB/Harlequin must be launched from `transform/`**, not the
   repo root: the `staging.stg_*` models are *views* that read external CSVs by a
   relative path (`../data/raw/*.csv`, resolved against the process cwd — dbt runs
@@ -71,8 +77,13 @@ per-session memories, which aren't committed to git.)
   query's ORDER BY orders the axis. Faces name models with `{{ ref() }}`
   (resolved from `target/manifest.json`, so run `dbt parse` after adding or
   renaming a model or column, and `dct validate faces/*.yml` checks the
-  queries' columns statically); rerun `dct migrate faces/` after a dct
-  upgrade and keep its `_schema_version` stamp.
+  queries' columns statically -- the marts end in explicit projections, not
+  `SELECT *`, so keep it that way); before renaming a mart column, run
+  `cd transform && dct impact <column>` to list the boards and queries that
+  read it. Rerun `dct migrate faces/` after a dct upgrade and keep its
+  `_schema_version` stamp. The dct workflow skills live in
+  `.claude/skills/` (`dct init skills claude`; rerun with `-f` after an
+  upgrade).
 
 ## Coding conventions
 - **No hardcoded dates or magic numbers** (other than `0` and `1`) in `.sql`

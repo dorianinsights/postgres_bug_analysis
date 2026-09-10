@@ -36,8 +36,6 @@ queries:
       ORDER BY 1, 2
 
   monthly_trend:
-    # false positive: AVG over the monthly COUNT is exactly what a rolling average is
-    ignore: ["WARN-REAGGREGATION"]
     notes: Six-month centered moving average of ALL reports (form + free-form).
     source: warehouse
     sql: |
@@ -58,7 +56,6 @@ queries:
 
   weekly_reports:
     # the week x kind spine is a deliberate cross join (zero-fill both series)
-    ignore: ["WARN-MISSING-JOIN-PREDICATE"]
     notes: >
       Bug reports (new pgsql-bugs threads, form + free-form, from fct_threads)
       opened per COMPLETE week over the last three rolling months: the window
@@ -85,10 +82,6 @@ queries:
       ORDER BY 1, 2
 
   weekly_trend:
-    # both diagnostics are false positives here: the spine LEFT JOIN is
-    # aggregated to week grain, and AVG over the weekly COUNT is exactly
-    # what a rolling average is
-    ignore: ["WARN-FANOUT-RISK", "WARN-REAGGREGATION"]
     notes: >
       Trailing 3-week average of complete-week report volume (all reports,
       form + free-form). The underlying series starts two weeks before the
@@ -123,7 +116,6 @@ queries:
 
   monthly_acted_data:
     # AVG over the monthly share is exactly what a rolling average is
-    ignore: ["WARN-REAGGREGATION"]
     notes: >
       Per month, over ALL bug reports (new pgsql-bugs threads, form +
       free-form, fct_threads): reports acted upon (count, the bars -- the

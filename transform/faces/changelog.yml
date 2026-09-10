@@ -127,7 +127,6 @@ queries:
       ORDER BY 1, 2 DESC
 
   release_trend:
-    ignore: ["WARN-MISSING-JOIN-PREDICATE"]
     notes: >
       Least-squares trendlines over full-quarter release totals (the partial
       first release excluded): one fit over all releases, one excluding the latest
@@ -155,7 +154,6 @@ queries:
       ORDER BY 1
 
   security_trend:
-    ignore: ["WARN-MISSING-JOIN-PREDICATE"]
     notes: Same two trendlines fitted to the security-fix totals per release.
     source: warehouse
     sql: |
@@ -180,7 +178,6 @@ queries:
       ORDER BY 1
 
   branch_trend:
-    ignore: ["WARN-MISSING-JOIN-PREDICATE"]
     notes: >
       Pooled trendlines over scheduled per-release fix counts (all branches
       together; the corpus's partial-window first release excluded via

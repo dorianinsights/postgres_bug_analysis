@@ -97,7 +97,6 @@ queries:
       ORDER BY 1
 
   size_latency_trend:
-    ignore: ["WARN-MISSING-JOIN-PREDICATE"]  # the single-row fit is a deliberate cross join
     notes: >
       Power-law (log-log OLS) trend of report-to-fix days on fix size, as a
       fitted curve over the churn range. The fit is essentially flat
