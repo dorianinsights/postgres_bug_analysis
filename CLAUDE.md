@@ -89,7 +89,7 @@ per-session memories, which aren't committed to git.)
 - **No hardcoded dates or magic numbers** (other than `0` and `1`) in `.sql`
   or `.py`. Before writing a literal, **check `transform/vars.yml`** for an
   existing variable and use `{{ var('...') }}` — analysis knobs
-  (`scheduled_release_min_items`, `release_cadence_days`, the `*_window_days`,
+  (`scheduled_release_min_items`, `reversion_baseline_releases`, the `*_window_days`,
   the sentinel `past_eternity` / `future_eternity` dates, the date-spine bounds,
   etc.) all live there so a change means the same thing everywhere and is a
   reviewed edit. If the constant you need isn't a var yet, add it to `vars.yml`

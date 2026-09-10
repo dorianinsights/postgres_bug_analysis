@@ -1,0 +1,100 @@
+version: 2
+
+models:
+  - name: fct_fix_projections
+    description: >
+      Forecast fact -> ../data/derived/fct_fix_projections.csv: each
+      projection method's (seed projection_methods) estimate of a scheduled
+      release's documented fix count, for the open release (the live forecast)
+      AND every shipped full-quarter release replayed from the releases before
+      it, so the actual on dim_release scores each method. Conformed to
+      dim_release via dim_release_key (the actual is
+      dim_release.distinct_fix_cnt on the same key); release_dt conforms to
+      dim_date. Grain = (dim_release_key, projection_method); a method with too
+      little history for a target has no row. The signal-family rows (and the
+      blend) measure every cycle's early signals at the OPEN cycle's current
+      age, so they -- and the backtest built on them -- change daily and are
+      withheld under var(projection_min_window_days) of age; the series and
+      seasonal rows are stable.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [dim_release_key, projection_method]
+      # low/high form the reversion band: present together or not at all,
+      # only on reversion rows, and bracketing the projected value
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (low_fix_cnt IS NOT NULL) = (projection_method = 'reversion')
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (low_fix_cnt IS NULL) = (high_fix_cnt IS NULL)
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: low_fix_cnt IS NULL OR (low_fix_cnt <= projected_fix_cnt AND projected_fix_cnt <= high_fix_cnt)
+      # exactly the signal-family rows carry the signal they scale, and exactly
+      # the three single-signal methods carry the one ratio applied to it
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (signal_value IS NOT NULL) = (method_family = 'signal')
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (scale_factor IS NOT NULL) = (projection_method IN ('report_scaled', 'message_scaled', 'committed_scaled'))
+    columns:
+      - name: dim_release_key
+        description: The release being forecast (FK to dim_release; its actual documented count is distinct_fix_cnt there).
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_release')
+                field: dim_release_key
+      - name: release_dt
+        description: That release's scheduled release day.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: projection_method
+        description: The recipe (FK to the projection_methods seed, whose label / family / order / assumption ride along).
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('projection_methods')
+                field: projection_method
+      - name: method_label
+        description: The seed's display name for the method (what the faces show).
+      - name: method_family
+        description: series (extrapolates the shipped series) / signal (scales an early-cycle signal) / reference (blend, seasonal baseline).
+        tests:
+          - accepted_values:
+              arguments:
+                values: [series, signal, reference]
+      - name: method_order
+        description: The seed's display order.
+      - name: signal_value
+        description: The early-cycle signal the method scales (reports / messages / distinct committed fixes at the open cycle's age); signal family only.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: scale_factor
+        description: The historical median shipped-per-early ratio applied to signal_value, DECIMAL(12,6); the three single-signal methods only.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: projected_fix_cnt
+        description: >
+          The method's estimate of the release's documented fix count. No
+          floor test: trend and escalation are unbounded extrapolations, and a
+          falling series legitimately projects toward zero.
+        tests: [not_null]
+      - name: low_fix_cnt
+        description: Reversion's lower band edge (mean minus one sample stdev).
+      - name: high_fix_cnt
+        description: Reversion's upper band edge (mean plus one sample stdev).
+      - name: assumption
+        description: The seed's one-sentence recipe.

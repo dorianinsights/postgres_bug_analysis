@@ -3,7 +3,7 @@
 -- items, int_fix_reps) and its COMMITTED fix count (distinct non-housekeeping
 -- stable-branch subjects that shipped in it, int_committed_fixes), plus the
 -- documentation rate between them. Feeds dim_release's measures, and
--- projections + int_release_cycles read it (rather than the CSV twin, to avoid
+-- int_release_cycles reads it (rather than the CSV twin, to avoid
 -- re-sniffing). Restricted to shipped releases (the upcoming ones in
 -- int_releases have no items yet). One row per shipped release.
 WITH fix_counts AS (

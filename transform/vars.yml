@@ -8,20 +8,30 @@ vars:
   # A release is out-of-band (emergency re-release) when its largest release
   # has fewer items than this.
   scheduled_release_min_items: 20
-  # Quarterly release cadence: where the projected next release is placed.
-  release_cadence_days: 91
+  # -- fct_fix_projections knobs. Both apply per TARGET release: the open one
+  # and every shipped release the fact replays from the releases before it.
+  # reversion returns to the mean of this many full-quarter releases BEFORE
+  # the target's latest one (the latest is treated as the one-off being
+  # reverted from).
+  reversion_baseline_releases: 3
+  # origin_scaled pools this many of the target's most recent closed scheduled
+  # cycles for its per-origin factor (documented fixes per committed fix that
+  # had landed by the open cycle's current age). One year of cycles, so the
+  # quarterly seasonality averages out while a recent shift in how much of the
+  # commit stream gets documented still shows.
+  origin_projection_cycles: 4
+  # The signal-family methods (and their blend) scale the open cycle's early
+  # signals at its CURRENT age, applied to every replayed cycle too. Under this
+  # many days of age a "signal" is a handful of reports and commits and the
+  # replayed ratios are noise (57 fixes per 1 report), so those rows are
+  # withheld until the cycle is this old; the series and seasonal methods do
+  # not depend on the age and always appear.
+  projection_min_window_days: 7
   # How many recent cycles the like-for-like pace comparison covers
   # (the open cycle plus N-1 closed comparators).
   pace_comparison_cycles: 3
   # A release's wrap tag is the latest tag within this many days before it.
   wrap_tag_window_days: 7
-  # How many of the most recent closed scheduled cycles the per-origin
-  # projection on fct_fix_origins_agg pools when converting the open release's
-  # committed-so-far fixes into documented units (documented fixes per committed
-  # fix that had landed by the open cycle's current age). One year of cycles, so
-  # the quarterly seasonality averages out while a recent shift in how much of
-  # the commit stream gets documented still shows.
-  origin_projection_cycles: 4
   # The fixed "early cycle" window for the quarterly-seasonality view:
   # dim_release.first_window_fix_cnt (via int_release_cycles) counts distinct
   # backpatched fixes in the first N days after the wrap. FIXED on purpose so the

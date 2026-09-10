@@ -1,0 +1,29 @@
+version: 2
+
+seeds:
+  - name: projection_methods
+    description: >
+      The recipes fct_fix_projections uses to forecast a scheduled release's
+      documented fix count -- the "forecast version" dimension of that fact,
+      a seed lookup whose attributes are denormalized onto the fact rows. Three families: series (extrapolations of the shipped
+      full-quarter release series: reversion / trend / regime_repeat /
+      escalation), signal (an early-cycle signal scaled by its historical
+      ratio: report_scaled / message_scaled / committed_scaled /
+      origin_scaled) and reference (blended, seasonal_baseline).
+      projection_method is the key the fact carries; method_label is the display name the faces
+      show; assumption is the one-sentence recipe. Hand-curated.
+    columns:
+      - name: projection_method
+        tests: [not_null, unique]
+      - name: method_order
+        tests: [not_null, unique]
+      - name: method_family
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [series, signal, reference]
+      - name: method_label
+        tests: [not_null, unique]
+      - name: assumption
+        tests: [not_null]

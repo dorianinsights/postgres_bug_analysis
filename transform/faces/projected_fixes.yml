@@ -1,18 +1,26 @@
 _schema_version: "0.6.0"  # written automatically by dct migrate
 # Forward-looking view: what the next scheduled minor is on track to
-# contain, from the three early-cycle signals and their historical
-# scaling. The estimates are deliberately naive linear scalings
-# (fix_projection_estimates) — transparent bands, not fitted models.
+# contain, from the early-cycle signals and their historical scaling. The
+# estimates are deliberately naive linear scalings (fct_fix_projections'
+# signal family) — transparent bands, not fitted models — and the same
+# fact replays every method for every shipped release, so the face
+# scores them.
 title: "Projected Upcoming Fix Counts"
 notes: >
   How many fixes to expect in the next scheduled minor release: live
-  accrual counters since the last wrap (the content cutoff), three
-  simple linear estimates (each early signal times its historical
-  median shipped-per-early ratio, from every closed cycle replayed at
-  today's cycle age), and the ratio history that shows how trustworthy
-  each estimator has been. Demand-side estimators (reports, messages)
-  assume the historical signal-to-fix conversion; the supply-side one
-  (committed pace) is what caught the Aug 2026 surge.
+  accrual counters since the last wrap (the content cutoff), four
+  signal estimates (three early signals times their historical median
+  shipped-per-early ratios, plus the per-origin committed scaling, from
+  every closed cycle replayed at today's cycle age), the ratio history
+  that shows how stable each scaling factor has been, and a backtest:
+  every method replayed for every shipped release from the releases
+  before it, against what that release actually shipped. Demand-side
+  estimators (reports, messages) assume the historical signal-to-fix
+  conversion; the supply-side ones (committed pace, by origin) react to
+  the commit stream. Everything here is measured at the open cycle's
+  CURRENT age, so the estimates, the backtest and the scorecard all
+  move day by day -- read the scorecard as "how each method would have
+  done at this point in the cycle", not as a fixed ranking.
 
 queries:
   next_wrap:
@@ -54,20 +62,68 @@ queries:
       WHERE status = 'open'
 
   blended_estimate:
-    notes: The equal-weight blend of the three linear estimates.
+    notes: The equal-weight blend of the three single-signal estimates, for the open release.
     source: warehouse
     sql: |
-      SELECT projected_fix_cnt
-      FROM {{ ref('fix_projection_estimates') }}
-      WHERE estimator_order = 4
+      SELECT prj.projected_fix_cnt
+      FROM {{ ref('fct_fix_projections') }} AS prj
+      INNER JOIN {{ ref('dim_release') }} AS rel ON prj.dim_release_key = rel.dim_release_key
+      WHERE rel.status = 'open' AND prj.projection_method = 'blended'
 
   estimates:
-    notes: The three linear estimates plus the blend.
+    notes: >
+      The open release's signal estimates (each early signal times its
+      ratio, plus the per-origin scaling) and the reference points (blend,
+      seasonal baseline); the label carries the ratio applied.
     source: warehouse
     sql: |
-      SELECT estimator, estimator_order, projected_fix_cnt
-      FROM {{ ref('fix_projection_estimates') }}
+      SELECT
+        CASE
+          WHEN prj.scale_factor IS NOT NULL THEN prj.method_label || ' x ' || ROUND(prj.scale_factor, 3)
+          WHEN prj.projection_method = 'seasonal_baseline' THEN prj.method_label || ' (' || STRFTIME(prj.release_dt, '%b') || ' median)'
+          ELSE prj.method_label
+        END AS estimator,
+        prj.method_order AS estimator_order,
+        prj.projected_fix_cnt
+      FROM {{ ref('fct_fix_projections') }} AS prj
+      INNER JOIN {{ ref('dim_release') }} AS rel ON prj.dim_release_key = rel.dim_release_key
+      WHERE rel.status = 'open' AND prj.method_family IN ('signal', 'reference')
       ORDER BY 2
+
+  backtest:
+    notes: >
+      The signal estimators and the blend (the series scenarios are on the
+      changelog face; the scorecard below covers every method) replayed for
+      every shipped full-quarter release from the releases before it
+      (fct_fix_projections), against what the release actually shipped
+      (dim_release): projected minus actual, so zero is a perfect call.
+    source: warehouse
+    sql: |
+      SELECT prj.release_dt, prj.method_label AS method, prj.projected_fix_cnt - rel.distinct_fix_cnt AS error
+      FROM {{ ref('fct_fix_projections') }} AS prj
+      INNER JOIN {{ ref('dim_release') }} AS rel ON prj.dim_release_key = rel.dim_release_key
+      WHERE rel.status = 'shipped' AND (prj.method_family = 'signal' OR prj.projection_method = 'blended')
+      ORDER BY 1, prj.method_order
+
+  method_scorecard:
+    notes: >
+      Every method's backtest over the shipped releases it could be replayed
+      for: mean error (bias, negative = under-called) and mean absolute error.
+      The signal methods are replayed at today's cycle age, so their rows
+      re-rank as the cycle ages; the series and seasonal rows are stable.
+    source: warehouse
+    sql: |
+      SELECT
+        prj.method_label AS method,
+        prj.method_family AS family,
+        COUNT(*) AS releases,
+        ROUND(AVG(prj.projected_fix_cnt - rel.distinct_fix_cnt), 1) AS bias,
+        ROUND(AVG(ABS(prj.projected_fix_cnt - rel.distinct_fix_cnt)), 1) AS mean_abs_error
+      FROM {{ ref('fct_fix_projections') }} AS prj
+      INNER JOIN {{ ref('dim_release') }} AS rel ON prj.dim_release_key = rel.dim_release_key
+      WHERE rel.status = 'shipped'
+      GROUP BY 1, 2
+      ORDER BY 5
 
   ratio_history:
     notes: >
@@ -152,8 +208,8 @@ charts:
   estimates:
     type: bar
     query: estimates
-    title: "Linear estimates for the next minor"
-    subtitle: "Each early signal times its historical median ratio; the spread IS the message — supply-side pace says a big release"
+    title: "Signal estimates for the next minor"
+    subtitle: "Each early signal times its historical median ratio, plus the blend and the seasonal floor; the spread IS the message — supply-side pace says a big release, but see the scorecard for how often it has been right"
     x: estimator
     y: projected_fix_cnt
     sort: { by: estimator_order, order: asc }
@@ -181,9 +237,32 @@ charts:
     style: { stack: none, orientation: vertical }
     height: 340
 
+  backtest:
+    type: line
+    query: backtest
+    title: "Backtest: each estimator's error per shipped release"
+    subtitle: "Projected minus actual, replayed from the releases before each one at today's cycle age; zero is a perfect call; the first two points rest on one or two history releases"
+    x: release_dt
+    y: error
+    color: method
+    height: 340
+
+  scorecard:
+    type: table
+    query: method_scorecard
+    title: "Method scorecard over the shipped releases"
+    # bias can be a fraction (0.7): the default compact format renders it "700m"
+    style:
+      columns:
+        releases: { format: integer }
+        bias: { format: number_full }
+        mean_abs_error: { label: "mean abs error", format: number_full }
+
 rows:
   - cols: [kpi_wrap, kpi_reports, kpi_messages, kpi_fixes]
   - cols: [kpi_blend]
   - estimates
   - pace_history
   - ratio_history
+  - backtest
+  - scorecard

@@ -125,7 +125,7 @@ explicit `sort:` on a layered chart into an alphabetical axis, so the query's
 ORDER BY orders the axis). Follow that here: keep this chart documented-only and add a per-major
 committed-fixes-per-release chart with the so-far point
 (`dim_commit.dim_release_key` = the open release gives the committed-so-far
-count per major). `fct_fix_origins_agg.projected_fix_cnt` (per-origin
+count per major). `fct_fix_projections`' origin_scaled method (per-origin
 documented-per-early-committed factors over `origin_projection_cycles` cycles)
 exists if a documented-units projection is ever wanted instead.
 

@@ -216,13 +216,17 @@ queries:
       ORDER BY 1
 
   projections:
-    notes: Next-release scenario projections derived from the release series.
+    notes: >
+      The four series scenarios for the open release (fct_fix_projections,
+      method_family = series: reversion / trend / regime repeat / escalation).
     source: warehouse
     sql: |
-      SELECT projected_dt, scenario, distinct_fix_cnt, assumption
-      FROM {{ ref('projections') }}
-      -- scenario_order is not in the select list, so it stays named
-      ORDER BY scenario_order
+      SELECT prj.release_dt AS projected_dt, prj.method_label AS scenario, prj.projected_fix_cnt AS distinct_fix_cnt, prj.assumption
+      FROM {{ ref('fct_fix_projections') }} AS prj
+      INNER JOIN {{ ref('dim_release') }} AS rel ON prj.dim_release_key = rel.dim_release_key
+      WHERE rel.status = 'open' AND prj.method_family = 'series'
+      -- method_order is not in the select list, so it stays named
+      ORDER BY prj.method_order
 
   release_table:
     notes: All releases with headline numbers, newest first.

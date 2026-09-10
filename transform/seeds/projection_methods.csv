@@ -1,0 +1,11 @@
+projection_method,method_order,method_family,method_label,assumption
+reversion,1,series,reversion,"the latest release was a one-off: return to the mean of the few full-quarter releases before it (reversion_baseline_releases of them), with a one-sample-standard-deviation band over every earlier release but the latest"
+trend,2,series,trend,"least-squares line through every earlier full-quarter release, extended one slot"
+regime_repeat,3,series,regime repeat,"whatever produced the latest release keeps delivering at that level"
+escalation,4,series,escalation,"the latest release is the new base and growth continues at the fitted trend rate"
+report_scaled,5,signal,bug reports,"early bug reports times the historical median shipped-fixes-per-early-report ratio (over the earlier closed cycles that carry all three early signals, replayed at today's cycle age)"
+message_scaled,6,signal,list messages,"early list messages times the historical median shipped-fixes-per-early-message ratio"
+committed_scaled,7,signal,committed fixes,"early committed fixes times the historical median shipped-fixes-per-early-committed-fix ratio"
+origin_scaled,8,signal,committed fixes by origin,"each origin's early committed fixes times that origin's documented-per-early-committed factor pooled over the most recent earlier releases (origin_projection_cycles of them); an origin with no early commits (embargoed security) takes those releases' average documented count"
+blended,9,reference,blended (equal weight),"equal-weight average of the bug-report, list-message and committed-fix estimates"
+seasonal_baseline,10,reference,seasonal baseline,"median shipped fix count of the earlier full-quarter releases in the same calendar quarter"

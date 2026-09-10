@@ -1,6 +1,0 @@
-ships_at_dt,estimator,estimator_order,signal_value,projected_fix_cnt
-2026-11-12,blended (equal weight),4,,96
-2026-11-12,bug reports x 2.21,1,40,88
-2026-11-12,committed fixes x 1.61,3,75,121
-2026-11-12,list messages x 0.026,2,3022,78
-2026-11-12,seasonal baseline (Nov median),5,,71

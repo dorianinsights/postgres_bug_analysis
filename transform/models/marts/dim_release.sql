@@ -6,9 +6,10 @@
 -- int_releases; the shipped fix/CVE/security measures from int_release_summary;
 -- and the cycle signals (int_release_cycles, once a standalone
 -- fct_release_cycles) fold onto the same row — a cycle IS a release earlier in
--- its life. They are non-NULL only for the started scheduled cycles. Projections
--- for the open/future releases live in their own conforming facts
--- (fix_projection_estimates, projections), not here. Plus the two Kimball
+-- its life. They are non-NULL only for the started scheduled cycles. Forecasts
+-- of a release's fix count live in the conforming forecast fact
+-- fct_fix_projections (the open release, and every shipped one replayed so
+-- distinct_fix_cnt here scores it), not here. Plus the two Kimball
 -- special members. Grain = dim_release_key. -> ../data/derived/dim_release.csv
 WITH real_members AS (
   SELECT
@@ -49,8 +50,8 @@ WITH real_members AS (
     -- (and on the non-cycle rows). The quarterly-seasonality chart averages it.
     (irc.first_window_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.full_fix_cnt, 0))::DECIMAL(7, 6) AS early_fix_share,
     -- shipped-per-early-signal ratios at the open cycle's age -- the historical
-    -- scaling factors the fix projection replays (fix_projection_estimates
-    -- medians these). Ratios, so DECIMAL not float; NULL when the signal is 0
+    -- scaling factors the fix projection replays (fct_fix_projections medians
+    -- these over each target's history). Ratios, so DECIMAL not float; NULL when the signal is 0
     -- or the cycle hasn't shipped (distinct_fix_cnt NULL).
     (rrs.distinct_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.early_report_cnt, 0))::DECIMAL(12, 6) AS fix_per_early_report,
     (rrs.distinct_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.early_message_cnt, 0))::DECIMAL(12, 6) AS fix_per_early_message,

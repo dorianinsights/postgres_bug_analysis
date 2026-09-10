@@ -124,10 +124,10 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 |---|---|---|
 | `fct_release_categories_agg.csv` | (dim_release_key, category) | distinct-fix counts per category, aggregated from `fct_fixes`; conformed to `dim_release` via `dim_release_key` |
 | `fct_release_contributors_agg.csv` | (dim_release_key, contributor) | credit counts via `bridge_fix_contributor` (the notes' "(Name, Name)" parse lives in `int_fix_contributors`), with first-seen release; conformed to `dim_release` |
-| `projections.csv` | one scenario | next-release scenarios: reversion / trend / regime repeat / escalation |
+| `fct_fix_projections.csv` | (dim_release_key, projection_method) | forecast fact: every projection method's (seed `projection_methods` — four series scenarios, four early-signal estimators, blend + seasonal baseline) estimate of a scheduled release's documented fix count, for the open release AND every shipped full-quarter release replayed from the releases before it; the actual is `dim_release.distinct_fix_cnt` on the same key, so the faces score each method |
 | `fct_category_vs_subsystem_agg.csv` | (category, subsystem) | content category (int_fix_content_categories) cross-tabbed against the changed-file subsystem |
 | `fct_bug_reports_monthly_agg.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
-| `fct_fix_origins_agg.csv` | (release, origin) | fixes per release by origin (Discussion:/Bug: trailers → pgsql-bugs, pgsql-hackers, or no public trail split security/not) in BOTH populations: documented (`fix_cnt`) and committed (`committed_fix_cnt`) with their `documentation_rate`; the open release carries the committed-so-far count (the dashed bar on the origins face's fix-commits chart) and a `projected_fix_cnt` in documented units for anyone projecting |
+| `fct_fix_origins_agg.csv` | (release, origin) | fixes per release by origin (Discussion:/Bug: trailers → pgsql-bugs, pgsql-hackers, or no public trail split security/not) in BOTH populations: documented (`fix_cnt`) and committed (`committed_fix_cnt`) with their `documentation_rate`; the open release carries the committed-so-far count (the dashed bar on the origins face's fix-commits chart); observed measures only, the forecast lives in `fct_fix_projections` |
 | `fct_origin_activity_monthly_agg.csv` | (month, origin) | master-branch activity by origin: commit count, AI-flagged commits, distinct cited threads |
 | `dim_version.csv` | one version | version dimension: one row per individual minor (e.g. `18.6`) below the release — major/minor, wrap + announced date, `dim_release_key` → `dim_release` (NULL for `.0` majors), and its dates conform to `dim_date` |
 | `fct_version_items_agg.csv` | one version | aggregate fact: changelog item count per minor, conformed to `dim_version` (the date/major/minor attributes live in the dimension) |
@@ -297,8 +297,16 @@ every object's name. Layers:
     as `fct_release_cycles` and then folded into `dim_release` (`int_release_cycles`);
     `int_backpatch_fixes` / `int_pending_fixes` / `fct_pending_fix_origins_agg`
     (calendar-windowed commit counts) were retired into `int_committed_fixes` +
-    `fct_fix_origins_agg` once every commit resolved to its release.
-- `seeds/` — the classification data: `content_categories` (the 13-category
+    `fct_fix_origins_agg` once every commit resolved to its release; the
+    single-open-release forecasts `projections` (series scenarios) and
+    `fix_projection_estimates` (signal estimators), plus
+    `fct_fix_origins_agg`'s per-origin projection, were merged into the
+    forecast fact `fct_fix_projections` (grain release x method, replayed
+    for every shipped release so the actual on `dim_release` scores it).
+- `seeds/` — the classification data: `projection_methods` (the forecast
+  recipes `fct_fix_projections` applies -- its method dimension, a seed lookup
+  denormalized onto the fact),
+  `content_categories` (the 13-category
   fix taxonomy + definitions; fixes are assigned to it by int_fix_content_categories,
   which replaced the retired `category_rules` regex classifier),
   `ai_involvement_roles` (the disclosed-AI role definitions the
@@ -320,12 +328,14 @@ use (`test_floor_major`, `test_floor_release_dt`, `test_floor_git_ts` —
 deliberately NOT the corpus bounds; `corpus.py` owns those). Editing a
 parameter changes what the results mean — treat it like a corpus change.
 
-Every model is heavily tested — 295 data tests in all: column-level schema
-tests (uniqueness, not-null, relationships, accepted ranges on counts and
-dates, regex format checks) using `dbt_utils` and Metaplane's
-`dbt_expectations` (installed via `dbt deps`), plus seven singular
-reconciliation tests (rollups vs the item grain, commit annotations vs
-items, connected-components sanity, exactly one open cycle). `dbt build`
+Every model is heavily tested — roughly 900 data tests in all (`dbt ls
+--resource-type test` for the exact count): column-level schema tests
+(uniqueness, not-null, relationships, accepted ranges on counts and dates,
+regex format checks) using `dbt_utils` and Metaplane's `dbt_expectations`
+(installed via `dbt deps`), plus the singular reconciliation tests in
+`transform/tests/` (rollups vs the item grain, commit annotations vs items,
+connected-components sanity, the release calendar vs observed wraps, and the
+forecast fact's target population and open-release completeness). `dbt build`
 is therefore also the validation pass.
 
 SQL conventions (enforced by sqlfluff where a rule exists; the naming ones
@@ -425,8 +435,8 @@ carry no separate unit tests.
   origins face keeps the two apart: "Fix origins per release" plots documented
   fixes for shipped releases, "Fix commits per release" plots committed fixes
   for every release including the open one's so-far bar, so each chart compares
-  like with like (`fct_fix_origins_agg` carries both, plus a per-origin
-  `projected_fix_cnt` that converts the so-far count into documented units).
+  like with like (`fct_fix_origins_agg` carries both; the documented-units
+  forecast of the open release is `fct_fix_projections`' origin_scaled method).
 - **Thread identity is transitive.** A message's parent is its In-Reply-To
   (else the last References id) and the thread root is the topmost archived
   ancestor reached by climbing that chain within the list
