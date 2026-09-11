@@ -242,6 +242,6 @@ month_dt,origin,commit_cnt,ai_commit_cnt,cited_thread_cnt
 2026-08-01,pgsql-hackers,220,6,167
 2026-08-01,unknown_or_internal_not_security,32,0,4
 2026-08-01,unknown_or_internal_security,33,7,0
-2026-09-01,pgsql-bugs,5,0,4
-2026-09-01,pgsql-hackers,77,0,72
-2026-09-01,unknown_or_internal_not_security,5,0,0
+2026-09-01,pgsql-bugs,6,0,6
+2026-09-01,pgsql-hackers,109,0,93
+2026-09-01,unknown_or_internal_not_security,6,0,0

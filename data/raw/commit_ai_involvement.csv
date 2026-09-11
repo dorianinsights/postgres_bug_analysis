@@ -945,6 +945,7 @@ add regression tests for replica identity with dropped indexes,53914935f7fae8c0,
 add reject_limit option to the copy command.,288bdc89506abf89,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add relallfrozen to pg_class,5edc5746e6487c15,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add relallfrozen to pg_dump statistics.,97ceac2da406cabe,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+add relation option toast_value_type,4ebd67dd142913dd,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add reminder to create .abi-compliance-history.,a5190020b024d2b7,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add repalloc0 and repalloc0_array,1388ade07ffe10ea,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add replication command read_replication_slot,a19347d6f9c57f0a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -1029,6 +1030,7 @@ add standard collation unicode,d457b1c9a05f2ef2,qwen3:30b-a3b,ai-v4,false,false,
 add started_by column to pg_stat_progress_analyze view.,13d57663b47154f5,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add static assertion ensuring sizeof(exprevalstep) <= 64 bytes,2dccebcd6d928a2c,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add static assertion that relseg_size fits in an int.,bc31068b2dab5dae,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+add static assertion to track the no-padding rule of varatt_external_oid,2a77243fb2b4b53b,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add static asserts for max_backends limiting factors,86f3b6c94e6bfbe5,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add stats_reset column to pg_stat_database_conflicts.,4d7cf22c15cafd9f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add stats_reset column to pg_statio_all_sequences,c830cf58403c1e4e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -1103,6 +1105,7 @@ add support for tab completion after alter extension add|drop in psql,88d76092b9
 "add support for tab-completion of type arguments in \df, \do.",d9c6ac8925b24320,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add support for tcl 9,7e0c734f5db33d2e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add support for the error functions erf() and erfc().,06cd0b3e145ad020,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+add support for toast chunk_id type in binary upgrades,2f32341b29aa5bf9,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add support for tracking of entry count in pgstats,b95b9e01eabf5c65,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 add support for unicode case folding.,231c2a354fd01b47,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "add support for unit ""b"" to pg_size_bytes()",8a8b9a2889c35abc,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -2608,6 +2611,7 @@ clarify nbtree array preprocessing comment.,c61b54f53441fb2f,qwen3:30b-a3b,ai-v4
 clarify nbtree parallel scan _bt_endpoint contract.,3247500a42b6de1d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 clarify nbtree posting list update desc issue.,a5c6bebe6ce728a0,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 clarify restrict_nonsystem_relation_kind description.,3ec5bd0f52e64b10,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+clarify ri tuple-lock result handling comments,3cf258f676c4742d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 clarify some comments around sharedrecoverystate in xlog.c,2fb36fb603e26a00,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "clarify some comments making use of leetspeak term ""up2date""",b78e73db0cf9457f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 clarify some errors in pg_receivewal when closing wal segments,48ae889c7fabb53a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -3195,6 +3199,7 @@ disallow partitionwise grouping when collations don't match,d5fa2316753073bd,qwe
 disallow partitionwise join when collations don't match,7648324c7a0ceb49,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 disallow removing placeholders during self-join elimination.,c5f860bb0f1a4581,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "disallow renaming a rule to ""_return"".",54f414593f90d759,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+disallow repack (concurrently) when replica identity index is dropped,1b6f64bd1795c9dc,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 disallow replacing joins with scans in problematic cases.,29bef70f023f69c3,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 disallow server start with sync_replication_slots = on and wal_level < logical.,e349e0fe05e20943,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 disallow set-returning functions within window over clauses.,505910c8040c5f54,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -4309,6 +4314,7 @@ doc: mention online checksum enabling in pg_checksums docs,ab7f6a7d938a9c67,qwen
 doc: mention passing support for jsonpath variables,fad0acbd12d78122,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: mention pg_get_partition_constraintdef(),e897c7b9fad20ce6,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: mention pg_read_all_stats in description of track_activities,0f8d8736bec99fac,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+doc: mention pg_stat_force_next_flush(),c48bf1c92d868570,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: mention pg_upgrade extension script,b829bfebc886c6f6,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: mention pgdatabase as supported by pgbench,b4ec97830908b14e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: mention possible ephemeral discrepancies in pg_stat_activity,2f8595bdf485b331,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -4698,6 +4704,7 @@ doc: update v14 release notes for revert of commit c0cb87fbb.,b8961ab393c3017d,q
 doc: update v14 release notes through today.,fb3aceafcc6efedb,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: update v15 release notes through today.,3621336fa6daa206,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: update v15 release notes.,0201dcf8c86ccf54,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+doc: update v19 release notes for reversion of a9c350d9e.,6b53aafb3bf83070,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: update vacuum freeze query conflict guidance.,36076f1d0b49c430,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: update vacuum verbose freezing tip.,80dbf56ec279b3f6,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 doc: update xid wraparound error example,f0e9f254d4f673f2,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -5359,6 +5366,7 @@ factor out system call names from error messages,0e1d9faa32081cc7,qwen3:30b-a3b,
 factor pattern-construction logic out of processsqlnamepattern.,6200413ec33b63e1,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fail hard on out-of-memory failures in xlogreader.c,d1181d92e4517124,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fail recovery when missing redo checkpoint record without backup_label,ef3fbde26b0a64e7,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fall back to spi for ri checks with mismatched index collations,05a724df5527bf12,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "fall back to unsigned int, not int, for socklen_t.",80669a7b9d4d9622,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fallback to clang in path with meson,c356320ecbd2283b,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fallback to uuid for ossp-uuid with meson,216a506f7f816a86,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -6072,6 +6080,7 @@ fix crash introduced by incorrect backport 806555e300.,6bf83c4262abc86a,qwen3:30
 fix crash of pg_stat_statements_info() without library loaded,e8622fd325d75997,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix crash on syslogger startup,a6f93373f5b725c4,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix crash on trying to expand a shared memory hash table,6613e83436612207,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fix crash on update or delete of a partition pending detach.,68499aa1ff415217,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix crash with removefromwaitqueue() when detecting a deadlock.,da3924762b0b30a6,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix crash/valgrind error,5092a38ad8fa1b3a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix crashes with create schema authorization and schema elements,b9cd4765ed2fb94f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -6449,6 +6458,7 @@ fix headerscheck warning.,348950f5dfc4c0bf,qwen3:30b-a3b,ai-v4,false,false,false
 fix heap rmgr's desc output for infobits arrays.,70c02f1a8549882c,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix heap-buffer-overflow in pglz_decompress() on corrupt input.,5e2dbb94cbb5595a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix heap_page_prune() parameter order confusion introduced in dc7420c2c92.,9069c4c9050b1a72,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fix heap_update() ignoring table_update_no_logical for toast tuples.,2f4b244d018e16a4,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix help text spacing in pgindent,119b21d6bd23fe8d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix hot standby accepting connections too early after a crash reset,0a6c126eaac8f234,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix how sje checks against phvs,7a8a4503c8d6eec1,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -6748,6 +6758,7 @@ fix logic buglets in pg_dump's flaginhattrs().,18dccce60d61ad20,qwen3:30b-a3b,ai
 fix logical decoding of empty prepared transactions.,5829c608e1469b82,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix logical decoding regression tests to correctly check slot existence.,81346b3dbb6b8f0f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix logical decoding test to correctly check slot removal on standby.,6548f6bd84f271bc,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fix logical decoding to ignore updates without a new tuple.,b077f132bc4b7cb8,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix logical replication of truncate in synchronous commit mode.,d0250c0b8275591a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix logical replication tap test to read publisher log correctly.,f7b8c8b0a1afa649,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix long-obsolete comment.,b40b3fd26b7f71fa,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -6894,6 +6905,7 @@ fix misleading error message about inconsistent moving-aggregate types.,5392e164
 fix misleading error message context,275c89ca9daf4eec,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix mismatched deallocation functions,529552f60e07229a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix mismatched file identifications,45d830476c05fd1a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fix misplaced comment in snapbuild.c.,55e16660bb763caf,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix misplaced translator comments,d0ea9ea3406a4014,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix misreporting of publisher sequence permissions during sync,6b21dadde4168f5e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix missed case for builtin collation provider.,0bf1332645e8717d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -7093,6 +7105,8 @@ fix one-off bug causing missing commit timestamps for subtransactions,18316c2549
 fix one-off issue with cache id in objectaddress.c,69270d678f357ab1,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix operator typo in tablecmds.c,358c17daf6e11016,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "fix optimization hazard in gram.y's makeorderedsetargs(), redux.",3e66e6455c109ca8,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fix option argument lookup in in-tree getopt_long().,893ed86ba5f2e465,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fix optional-argument handling in in-tree getopt_long().,7889dcada7128ce9,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix options listing of pg_restore --no-globals,b79c368e6f42cb75,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix options listing of pg_test_timing --cutoff,f4153cc3c695bc26,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix order by clause in new regression test of reindex concurrently,b689978e997c6a10,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -7243,6 +7257,7 @@ fix pg_get_publication_tables() failure with concurrent drop table.,7ee6ee6c4b55
 fix pg_hba_file_rules for authentication method cert,daf94b0f27de5ff5,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_identify_object_as_address() with event triggers,67ca06b8c984c7a2,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_isblank(),201b20ce41866592,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fix pg_iswcased().,07fb435818e66f2f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_overexplain to emit valid output with range_table option.,bc95ef8ecdff63f2,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_popcount_aarch64.c to build with ancient glibc releases.,7d7a75b41a34ae51,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_prepared_statements.result_types for dml statements,94b28016ec38d753,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -7258,6 +7273,7 @@ fix pg_stat_autovacuum_scores for toast tables.,105a9e09a2a6ec93,qwen3:30b-a3b,a
 fix pg_stat_get_backend_activity() to use multi-byte truncated result,f9bc46546b1a6c07,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_stat_get_backend_wait_event() for aux processes,1a0b6a1f1e85a0c0,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_stat_io buffer reuse test instability,8e87dcd5f891edda,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fix pg_stat_progress_cluster command reporting for unprivileged users,5964d42ca4d7ac9a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_stat_reset_single_table_counters() for shared relations,05b6c8f26aa742f4,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_stat_statements for merge,9f12bf3126fcf9fe,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix pg_statio_all_tables view for multiple toast indexes.,36fb4548bc0314f4,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -7561,6 +7577,7 @@ fix reorder buffer memory accounting for toast changes.,f2ddd51f2a2a4c86,qwen3:3
 fix reorderbuffer memory overflow check.,13aa870613587587,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix reorderbuffercheckmemorylimit() comment.,1400f9884b72cf65,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix repack (concurrently) when the table owner lacks connect.,d09d79bf4ac84225,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+fix repack command reporting in pg_stat_progress_cluster,bd9024b086c52ee5,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix repack concurrently for stored generated columns,b91d55c3824b9548,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix repack decoding worker not cleaned up on fatal exit,d9305080c305b155,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 fix repack with without overlaps replica identity indexes,cd466134da516a74,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -10873,6 +10890,8 @@ pg_createsubscriber: reword dry-run log messages,0ab7410c3303e1a3,qwen3:30b-a3b,
 pg_createsubscriber: use logging.c log file callback,8e58fe6b4fee52aa,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_createsubscriber: use new routine to retrieve data of pg_version,fb38ea8ae0bd1c21,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_ctl: disable autoruns for cmd.exe on windows,78ccccdb1b261d49,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+pg_ctl: error out on windows-only options on other platforms,256dd4499c4e4670,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+pg_ctl: silence warnings about unused global variables,7b601449aeb4dd35,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_dump doc: mention 'long' is valid for --compress,129664642dd42dd0,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_dump test: make concatenated create_sql commands more readable,23c8cfbbcc710725,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_dump tests: don't put dumps in stdout,0487b98a23adb882,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -10983,6 +11002,7 @@ pg_plan_advice: add check_for_interrupts() and check_stack_depth(),588d8f2a82d51
 pg_plan_advice: avoid a crash under geqo.,d7dca43231434180,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_plan_advice: avoid assertion failure with partitionwise aggregate.,2eb629dd44bdfd2e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "pg_plan_advice: do_not_scan is a simple tag, not a generic one.",741531385e12115d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+pg_plan_advice: document interaction with geqo.,3d12fb0ec8d3f008,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_plan_advice: don't generate foreign_join advice for a single relation.,e5c53aa767e23d25,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_plan_advice: export feedback-related definitions.,14a9cfefc6148e64,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_plan_advice: fix a bug when a subquery is pruned away entirely.,36cb9630d77504fa,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -10992,7 +11012,7 @@ pg_plan_advice: fix multiple copy-and-paste-errors in test case.,3662ff522795de3
 pg_plan_advice: fix variable type confusion.,ede2157b9f23c3a5,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_plan_advice: handle non-repeatable tablesample scans.,7127445c18f44b00,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_plan_advice: invent do_not_scan(relation_identifier).,5db800e42e823879,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
-pg_plan_advice: pgindent,696953b3109b2336,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+pg_plan_advice: pgindent,f2d1f7dd5f5db670,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_plan_advice: refactor to invent pgpa_planner_info,817a780cb8c79cd5,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_prewarm: allow autoprewarm to use more than 1gb to dump blocks.,852149eb8c71720f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pg_prewarm: make autoprewarm leader use standard sighup and sigterm handlers.,11f8c61ba064cd75,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -11234,6 +11254,7 @@ pgbench: fix verbose error message corruption with multiple threads,c41100635d57
 pgbench: function to generate random permutations.,61c79beb8e57439d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pgbench: improve error-handling in \sleep command.,3aff456703401079,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pgbench: improve error-handling in pgbench.,1f1e03bd33173928,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+pgbench: improve handling of null in \gset and \aset,6434c4790b7efdb1,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pgbench: improve help output of -i option,cbcb98bf5f48c772,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pgbench: improve result outputs related to failed transactions.,aa1dabfeebe4900e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 pgbench: improve time logic.,b7e904d6bfc71e06,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -11440,6 +11461,7 @@ postgres_fdw: add option to control whether to keep connections open.,750005500e
 postgres_fdw: add regression test for postgres_fdw.application_name guc.,7005a4044b021661,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 postgres_fdw: add support for parallel abort.,16dded05bf894ea2,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 postgres_fdw: add support for parallel commit.,12e77ac828d26afa,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+postgres_fdw: adjust warning message in statistics import.,a94040837790a655,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 postgres_fdw: allow application_name of remote connection to be set via guc.,d88fa7826d3430f2,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 postgres_fdw: allow partitions specified in limit to to be imported.,c358ab1fdff5fa10,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 postgres_fdw: allow postgres_fdw.application_name to include escape sequences.,30e8d49570617c2d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -11850,6 +11872,7 @@ psql: report full protocol version in \conninfo output.,fa985b4084a41ab0,qwen3:3
 psql: reword help message and docs for watch_interval,f7c3d1eadccec9c9,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 psql: rework tap routine psql_fails_like() to define wal sender context,60875dc39679cc86,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 psql: save/restore trueprint/falseprint printqueryopt values,59274e2d8d5cbc89,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+psql: schema-qualify catalogs in alter database reset completion,6f280917e0ab8f04,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 psql: set shell_error and shell_exit_code in more places.,aaa28e13010652b8,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 psql: set variables from query result on failure when printing tuples,fe485dae765ce13f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 psql: show all query results by default,3e0c33a3f01cd1dd,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -12471,6 +12494,7 @@ remove att_table for alter table ... attach/detach,52e8f8a316350964,qwen3:30b-a3
 remove auth-options support from initdb,31eb92237d6202c6,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove autoanalyze corner case.,80a7633f25354377,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove backwards compat ugliness in snapbuild.c.,bebd6f06e810fbab,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+remove batching from ri fast-path checks,957795b0776dd17d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove bits* typedefs.,754eea0504dcb9bb,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove blank line in c code.,85b77e3a278564b4,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove block information from description of some wal records for gin,60e3f8653d3cc008,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -13066,6 +13090,7 @@ remove spinlocks and atomics from meson_options.txt.,ef850f97764b5ddb,qwen3:30b-
 remove sql function getpgusername(),d8e31987506c7869,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove sql regression tests for gucs related to no_show_all,e62a8dbb66336039,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove stale comment,fe7bec4adc596eae,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+remove stale comment and redundant assignment in buildtuplehashtable(),e5a3f5ab982e92b9,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove stale comment on ri_fastpathcheck(),8e629bdb1b439468,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove stale xxx comment in logical launcher,1d345da6b6c3e33b,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove standby_schedule and associated test files.,80be6d2a9d4f749d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -13281,6 +13306,7 @@ remove unused function parameters in pg_backup_archiver.c.,ba975e427140a508,qwen
 remove unused function prototype,2f42e76e9ce3e837,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove unused function prototypes.,3d7b94d8eb011501,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove unused global variable,5a378a20f2bd6c20,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+remove unused global variables,67982c5c537a6a57,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove unused include,2a18a07819b21be4,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove unused includes,bb0fdf9e8b8da192,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 remove unused latch,d1688ddfda5da084,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -13494,6 +13520,7 @@ rename pg_verifybackup's jsonmanifestparsecontext callback functions.,6b15709f38
 rename pgindent options,6bb558cef826c3f6,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rename pgproc->vacuumflags to statusflags,edd8852edb686e31,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rename port/thread.c to port/user.c.,1a1919c79358f183,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+rename pqmsg_progress to pqparallelmsg_progress.,c172c6e56928647d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rename pqtracesetflags() to pqsettraceflags().,af75752c5dca6ba4,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rename pubgencols_type to pubgencols in pg_publication.,66f894d9da866e8b,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rename rbtxn_prepare to rbtxn_is_prepare for better clarification.,f389d7fa0f02286f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -13869,6 +13896,7 @@ reverse-engineer some documentation for btree_gist's varlena modules.,088eeb204a
 "revert ""doc: remove trailing whitespace in xref""",fb7dd95fbcc2496a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""don't lock partitions pruned by initial pruning""",509dcd69d2f1089d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""don't truncate database and user names in startup packets.""",5ae0ed85e3588c5d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+"revert ""don't try to re-order the subcommands of create schema"".",4d478a791092a616,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""drop unnamed portal immediately after execution to completion""",691a9dcb3cf9c7b3,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""enable fast default for domains with non-volatile constraints""",20b12ed74cd901b9,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""enable parallel select for ""insert into ... select ..."".""",4ee87762d32d4191,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -13947,6 +13975,7 @@ reverse-engineer some documentation for btree_gist's varlena modules.,088eeb204a
 "revert ""speed up tail processing when hashing aligned c strings""",0f1d873ba99b134e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""speed up tail processing when hashing aligned c strings, take two""",0c1ceff198f63b54,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""stabilize test of brin parallel create""",6848a5fdd7b2dacd,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+"revert ""support more object types within create schema"".",c314cd1f7c16347a,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""teach dsm registry to error if attaching to an uninitialized entry.""",94a6215b169a1f02,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""temporarily add some information about python include paths to configure.""",0f14b444cb79d1c0,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "revert ""temporarily add some probes of tenk1's relallvisible in create_index.sql.""",24f50043a4f57000,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -13970,6 +13999,7 @@ revert 11470f544e,ed6e4c291a3c1a27,qwen3:30b-a3b,ai-v4,false,false,false,false,f
 revert 29854ee8d1 due to buildfarm failures,e07c71d1cbb40298,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 revert 56-bit relfilenode change and follow-up commits.,bd048171df364a76,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 revert 764da7710b,7dfc1a0141f39f42,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+revert 87b2968df0 and 0a90df58cf.,1eb4f640f76e9f4d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 revert a few small patches that were intended for version 19.,9000a8581d50194e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 revert analyze support for partitioned tables,704b39311f800881,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 revert applying column aliases to the output of whole-row vars.,addd595c3c936803,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -14090,6 +14120,7 @@ rework planning and execution of update and delete.,0ea376e140d0e79c,qwen3:30b-a
 rework query relation permission checking,1b6ad0457680ba82,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rework redundant code in subtrans.c,765aeaf0d95e0891,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rework refactoring of hex and encoding routines,5ca65afe83f57066,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+rework repack's documentation on clustering,dafbe54c5c08771c,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rework shutdown callback of archiver modules,c25175e7492e5d82,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rework signal handler infrastructure to pass sender info as argument.,ee414b70c9bad015,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 rework some code handling pg_subscription data in psql and pg_dump,488c33ebed13db45,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -14534,6 +14565,7 @@ split some code out from mergeattributes(),81c76e390e2e86c4,qwen3:30b-a3b,ai-v4,
 split some long makefile lists,eccd27cffdefc6e1,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 split some storage out to separate subcontexts of fcontext.,db0353deabd3941f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 split testdir into testlogdir and testdatadir,101919d5908f3c05,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+split transaction data out of pgstats table counters,2fd533743cd439f2,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 split tuplesortpublic from tuplesortstate,085dd0ef6c281f89,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 split tuplesortvariants.c from tuplesort.c,77d0b7417a0caa3e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 split up guc.c for better build speed and ease of maintenance.,d2d4c72cca6cd4cc,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -14954,6 +14986,7 @@ take a little more care in set_backtrace().,b9d67bb2542334ed,qwen3:30b-a3b,ai-v4
 take care to de-duplicate entries in standby.c's table of locks.,db978acdf4e222b6,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 take into account default_tablespace during merge/split partition(s),1dea5983e50333f8,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 take pg_attribute out of vacattrstats,51167a3edebdbe8b,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+take ri fast-path snapshot after locking referenced relation,ed8d2d45629e3b39,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "talk about assigning, rather than generating, new multixactids.",0da79f145ae7d7e2,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 tap test for logical decoding on standby,7f2325743bc9727b,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 "tap tests: check for postmaster.pid anyway when ""pg_ctl start"" fails.",c729b06df9bfc6bd,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -15037,6 +15070,7 @@ test_aio: add basic tests for startreadbuffers(),6704db7bd255f383,qwen3:30b-a3b,
 test_aio: add read_stream test infrastructure & tests,7db73593ae3b4475,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_aio: fix broken error recovery assertions in 001_aio,05da2cf1dd81ab08,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_bitmapset: expand more the test coverage,b581a973cb7c5f88,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+test_bitmapset: improve handling of incorrect inputs,f82bb1a7dd19ec66,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_bitmapset: improve random function,b1b413c50576d964,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_bitmapset: simplify code of the module,95b1e7bf1cd3ee33,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_bloomfilter: fix error message.,45d9fb766b18e917,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -15053,6 +15087,7 @@ test_decoding: remove unnecessary table in twophase test,97598371c22d96ec,qwen3:
 test_dsa: avoid leaking lwlock tranches.,8be2c85de4433d96,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_escape: fix handling of short options in getopt_long(),85eb70002fd9ec7f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_escape: fix output of --help,24df96b81693340b,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+test_extensible: improve handling of incorrect inputs,7c0a3b21971cd171,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_extensible: test module for extensible nodes and custom scans,8e1af91c37236f2f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_extensions: make meson.build consistent with makefile.,52442b80c40b41c0,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 test_extensions: sync meson.build with makefile.,0bf30a1fe78010b5,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
@@ -15969,6 +16004,7 @@ vacuumlazy.c: save get_database_name() in vacrel.,9775b5ed03f8b347,qwen3:30b-a3b
 vacuumlazy.c: standardize rel_pages terminology.,4f9ddafbd074366f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 vacuumlazy.c: tweak local variable name.,37e84c1b1c8d1480,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 valgrind: adjust suppressions to handle glibc changes,b7c69f283a14593f,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
+validate alter publication after acquiring the publication lock.,2fd3e4c8c50fa23d,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 validate icu locales.,f99b7d40e8815567,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 validate ltree siglen gist option to be int-aligned,1110211e8f47c34e,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
 validate publisher for retain_dead_tuples in the apply worker.,8a435bb5bb018695,qwen3:30b-a3b,ai-v4,false,false,false,false,false,none,none,0.95,mentions: none
