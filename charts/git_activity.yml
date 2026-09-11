@@ -510,6 +510,17 @@ charts:
     type: table
     query: ai_involved_lines
     title: "AI-involved fix commits"
+    # the evidence prose wraps to two or three lines: pin the two text columns'
+    # widths (else the sizer wants a 1700px frame) and a row height + page size
+    # the slot actually fits (else it pages at 12 and warns)
+    style:
+      row: { height: 64 }
+      pagination: { page_rows: 10 }
+      columns:
+        commit_dt: { label: "committed" }
+        subject: { width: "26%" }
+        label_source: { label: "source" }
+        evidence: { width: "38%" }
 
   commits_by_hour:
     type: bar

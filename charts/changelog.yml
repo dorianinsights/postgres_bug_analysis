@@ -391,8 +391,12 @@ charts:
     type: table
     query: projections
     title: "Scenario assumptions"
-    # the auto header "Distinct Fix Cnt" truncates in its narrow numeric column
-    style: { columns: { distinct_fix_cnt: { label: "fixes" } } }
+    # page_rows = every row and a row tall enough for the wrapped assumption
+    # text, so the sizer reserves room for the whole table (else it pages it)
+    style:
+      row: { height: 52 }
+      pagination: { page_rows: 4 }
+      columns: { distinct_fix_cnt: { label: "fixes" } }   # "Distinct Fix Cnt" truncated
 
   release_table:
     type: table

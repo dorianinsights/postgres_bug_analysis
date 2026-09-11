@@ -326,6 +326,13 @@ charts:
     type: table
     query: ai_thread_lines
     title: "AI-involved threads"
+    # short headers: the eight auto headers overflowed the slot by ~35px
+    style:
+      columns:
+        started_dt: { label: "started" }
+        list_name: { label: "list" }
+        label_source: { label: "source" }
+        is_acted_upon: { label: "acted" }
 
 rows:
   - monthly_traffic
