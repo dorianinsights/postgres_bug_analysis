@@ -22,6 +22,11 @@ notes: >
   move day by day -- read the scorecard as "how each method would have
   done at this point in the cycle", not as a fixed ranking.
 
+style:
+  charts:
+    min_height: 340
+    max_height: 340
+
 queries:
   next_wrap:
     notes: Days until the next scheduled wrap (the content cutoff).
@@ -223,7 +228,6 @@ charts:
     x: ships_at_dt
     y: ratio
     color: estimator
-    height: 340
 
   pace_history:
     type: bar
@@ -235,7 +239,6 @@ charts:
     color: series
     sort: { by: release_seq, order: asc }
     style: { stack: none, orientation: vertical }
-    height: 340
 
   backtest:
     type: line
@@ -245,7 +248,6 @@ charts:
     x: release_dt
     y: error
     color: method
-    height: 340
 
   scorecard:
     type: table

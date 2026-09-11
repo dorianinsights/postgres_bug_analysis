@@ -8,6 +8,11 @@ notes: >
   Data are produced by the transform/ dbt project (release notes parsed from
   the clone's SGML at build time).
 
+style:
+  charts:
+    min_height: 380
+    max_height: 380
+
 queries:
   latest_release:
     notes: The most recent release's headline numbers.
@@ -284,7 +289,6 @@ charts:
     y: n_items
     color: branch
     y_label: "changelog items"
-    height: 380
     layers:
       - type: line
         query: branch_trend
@@ -308,7 +312,6 @@ charts:
     y: fix_cnt
     color: category
     style: { stack: zero }
-    height: 380
     layers:
       - type: line
         query: release_trend
@@ -338,7 +341,6 @@ charts:
       axis_y:
         labels:
           format: ".1%"
-    height: 380
 
   oob_releases:
     type: bar
@@ -384,7 +386,6 @@ charts:
     y: contributors
     color: cohort
     style: { stack: zero }
-    height: 380
 
   projection:
     type: line
@@ -394,7 +395,6 @@ charts:
     x: release_dt
     y: distinct_fix_cnt
     y_label: "distinct fixes"
-    height: 380
     layers:
       - type: scatter
         query: projections

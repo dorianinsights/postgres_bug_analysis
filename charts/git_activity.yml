@@ -46,6 +46,11 @@ variables:
       static: [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
     default: [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
 
+style:
+  charts:
+    min_height: 380
+    max_height: 380
+
 queries:
   quarterly_distinct:
     notes: >
@@ -393,7 +398,6 @@ charts:
     y: distinct_fix_cnt
     y_label: "distinct fix commits"
     color: series
-    height: 380
 
   quarterly_by_branch:
     type: line
@@ -404,7 +408,6 @@ charts:
     y: fix_commits
     y_label: "fix commits"
     color: branch
-    height: 380
 
   commits_per_version:
     type: bar
@@ -417,7 +420,6 @@ charts:
     color: major
     sort: { by: release_seq, order: asc }
     style: { stack: zero }
-    height: 380
 
   codebase_size:
     type: line
@@ -428,7 +430,6 @@ charts:
     y: code_lines
     y_label: "source lines"
     color: major
-    height: 380
 
   codebase_composition:
     type: bar
@@ -440,7 +441,6 @@ charts:
     y_label: "source lines"
     color: subsystem
     style: { stack: zero }
-    height: 380
 
   churn_by_quarter:
     type: line
@@ -451,7 +451,6 @@ charts:
     y: lines
     y_label: "lines changed"
     color: series
-    height: 380
 
   backpatch_breadth:
     type: line
@@ -474,7 +473,6 @@ charts:
     y_label: "lines changed"
     color: subsystem
     style: { stack: zero }
-    height: 380
 
   ai_involved:
     type: bar

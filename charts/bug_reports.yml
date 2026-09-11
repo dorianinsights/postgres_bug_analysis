@@ -16,6 +16,11 @@ notes: >
   count), and recent months are right-censored — fixes for fresh reports
   haven't landed yet.
 
+style:
+  charts:
+    min_height: 340
+    max_height: 340
+
 queries:
   monthly_reports:
     notes: >
@@ -309,7 +314,6 @@ charts:
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
     x: report_month
     y: "reports acted upon"
-    height: 340
     # the two % lines are distinct columns (so a hover reads both, plus the bar);
     # both share the same right axis, pinned to [0, 0.5] (the data is fractions)
     # with a per-layer axis_y.labels.format ".1%" -- that scopes the percent
@@ -366,7 +370,6 @@ charts:
     x: report_year
     y: reports
     color: outcome
-    height: 340
 
   fix_latency:
     type: bar
@@ -376,7 +379,6 @@ charts:
     x: days_to_commit_window
     y: reports
     color: series
-    height: 340
 
   yearly_latency:
     type: bar
@@ -386,7 +388,6 @@ charts:
     x: report_year
     y: median_days
     color: series
-    height: 340
 
   thread_size:
     type: bar
@@ -397,7 +398,6 @@ charts:
     y: reports
     color: outcome
     style: { stack: none }
-    height: 340
 
   most_discussed:
     type: table

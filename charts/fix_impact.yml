@@ -19,6 +19,11 @@ notes: >
   against outcomes: report-to-fix latency, backpatch breadth, and
   out-of-band emergency releases.
 
+style:
+  charts:
+    min_height: 320
+    max_height: 320
+
 queries:
 
   headline:
@@ -195,7 +200,6 @@ charts:
     color: severity_band
     sort: { by: severity_band_order, order: asc }
     style: { orientation: vertical }
-    height: 320
 
   churn_by_severity:
     type: bar
@@ -207,7 +211,6 @@ charts:
     color: severity_band
     sort: { by: severity_band_order, order: asc }
     style: { orientation: vertical }
-    height: 320
 
   breadth_by_severity:
     type: bar
@@ -219,7 +222,6 @@ charts:
     color: severity_band
     sort: { by: severity_band_order, order: asc }
     style: { orientation: vertical }
-    height: 320
 
   size_vs_latency:
     type: scatter
@@ -260,7 +262,6 @@ charts:
     y: days_median
     sort: { by: bucket_order, order: asc }
     style: { orientation: vertical }
-    height: 320
 
 rows:
   - cols: [kpi_fixes, kpi_cve, kpi_churn, kpi_latency]

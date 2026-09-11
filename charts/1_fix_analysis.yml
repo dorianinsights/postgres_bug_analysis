@@ -5,6 +5,8 @@ _schema_version: "0.6.0"  # written automatically by dct migrate
 # layered chart assigned unsourced/embargoed the opposite colors
 style:
   charts:
+    min_height: 360
+    max_height: 360
     category_colors:
       origin:
         values:
@@ -148,7 +150,6 @@ charts:
     sort: { by: release_seq, order: asc }
     # string x would auto-flip horizontal; these are time series, keep vertical
     style: { stack: zero, orientation: vertical }
-    height: 360
 
   fix_origin_counts:
     type: bar
@@ -161,7 +162,6 @@ charts:
     sort: { by: release_seq, order: asc }
     # string x would auto-flip horizontal; these are time series, keep vertical
     style: { stack: zero, orientation: vertical }
-    height: 360
 
   fix_commit_origins:
     type: bar
@@ -173,7 +173,6 @@ charts:
     color: origin
     sort: { by: release_seq, order: asc }
     style: { stack: zero, orientation: vertical }
-    height: 360
     # the open release's bar is the same measure, still accumulating: mark it
     # with a dashed outline -- a bar layer on the same query whose y (so_far)
     # is NULL on every shipped row, so it draws only that bar (bar charts take
@@ -204,7 +203,6 @@ charts:
       axis_y:
         labels:
           format: ".1%"
-    height: 360
 
   ai_commits:
     type: area

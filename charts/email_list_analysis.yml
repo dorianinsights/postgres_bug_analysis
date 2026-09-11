@@ -16,6 +16,11 @@ notes: >
   fct_origin_activity_monthly_agg; the fix-linked share is computed from the
   message grain at query time).
 
+style:
+  charts:
+    min_height: 340
+    max_height: 340
+
 queries:
 
   monthly_traffic:
@@ -237,7 +242,6 @@ charts:
       axis_y:
         labels:
           format: ".1%"
-    height: 340
 
   hackers_threads:
     type: area
@@ -248,7 +252,6 @@ charts:
     y: thread_cnt
     color: outcome
     style: { stack: zero }
-    height: 340
 
   hackers_cite_latency:
     type: kpi
@@ -278,7 +281,6 @@ charts:
     x: week_dt
     y: [all, fix-linked]
     color: list_name
-    height: 340
   recent_weekly_share:
     type: line
     query: recent_weekly_share
@@ -291,7 +293,6 @@ charts:
       axis_y:
         labels:
           format: ".1%"
-    height: 340
 
   cited_threads:
     type: area
@@ -301,7 +302,6 @@ charts:
     x: month_dt
     y: cited_thread_cnt
     color: origin
-    height: 340
 
   ai_threads:
     type: bar
@@ -312,7 +312,6 @@ charts:
     y: threads
     color: role
     style: { stack: zero }
-    height: 340
 
   ai_threads_by_list:
     type: bar
@@ -323,7 +322,6 @@ charts:
     y: ai_threads
     color: list_name
     style: { stack: zero }
-    height: 340
 
   ai_thread_table:
     type: table
