@@ -86,13 +86,26 @@ per-session memories, which aren't committed to git.)
   the file and query from anywhere. So, from the root,
   `harlequin -r transform.duckdb` (or `duckdb -readonly transform.duckdb`).
 
-- **dct (0.7.0) honors `sort:` everywhere and gives overlay series their own
-  tooltip rows**, so the 0.6-era rules ("no `sort:` on a chart with `layers:`",
-  "one reference series per overlay") no longer apply; a layered chart should
-  carry an explicit `sort:` rather than relying on query row order. The
-  list-traffic charts still draw the partial current period as the last point
-  of the main series (simpler than a dashed overlay tail, and the subtitle
-  says so). Faces name models with `{{ ref() }}`
+- **dct (0.7.0): the query's ORDER BY orders a categorical axis, so do NOT
+  author `sort:`** -- every board renders pixel-identical without it, and an
+  authored sort key is SUMMED per x category (0.7.0 report item 3), which
+  scrambles the axis whenever categories have unequal row counts. The one
+  exception is a single-series HORIZONTAL bar, which defaults to
+  value-descending order (`projected_fixes` `estimates` keeps its `sort:` for
+  that reason). Overlay series get their own tooltip rows now, so the 0.6-era
+  "one reference series per overlay" rule is gone too. The list-traffic charts
+  still draw the partial current period as the last point of the main series
+  (simpler than a dashed overlay tail, and the subtitle says so).
+  **Board-level `style.charts` cascades like inline** for `min_height` /
+  `max_height` (= one height pin per board) and `bar: { stack: ... }` (only
+  on boards where EVERY bar chart is stacked -- the four mixed boards keep
+  `stack:` inline; the bar block does not reach area charts), but
+  `bar.orientation` is silently ignored (report item 8), so `orientation:
+  vertical` stays per chart. **Share (100%-stacked) charts feed COUNTS through
+  `stack: normalize` with no `axis_y` format:** the axis is labeled in percent
+  anyway and the hover shows share, count and total; an authored percent axis
+  format percent-formats the hover's raw count column ("2000%", report
+  item 9). Faces name models with `{{ ref() }}`
   (resolved from `target/manifest.json`, so run `dbt parse` after adding or
   renaming a model or column, and `dct validate charts/*.yml` checks the
   queries' columns statically -- the marts end in explicit projections, not

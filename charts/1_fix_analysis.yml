@@ -7,6 +7,7 @@ style:
   charts:
     min_height: 360
     max_height: 360
+    bar: { stack: zero }
     category_colors:
       origin:
         values:
@@ -47,9 +48,8 @@ queries:
       item, deduplicated across the branches it was backpatched to (fct_fixes).
       Shipped releases only -- the open release has no notes yet (its committed
       fixes are the fix_commit_origins chart below). Every release carries all
-      four origins (zero-filled upstream) so the categorical sort (which SUMS
-      release_seq per release) stays chronological. Out-of-band emergency
-      releases excluded. committed_fix_cnt and rate ride along for the hover:
+      four origins (zero-filled upstream) so each stack has the same series.
+      Out-of-band emergency releases excluded. committed_fix_cnt and rate ride along for the hover:
       the commits behind each bar and the share of them the notes documented.
     source: warehouse
     sql: |
@@ -102,11 +102,11 @@ queries:
 
   fix_origin_shares:
     notes: >
-      True per-release origin shares of the documented fixes (fractions summing
-      to 1) so the percent format is honest in the axis AND the tooltip's
-      value/Total rows — feeding counts through stack:normalize left the
-      tooltip's raw rows percent-formatted ("2000%"). Shipped releases only,
-      like fix_origins.
+      The documented fixes per shipped release by origin, as counts; the share
+      chart normalizes them (stack: normalize), so its hover shows each
+      origin's share AND its count, with the release total. Shipped releases
+      only, like fix_origins_count, but without the commit columns that would
+      crowd the hover.
     source: warehouse
     sql: |
       SELECT
@@ -117,7 +117,7 @@ queries:
           WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
           ELSE origin
         END AS origin,
-        ROUND(COALESCE(fix_share, 0), 4) AS fix_share
+        COALESCE(fix_cnt, 0) AS fix_cnt
       FROM {{ ref('fct_fix_origins_agg') }}
       WHERE status = 'shipped' AND NOT is_out_of_band
       ORDER BY 2, 3
@@ -147,9 +147,8 @@ charts:
     subtitle: "Documented fixes. a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band releases excluded"
     x: release
     y: fix_cnt
-    sort: { by: release_seq, order: asc }
     # string x would auto-flip horizontal; these are time series, keep vertical
-    style: { stack: zero, orientation: vertical }
+    style: { orientation: vertical }
 
   fix_origin_counts:
     type: bar
@@ -159,9 +158,8 @@ charts:
     x: release
     y: fix_cnt
     color: origin
-    sort: { by: release_seq, order: asc }
     # string x would auto-flip horizontal; these are time series, keep vertical
-    style: { stack: zero, orientation: vertical }
+    style: { orientation: vertical }
 
   fix_commit_origins:
     type: bar
@@ -171,8 +169,7 @@ charts:
     x: release
     y: fix_commits
     color: origin
-    sort: { by: release_seq, order: asc }
-    style: { stack: zero, orientation: vertical }
+    style: { orientation: vertical }
     # the open release's bar is the same measure, still accumulating: mark it
     # with a dashed outline -- a bar layer on the same query whose y (so_far)
     # is NULL on every shipped row, so it draws only that bar (bar charts take
@@ -192,17 +189,11 @@ charts:
     title: "Fix origin share per release"
     subtitle: "Same documented fixes as shares; shipped releases only, out-of-band excluded — pgsql-bugs supplies a quarter to a third"
     x: release
-    y: fix_share
+    y: fix_cnt
     color: origin
-    sort: { by: release_seq, order: asc }
-    style:
-      orientation: vertical
-      # true fractions stacked to 1.0 (NOT stack:normalize over counts,
-      # which percent-formats the tooltip's raw rows)
-      stack: zero
-      axis_y:
-        labels:
-          format: ".1%"
+    # no axis_y format: normalize already labels the axis in percent, and an
+    # authored percent format leaks into the hover's raw count column ("2000%")
+    style: { stack: normalize, orientation: vertical }
 
   ai_commits:
     type: area

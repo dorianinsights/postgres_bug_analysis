@@ -418,7 +418,6 @@ charts:
     y: commit_cnt
     y_label: "fix commits"
     color: major
-    sort: { by: release_seq, order: asc }
     style: { stack: zero }
 
   codebase_size:
@@ -504,7 +503,6 @@ charts:
     y: fixes
     y_label: "distinct fix commits"
     color: pace_window
-    sort: { by: cycle_seq, order: asc }
     style: { stack: none, orientation: vertical }
     height: 340
 

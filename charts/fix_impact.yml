@@ -198,7 +198,6 @@ charts:
     x: severity_band
     y: fix_cnt
     color: severity_band
-    sort: { by: severity_band_order, order: asc }
     style: { orientation: vertical }
 
   churn_by_severity:
@@ -209,7 +208,6 @@ charts:
     x: severity_band
     y: churn_median
     color: severity_band
-    sort: { by: severity_band_order, order: asc }
     style: { orientation: vertical }
 
   breadth_by_severity:
@@ -220,7 +218,6 @@ charts:
     x: severity_band
     y: breadth_median
     color: severity_band
-    sort: { by: severity_band_order, order: asc }
     style: { orientation: vertical }
 
   size_vs_latency:
@@ -260,7 +257,6 @@ charts:
     subtitle: "Median report-to-fix latency per size bucket (bug-linked fixes) — does a bigger change take longer to land?"
     x: size_bucket
     y: days_median
-    sort: { by: bucket_order, order: asc }
     style: { orientation: vertical }
 
 rows:

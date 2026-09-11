@@ -347,7 +347,6 @@ charts:
     x: release_month
     y: patches
     color: series
-    sort: { by: release_quarter, order: asc }
     style: { stack: none, orientation: vertical }
     height: 320
 
@@ -358,7 +357,6 @@ charts:
     subtitle: "Share of the cycle's fixes committed in the first 20 days — Feb/May front-load, Aug/Nov back-load"
     x: release_month
     y: early_share
-    sort: { by: release_quarter, order: asc }
     style: { orientation: vertical, axis_y: { labels: { format: ".1%" } } }
     height: 320
 

@@ -217,6 +217,8 @@ charts:
     subtitle: "Each early signal times its historical median ratio, plus the blend and the seasonal floor; the spread IS the message — supply-side pace says a big release, but see the scorecard for how often it has been right"
     x: estimator
     y: projected_fix_cnt
+    # the one authored sort: a single-series HORIZONTAL bar defaults to
+    # value-descending order; every other categorical axis keeps the query's ORDER BY
     sort: { by: estimator_order, order: asc }
     height: 320
 
@@ -237,7 +239,6 @@ charts:
     x: release
     y: fixes
     color: series
-    sort: { by: release_seq, order: asc }
     style: { stack: none, orientation: vertical }
 
   backtest:

@@ -20,6 +20,7 @@ style:
   charts:
     min_height: 340
     max_height: 340
+    bar: { stack: zero }
 
 queries:
 
@@ -311,7 +312,6 @@ charts:
     x: month_dt
     y: threads
     color: role
-    style: { stack: zero }
 
   ai_threads_by_list:
     type: bar
@@ -321,7 +321,6 @@ charts:
     x: month_dt
     y: ai_threads
     color: list_name
-    style: { stack: zero }
 
   ai_thread_table:
     type: table

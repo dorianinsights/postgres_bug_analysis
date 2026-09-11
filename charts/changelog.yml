@@ -12,6 +12,7 @@ style:
   charts:
     min_height: 380
     max_height: 380
+    bar: { stack: zero }
 
 queries:
   latest_release:
@@ -67,21 +68,6 @@ queries:
     source: warehouse
     sql: |
       SELECT release_dt AS release_dt, category, category_order, fix_cnt
-      FROM {{ ref('fct_release_categories_agg') }}
-      WHERE NOT is_out_of_band
-      ORDER BY 1, 3
-
-  release_category_shares:
-    notes: >
-      Per-release category shares as true fractions (sum to 1 per release) so
-      the percent format is honest in axis and tooltip alike.
-    source: warehouse
-    sql: |
-      SELECT
-        release_dt AS release_dt,
-        category,
-        category_order,
-        ROUND(fix_share, 4) AS fix_share
       FROM {{ ref('fct_release_categories_agg') }}
       WHERE NOT is_out_of_band
       ORDER BY 1, 3
@@ -311,7 +297,6 @@ charts:
     x: release_dt
     y: fix_cnt
     color: category
-    style: { stack: zero }
     layers:
       - type: line
         query: release_trend
@@ -328,19 +313,15 @@ charts:
 
   category_share:
     type: bar
-    query: release_category_shares
+    query: fct_release_categories_agg
     title: "Same data as shares of each release"
     subtitle: "100% stacked"
     x: release_dt
-    y: fix_share
+    y: fix_cnt
     color: category
-    style:
-      # true fractions stacked to 1.0 (NOT stack:normalize over counts,
-      # which percent-formats the tooltip's raw rows)
-      stack: zero
-      axis_y:
-        labels:
-          format: ".1%"
+    # no axis_y format: normalize already labels the axis in percent, and an
+    # authored percent format leaks into the hover's raw count column ("2000%")
+    style: { stack: normalize }
 
   oob_releases:
     type: bar
@@ -350,7 +331,6 @@ charts:
     x: release
     y: fix_cnt
     color: category
-    style: { stack: zero }
     height: 340
 
   security:
@@ -361,7 +341,6 @@ charts:
     x: release_dt
     y: fix_cnt
     color: band
-    style: { stack: zero }
     height: 340
     layers:
       - type: line
@@ -385,7 +364,6 @@ charts:
     x: release_dt
     y: contributors
     color: cohort
-    style: { stack: zero }
 
   projection:
     type: line
