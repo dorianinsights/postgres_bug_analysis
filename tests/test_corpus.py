@@ -12,7 +12,7 @@ change.
 
 import pytest
 
-import corpus
+from pg_analysis import corpus
 
 
 def test_first_major_is_at_least_the_supported_floor() -> None:

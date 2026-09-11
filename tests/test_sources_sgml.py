@@ -7,7 +7,7 @@ extraction from a small DocBook fragment (parsed leniently, as the reader does).
 
 from bs4 import BeautifulSoup, Tag
 
-from sources.sgml import _normalize, _parse_commit_lines, _parse_item, _parse_section
+from pg_analysis.sources.sgml import _normalize, _parse_commit_lines, _parse_item, _parse_section
 
 
 def test_normalize_collapses_whitespace() -> None:

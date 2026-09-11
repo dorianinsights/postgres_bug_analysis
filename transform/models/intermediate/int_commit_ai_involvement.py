@@ -13,15 +13,19 @@ text gets NULL labels with is_classified = false -- the build succeeds and the
 is_classified warn test reports how many rows are waiting. Grain = fix_key.
 """
 
-import sys
-from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
 
-sys.path.insert(0, str(Path.cwd()))
-from sources.ai_involvement import LABEL_COLS, OUTPUT_COLS, build_ai_schema, classify_ai_one, label_rows, roles_prompt
-from sources.ai_model_table import MODEL_TAG, involvement_table, resolve_classifier
+from pg_analysis.sources.ai_involvement import (
+    LABEL_COLS,
+    OUTPUT_COLS,
+    build_ai_schema,
+    classify_ai_one,
+    label_rows,
+    roles_prompt,
+)
+from pg_analysis.sources.ai_model_table import MODEL_TAG, involvement_table, resolve_classifier
 
 KEY_COLS = ("fix_key",)
 

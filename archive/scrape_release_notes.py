@@ -18,7 +18,7 @@ from typing import TypedDict
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from corpus import FIRST_MAJOR
+from pg_analysis.corpus import FIRST_MAJOR
 
 # Archived web scraper (superseded by the git/SGML reader in transform/sources).
 # corpus.py no longer exports a pinned MAJORS -- the live corpus discovers its

@@ -19,14 +19,10 @@ stay in the SQL staging models (stg_release_items, stg_item_commits).
 """
 
 import re
-import sys
 from functools import cache
-from pathlib import Path
 from typing import NamedTuple
 
 from bs4 import BeautifulSoup, Comment, Tag
-
-sys.path.insert(0, str(Path.cwd().parent))
 
 from .git import git, released_majors
 

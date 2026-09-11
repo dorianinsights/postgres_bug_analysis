@@ -25,7 +25,8 @@ with PG 10). That IS a reviewed, dated commit.
 
 import subprocess
 from datetime import UTC, date, datetime
-from pathlib import Path
+
+from pg_analysis import paths
 
 FIRST_MAJOR = 14
 
@@ -42,7 +43,7 @@ if FIRST_MAJOR < MIN_FIRST_MAJOR:
 HISTORY_FLOOR_TAG = f"REL_{FIRST_MAJOR - 1}_0"
 HISTORY_FLOOR_BRANCH = f"REL_{FIRST_MAJOR - 1}_STABLE"
 
-CLONE = Path(__file__).parent / ".cache" / "postgres.git"
+CLONE = paths.CLONE  # re-exported: the clone this module reads its floor from
 
 
 def history_floor() -> date:
@@ -53,7 +54,7 @@ def history_floor() -> date:
     ranges. Only the mailing-list sync needs a day -- the mbox archive is fetched
     by calendar month, so it starts at this day's month."""
     if not CLONE.is_dir():
-        msg = f"postgres clone not found at {CLONE} -- run postgres_clone.py first"
+        msg = f"postgres clone not found at {CLONE} -- run pg-clone first"
         raise RuntimeError(msg)
     branch_point = subprocess.run(
         ["git", "-C", str(CLONE), "merge-base", "master", HISTORY_FLOOR_BRANCH],

@@ -5,7 +5,7 @@ nearest-neighbour experiments — as opposed to the top-down category classifier
 
 Prototype scope: writes .cache/fix_embeddings.parquet (gitignored, like the
 clone and mbox caches), one row per distinct fix with its 768-d vector, the
-regex category, and the summary. Unlike classify_fixes.py this is not (yet)
+regex category, and the summary. Unlike backfill_classifications.py this is not (yet)
 wired into dbt — it feeds the exploratory clustering step.
 
 Reads intermediate.int_fix_reps from the warehouse (read-only), so run a
@@ -27,9 +27,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import requests
 
-ROOT = Path(__file__).parent
-WAREHOUSE = ROOT / "transform" / "transform.duckdb"
-CACHE_DIR = ROOT / ".cache"
+from pg_analysis.paths import CACHE_DIR, WAREHOUSE
 
 DEFAULT_MODEL = "nomic-embed-text"
 EMBED_URL = os.environ.get("OLLAMA_HOST", "http://localhost:11434").rstrip("/") + "/api/embed"

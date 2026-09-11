@@ -37,3 +37,6 @@ pytest==9.1.1
 # dbt_utils) expand during lint; its version tracks sqlfluff's exactly.
 sqlfluff==4.3.0
 sqlfluff-templater-dbt==4.3.0
+# The repo's own Python side, installed editable so `pg_analysis` imports and the
+# `pg-*` console scripts resolve from the venv (see pyproject.toml).
+-e .

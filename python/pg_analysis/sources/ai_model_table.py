@@ -16,8 +16,8 @@ from typing import Any
 
 import pyarrow as pa
 
-from sources.ai_involvement import Classifier, as_bool
-from sources.classify import ollama_unavailable_reason
+from pg_analysis.sources.ai_involvement import Classifier, as_bool
+from pg_analysis.sources.classify import ollama_unavailable_reason
 
 MODEL_TAG = "qwen3:30b-a3b"
 

@@ -23,14 +23,14 @@ file (the source page is canonical). Takes no arguments.
 import csv
 import re
 import sys
-from pathlib import Path
 from typing import TypedDict
 
 import requests
 from bs4 import BeautifulSoup, Tag
 
+from pg_analysis.paths import DATA_RAW
+
 SECURITY_URL = "https://www.postgresql.org/support/security/"
-DATA_DIR = Path(__file__).parent / "data" / "raw"
 
 CVE_RE = re.compile(r"CVE-\d{4}-\d+")
 # A full CVSS v3 base vector, as it appears both in the cell text and in the
@@ -96,7 +96,7 @@ def parse_rows(html: str) -> list[CveRow]:
 
 
 def main() -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    DATA_RAW.mkdir(parents=True, exist_ok=True)
     html = requests.get(SECURITY_URL, timeout=30).text
     rows = parse_rows(html)
     if not rows:
@@ -104,11 +104,11 @@ def main() -> None:
         raise SystemExit(1)
 
     scored = sum(1 for r in rows if r["cvss_base_score"])
-    with open(DATA_DIR / "cve_severity.csv", "w", newline="") as f:
+    with open(DATA_RAW / "cve_severity.csv", "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["cve_id", "component", "cvss_base_score", "cvss_vector"])
         writer.writeheader()
         writer.writerows(sorted(rows, key=lambda r: r["cve_id"]))
-    print(f"Wrote {len(rows)} CVEs ({scored} with a base score) -> {DATA_DIR}/cve_severity.csv")
+    print(f"Wrote {len(rows)} CVEs ({scored} with a base score) -> {DATA_RAW}/cve_severity.csv")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,38 @@
-# Repo-wide lint / type-check config (no [project] section on purpose — the
-# scrapers and transform helpers are scripts sharing one venv, not an
-# installable package). Mirrors the property_analysis setup: ruff for
-# format+lint and pyright for type checking, both enforced twice — a
-# post-edit hook per file (.claude/hooks/) and a blocking git pre-commit gate
-# (.pre-commit-config.yaml).
+# Repo-wide project + lint / type-check config. The Python side is ONE package,
+# python/pg_analysis (the fetch scripts, the corpus definition, the orchestrator,
+# the backfills, and the build-time readers the dbt Python models import),
+# installed EDITABLE into the venv by requirements.txt (`-e .`) so every import
+# is an ordinary absolute one -- no sys.path juggling anywhere -- and the
+# console scripts below land in ./venv/bin. It is a working checkout's tool,
+# not a distributable: pg_analysis.paths locates the repo from its own file,
+# so a non-editable install would find no caches, data, or dbt project.
+# Dependencies are pinned in requirements.txt (the one lockfile), not here.
+# Mirrors the property_analysis setup: ruff for format+lint and pyright for
+# type checking, both enforced twice -- a post-edit hook per file
+# (.claude/hooks/) and a blocking git pre-commit gate (.pre-commit-config.yaml).
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pg-analysis"
+version = "0.1.0"
+description = "PostgreSQL patch analysis: fetchers, corpus definition, and dbt build-time readers"
+requires-python = ">=3.10,<3.14"
+dependencies = []  # pinned in requirements.txt; install that, not this, for a working env
+
+[project.scripts]
+pg-refresh = "pg_analysis.refresh_data:main"
+pg-clone = "pg_analysis.postgres_clone:main"
+pg-mail-sync = "pg_analysis.mailing_list_sync:main"
+pg-cve-scrape = "pg_analysis.scrape_cve_severity:main"
+pg-backfill-ai = "pg_analysis.backfill_ai_involvement:main"
+pg-backfill-categories = "pg_analysis.backfill_classifications:main"
+pg-embed-fixes = "pg_analysis.embed_fixes:main"
+
+[tool.setuptools.packages.find]
+where = ["python"]
 
 [tool.pyright]
 # Strict everywhere (repo decision 2026-08-28) — new files must pass strict.
@@ -13,14 +42,15 @@ typeCheckingMode = "strict"
 pythonVersion = "3.12"
 venvPath = "."
 venv = "venv"
-# transform/ scripts import corpus.py from the repo root; transform/ is its
-# own script root for the dbt Python models' sibling imports.
-extraPaths = [".", "transform"]
+# Resolve `pg_analysis` from python/ (the editable install is what the venv's
+# runtime uses; this keeps pyright independent of how setuptools wired the
+# editable finder).
+extraPaths = ["python"]
 
 [tool.ruff]
 target-version = "py312"
 # First-party roots (import sorting + first-party classification).
-src = [".", "transform"]
+src = ["python"]
 extend-exclude = ["venv", "**/.cache", "**/out", "**/target", "**/dbt_packages"]
 # Apply excludes even to explicitly-passed paths (the post-edit hook passes
 # single files, which would otherwise bypass the exclusion).
@@ -60,9 +90,7 @@ ignore = [
 docstring-code-format = false
 
 [tool.pytest.ini_options]
-# The scrapers live at the repo root; the source readers under transform/
-# (imported as `sources.*`, mirroring pyright's extraPaths). Both on the path
-# so tests import them the same way the dbt Python models do.
-pythonpath = [".", "transform"]
+# The tests import the installed (editable) pg_analysis package, exactly as
+# the dbt Python models and the console scripts do -- no pythonpath entry.
 testpaths = ["tests"]
 addopts = "-q"

@@ -3,7 +3,7 @@
 
 import pytest
 
-import scrape_cve_severity as scs
+from pg_analysis import scrape_cve_severity as scs
 
 # A stand-in for the security page's first table: header row, two valid CVE
 # rows (one with the CVSS vector in the cell text, one with it only in the NVD

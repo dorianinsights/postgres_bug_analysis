@@ -15,6 +15,26 @@ per-session memories, which aren't committed to git.)
 - Commit-message trailers this repo uses are set by the environment; keep them.
 
 ## Operational gotchas
+- **The Python side is one editable-installed package, `pg_analysis`**
+  (`python/pg_analysis/`: `corpus`, `paths`, the fetchers, `refresh_data`, the
+  backfills, `embed_fixes`, and `sources/` — the readers the dbt Python models
+  import). `requirements.txt` ends with `-e .`, so a fresh venv gets it from
+  `pip install -r requirements.txt`; the `pg-*` console scripts
+  (`pg-refresh`, `pg-clone`, `pg-mail-sync`, `pg-cve-scrape`,
+  `pg-backfill-ai`, `pg-backfill-categories`, `pg-embed-fixes`) land in
+  `venv/bin` from `[project.scripts]`. **Every import is an ordinary
+  `from pg_analysis... import`** — the dbt models, the tests, the backfills:
+  never add a `sys.path.insert` or a `Path(__file__)`/`Path.cwd()` anchor.
+  **Every repo path comes from `pg_analysis.paths`** (`REPO_ROOT`, `CLONE`,
+  `MBOX_CACHE`, `DATA_RAW`, `TRANSFORM_DIR`, `SEEDS_DIR`, `WAREHOUSE`,
+  `ENV_FILE`); it locates the repo from its own file, which is why the install
+  must stay editable (a non-editable install would resolve to site-packages
+  and find nothing). Adding a runnable module = add its `main()` to
+  `[project.scripts]`; the venv picks it up on the next `pip install -e .`.
+  `refresh_data` calls the fetch modules' `main()` in-process (a step fails
+  when `main()` raises; only dbt is a subprocess), so a fetch's failure
+  signal must stay an exception or `SystemExit`, never a bare `return`
+  after printing an error.
 - **DuckDB is single-writer.** `transform/transform.duckdb` may be held open by
   an interactive session (Harlequin, `duckdb` CLI); a `dbt build` (read-write)
   then fails with a lock error. Quit those before building. Harlequin should be
@@ -28,7 +48,7 @@ per-session memories, which aren't committed to git.)
   write-locked DuckDB breaks *linting* too, not just builds. `requirements.txt`
   pins `sqlfluff-templater-dbt` in lockstep with `sqlfluff`.
 - A full `dbt build` re-reads the git clone + mbox cache each run. The mbox
-  parse (`raw_list_messages` via `sources/mail.py`) is the dominant cost and now
+  parse (`raw_list_messages` via `pg_analysis.sources.mail`) is the dominant cost and now
   fans out across a process `Pool` (spawn — the parent is multithreaded, so fork
   is unsafe), ~6x faster (~257s -> ~43s); `raw_commit_files` (git side) is the
   next-slowest and still serial. Use `dbt build --select <models>` while
@@ -155,7 +175,7 @@ per-session memories, which aren't committed to git.)
   a major's `.0` (`'development'`: master between two fork points plus the
   branch's pre-GA stabilization), and a released major's stable-branch commits
   after its latest tag are pending for the OPEN release (`'open'`). Every
-  branch's corpus range is tag-bounded too (`sources.git.commit_range`: a
+  branch's corpus range is tag-bounded too (`pg_analysis.sources.git.commit_range`: a
   stable branch from its fork, master from `corpus.HISTORY_FLOOR_TAG`) -- there
   is no history date anywhere. Never re-derive any of this with date windows.
   `dim_commit.branch_scope` (trunk/beta/stable) is per COMMIT from that status,
@@ -180,7 +200,7 @@ per-session memories, which aren't committed to git.)
   keyword filter.** `int_commit_ai_texts` (one text per `fix_key`) and
   `int_thread_ai_texts` (one per thread root) put EVERY commit and thread in
   scope; `int_commit_ai_involvement` / `int_thread_ai_involvement` (Python,
-  `sources/ai_involvement.py`) ask qwen3:30b-a3b for the four independent
+  `pg_analysis.sources.ai_involvement`) ask qwen3:30b-a3b for the four independent
   work-role flags (`ai_found` / `ai_analyzed` / `ai_authored` / `ai_tooling`),
   the exclusive `mentioned_only`, vendor, disclosure form, confidence and a
   one-sentence rationale, from the `ai_involvement_roles` seed definitions.
@@ -188,11 +208,11 @@ per-session memories, which aren't committed to git.)
   the committed `data/raw/{commit,thread}_ai_involvement.csv` (also the
   fresh-build fallback). A build classifies at most
   `var('ai_involvement_max_inline_classifications')` new texts inline and
-  otherwise fails fast pointing at the resumable `backfill_ai_involvement.py`
+  otherwise fails fast pointing at the resumable `pg-backfill-ai`
   (~2s/text; the full corpus is ~14h). **Cached-only mode is automatic, not
   configured:** every classify-once model (these two and
   `int_fix_content_categories`) probes Ollama at build time
-  (`sources.classify.ollama_unavailable_reason`: server reachable AND the tag
+  (`pg_analysis.sources.classify.ollama_unavailable_reason`: server reachable AND the tag
   installed); if not, it emits the cache and marks unseen texts
   `is_classified = false` with NULL labels -- the build succeeds with a WARN
   count, `fct_fixes.category` shows `'unclassified'`, and the CSV export skips

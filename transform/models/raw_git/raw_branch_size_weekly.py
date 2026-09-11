@@ -13,14 +13,11 @@ build (or --full-refresh) backfills every week from each branch's .0 release,
 which is minutes of git grep. One row per (branch, week, subsystem, extension).
 """
 
-import sys
-from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
 
-sys.path.insert(0, str(Path.cwd()))
-from sources.git import branch_size_weekly_records
+from pg_analysis.sources.git import branch_size_weekly_records
 
 _SCHEMA = pa.schema(
     [

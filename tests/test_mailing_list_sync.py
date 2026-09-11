@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-import corpus
-import mailing_list_sync as mls
+from pg_analysis import corpus
+from pg_analysis import mailing_list_sync as mls
 
 # The dates below are fixed INPUTS to a pure function — chosen to cover a normal
 # month and the January year-rollover. They pin refetch_months' arithmetic and

@@ -9,9 +9,9 @@ models, never here):
 - sgml  -- release-notes changelog items parsed from the clone's DocBook SGML
 - mail  -- pgsql-hackers messages decoded from the cached monthly mboxes
 
-The models put transform/ (the dbt project root, dbt's cwd) on sys.path and
-import `from sources.<name> import ...`; the readers reach the shared corpus
-config one directory up (../corpus.py) the same way. Kept in one package
-rather than loose at the project root so the readers stay together and the
-root holds only dbt config.
+The dbt Python models import them as `pg_analysis.sources.<name>` from the
+editable-installed package (no sys.path juggling anywhere); the readers take
+every path from pg_analysis.paths and the corpus bounds from
+pg_analysis.corpus, so they run the same from dbt, the backfills, and the
+tests.
 """

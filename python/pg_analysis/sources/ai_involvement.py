@@ -20,7 +20,7 @@ import re
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import Any, NamedTuple
 
-from sources.classify import chat_json, clamp_confidence, content_hash, squash_whitespace
+from pg_analysis.sources.classify import chat_json, clamp_confidence, content_hash, squash_whitespace
 
 # bump when the prompt/schema/roles change -> re-inferences all. Namespaced so
 # it can never collide with sources.classify.PROMPT_VERSION in the hash space.

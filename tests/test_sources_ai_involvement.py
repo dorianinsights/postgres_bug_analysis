@@ -4,7 +4,7 @@ models (the Ollama call itself is network I/O and isn't unit-tested here)."""
 
 import pytest
 
-from sources.ai_involvement import (
+from pg_analysis.sources.ai_involvement import (
     AI_PROMPT_VERSION,
     DISCLOSURE_FORMS,
     LABEL_COLS,
@@ -22,7 +22,7 @@ from sources.ai_involvement import (
     parse_ai_label,
     roles_prompt,
 )
-from sources.classify import content_hash
+from pg_analysis.sources.classify import content_hash
 
 
 def _answer(**overrides: object) -> dict[str, object]:

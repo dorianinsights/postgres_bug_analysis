@@ -33,8 +33,8 @@ from typing import Any
 
 import duckdb
 
-sys.path.insert(0, str(Path(__file__).parent / "transform"))
-from sources.ai_involvement import (
+from pg_analysis.paths import DATA_RAW, SEEDS_DIR, WAREHOUSE
+from pg_analysis.sources.ai_involvement import (
     AI_PROMPT_VERSION,
     LABEL_COLS,
     ai_content_hash,
@@ -43,11 +43,9 @@ from sources.ai_involvement import (
     label_to_cells,
     roles_prompt,
 )
-from sources.classify import ollama_unavailable_reason
+from pg_analysis.sources.classify import ollama_unavailable_reason
 
-ROOT = Path(__file__).parent
-WAREHOUSE = ROOT / "transform" / "transform.duckdb"
-ROLES_SEED = ROOT / "transform" / "seeds" / "ai_involvement_roles.csv"
+ROLES_SEED = SEEDS_DIR / "ai_involvement_roles.csv"
 MODEL_TAG = "qwen3:30b-a3b"
 CHECKPOINT_EVERY = 25
 
@@ -56,12 +54,12 @@ POPULATIONS: dict[str, tuple[tuple[str, ...], str, Path]] = {
     "commit": (
         ("fix_key",),
         "SELECT fix_key, ai_text FROM intermediate.int_commit_ai_texts ORDER BY fix_key",
-        ROOT / "data" / "raw" / "commit_ai_involvement.csv",
+        DATA_RAW / "commit_ai_involvement.csv",
     ),
     "thread": (
         ("list_name", "root_message_id"),
         "SELECT list_name, root_message_id, ai_text FROM intermediate.int_thread_ai_texts ORDER BY list_name, root_message_id",
-        ROOT / "data" / "raw" / "thread_ai_involvement.csv",
+        DATA_RAW / "thread_ai_involvement.csv",
     ),
 }
 

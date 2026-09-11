@@ -12,7 +12,7 @@ fixture below reproduces exactly that shape.
 import mailbox
 from pathlib import Path
 
-from sources.mail import _body_text, _messages, _records_for_mbox, _sent_ts
+from pg_analysis.sources.mail import _body_text, _messages, _records_for_mbox, _sent_ts
 
 _OWNER = b"From pgsql-bugs-owner+archive@lists.postgresql.org"
 

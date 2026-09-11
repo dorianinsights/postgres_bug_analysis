@@ -20,13 +20,12 @@ from __future__ import annotations
 import csv
 import sys
 import time
-from pathlib import Path
 from typing import Any
 
 import duckdb
 
-sys.path.insert(0, str(Path(__file__).parent / "transform"))
-from sources.classify import (
+from pg_analysis.paths import DATA_RAW, SEEDS_DIR, WAREHOUSE
+from pg_analysis.sources.classify import (
     PROMPT_VERSION,
     build_schema,
     classify_one,
@@ -35,10 +34,8 @@ from sources.classify import (
     taxonomy_prompt,
 )
 
-ROOT = Path(__file__).parent
-WAREHOUSE = ROOT / "transform" / "transform.duckdb"
-TAXONOMY_SEED = ROOT / "transform" / "seeds" / "content_categories.csv"
-CACHE_CSV = ROOT / "data" / "raw" / "fix_content_categories.csv"
+TAXONOMY_SEED = SEEDS_DIR / "content_categories.csv"
+CACHE_CSV = DATA_RAW / "fix_content_categories.csv"
 MODEL_TAG = "qwen3:30b-a3b"
 
 # Column order + line ending match the dbt model's CSV export, so no churn.

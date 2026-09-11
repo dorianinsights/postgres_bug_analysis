@@ -8,14 +8,11 @@ and master after the newest fork are absent. Cheap (~one rev-list per tag), so
 a full table each build -- no incrementality needed.
 """
 
-import sys
-from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
 
-sys.path.insert(0, str(Path.cwd()))
-from sources.git import commit_version_records
+from pg_analysis.sources.git import commit_version_records
 
 _SCHEMA = pa.schema(
     [

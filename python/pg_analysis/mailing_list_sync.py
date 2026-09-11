@@ -29,14 +29,13 @@ from pathlib import Path
 import requests
 from dotenv import dotenv_values
 
-from corpus import history_floor
+from pg_analysis.corpus import history_floor
+from pg_analysis.paths import ENV_FILE, MBOX_CACHE
 
 LISTS = ("pgsql-bugs", "pgsql-hackers")
 LOGIN_URL = "https://www.postgresql.org/account/login/"
 ARCHIVES_LOGIN_URL = "https://www.postgresql.org/list/_auth/accounts/login/"
 MBOX_URL = "https://www.postgresql.org/list/{list_name}/mbox/{list_name}.{year}{month:02d}"
-CACHE = Path(__file__).parent / ".cache" / "mbox"
-ENV_FILE = Path(__file__).parent / ".env"
 USER_AGENT = "postgres-patch-analysis (personal research)"
 CSRF_RE = re.compile(r'name="csrfmiddlewaretoken" value="([^"]+)"')
 MBOX_FETCH_WAIT = 0.5  # seconds between back-to-back downloads to avoid server overload, be nice to people!
@@ -127,7 +126,7 @@ def get_with_retry(session: requests.Session, url: str) -> requests.Response:
 
 def fetch_month(session: requests.Session, list_name: str, year: int, month: int) -> Path:
     """Download one monthly mbox to the cache, atomically."""
-    target = CACHE / list_name / f"{year}{month:02d}.mbox"
+    target = MBOX_CACHE / list_name / f"{year}{month:02d}.mbox"
     target.parent.mkdir(parents=True, exist_ok=True)
     resp = get_with_retry(session, MBOX_URL.format(list_name=list_name, year=year, month=month))
     if not resp.content.startswith(b"From "):
@@ -159,7 +158,7 @@ def main() -> None:
     fetched = skipped = 0
     for list_name in LISTS:
         for year, month in month_range():
-            target = CACHE / list_name / f"{year}{month:02d}.mbox"
+            target = MBOX_CACHE / list_name / f"{year}{month:02d}.mbox"
             if target.is_file() and (year, month) not in refetch:
                 skipped += 1
                 continue
@@ -168,7 +167,7 @@ def main() -> None:
             print(f"{list_name} {year}-{month:02d}: {path.stat().st_size:,} bytes")
             time.sleep(MBOX_FETCH_WAIT)
 
-    print(f"\n{fetched} months fetched, {skipped} already cached -> {CACHE}")
+    print(f"\n{fetched} months fetched, {skipped} already cached -> {MBOX_CACHE}")
 
 
 if __name__ == "__main__":

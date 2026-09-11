@@ -3,7 +3,7 @@
 (the Ollama call itself, classify_one, is network I/O and isn't unit-tested here).
 """
 
-from sources.classify import build_schema, content_hash, installed_models, model_matches, taxonomy_prompt
+from pg_analysis.sources.classify import build_schema, content_hash, installed_models, model_matches, taxonomy_prompt
 
 
 def test_installed_models_reads_an_api_tags_answer() -> None:

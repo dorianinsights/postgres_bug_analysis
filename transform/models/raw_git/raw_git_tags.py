@@ -2,14 +2,11 @@
 postgres.git clone at build time.
 """
 
-import sys
-from pathlib import Path
 from typing import Any
 
-sys.path.insert(0, str(Path.cwd()))
 import pyarrow as pa
 
-from sources.git import tag_records
+from pg_analysis.sources.git import tag_records
 
 
 def model(dbt: Any, session: Any) -> pa.Table:

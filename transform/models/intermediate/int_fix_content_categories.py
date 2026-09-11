@@ -20,13 +20,11 @@ backfill_classifications.py so the build stays fast. Grain = item_ord.
 
 import sys
 from decimal import Decimal
-from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
 
-sys.path.insert(0, str(Path.cwd()))
-from sources.classify import (
+from pg_analysis.sources.classify import (
     PROMPT_VERSION,
     build_schema,
     classify_one,

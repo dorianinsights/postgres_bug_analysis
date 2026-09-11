@@ -1,37 +1,56 @@
 # PostgreSQL patch analysis
 
 Is Postgres fixing more, faster — and is LLM-assisted bug discovery behind it?
-This pipeline scrapes the primary sources, persists them as CSVs, and renders
-the analysis as [dataface / dbt charts](https://docs.dbtcharts.com/) dashboards.
+This pipeline uses the Postgres publicly available git repo and two of the mostly heavily used Postgres mailing lists - pgsql-bugs and pgsql-hackers as data sources to answer this question. It also separately obtains Postgres CVE ratings to provide some auxiliary vulnerability information.
+
+## Basic Architecture
+
+Once the data sources are available, the project uses dbt and DuckDB to do a series of transformations and calculations, provides a `marts` output layer, and renders
+the analysis as [dbt charts](https://docs.dbtcharts.com/) dashboards.
 
 Three explicit stages, each re-runnable on its own:
 
 ```
-scrape_cve_severity.py ──> data/raw/cve_severity.csv ─┐
-postgres_clone.py ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> transform.duckdb marts ──> transform/faces/*.yml (dct)
-                      (full bare clone: commits,       │        │ (typed tables — what the faces read)           (visualization)
-                       tags, AND release-notes SGML)   │        └────> data/derived/*.csv (diffable audit export)
-mailing_list_sync.py ──> .cache/mbox/ ────────────────┘
-                      (monthly mbox archives)
-                      (all read directly at build time)
+pg-cve-scrape ──> data/raw/cve_severity.csv ─┐
+pg-clone ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> transform.duckdb marts ──> transform/faces/*.yml (dct)
+             (full bare clone: commits,      │        │ (typed tables — what the faces read)           (visualization)
+              tags, AND release-notes SGML)  │        └────> data/derived/*.csv (diffable audit export)
+pg-mail-sync ──> .cache/mbox/ ───────────────┘
+             (monthly mbox archives)
+             (all read directly at build time)
 ```
 
-`refresh_data.py` runs the three fetches in order and then the build (the
-Quickstart's step 2). Two scripts sit beside the pipeline without being part
-of it: `backfill_ai_involvement.py` / `backfill_classifications.py` (the bulk
-LLM classifiers, see the Ollama section) and `embed_fixes.py`, a prototype
-that embeds each distinct fix's release-note text with Ollama's
-`nomic-embed-text` into a gitignored `.cache/fix_embeddings.parquet` for
-bottom-up clustering experiments — it reads the warehouse and is not wired
-into dbt.
+The Python side is one package, **`pg_analysis`** (`python/pg_analysis/`,
+installed editable into the venv by `requirements.txt`): the corpus
+definition (`corpus`), the three fetchers, the orchestrator (`refresh_data`),
+the bulk LLM backfills, an embedding prototype, and `sources/`, the
+build-time readers the dbt Python models import. Every path the package
+touches (the caches, `data/raw/`, `transform/`, the warehouse, `.env`) comes
+from one module, `pg_analysis.paths`, which locates the repo from its own
+file, so nothing depends on the cwd and there is no `sys.path` juggling
+anywhere — the dbt models, the tests and the scripts all write plain
+`from pg_analysis... import` lines. The editable install also puts console
+scripts in `venv/bin`: `pg-refresh` (the three fetches in order, then the
+build — the Quickstart's step 2; it calls the fetch modules' `main()`
+in-process and runs only dbt, a CLI, as a child process), `pg-clone`,
+`pg-mail-sync`, `pg-cve-scrape`, and, beside the pipeline rather than part
+of it, `pg-backfill-ai` / `pg-backfill-categories` (the bulk LLM classifiers,
+see the Ollama section) and `pg-embed-fixes`, a prototype that embeds each
+distinct fix's release-note text with Ollama's `nomic-embed-text` into a
+gitignored `.cache/fix_embeddings.parquet` for bottom-up clustering
+experiments — it reads the warehouse and is not wired into dbt. The package
+is a working checkout's tool, not a distributable: a non-editable install
+would find no repo around it.
 
 ## Quickstart
 
 ```bash
 # 1. One-time setup (venv lives at the repo root; Python 3.10-3.13 — 3.14 not
-#    yet supported by dbt-charts). The mbox sync needs a free postgresql.org
-#    community account: put POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD
-#    in .env (gitignored) before the next step.
+#    yet supported by dbt-charts). requirements.txt pins every dependency AND
+#    installs the repo's own pg_analysis package editable (`-e .`), which is
+#    what puts the pg-* commands below in venv/bin. The mbox sync needs a
+#    free postgresql.org community account: put POSTGRES_COMM_USERNAME /
+#    POSTGRES_COMM_PASSWORD in .env (gitignored) before the next step.
 python3.12 -m venv venv
 ./venv/bin/pip install -r requirements.txt
 
@@ -43,7 +62,7 @@ python3.12 -m venv venv
 #    succeeded. Same command for every later refresh: past mbox months and
 #    the immutable git history are cached forever, so only what changed is
 #    re-fetched. profiles.yml is local to transform/, so no ~/.dbt setup.
-./venv/bin/python refresh_data.py
+./venv/bin/pg-refresh
 
 # 3. Visualize: the dashboards, live in the browser (run from transform/ —
 #    dbt_charts.yml sits beside dbt_project.yml)
@@ -54,13 +73,12 @@ Running a stage on its own — each fetch script is independent and
 idempotent, the build is a plain dbt project, and the boards are plain YAML:
 
 ```bash
-./venv/bin/python refresh_data.py --list          # the steps, in run order
-./venv/bin/python refresh_data.py --only cve      # one fetch, then the build
-./venv/bin/python refresh_data.py --skip mail     # everything but the slow mbox sync (needs an existing .cache/mbox/)
-./venv/bin/python refresh_data.py --no-build      # refresh the sources without rebuilding
-./venv/bin/python postgres_clone.py               # or call a fetch script directly:
-./venv/bin/python mailing_list_sync.py            #   mailing_list_sync.py / scrape_cve_severity.py
-(cd transform && ../venv/bin/dbt build)           # just the transform (dbt build --select <models> while iterating)
+./venv/bin/pg-refresh --list          # the steps, in run order
+./venv/bin/pg-refresh --only cve      # one fetch, then the build
+./venv/bin/pg-refresh --skip mail     # everything but the slow mbox sync (needs an existing .cache/mbox/)
+./venv/bin/pg-refresh --no-build      # refresh the sources without rebuilding
+./venv/bin/pg-clone                   # or run one fetch on its own: pg-clone / pg-mail-sync / pg-cve-scrape
+(cd transform && ../venv/bin/dbt build)   # just the transform (dbt build --select <models> while iterating)
 (cd transform && ../venv/bin/dct validate faces/*.yml)   # check the boards after editing one (the per-edit hook and pre-commit gate run this too)
 (cd transform && ../venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html")   # export static HTML to transform/out/ (gitignored)
 ```
@@ -114,7 +132,7 @@ end to end with no re-casting). Nothing writes and reads the same directory. **G
 the clone at `.cache/postgres.git` is content-addressed and immutable — its
 own perfect raw store — so the transform's `models/raw_git/` Python models
 (commits, tags, the commit → version tag-ancestry map, the weekly tree-size
-snapshots, AND the release-notes SGML, via `sources.git` / `sources.sgml`)
+snapshots, AND the release-notes SGML, via `pg_analysis.sources.git` / `.sgml`)
 read it directly at build time, and every git-derived table shares one
 consistent snapshot of the clone. Likewise the monthly mbox files at
 `.cache/mbox/` (immutable once a month is past) are decoded directly by
@@ -122,7 +140,7 @@ consistent snapshot of the clone. Likewise the monthly mbox files at
 in the sync so commit Discussion: trailers can be resolved to their
 source list (the origin-attribution models).
 
-Raw (`data/raw/`, the one external CSV — rerun `scrape_cve_severity.py` to refresh):
+Raw (`data/raw/`, the one external CSV — rerun `pg-cve-scrape` to refresh):
 
 | File | Grain | Source |
 |---|---|---|
@@ -197,23 +215,25 @@ dbt's target-prefixed default), so browsing the .duckdb shows the layer in
 every object's name. Layers:
 
 - `models/raw_git/` — Python models (dbt-duckdb) that read
-  `.cache/postgres.git` directly via `transform/sources/git.py` (and
-  `sources/sgml.py` for the notes): commits with full message bodies,
+  `.cache/postgres.git` directly via `pg_analysis.sources.git` (and
+  `pg_analysis.sources.sgml` for the notes): commits with full message bodies,
   per-commit `--numstat` file rows, every `REL_1x_*` ref, the release-notes
   items and their commit annotations, the commit → version map by exact tag
   ancestry (`raw_commit_versions`, one `rev-list` per tag, rebuilt in full),
   and the weekly per-branch tree-size snapshots (`raw_branch_size_weekly`,
   one `git grep -c` per branch HEAD — the one **incremental** model, since a
   past week's snapshot is immutable) — verbatim strings, one consistent clone
-  snapshot per build. Requires the clone (run `postgres_clone.py` or
-  `refresh_data.py` first).
+  snapshot per build. Requires the clone (run `pg-clone` or `pg-refresh`
+  first). The models import the readers from the installed package like any
+  other dependency; the readers take the clone path and the corpus bounds
+  from `pg_analysis.paths` / `pg_analysis.corpus`.
 - `models/raw_mail/` — Python model decoding the `.cache/mbox/` archives
-  via `transform/sources/mail.py`: per message, the bare headers (RFC 2047
+  via `pg_analysis.sources.mail`: per message, the bare headers (RFC 2047
   decoded), the Date header as an ISO string with its original offset,
   and the first text body part. Splitting is on the archive's own
   envelope line — stdlib `mailbox` oversplits on the `From <sha>` first
-  line of attached git patches. Requires the cache (run
-  `mailing_list_sync.py` first).
+  line of attached git patches. Requires the cache (run `pg-mail-sync`
+  first).
 - `models/staging/` — typed views over the raw CSVs and raw_git tables
   (`stg_*`; `stg_git_tags` keeps the `REL_M_N` release tags and
   `stg_git_prerelease_tags` the BETA/RC milestones it filters out, which
@@ -428,10 +448,14 @@ pre-commit gate (`.pre-commit-config.yaml`; one-time setup:
 edit can't slip past the per-edit hooks. Auto-fix layout nits with
 `./venv/bin/sqlfluff fix <file>`.
 
-Python **unit tests** for the scrapers (`corpus.py`, `mailing_list_sync.py`,
-`scrape_cve_severity.py`, `postgres_clone.py`, `refresh_data.py`) and the
-`transform/sources/` readers (git, sgml, mail, classify, ai_involvement) live
-in `tests/` — pure parse/logic coverage, no network, clone, or warehouse. Run them with `./venv/bin/pytest` (~0.1s). They're
+Python **unit tests** for the `pg_analysis` package (`corpus`,
+`mailing_list_sync`, `scrape_cve_severity`, `postgres_clone`,
+`refresh_data` — its step selection and the in-process step runner's
+failure mapping) and its `sources` readers (git, sgml, mail, classify,
+ai_involvement) live in `tests/` — pure parse/logic coverage, no network,
+clone, or warehouse. They import the editable-installed package exactly as
+the dbt models and console scripts do, so no path configuration is needed
+(pyright and ruff point at `python/` in `pyproject.toml`). Run them with `./venv/bin/pytest` (~0.1s). They're
 enforced the same two ways: a per-edit `pytest.sh` hook on any `.py` change and
 the `pytest` hook in the pre-commit gate. The DuckDB Python models
 (`transform/models/raw_*`) are thin wrappers over the tested readers, so they
@@ -439,7 +463,7 @@ carry no separate unit tests.
 
 ## Analysis conventions
 
-- **The corpus is defined in `corpus.py`** (`FIRST_MAJOR`; the upper bound is
+- **The corpus is defined in `pg_analysis.corpus`** (`python/pg_analysis/corpus.py`; (`FIRST_MAJOR`; the upper bound is
   discovered from the clone) and shared by every reader so their datasets can
   never diverge. There is no history *date*: master is bounded by tag ancestry
   (`HISTORY_FLOOR_TAG..master`, the previous major's GA tag, i.e. exactly
@@ -505,7 +529,7 @@ carry no separate unit tests.
   embargoed and reach public git only on wrap day, so mid-cycle security
   volume is structurally invisible.
 - The release notes are parsed from the clone's SGML at build time
-  (`sources.sgml` -> `raw_release_items` / `raw_item_commits`), the primary
+  (`pg_analysis.sources.sgml` -> `raw_release_items` / `raw_item_commits`), the primary
   source. The retired HTML scraper (`archive/scrape_release_notes.py`, from
   postgresql.org) parses the same notes and is kept only as a manual
   cross-check reference (not wired into the build, not maintained). Validated

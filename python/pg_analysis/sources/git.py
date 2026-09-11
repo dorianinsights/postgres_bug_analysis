@@ -8,9 +8,8 @@ every git-derived table shares one consistent snapshot of the clone.
 
 Everything here is pure extraction — verbatim strings, full fidelity —
 exactly what scrape_git_commits.py used to write to CSVs. Typing and
-filtering stay in the SQL staging models. Paths assume dbt runs from
-transform/ (the same convention as the ../data source locations), and
-corpus.py is imported from the directory above.
+filtering stay in the SQL staging models. Every path (the clone, the dbt
+seeds) comes from pg_analysis.paths, so nothing here depends on the cwd.
 """
 
 import csv
@@ -18,15 +17,11 @@ import multiprocessing as mp
 import os
 import re
 import subprocess
-import sys
 from datetime import UTC, date, datetime, timedelta
-from pathlib import Path
 from typing import NamedTuple
 
-sys.path.insert(0, str(Path.cwd().parent))
-from corpus import FIRST_MAJOR, HISTORY_FLOOR_TAG
-
-CACHE = Path.cwd().parent / ".cache" / "postgres.git"
+from pg_analysis.corpus import FIRST_MAJOR, HISTORY_FLOOR_TAG
+from pg_analysis.paths import CLONE, SEEDS_DIR
 
 # No date floor anywhere in the git side: every branch's corpus range is bounded
 # by tag ancestry (branch_range / commit_range below), master included. A
@@ -66,10 +61,10 @@ class TagRecord(NamedTuple):
 
 
 def git(*args: str) -> str:
-    if not CACHE.is_dir():
-        msg = f"postgres clone not found at {CACHE} — run ../postgres_clone.py first"
+    if not CLONE.is_dir():
+        msg = f"postgres clone not found at {CLONE} — run pg-clone first"
         raise RuntimeError(msg)
-    return subprocess.run(["git", "-C", str(CACHE), *args], capture_output=True, text=True, check=True).stdout
+    return subprocess.run(["git", "-C", str(CLONE), *args], capture_output=True, text=True, check=True).stdout
 
 
 def fork_point(branch: str) -> str:
@@ -242,7 +237,7 @@ def _subsystem_rules() -> list[tuple[str, "re.Pattern[str]"]]:
     (int_fix_changes), so the path -> subsystem taxonomy has one source of truth.
     Loaded lazily (not at import) so tests that import this module from any cwd
     don't need the seed on disk."""
-    path = Path.cwd() / "seeds" / "subsystem_rules.csv"
+    path = SEEDS_DIR / "subsystem_rules.csv"
     with path.open(encoding="utf-8") as handle:
         rows = [(int(r["match_order"]), r["subsystem"], re.compile(r["pattern"])) for r in csv.DictReader(handle)]
     rows.sort(key=lambda r: r[0])

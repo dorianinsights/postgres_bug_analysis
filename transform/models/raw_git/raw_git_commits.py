@@ -2,14 +2,11 @@
 time (no CSV landing layer for the git side — the clone is the raw store).
 """
 
-import sys
-from pathlib import Path
 from typing import Any
 
-sys.path.insert(0, str(Path.cwd()))
 import pyarrow as pa
 
-from sources.git import commit_records
+from pg_analysis.sources.git import commit_records
 
 
 def model(dbt: Any, session: Any) -> pa.Table:

@@ -2,15 +2,15 @@
 """Read the mailing-list mbox cache for the raw_mail Python models.
 
 Like the git side, the mail side has no CSV landing layer: the monthly
-mbox files at ../.cache/mbox/<list>/YYYYMM.mbox (synced by
-../mailing_list_sync.py, immutable once a month is past) ARE the raw
+mbox files at .cache/mbox/<list>/YYYYMM.mbox (synced by pg-mail-sync,
+i.e. pg_analysis.mailing_list_sync; immutable once a month is past) ARE the raw
 store, and the models/raw_mail/ Python models call these readers at
 build time.
 
 Everything here is pure extraction from transport formats — MIME body
 decoding, RFC 2047 header decoding, RFC 2822 date parsing to an ISO
 string — with no analysis logic. Typing, trimming, and derivations stay
-in the SQL staging models. Paths assume dbt runs from transform/.
+in the SQL staging models. The cache path comes from pg_analysis.paths.
 """
 
 import email
@@ -24,7 +24,7 @@ from email.message import EmailMessage
 from pathlib import Path
 from typing import NamedTuple
 
-CACHE = Path.cwd().parent / ".cache" / "mbox"
+from pg_analysis.paths import MBOX_CACHE
 
 # pgarchives writes every message separator as
 # "From <list>-owner+archive@lists.postgresql.org <ctime date>" and does
@@ -122,12 +122,12 @@ def list_message_records() -> list[ListMessageRecord]:
     cost, and dbt/DuckDB can't parallelize within one Python model. `map`
     preserves task order, so the record order matches the serial version.
     """
-    if not CACHE.is_dir():
-        msg = f"mbox cache not found at {CACHE} — run ../mailing_list_sync.py first"
+    if not MBOX_CACHE.is_dir():
+        msg = f"mbox cache not found at {MBOX_CACHE} — run pg-mail-sync first"
         raise RuntimeError(msg)
     tasks: list[tuple[str, str]] = [
         (list_dir.name, str(mbox_path))
-        for list_dir in sorted(path for path in CACHE.iterdir() if path.is_dir())
+        for list_dir in sorted(path for path in MBOX_CACHE.iterdir() if path.is_dir())
         for mbox_path in sorted(list_dir.glob("*.mbox"))
     ]
     if not tasks:

@@ -11,9 +11,9 @@ import re
 
 import pytest
 
-import corpus
-import sources.git as gitmod
-from sources.git import commit_range
+from pg_analysis import corpus
+from pg_analysis.sources import git as gitmod
+from pg_analysis.sources.git import commit_range
 
 # git log --format uses \x00 between fields and \x01 to terminate each record.
 _COMMIT_LOG = (

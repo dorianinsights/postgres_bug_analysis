@@ -1,7 +1,7 @@
 # pyright: strict
 """postgres_clone: the fetch refspecs (heads + tags only, never refs/*)."""
 
-import postgres_clone
+from pg_analysis import postgres_clone
 
 
 def test_refspecs_cover_heads_and_tags() -> None:
