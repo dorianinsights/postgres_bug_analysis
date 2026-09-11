@@ -1,0 +1,73 @@
+version: 2
+
+models:
+  - name: fct_release_categories_agg
+    description: >
+      Tidy (release-release, category) fix counts -> data/derived/fct_release_categories_agg.csv,
+      aggregated from fct_fixes and conformed to dim_release via dim_release_key.
+      Only categories present in a release are written, so fix_cnt >= 1.
+      Grain = (dim_release_key, category).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [dim_release_key, category]
+      # category counts partition the deduped fixes: their per-release sum
+      # equals dim_release.distinct_fix_cnt (full outer join on the key, so a
+      # release missing on either side fails)
+      - dbt_expectations.expect_table_aggregation_to_equal_other_table:
+          arguments:
+            expression: sum(fix_cnt)
+            group_by: [dim_release_key]
+            compare_model: ref('dim_release')
+            compare_expression: sum(distinct_fix_cnt)
+            compare_group_by: [dim_release_key]
+            compare_row_condition: "status = 'shipped'"
+    columns:
+      - name: dim_release_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_release')
+                field: dim_release_key
+      - name: release_dt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "{{ var('test_floor_release_dt') }}"
+                max_value: current_date
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: category
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('content_categories')
+                field: category
+      - name: category_order
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 13
+      - name: fix_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: is_out_of_band
+        tests:
+          - not_null
+      - name: fix_share
+        description: The row's share of its release's fixes (fix_cnt / release total); a ratio typed DECIMAL(7,6), summing to 1 per release.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1

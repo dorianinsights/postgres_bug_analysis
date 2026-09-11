@@ -14,10 +14,9 @@ renders/
 *.duckdb
 # Temporary working files for duckdb
 *.wal
-# dbt scratch state (transform/ project)
-transform/target/
-transform/logs/
-transform/dbt_packages/
+# dbt scratch state (the dbt project is the repo root)
+target/
+dbt_packages/
 /logs/
 
 # local bug-report write-ups with rendered screenshots (never committed)

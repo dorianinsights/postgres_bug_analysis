@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: inferred
+    description: >
+      LLM-inferred raw CSVs — neither scraped from a website nor derivable from
+      the clone. fix_content_categories.csv is the fix content taxonomy (one
+      content-category label plus the orthogonal security-hardening / performance
+      flags per distinct fix). It is BOTH the fresh-build fallback seed for the
+      incremental int_fix_content_categories model (a clone with a current CSV
+      classifies nothing and needs no Ollama) AND that model's committed export
+      (its post_hook re-writes this file), so it stays current. Read in place via
+      a dbt-duckdb external location; numeric-free auto_type_candidates keep
+      confidence a VARCHAR until it is cast to DECIMAL(3,2).
+      commit_ai_involvement.csv / thread_ai_involvement.csv are the same
+      arrangement for the AI-involvement classifier (int_commit_ai_involvement
+      at fix_key grain, int_thread_ai_involvement at thread-root grain): the
+      committed label cache each model reads by content hash and re-exports.
+      Bulk-populated by backfill_ai_involvement.py.
+    meta:
+      external_location: "read_csv('data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'VARCHAR'])"
+    tables:
+      - name: fix_content_categories
+      - name: commit_ai_involvement
+      - name: thread_ai_involvement

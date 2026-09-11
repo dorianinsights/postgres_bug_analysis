@@ -5,9 +5,9 @@ max_line_length = 400
 exclude_rules = ST06
 
 [sqlfluff:templater:dbt]
-project_dir = transform
-profiles_dir = transform
-# Compile against the real warehouse (transform/transform.duckdb) READ-ONLY --
+project_dir = .
+profiles_dir = .
+# Compile against the real warehouse (transform.duckdb at the repo root) READ-ONLY --
 # sqlfluff runs from the repo root, so the lint target's path is repo-root
 # relative and it opens read-only (no write lock, no stray root-level stub).
 target = lint

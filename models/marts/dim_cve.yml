@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: dim_cve
+    description: >
+      CVE dimension -> data/derived/dim_cve.csv: one row per CVE a corpus
+      fix cites, with published CVSS v3 severity where available (NULL for
+      long-EOL CVEs the security page no longer lists). Grain = dim_cve_key.
+    columns:
+      - name: dim_cve_key
+        tests: [not_null, unique]
+      - name: cve_id
+        tests:
+          - not_null
+          - unique
+          # the two special members carry placeholder cve_ids, not real CVEs
+          - dbt_expectations.expect_column_values_to_match_regex:
+              config:
+                where: "cve_id NOT IN ('(unknown)', '(not applicable)')"
+              arguments:
+                regex: '^CVE-\d{4}-\d+$'
+      - name: cvss_base_score
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 10
+      - name: severity_band_order
+        description: Ordinal rank of severity_band (NONE=0 … CRITICAL=4) from the seed; NULL for unlisted-severity and special-member rows.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2, 3, 4]
+      - name: is_severity_unlisted
+        tests: [not_null]
+      - name: is_synthetic_row
+        description: >
+          True for the two Kimball special members (Unknown / Not Applicable),
+          false for every real CVE. The reliable flag for excluding the synthetic
+          rows from analytics.
+        tests: [not_null]

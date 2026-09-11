@@ -1,0 +1,182 @@
+version: 2
+
+models:
+  - name: dim_release
+    description: >
+      Release dimension -> data/derived/dim_release.csv: one row per release,
+      unifying the former dim_release_wave (shipped releases, with measures),
+      dim_release_cycle (all cycles), and fct_release_cycles (the cycle signals,
+      which were a fact 1:1 with this dimension). status = shipped/open/future;
+      shipped measures are NULL for non-shipped rows, and the cycle signals
+      (cycle_start_dt, window_days, early_*_cnt, full_fix_cnt, first_window_fix_cnt)
+      are non-NULL only for the started scheduled cycles. A release is a shipped
+      cycle. Grain = dim_release_key (a generate_surrogate_key hash of the release day).
+    tests:
+      # cycle signals are present for exactly the started scheduled cycles
+      # (not out-of-band releases, not the not-yet-started future release);
+      # the two special members are exempt
+      - dbt_utils.expression_is_true:
+          config:
+            where: "status NOT IN ('unknown', 'not applicable', 'in_development')"
+          arguments:
+            expression: "(cycle_start_dt IS NOT NULL) = (NOT is_out_of_band AND status <> 'future')"
+      # exactly one cycle is open (the current one); zero or several means the
+      # wrap-date derivation broke
+      - dbt_expectations.expect_table_row_count_to_equal:
+          arguments:
+            value: 1
+            row_condition: "status = 'open'"
+      # the scheduled cycles tile time with no gap and no overlap: each cycle
+      # runs from the prior wrap to its own wrap, and the next cycle starts
+      # exactly where this one ends
+      - dbt_utils.mutually_exclusive_ranges:
+          config:
+            where: "cycle_start_dt IS NOT NULL"
+          arguments:
+            lower_bound_column: cycle_start_dt
+            upper_bound_column: wrap_dt
+            gaps: not_allowed
+      # no two releases (scheduled or out-of-band) are being wrapped at once:
+      # the wrap-to-announcement spans never overlap
+      - dbt_utils.mutually_exclusive_ranges:
+          config:
+            where: "NOT is_synthetic_row AND status <> 'in_development'"
+          arguments:
+            lower_bound_column: wrap_dt
+            upper_bound_column: release_dt
+            gaps: allowed
+    columns:
+      - name: dim_release_key
+        tests: [not_null, unique]
+      - name: release_dt
+        tests:
+          - not_null
+          # the in_development release shares future_eternity with Not Applicable;
+          # dim_release_key is the real PK, so scope uniqueness to dated releases
+          - unique:
+              config:
+                where: "status <> 'in_development'"
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: status
+        tests:
+          - not_null
+          # the two special members carry 'unknown' / 'not applicable' status
+          - accepted_values:
+              config:
+                where: "status NOT IN ('unknown', 'not applicable')"
+              arguments:
+                values: [shipped, open, future, in_development]
+      - name: is_out_of_band
+        tests: [not_null]
+      - name: is_partial_window
+        tests: [not_null]
+      - name: is_announced
+        description: >
+          The release day has arrived (as of the build's as_of_date). False for a
+          just-tagged release between its wrap Monday and its Thursday, and for
+          the open / future / in_development rows.
+        tests:
+          - not_null
+          # only shipped releases can be announced
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "= false OR status = 'shipped'"
+      - name: window_days
+        description: >
+          The open cycle's current age in days, the window every cycle's
+          early_*_cnt is measured over. NULL for non-cycle rows.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: cycle_start_dt
+        description: >
+          The cycle's start (the PRIOR quarter's wrap, ~3 months before ship),
+          distinct from this release's own wrap_dt. NULL for non-cycle rows.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: wrap_dt
+        description: >
+          This release's own wrap day -- from the scheduled quarterly calendar, or
+          (for an out-of-band re-release, which the calendar does not cover) the
+          version's real wrap tag. Populated for every release.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: committed_fix_cnt
+        description: >
+          Distinct committed fixes (non-housekeeping stable-branch subjects) that
+          shipped in this release, from int_committed_fixes -- the commit-side
+          counterpart of distinct_fix_cnt (the documented items). Shipped rows only.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: documentation_rate
+        description: >
+          distinct_fix_cnt / committed_fix_cnt: how much of the commit stream the
+          release notes documented. DECIMAL(7,6); NULL for non-shipped rows.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: first_window_fix_cnt
+        description: >
+          Distinct backpatched fixes in the FIXED first-N-day window after the
+          wrap (var seasonality_window_days) -- the stable metric for the
+          quarterly-seasonality view, vs early_fix_cnt's moving age window (used
+          by the projection). NULL for non-cycle rows.
+      - name: early_fix_share
+        description: >
+          Front-loading signal: first_window_fix_cnt / full_fix_cnt, the fraction
+          of a cycle's backpatched fixes that land in the fixed early window. A
+          ratio typed DECIMAL(7,6); NULL for cycles with no full-window fixes and
+          for non-cycle rows. The quarterly-seasonality chart averages it.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: fix_per_early_report
+        description: >
+          Shipped distinct fixes per early bug report at the open cycle's age
+          (distinct_fix_cnt / early_report_cnt) -- a projection scaling factor,
+          DECIMAL(12,6); NULL when early_report_cnt is 0 or the cycle is unshipped.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: fix_per_early_message
+        description: >
+          Shipped distinct fixes per early list message (distinct_fix_cnt /
+          early_message_cnt); DECIMAL(12,6). NULL when early_message_cnt is 0 or
+          the cycle is unshipped. The chart scales it x100 for display.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: fix_per_early_fix
+        description: >
+          Shipped distinct fixes per early committed fix (distinct_fix_cnt /
+          early_fix_cnt); DECIMAL(12,6). NULL when early_fix_cnt is 0 or the
+          cycle is unshipped.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: is_synthetic_row
+        description: >
+          True for the two Kimball special members (Unknown / Not Applicable),
+          false for every real release — including the in_development row (a real
+          forward-looking release). The reliable flag for excluding the synthetic
+          rows from analytics.
+        tests: [not_null]

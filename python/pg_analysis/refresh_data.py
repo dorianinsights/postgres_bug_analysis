@@ -37,7 +37,7 @@ data. Pass --no-build to refresh the sources without rebuilding.
 (pyproject.toml); the dbt build is launched from that same bin directory, next
 to the interpreter running this.
 
-Note: the dbt build takes a read-write lock on transform/transform.duckdb, so
+Note: the dbt build takes a read-write lock on transform.duckdb (repo root), so
 quit any interactive DuckDB/Harlequin session first (see CLAUDE.md), or pass
 --no-build.
 """
@@ -54,7 +54,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pg_analysis import mailing_list_sync, postgres_clone, scrape_cve_severity
-from pg_analysis.paths import TRANSFORM_DIR
+from pg_analysis.paths import DBT_PROJECT_DIR
 
 VENV_BIN = Path(sys.executable).parent  # ./venv/bin when run via the repo venv
 
@@ -208,7 +208,7 @@ def print_step_list(steps: list[Step], *, with_build: bool) -> None:
     for s in steps:
         print(f"  {s.key:5} {s.name:28} {s.label}")
     if with_build:
-        print(f"  {'build':5} {'dbt deps + dbt build':28} Derive the marts in transform/")
+        print(f"  {'build':5} {'dbt deps + dbt build':28} Derive the marts (dbt project = repo root)")
 
 
 def run_fetches(steps: list[Step], args: argparse.Namespace) -> tuple[list[Result], bool]:
@@ -232,12 +232,11 @@ def run_build(prior: list[Result], *, dry_run: bool) -> Result | None:
         print(f"\nskipping dbt build: fetch step(s) failed ({', '.join(fetch_failed)}).", file=sys.stderr)
         return None
     dbt = str(VENV_BIN / "dbt")
-    transform = TRANSFORM_DIR
-    banner("[build] dbt deps + dbt build (transform/)")
+    banner("[build] dbt deps + dbt build (the dbt project at the repo root)")
     started = time.monotonic()
-    code = run([dbt, "deps"], cwd=transform, dry_run=dry_run)
+    code = run([dbt, "deps"], cwd=DBT_PROJECT_DIR, dry_run=dry_run)
     if code == 0:
-        code = run([dbt, "build"], cwd=transform, dry_run=dry_run)
+        code = run([dbt, "build"], cwd=DBT_PROJECT_DIR, dry_run=dry_run)
     return ("build", code, time.monotonic() - started)
 
 

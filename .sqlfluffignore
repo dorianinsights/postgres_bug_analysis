@@ -7,8 +7,11 @@
 #  - the Python venv, which vendors dbt-core's own global_project macros
 #    (site-packages/dbt/include/...) — thousands of .sql files, not ours.
 # The per-edit hooks and the pre-commit gate lint explicit file paths under
-# transform/models|tests|macros, so none of this affects them.
+# models|tests|macros, so none of this affects them.
 venv/
-transform/dbt_packages/
-transform/target/
-transform/logs/
+dbt_packages/
+target/
+logs/
+# the pytest suite is Python, not SQL, and the archived scraper is not a model
+python/
+archive/

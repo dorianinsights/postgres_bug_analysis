@@ -1,7 +1,7 @@
 # pyright: strict
 """The PostgreSQL patch-analysis pipeline's Python side, as one package.
 
-- `paths`        -- the repo layout (caches, data/raw, transform/), computed once
+- `paths`        -- the repo layout (caches, data/raw, the dbt project), computed once
 - `corpus`       -- the corpus definition (FIRST_MAJOR and the tag-bounded ranges)
 - the fetchers   -- `postgres_clone`, `mailing_list_sync`, `scrape_cve_severity`
 - `refresh_data` -- runs the fetchers in-process, then the dbt build

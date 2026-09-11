@@ -12,8 +12,8 @@ Three explicit stages, each re-runnable on its own:
 
 ```
 pg-cve-scrape ──> data/raw/cve_severity.csv ─┐
-pg-clone ──> .cache/postgres.git ────────────┼─> transform/ (dbt+DuckDB) ──> transform.duckdb marts ──> transform/faces/*.yml (dct)
-             (full bare clone: commits,      │        │ (typed tables — what the faces read)           (visualization)
+pg-clone ──> .cache/postgres.git ────────────┼─> dbt + DuckDB (the root) ──> transform.duckdb marts ──> faces/*.yml (dct)
+             (full bare clone: commits,      │        │ (typed tables — what the faces read) (visualization)
               tags, AND release-notes SGML)  │        └────> data/derived/*.csv (diffable audit export)
 pg-mail-sync ──> .cache/mbox/ ───────────────┘
              (monthly mbox archives)
@@ -25,7 +25,7 @@ installed editable into the venv by `requirements.txt`): the corpus
 definition (`corpus`), the three fetchers, the orchestrator (`refresh_data`),
 the bulk LLM backfills, an embedding prototype, and `sources/`, the
 build-time readers the dbt Python models import. Every path the package
-touches (the caches, `data/raw/`, `transform/`, the warehouse, `.env`) comes
+touches (the caches, `data/raw/`, the dbt seeds, the warehouse, `.env`) comes
 from one module, `pg_analysis.paths`, which locates the repo from its own
 file, so nothing depends on the cwd and there is no `sys.path` juggling
 anywhere — the dbt models, the tests and the scripts all write plain
@@ -58,15 +58,15 @@ python3.12 -m venv venv
 #    clone (first run: full bare clone, ~800MB), the pgsql-bugs +
 #    pgsql-hackers mbox archives (full bodies; hackers is ~3GB on first
 #    sync), the CVSS severity scrape (one small fetch), then `dbt deps` +
-#    `dbt build` in transform/ — the build runs only if every fetch
+#    `dbt build` at the repo root — the build runs only if every fetch
 #    succeeded. Same command for every later refresh: past mbox months and
 #    the immutable git history are cached forever, so only what changed is
-#    re-fetched. profiles.yml is local to transform/, so no ~/.dbt setup.
+#    re-fetched. profiles.yml sits at the repo root, so no ~/.dbt setup.
 ./venv/bin/pg-refresh
 
-# 3. Visualize: the dashboards, live in the browser (run from transform/ —
-#    dbt_charts.yml sits beside dbt_project.yml)
-(cd transform && ../venv/bin/dct serve)
+# 3. Visualize: the dashboards, live in the browser (dbt_charts.yml sits
+#    beside dbt_project.yml at the repo root)
+./venv/bin/dct serve
 ```
 
 Running a stage on its own — each fetch script is independent and
@@ -78,9 +78,9 @@ idempotent, the build is a plain dbt project, and the boards are plain YAML:
 ./venv/bin/pg-refresh --skip mail     # everything but the slow mbox sync (needs an existing .cache/mbox/)
 ./venv/bin/pg-refresh --no-build      # refresh the sources without rebuilding
 ./venv/bin/pg-clone                   # or run one fetch on its own: pg-clone / pg-mail-sync / pg-cve-scrape
-(cd transform && ../venv/bin/dbt build)   # just the transform (dbt build --select <models> while iterating)
-(cd transform && ../venv/bin/dct validate faces/*.yml)   # check the boards after editing one (the per-edit hook and pre-commit gate run this too)
-(cd transform && ../venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html")   # export static HTML to transform/out/ (gitignored)
+./venv/bin/dbt build                  # just the transform (dbt build --select <models> while iterating)
+./venv/bin/dct validate faces/*.yml   # check the boards after editing one (the per-edit hook and pre-commit gate run this too)
+./venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html"   # export static HTML to out/ (gitignored)
 ```
 
 The release notes are parsed straight from the clone's SGML at build time —
@@ -127,7 +127,7 @@ external CSV (`cve_severity.csv`) and the three LLM-inferred label caches
 committed export of its classify-once model) read by dbt sources; `data/derived/` holds the
 CSV **audit exports** of the mart tables — committed and line-diffable in
 review, but read back by nothing (the faces read the typed mart tables in
-`transform/transform.duckdb` instead, so DATE/DOUBLE/BIGINT typing survives
+`transform.duckdb` at the repo root instead, so DATE/DOUBLE/BIGINT typing survives
 end to end with no re-casting). Nothing writes and reads the same directory. **Git-side and mail-side data have no CSV landing layer at all**:
 the clone at `.cache/postgres.git` is content-addressed and immutable — its
 own perfect raw store — so the transform's `models/raw_git/` Python models
@@ -154,7 +154,7 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 `dim_person`, `dim_date`, `dim_bug`, `fct_fixes`, `fct_threads`,
 `bridge_fix_contributor`) live only as typed tables in the warehouse:
 
-## Dashboards (`transform/faces/`)
+## Dashboards (`faces/`)
 
 - `1_fix_analysis.yml` (the leading `1_` orders it first in `dct serve`) —
   source attribution: documented fixes per release by origin (counts and
@@ -192,12 +192,14 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
   size and backpatch breadth by severity, and time-to-fix vs change size —
   how a fix's size and severity relate to its timeline and reach.
 
-Rendered copies land in `transform/out/` (gitignored; regenerate with `dct render`).
+Rendered copies land in `out/` (gitignored; regenerate with `dct render`).
 
-## Transform (`transform/`)
+## Transform (the dbt project)
 
-A dbt project targeting DuckDB (dbt-duckdb) — run `dbt build` from inside
-`transform/`. The raw CSVs are read in place as external sources, and the
+A dbt project targeting DuckDB (dbt-duckdb) whose project root IS the repo
+root: `dbt_project.yml`, `models/`, `seeds/`, `macros/`, `tests/`, `faces/`
+and the warehouse sit beside `python/` and `data/`, so every dbt, dct and
+DuckDB command runs from the repo root with no `cd`. The raw CSVs are read in place as external sources, and the
 marts are typed tables inside `transform.duckdb` — the interface the faces
 query (dct's `warehouse` source opens the file read-only) and what dbt tests
 run against, so types survive with no sniffing or re-casting. An on-run-end
@@ -323,7 +325,7 @@ every object's name. Layers:
     charts aggregate the atomic fact on the fly (any time grain, any commit/file
     slice) and filter generated file classes (translation catalogs, test
     fixtures) in or out. (Mailing-list traffic has no materialized agg either:
-    the `transform/faces/` boards roll it up from the atomic `fct_messages` at
+    the `faces/` boards roll it up from the atomic `fct_messages` at
     query time — the counts and the non-additive fix-linked share alike, each
     computed at the chart's own grain.) `dim_date` is keyed on `date_day` (a real DATE) — there is
     no separate integer date surrogate; every mart's date columns join to it
@@ -367,7 +369,7 @@ every object's name. Layers:
   defined together; the marts join them, and relationships tests replace
   duplicated label lists).
 
-Analysis parameters live as dbt vars in `transform/vars.yml` (dbt >= 1.12
+Analysis parameters live as dbt vars in `vars.yml` at the repo root (dbt >= 1.12
 auto-parses it; the `vars:` block must live in that ONE file, not also in
 `dbt_project.yml`), each with a comment saying what it controls: the analysis
 knobs (`scheduled_release_min_items`, `pace_comparison_cycles`,
@@ -391,7 +393,7 @@ window): column-level schema tests
 (uniqueness, not-null, relationships, accepted ranges on counts and dates,
 regex format checks) using `dbt_utils` and Metaplane's `dbt_expectations`
 (installed via `dbt deps`), plus the singular reconciliation tests in
-`transform/tests/` (rollups vs the item grain, commit annotations vs items,
+`tests/` (rollups vs the item grain, commit annotations vs items,
 connected-components sanity, the release calendar vs observed wraps, and the
 forecast fact's target population and open-release completeness). `dbt build`
 is therefore also the validation pass.
@@ -434,10 +436,10 @@ Repo-wide (config in the repo-root `pyproject.toml`, mirroring
 property_analysis): `ruff` (format + lint) and `pyright` (strict mode, all files).
 SQL style for the dbt models is linted by `sqlfluff` (duckdb dialect + the
 **dbt templater**, so package macros like `dbt_date.get_base_dates` expand to
-real SQL during lint — it compiles the `transform/` project per run, which
+real SQL during lint — it compiles the dbt project per run, which
 needs the DuckDB file unlocked, same as a build; config in the repo-root
 `.sqlfluff`); correctness of the models is
-covered by the dbt tests themselves; and the boards under `transform/faces/`
+covered by the dbt tests themselves; and the boards under `faces/`
 are validated by `dct validate` (YAML schema + every query's columns against
 the compiled models). All four are enforced twice — per-edit via
 `.claude/hooks/` (`ruff-lint.sh`, `pyright-check.sh`, `sqlfluff-lint.sh`,
@@ -458,7 +460,7 @@ the dbt models and console scripts do, so no path configuration is needed
 (pyright and ruff point at `python/` in `pyproject.toml`). Run them with `./venv/bin/pytest` (~0.1s). They're
 enforced the same two ways: a per-edit `pytest.sh` hook on any `.py` change and
 the `pytest` hook in the pre-commit gate. The DuckDB Python models
-(`transform/models/raw_*`) are thin wrappers over the tested readers, so they
+(`models/raw_*`) are thin wrappers over the tested readers, so they
 carry no separate unit tests.
 
 ## Analysis conventions

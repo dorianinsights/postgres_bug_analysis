@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: dim_person
+    description: >
+      Person/entity dimension -> data/derived/dim_person.csv: one row per
+      distinct person (git patch author, git committer, and/or list sender),
+      resolved first-pass on normalized email. Grain = dim_person_key.
+    columns:
+      - name: dim_person_key
+        tests: [not_null, unique]
+      - name: canonical_name
+        tests:
+          - not_null
+          - dbt_utils.not_empty_string
+      - name: is_git_author
+        tests: [not_null]
+      - name: is_git_committer
+        tests: [not_null]
+      - name: is_list_sender
+        tests: [not_null]
+      - name: is_bug_reporter
+        tests: [not_null]
+      - name: first_seen_dt
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: last_seen_dt
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: source_list_cnt
+        tests:
+          - not_null
+          # the two special members have no source lists (count 0)
+          - dbt_utils.accepted_range:
+              config:
+                where: "canonical_name NOT IN ('Unknown', 'Not applicable')"
+              arguments:
+                min_value: 1
+      - name: is_synthetic_row
+        description: >
+          True for the two Kimball special members (Unknown / Not Applicable),
+          false for every real person. The reliable flag for excluding the
+          synthetic rows from analytics.
+        tests: [not_null]

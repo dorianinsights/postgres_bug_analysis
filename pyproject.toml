@@ -79,7 +79,7 @@ ignore = [
 # Tests exercise internals and use fixtures/fake secrets, so relax a few
 # security/style rules that only make sense for production code.
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = [
+"python/tests/**" = [
   "S101",  # asserts ARE the point in tests
   "S105",  # test fixtures use fake/hardcoded "passwords"
   "S106",
@@ -92,5 +92,5 @@ docstring-code-format = false
 [tool.pytest.ini_options]
 # The tests import the installed (editable) pg_analysis package, exactly as
 # the dbt Python models and the console scripts do -- no pythonpath entry.
-testpaths = ["tests"]
+testpaths = ["python/tests"]
 addopts = "-q"

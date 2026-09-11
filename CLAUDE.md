@@ -26,7 +26,7 @@ per-session memories, which aren't committed to git.)
   `from pg_analysis... import`** — the dbt models, the tests, the backfills:
   never add a `sys.path.insert` or a `Path(__file__)`/`Path.cwd()` anchor.
   **Every repo path comes from `pg_analysis.paths`** (`REPO_ROOT`, `CLONE`,
-  `MBOX_CACHE`, `DATA_RAW`, `TRANSFORM_DIR`, `SEEDS_DIR`, `WAREHOUSE`,
+  `MBOX_CACHE`, `DATA_RAW`, `DBT_PROJECT_DIR`, `SEEDS_DIR`, `WAREHOUSE`,
   `ENV_FILE`); it locates the repo from its own file, which is why the install
   must stay editable (a non-editable install would resolve to site-packages
   and find nothing). Adding a runnable module = add its `main()` to
@@ -35,12 +35,12 @@ per-session memories, which aren't committed to git.)
   when `main()` raises; only dbt is a subprocess), so a fetch's failure
   signal must stay an exception or `SystemExit`, never a bare `return`
   after printing an error.
-- **DuckDB is single-writer.** `transform/transform.duckdb` may be held open by
+- **DuckDB is single-writer.** `transform.duckdb` (at the repo root) may be held open by
   an interactive session (Harlequin, `duckdb` CLI); a `dbt build` (read-write)
   then fails with a lock error. Quit those before building. Harlequin should be
   opened read-only from its own venv (`~/.venvs/harlequin`, with `duckdb` pinned
-  to the version that wrote the file — currently 1.5.5) and **from `transform/`**
-  (`cd transform && harlequin -r transform.duckdb`) — see the cwd gotcha below.
+  to the version that wrote the file — currently 1.5.5) and **from the repo
+  root** (`harlequin -r transform.duckdb`) — see the cwd gotcha below.
   Do **not** kill the user's live Harlequin — ask them to quit it; only
   terminate a leftover process they've confirmed is closed. Note the sqlfluff
   lint now uses the **dbt templater** (so package macros like
@@ -76,15 +76,15 @@ per-session memories, which aren't committed to git.)
   SELECT and every top-level UNION branch): `dct validate` derives a model's
   columns statically from that projection to check the faces' queries, and a
   wildcard makes the model unresolvable. Not lint-enforced; run
-  `cd transform && dct validate --strict faces/*.yml` now and then to surface
+  `dct validate --strict faces/*.yml` now and then to surface
   any `WARN-DBT-MODEL-COLUMNS-UNRESOLVED`.
-- **Interactive DuckDB/Harlequin must be launched from `transform/`**, not the
-  repo root: the `staging.stg_*` models are *views* that read external CSVs by a
-  relative path (`../data/raw/*.csv`, resolved against the process cwd — dbt runs
-  from `transform/`). From the repo root they throw `IO Error: No files found`;
-  `intermediate`/`marts` are real tables baked into the file and query from
-  anywhere. So `cd transform && harlequin -r transform.duckdb` (or
-  `duckdb -readonly transform.duckdb`).
+- **Interactive DuckDB/Harlequin must be launched from the repo root** (the
+  dbt project root): the `staging.stg_*` models are *views* that read external
+  CSVs by a relative path (`data/raw/*.csv`, resolved against the process cwd,
+  which is the repo root when dbt runs). From any other directory they throw
+  `IO Error: No files found`; `intermediate`/`marts` are real tables baked into
+  the file and query from anywhere. So, from the root,
+  `harlequin -r transform.duckdb` (or `duckdb -readonly transform.duckdb`).
 
 - **dct overlay `layers:` get a single-identity tooltip.** An overlay layer's
   tooltip row is keyed by the layer's LABEL (the y column name), not by its
@@ -99,7 +99,7 @@ per-session memories, which aren't committed to git.)
   renaming a model or column, and `dct validate faces/*.yml` checks the
   queries' columns statically -- the marts end in explicit projections, not
   `SELECT *`, so keep it that way); before renaming a mart column, run
-  `cd transform && dct impact <column>` to list the boards and queries that
+  `dct impact <column>` to list the boards and queries that
   read it. Rerun `dct migrate faces/` after a dct upgrade and keep its
   `_schema_version` stamp. The dct workflow skills live in
   `.claude/skills/` (`dct init skills claude`; rerun with `-f` after an
@@ -107,7 +107,7 @@ per-session memories, which aren't committed to git.)
 
 ## Coding conventions
 - **No hardcoded dates or magic numbers** (other than `0` and `1`) in `.sql`
-  or `.py`. Before writing a literal, **check `transform/vars.yml`** for an
+  or `.py`. Before writing a literal, **check `vars.yml`** for an
   existing variable and use `{{ var('...') }}` — analysis knobs
   (`scheduled_release_min_items`, `reversion_baseline_releases`, the `*_window_days`,
   the sentinel `past_eternity` / `future_eternity` dates, the date-spine bounds,

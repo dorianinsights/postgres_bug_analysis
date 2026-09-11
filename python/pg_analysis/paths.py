@@ -24,10 +24,11 @@ MBOX_CACHE = CACHE_DIR / "mbox"
 # classify-once label caches).
 DATA_RAW = REPO_ROOT / "data" / "raw"
 
-# The dbt project and the DuckDB warehouse it builds.
-TRANSFORM_DIR = REPO_ROOT / "transform"
-SEEDS_DIR = TRANSFORM_DIR / "seeds"
-WAREHOUSE = TRANSFORM_DIR / "transform.duckdb"
+# The dbt project IS the repo root (dbt_project.yml, models/, seeds/, faces/
+# sit beside python/); these are its seeds and the DuckDB warehouse it builds.
+DBT_PROJECT_DIR = REPO_ROOT
+SEEDS_DIR = DBT_PROJECT_DIR / "seeds"
+WAREHOUSE = DBT_PROJECT_DIR / "transform.duckdb"
 
 # Credentials for the mailing-list sync (gitignored).
 ENV_FILE = REPO_ROOT / ".env"

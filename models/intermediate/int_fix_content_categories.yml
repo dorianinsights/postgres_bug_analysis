@@ -1,0 +1,69 @@
+version: 2
+
+models:
+  - name: int_fix_content_categories
+    description: >
+      One content-taxonomy label per distinct fix (+ orthogonal
+      is_security_hardening / is_performance flags), from a local LLM.
+      Classify-once, cached by the fix's CONTENT HASH (stable across corpus
+      changes, unlike the volatile item_ord). A table whose durable cache is the
+      committed data/raw/fix_content_categories.csv (also the fresh-build
+      fallback): item_ord is recomputed each build to stay joinable, labels are
+      reused by content hash, and only genuinely new/changed text reaches the
+      model; the post_hook re-exports the CSV. A bulk change (a new major) is best
+      pre-populated with backfill_classifications.py. Cached-only mode: when
+      Ollama or the model is absent at build time (probed, not configured) the
+      cached labels are emitted and new fixes get NULL labels with
+      is_classified = false (a WARN, not a failed build). Grain = item_ord.
+    tests:
+      - dbt_utils.expression_is_true:
+          config:
+            severity: warn
+          arguments:
+            expression: "is_classified"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "is_classified = (category_content IS NOT NULL)"
+    config:
+      post_hook: >
+        COPY (SELECT item_ord, content_hash, model, prompt_version, category_content,
+        confidence, is_security_hardening, is_performance, rationale
+        FROM {{ this }} WHERE is_classified ORDER BY item_ord)
+        TO 'data/raw/fix_content_categories.csv' (HEADER, FORMAT csv)
+    columns:
+      - name: item_ord
+        tests: [not_null, unique]
+      - name: category_content
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+          - relationships:
+              config:
+                where: "is_classified"
+              arguments:
+                to: ref('content_categories')
+                field: category
+      - name: confidence
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+          - dbt_utils.accepted_range:
+              config:
+                where: "is_classified"
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: is_security_hardening
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+      - name: is_performance
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+      - name: is_classified
+        tests: [not_null]

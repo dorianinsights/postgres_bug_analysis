@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: fct_bug_reports_monthly_agg
+    description: >
+      Monthly pgsql-bugs report volume vs acted-upon rate ->
+      data/derived/fct_bug_reports_monthly_agg.csv (recent months
+      right-censored). Grain = report_month_dt.
+    columns:
+      - name: report_month_dt
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: report_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: acted_upon_pct
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100

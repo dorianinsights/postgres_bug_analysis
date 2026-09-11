@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: bridge_fix_contributor
+    description: >
+      Fix<->contributor bridge -> data/derived/bridge_fix_contributor.csv:
+      one row per (fix, credited contributor) from the release-notes name list.
+      Grain = (item_ord, contributor).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [item_ord, contributor]
+    columns:
+      - name: item_ord
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_fixes')
+                field: item_ord
+      - name: contributor
+        tests: [not_null]

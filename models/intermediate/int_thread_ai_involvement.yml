@@ -1,0 +1,131 @@
+version: 2
+
+models:
+  - name: int_thread_ai_involvement
+    description: >
+      Disclosed AI involvement per mailing-list thread (its root message), from a local LLM
+      reading int_thread_ai_texts: four independent work-role flags (ai_found /
+      ai_analyzed / ai_authored / ai_tooling), the exclusive mentioned_only, the
+      AI's vendor, the disclosure form (trailer / prose / disclaimer / none), a
+      confidence and a one-sentence rationale quoting the decisive phrase.
+      Classify-once, cached by the text's content hash in the committed
+      data/raw/thread_ai_involvement.csv (the fresh-build fallback, re-exported
+      by the post_hook); bulk changes go through backfill_ai_involvement.py.
+      Measures DISCLOSED involvement only. Grain = (list_name, root_message_id).
+    config:
+      max_inline_classifications: "{{ var('ai_involvement_max_inline_classifications') }}"
+      post_hook: >
+        COPY (SELECT list_name, root_message_id, content_hash, model, prompt_version, ai_found, ai_analyzed,
+        ai_authored, ai_tooling, mentioned_only, vendor, disclosure_form, confidence, rationale
+        FROM {{ this }} WHERE is_classified ORDER BY list_name, root_message_id)
+        TO 'data/raw/thread_ai_involvement.csv' (HEADER, FORMAT csv)
+    tests:
+      # cached-only mode (Ollama or the model absent at build time) leaves new
+      # texts unclassified: a WARN with the count, never a failed build
+      - dbt_utils.expression_is_true:
+          config:
+            severity: warn
+          arguments:
+            expression: "is_classified"
+      # mentioned_only is exclusive with the work roles
+      - dbt_utils.expression_is_true:
+          config:
+            where: "is_classified"
+          arguments:
+            expression: "NOT (mentioned_only AND (ai_found OR ai_analyzed OR ai_authored OR ai_tooling))"
+      # vendor and the flags SHOULD agree, but the raw model answer is kept as
+      # is (the cache is a faithful record): a flag with vendor 'none' is
+      # usually noise (clang-tidy as an author, a human Analyzed-by credit,
+      # spam about "AI bots"), and vendor set with every flag false is "AI
+      # referenced, role undetermined". Both are WARNed, not failed; vendor
+      # <> 'none' is the gate downstream and the post-scan review resolves them
+      - dbt_utils.expression_is_true:
+          config:
+            severity: warn
+            where: "is_classified"
+          arguments:
+            expression: "(vendor = 'none') = NOT (ai_found OR ai_analyzed OR ai_authored OR ai_tooling OR mentioned_only)"
+      # labels are NULL exactly for the unclassified rows
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "is_classified = (vendor IS NOT NULL)"
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [list_name, root_message_id]
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          arguments:
+            compare_model: ref('int_thread_ai_texts')
+    columns:
+      - name: list_name
+        tests: [not_null]
+      - name: root_message_id
+        tests: [not_null]
+      - name: content_hash
+        tests: [not_null]
+      - name: ai_found
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+      - name: ai_analyzed
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+      - name: ai_authored
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+      - name: ai_tooling
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+      - name: mentioned_only
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+      - name: vendor
+        description: >
+          The AI's maker when the text references one, 'none' when it does not.
+          vendor set with every role flag false and mentioned_only false means
+          the model saw an AI reference but assigned no role -- review those.
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+          - accepted_values:
+              config:
+                where: "is_classified"
+              arguments:
+                values: [anthropic, openai, google, microsoft, other, unspecified, none]
+      - name: disclosure_form
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+          - accepted_values:
+              config:
+                where: "is_classified"
+              arguments:
+                values: [trailer, prose, disclaimer, none]
+      - name: confidence
+        tests:
+          - not_null:
+              config:
+                where: "is_classified"
+          - dbt_utils.accepted_range:
+              config:
+                where: "is_classified"
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: is_classified
+        description: >
+          False when the build ran in cached-only mode (Ollama or the model tag
+          absent -- probed at build time) and this text was not in the cache;
+          its labels are NULL and it is excluded from the CSV export. The
+          model-level warn test counts these.
+        tests: [not_null]
