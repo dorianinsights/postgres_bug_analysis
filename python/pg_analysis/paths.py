@@ -24,7 +24,7 @@ MBOX_CACHE = CACHE_DIR / "mbox"
 # classify-once label caches).
 DATA_RAW = REPO_ROOT / "data" / "raw"
 
-# The dbt project IS the repo root (dbt_project.yml, models/, seeds/, faces/
+# The dbt project IS the repo root (dbt_project.yml, models/, seeds/, charts/
 # sit beside python/); these are its seeds and the DuckDB warehouse it builds.
 DBT_PROJECT_DIR = REPO_ROOT
 SEEDS_DIR = DBT_PROJECT_DIR / "seeds"

@@ -27,3 +27,5 @@ reports/
 .claude/skills/ 
 # setuptools metadata from the editable install (pip install -e .)
 *.egg-info/
+
+.playwright-mcp/

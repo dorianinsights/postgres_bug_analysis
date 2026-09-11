@@ -65,7 +65,7 @@ models:
                 to: ref('projection_methods')
                 field: projection_method
       - name: method_label
-        description: The seed's display name for the method (what the faces show).
+        description: The seed's display name for the method (what the boards show).
       - name: method_family
         description: series (extrapolates the shipped series) / signal (scales an early-cycle signal) / reference (blend, seasonal baseline).
         tests:

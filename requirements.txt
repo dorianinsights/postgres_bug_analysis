@@ -10,8 +10,8 @@ lxml==6.1.2
 # top-level `d3_format` and `mdsvg` modules, so the wheels clobber each other
 # and uninstalling either breaks the survivor. If `dct` ever fails with "No
 # module named 'd3_format'" or "not enough values to unpack", recover with:
-#   pip install --force-reinstall --no-deps dbt-charts==0.6.0
-dbt-charts==0.6.0
+#   pip install --force-reinstall --no-deps dbt-charts==0.7.0
+dbt-charts==0.7.0
 # The transform layer (transform/ dbt project targeting DuckDB). Both arrive
 # as dependencies of dbt-charts anyway, but they're direct dependencies now —
 # `dbt build` runs from transform/ — so pin them explicitly.

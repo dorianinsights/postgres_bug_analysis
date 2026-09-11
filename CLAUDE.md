@@ -74,9 +74,9 @@ per-session memories, which aren't committed to git.)
   `GROUP BY ALL` can't combine with `QUALIFY` (enumerate the columns there).
   **Marts end in an explicit column list, never `SELECT *`** (in the final
   SELECT and every top-level UNION branch): `dct validate` derives a model's
-  columns statically from that projection to check the faces' queries, and a
+  columns statically from that projection to check the boards' queries, and a
   wildcard makes the model unresolvable. Not lint-enforced; run
-  `dct validate --strict faces/*.yml` now and then to surface
+  `dct validate --strict charts/*.yml` now and then to surface
   any `WARN-DBT-MODEL-COLUMNS-UNRESOLVED`.
 - **Interactive DuckDB/Harlequin must be launched from the repo root** (the
   dbt project root): the `staging.stg_*` models are *views* that read external
@@ -86,24 +86,22 @@ per-session memories, which aren't committed to git.)
   the file and query from anywhere. So, from the root,
   `harlequin -r transform.duckdb` (or `duckdb -readonly transform.duckdb`).
 
-- **dct overlay `layers:` get a single-identity tooltip.** An overlay layer's
-  tooltip row is keyed by the layer's LABEL (the y column name), not by its
-  `color` field, so a multi-series overlay collapses to one row in the
-  x-unified bubble (the "Messages 58" stray row). Use an overlay for one
-  reference series only; a "partial current period" is better drawn as the
-  last point of the main series with the subtitle saying so (the list-traffic
-  charts do this). Never put `sort:` on a chart with `layers:`: dct (0.6.0
-  still) then orders the x axis ALPHABETICALLY instead; leave it off and the
-  query's ORDER BY orders the axis. Faces name models with `{{ ref() }}`
+- **dct (0.7.0) honors `sort:` everywhere and gives overlay series their own
+  tooltip rows**, so the 0.6-era rules ("no `sort:` on a chart with `layers:`",
+  "one reference series per overlay") no longer apply; a layered chart should
+  carry an explicit `sort:` rather than relying on query row order. The
+  list-traffic charts still draw the partial current period as the last point
+  of the main series (simpler than a dashed overlay tail, and the subtitle
+  says so). Faces name models with `{{ ref() }}`
   (resolved from `target/manifest.json`, so run `dbt parse` after adding or
-  renaming a model or column, and `dct validate faces/*.yml` checks the
+  renaming a model or column, and `dct validate charts/*.yml` checks the
   queries' columns statically -- the marts end in explicit projections, not
   `SELECT *`, so keep it that way); before renaming a mart column, run
   `dct impact <column>` to list the boards and queries that
-  read it. Rerun `dct migrate faces/` after a dct upgrade and keep its
-  `_schema_version` stamp. The dct workflow skills live in
-  `.claude/skills/` (`dct init skills claude`; rerun with `-f` after an
-  upgrade).
+  read it. Rerun `dct migrate charts/` after a dct upgrade and keep its
+  `_schema_version` stamp. The dct workflow skills live in the gitignored
+  `.claude/skills/dct-*/` (`dct init skills claude`; rerun after an upgrade --
+  it overwrites and sweeps retired skills, there is no `-f` any more).
 
 ## Coding conventions
 - **No hardcoded dates or magic numbers** (other than `0` and `1`) in `.sql`
@@ -190,7 +188,7 @@ per-session memories, which aren't committed to git.)
   the identity of a fix across its backpatches) and `is_housekeeping` (stamps,
   translations, notes drafting, tz data: not fixes) once; every "distinct fix
   commits" count is `COUNT(DISTINCT fix_key) ... WHERE NOT is_housekeeping`
-  (the faces read them off `dim_commit`). `int_committed_fixes` is the
+  (the boards read them off `dim_commit`). `int_committed_fixes` is the
   committed-fix population (grain release × fix_key) and `int_fix_reps` the
   documented one; `resolve_fix_origin` classifies both. Cycle-grain measures
   fold an out-of-band release into its cycle via

@@ -10,7 +10,7 @@ seeds:
       escalation), signal (an early-cycle signal scaled by its historical
       ratio: report_scaled / message_scaled / committed_scaled /
       origin_scaled) and reference (blended, seasonal_baseline).
-      projection_method is the key the fact carries; method_label is the display name the faces
+      projection_method is the key the fact carries; method_label is the display name the boards
       show; assumption is the one-sentence recipe. Hand-curated.
     columns:
       - name: projection_method

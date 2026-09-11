@@ -35,7 +35,7 @@ models:
       +materialized: table
       +schema: intermediate
     marts:
-      # Typed tables — the interface the faces read (dct queries this
+      # Typed tables — the interface the boards read (dct queries this
       # .duckdb file read-only via the `warehouse` source), and what dbt
       # tests query, so types survive end to end with no sniffing. The
       # on-run-end hook below exports each mart to data/derived/*.csv:

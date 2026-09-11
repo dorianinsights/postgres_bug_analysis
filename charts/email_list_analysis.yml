@@ -211,7 +211,8 @@ queries:
         is_acted_upon
       FROM {{ ref('fct_threads') }}
       WHERE has_ai_involvement
-      ORDER BY 1 DESC
+      -- list + subject break same-day ties so the table's page order is deterministic
+      ORDER BY 1 DESC, 2, 3
 
 charts:
 

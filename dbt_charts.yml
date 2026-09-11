@@ -1,8 +1,8 @@
 # dbt-charts project config. Lives beside dbt_project.yml (the dct project root)
-# so dct's dbt integration -- the manifest, which resolves the faces'
+# so dct's dbt integration -- the manifest, which resolves the boards'
 # `{{ ref('model') }}` calls and lets `dct validate` check every query's
 # columns against the compiled models -- resolves natively; run dct from
-# the repo root (the dbt project root). Boards live in faces/. One source:
+# the repo root (the dbt project root). Boards live in charts/ (dct's default). One source:
 #   warehouse (duckdb) -- opens transform.duckdb READ-ONLY, so a running
 #     `dct serve` never holds the write lock a `dbt build` needs. Queries name
 #     models through ref(); the schema is only the search path for ad-hoc

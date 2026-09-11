@@ -1,9 +1,9 @@
 #!/bin/bash
 # PostToolUse hook for Edit|Write: validate dbt-charts (dct) boards under
-# faces/ with `dct validate` from the project venv. Blocking (exit 2)
+# charts/ with `dct validate` from the project venv. Blocking (exit 2)
 # -- surfaces YAML-schema / cross-reference errors back to Claude on stderr so
 # the edit must be fixed before continuing; stays silent when the board is clean
-# or the file isn't a faces board. Scoped to faces/ (and any
+# or the file isn't a board. Scoped to charts/ (and any
 # subfolders) so it never fires on the dbt project's model schema .yml files.
 # dct validate needs
 # no database connection. The matching commit-time gate is the dct-validate
@@ -21,10 +21,10 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 0
 
 f=$(jq -r '.tool_input.file_path // empty')
 
-# Only faces/ boards. In bash `case`, * spans '/', so these also match
+# Only charts/ boards. In bash `case`, * spans '/', so these also match
 # any subfolder under it. Handles both absolute and repo-relative paths.
 case "$f" in
-  */faces/*.yml | */faces/*.yaml | faces/*.yml | faces/*.yaml) ;;
+  */charts/*.yml | */charts/*.yaml | charts/*.yml | charts/*.yaml) ;;
   *) exit 0 ;;
 esac
 

@@ -12,8 +12,8 @@ Three explicit stages, each re-runnable on its own:
 
 ```
 pg-cve-scrape ──> data/raw/cve_severity.csv ─┐
-pg-clone ──> .cache/postgres.git ────────────┼─> dbt + DuckDB (the root) ──> transform.duckdb marts ──> faces/*.yml (dct)
-             (full bare clone: commits,      │        │ (typed tables — what the faces read) (visualization)
+pg-clone ──> .cache/postgres.git ────────────┼─> dbt + DuckDB (the root) ──> transform.duckdb marts ──> charts/*.yml (dct)
+             (full bare clone: commits,      │        │ (typed tables — what the boards read) (visualization)
               tags, AND release-notes SGML)  │        └────> data/derived/*.csv (diffable audit export)
 pg-mail-sync ──> .cache/mbox/ ───────────────┘
              (monthly mbox archives)
@@ -79,8 +79,8 @@ idempotent, the build is a plain dbt project, and the boards are plain YAML:
 ./venv/bin/pg-refresh --no-build      # refresh the sources without rebuilding
 ./venv/bin/pg-clone                   # or run one fetch on its own: pg-clone / pg-mail-sync / pg-cve-scrape
 ./venv/bin/dbt build                  # just the transform (dbt build --select <models> while iterating)
-./venv/bin/dct validate faces/*.yml   # check the boards after editing one (the per-edit hook and pre-commit gate run this too)
-./venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html"   # export static HTML to out/ (gitignored)
+./venv/bin/dct validate charts/*.yml   # check the boards after editing one (the per-edit hook and pre-commit gate run this too)
+./venv/bin/dct render charts/*.yml --format html --output "out/{stem}.html"   # export static HTML to out/ (gitignored)
 ```
 
 The release notes are parsed straight from the clone's SGML at build time —
@@ -126,7 +126,7 @@ external CSV (`cve_severity.csv`) and the three LLM-inferred label caches
 `thread_ai_involvement.csv` — each both the fresh-build fallback and the
 committed export of its classify-once model) read by dbt sources; `data/derived/` holds the
 CSV **audit exports** of the mart tables — committed and line-diffable in
-review, but read back by nothing (the faces read the typed mart tables in
+review, but read back by nothing (the boards read the typed mart tables in
 `transform.duckdb` at the repo root instead, so DATE/DOUBLE/BIGINT typing survives
 end to end with no re-casting). Nothing writes and reads the same directory. **Git-side and mail-side data have no CSV landing layer at all**:
 the clone at `.cache/postgres.git` is content-addressed and immutable — its
@@ -154,7 +154,7 @@ rules without re-scraping; one `.csv` per mart, same name). Only marts under
 `dim_person`, `dim_date`, `dim_bug`, `fct_fixes`, `fct_threads`,
 `bridge_fix_contributor`) live only as typed tables in the warehouse:
 
-## Dashboards (`faces/`)
+## Dashboards (`charts/`)
 
 - `1_fix_analysis.yml` (the leading `1_` orders it first in `dct serve`) —
   source attribution: documented fixes per release by origin (counts and
@@ -197,10 +197,10 @@ Rendered copies land in `out/` (gitignored; regenerate with `dct render`).
 ## Transform (the dbt project)
 
 A dbt project targeting DuckDB (dbt-duckdb) whose project root IS the repo
-root: `dbt_project.yml`, `models/`, `seeds/`, `macros/`, `tests/`, `faces/`
+root: `dbt_project.yml`, `models/`, `seeds/`, `macros/`, `tests/`, `charts/`
 and the warehouse sit beside `python/` and `data/`, so every dbt, dct and
 DuckDB command runs from the repo root with no `cd`. The raw CSVs are read in place as external sources, and the
-marts are typed tables inside `transform.duckdb` — the interface the faces
+marts are typed tables inside `transform.duckdb` — the interface the boards
 query (dct's `warehouse` source opens the file read-only) and what dbt tests
 run against, so types survive with no sniffing or re-casting. An on-run-end
 hook (`macros/export_marts_csv.sql`) then exports every mart under the size
@@ -268,7 +268,7 @@ every object's name. Layers:
   overridden by the hand review seed `ai_involvement_reviews`, with
   `has_ai_involvement` = a vendor AND a work role, and `ai_label_source` =
   review / model / unclassified -- what `dim_commit` and `fct_threads` carry).
-- `models/marts/` — the typed tables the faces and CSV exports read: the
+- `models/marts/` — the typed tables the boards and CSV exports read: the
   fix-grain `fct_fixes` fact, the file-grain `fct_commit_files` churn fact
   (with its `dim_commit` spine), the release/projection/pace rollups, and the
   star (dims + facts) described below. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
@@ -293,7 +293,7 @@ every object's name. Layers:
     measures are aggregates of its `fct_commit_files` rows, so the commit-grain
     fact was retired into `dim_commit` + the atomic file fact; distinct-commit
     counts (non-additive) are `COUNT(DISTINCT ...)` over that grain in the
-    faces' SQL, not a stored table. `dim_version` sits one grain below `dim_release`:
+    boards' SQL, not a stored table. `dim_version` sits one grain below `dim_release`:
     one row per individual minor (e.g. `18.6`), conformed up to its release via
     `dim_release_key` (NULL for the `.0` majors that ship alone) and to its
     major via `dim_major_key`; `fct_fixes` and `dim_commit` carry a
@@ -325,7 +325,7 @@ every object's name. Layers:
     charts aggregate the atomic fact on the fly (any time grain, any commit/file
     slice) and filter generated file classes (translation catalogs, test
     fixtures) in or out. (Mailing-list traffic has no materialized agg either:
-    the `faces/` boards roll it up from the atomic `fct_messages` at
+    the `charts/` boards roll it up from the atomic `fct_messages` at
     query time — the counts and the non-additive fix-linked share alike, each
     computed at the chart's own grain.) `dim_date` is keyed on `date_day` (a real DATE) — there is
     no separate integer date surrogate; every mart's date columns join to it
@@ -413,7 +413,7 @@ are convention-only — sqlfluff has no column-naming rules):
   `acted_upon_pct`. MIN/MAX keep semantic names (`first_commit_dt`,
   `last_message_dt`).
 - No final `ORDER BY` in models — a table has no reliable order, so every
-  consumer orders explicitly (the faces do; the CSV exporter uses
+  consumer orders explicitly (the boards do; the CSV exporter uses
   `ORDER BY ALL` for deterministic committed files). `ORDER BY` inside a
   model is fine only where it is functional (with `LIMIT`, in window
   frames, in `STRING_AGG`).
@@ -439,7 +439,7 @@ SQL style for the dbt models is linted by `sqlfluff` (duckdb dialect + the
 real SQL during lint — it compiles the dbt project per run, which
 needs the DuckDB file unlocked, same as a build; config in the repo-root
 `.sqlfluff`); correctness of the models is
-covered by the dbt tests themselves; and the boards under `faces/`
+covered by the dbt tests themselves; and the boards under `charts/`
 are validated by `dct validate` (YAML schema + every query's columns against
 the compiled models). All four are enforced twice — per-edit via
 `.claude/hooks/` (`ruff-lint.sh`, `pyright-check.sh`, `sqlfluff-lint.sh`,
@@ -546,7 +546,7 @@ carry no separate unit tests.
 ## Tooling note: dbt charts (formerly dataface)
 
 The visualization layer is the tool documented at
-[docs.dbtcharts.com](https://docs.dbtcharts.com/): **`dbt-charts` 0.6.0**,
+[docs.dbtcharts.com](https://docs.dbtcharts.com/): **`dbt-charts` 0.7.0**,
 CLI **`dct`**, project config `dbt_charts.yml`. It was previously published
 on PyPI as `dataface` (0.4.0, CLI `dft`) — never install the two together
 (shared `d3_format`/`mdsvg` modules clobber each other; see requirements.txt).
@@ -557,20 +557,27 @@ compiled models -- run `dbt parse` after renaming a column, and keep every
 mart's outermost projection explicit so that check can read it) against the
 read-only `warehouse` DuckDB source. Boards carry an informational
 `_schema_version` stamp written by `dct migrate`; never edit it by hand, and
-rerun `dct migrate faces/` after an upgrade.
+rerun `dct migrate charts/` after an upgrade (0.7.0 needed no rewrite, so the
+stamps still read 0.6.0). The dct agent skills install into the gitignored
+`.claude/skills/dct-*/` via `dct init skills claude`; rerunning it after an
+upgrade refreshes them and sweeps retired ones.
 
-Quirks that still shape the faces:
+Quirks that still shape the boards:
 
 - No native trendlines: the `*_trend` queries compute least-squares fits in
   DuckDB SQL (`REGR_SLOPE`/`REGR_INTERCEPT`) and draw them as dashed line
   layers with explicit stroke colors.
 - Layer labels are appended to the y-axis title; keep them short or a chart
   can collapse to a sliver.
-- Multi-series `y: [a, b]` with `color:` (0.6.0) draws one series per
-  measure x category, named "<category> — <measure>"; the list-traffic
-  charts use it instead of unpivoting in SQL.
-- An overlay `layers:` entry gets one tooltip identity (its y column), so a
-  multi-series overlay collapses to one tooltip row; see CLAUDE.md.
-- Bars on a temporal x-axis no longer overhang the axis ends (fixed in
-  0.6.0); the `*_pad` invisible scatter layers that padded the domain are
-  gone.
+- Multi-series `y: [a, b]` with `color:` draws one series per measure x
+  category, named "<category> - <measure>"; the list-traffic charts use it
+  instead of unpivoting in SQL.
+- Fixed upstream, so no longer worked around: bars on a temporal x-axis
+  overhanging the axis ends (0.6.0; the `*_pad` scatter layers are gone),
+  `sort:` being ignored on charts with `layers:` and on line/area charts
+  (0.7.0; the layered fix-commits chart now carries an explicit `sort:`),
+  overlay layers collapsing multi-series tooltips into one row (0.7.0), and
+  facet panels wrapping axis titles mid-word (0.7.0; titles now ellipsize).
+- Hover emphasis (0.7.0) dims the other marks and drops a guide line on
+  every chart family by default; it can be switched off per board with
+  `style.charts.hover_emphasis.visible: false`.

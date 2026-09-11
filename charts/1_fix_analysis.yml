@@ -76,10 +76,8 @@ queries:
       since the wrap SO FAR (same rule, not yet tagged) -- right-censored, and
       with no security yet because embargoed work reaches git only on wrap day.
       Roughly twice the documented chart above: the notes fold several commits
-      into one item and document only 40-60% of subjects. The ORDER BY IS the
-      x-axis order: the chart carries a dashed overlay layer, and dct 0.5 drops
-      an explicit `sort:` key once a chart has layers, but keeps the query's row
-      order when `sort:` is omitted.
+      into one item and document only 40-60% of subjects. release_seq is the
+      chart's sort key (the x-axis order).
     source: warehouse
     sql: |
       SELECT
@@ -173,8 +171,7 @@ charts:
     x: release
     y: fix_commits
     color: origin
-    # NO sort: key -- with layers present dct (0.6.0 still) turns it into an
-    # alphabetical axis; the query's ORDER BY release_seq is what orders the axis
+    sort: { by: release_seq, order: asc }
     style: { stack: zero, orientation: vertical }
     height: 360
     # the open release's bar is the same measure, still accumulating: mark it

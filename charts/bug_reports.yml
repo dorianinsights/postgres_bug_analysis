@@ -266,8 +266,8 @@ charts:
     query: monthly_reports
     title: "Bug reports per month"
     subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails (about a third of reports); line = 6-month average of both"
-    # ~75 months on a temporal x: dct labels it by year, so its categorical
-    # "too many x categories" heuristic is a false positive here
+    # ~75 months on a temporal x: dct labels it by year, so the "too many x
+    # categories" warning (temporal wording since dct 0.7.0) is a false positive
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
     x: report_month
     y: report_cnt
@@ -304,8 +304,8 @@ charts:
     query: monthly_acted_data
     title: "Bug reports acted upon, by month"
     subtitle: "All reports (form + free-form). Bars: reports later linked to a fix commit (count, left axis). Lines: acted-upon share (right axis) with its 3-month rolling average. Lower bound (exact links only); trailing months right-censored"
-    # ~75 months on a temporal x: dct labels it by year, so its categorical
-    # "too many x categories" heuristic is a false positive here
+    # ~75 months on a temporal x: dct labels it by year, so the "too many x
+    # categories" warning (temporal wording since dct 0.7.0) is a false positive
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
     x: report_month
     y: "reports acted upon"

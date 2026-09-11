@@ -312,7 +312,8 @@ queries:
       FROM {{ ref('dim_commit') }}
       WHERE has_ai_involvement
       GROUP BY 2
-      ORDER BY 1 DESC
+      -- subject breaks same-day ties so the table's page order is deterministic
+      ORDER BY 1 DESC, 2
 
   cycle_pace:
     notes: >
@@ -522,9 +523,9 @@ charts:
     x: hour_utc
     y: commit_cnt
     x_label: "hour of day (UTC)"
-    # no y_label: each facet panel repeats it rotated and wraps it; the title
-    # says commits. One panel per year shares the height, so it grows with the
-    # corpus (~110px per year keeps the bars and y ticks readable)
+    y_label: "commits"
+    # One panel per year shares the height, so it grows with the corpus
+    # (~110px per year keeps the bars and y ticks readable)
     height: 770
     multiples:
       rows: year_utc
