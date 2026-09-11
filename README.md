@@ -16,40 +16,58 @@ mailing_list_sync.py ──> .cache/mbox/ ────────────�
                       (all read directly at build time)
 ```
 
+`refresh_data.py` runs the three fetches in order and then the build (the
+Quickstart's step 2). Two scripts sit beside the pipeline without being part
+of it: `backfill_ai_involvement.py` / `backfill_classifications.py` (the bulk
+LLM classifiers, see the Ollama section) and `embed_fixes.py`, a prototype
+that embeds each distinct fix's release-note text with Ollama's
+`nomic-embed-text` into a gitignored `.cache/fix_embeddings.parquet` for
+bottom-up clustering experiments — it reads the warehouse and is not wired
+into dbt.
+
 ## Quickstart
 
 ```bash
-# One-time setup (venv lives at the repo root; Python 3.10-3.13 — 3.14 not yet
-# supported by dbt-charts)
+# 1. One-time setup (venv lives at the repo root; Python 3.10-3.13 — 3.14 not
+#    yet supported by dbt-charts). The mbox sync needs a free postgresql.org
+#    community account: put POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD
+#    in .env (gitignored) before the next step.
 python3.12 -m venv venv
 ./venv/bin/pip install -r requirements.txt
 
-# 1. Sync the postgres clone (first run: full bare clone, ~800MB). The
-#    release notes are parsed straight from its SGML at dbt build time
-#    (step 2) — no separate extraction step, no HTTP.
-./venv/bin/python postgres_clone.py
+# 2. Fetch the sources and build the marts, in one command: the postgres
+#    clone (first run: full bare clone, ~800MB), the pgsql-bugs +
+#    pgsql-hackers mbox archives (full bodies; hackers is ~3GB on first
+#    sync), the CVSS severity scrape (one small fetch), then `dbt deps` +
+#    `dbt build` in transform/ — the build runs only if every fetch
+#    succeeded. Same command for every later refresh: past mbox months and
+#    the immutable git history are cached forever, so only what changed is
+#    re-fetched. profiles.yml is local to transform/, so no ~/.dbt setup.
+./venv/bin/python refresh_data.py
 
-#    Sync the pgsql-bugs + pgsql-hackers mbox archives (full message
-#    bodies; hackers is ~3GB on first sync). Needs a free postgresql.org
-#    community account: put POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD
-#    in .env (gitignored). Past months are cached forever; only the
-#    current month is re-fetched.
-./venv/bin/python mailing_list_sync.py
-
-#    Scrape the published CVSS severity ratings for PostgreSQL's CVEs
-#    (one small HTTP fetch; overwrites data/raw/cve_severity.csv).
-./venv/bin/python scrape_cve_severity.py
-
-# 2. Derive analysis datasets (dbt project; profiles.yml is local to the
-#    directory, so no ~/.dbt setup is needed; deps installs dbt_utils +
-#    dbt_expectations, one-time per clone)
-(cd transform && ../venv/bin/dbt deps && ../venv/bin/dbt build)
-
-# 3. Visualize (run from transform/ — dbt_charts.yml sits beside dbt_project.yml)
-(cd transform && ../venv/bin/dct validate faces/*.yml)
-(cd transform && ../venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html")
-(cd transform && ../venv/bin/dct serve)   # or: live preview in the browser
+# 3. Visualize: the dashboards, live in the browser (run from transform/ —
+#    dbt_charts.yml sits beside dbt_project.yml)
+(cd transform && ../venv/bin/dct serve)
 ```
+
+Running a stage on its own — each fetch script is independent and
+idempotent, the build is a plain dbt project, and the boards are plain YAML:
+
+```bash
+./venv/bin/python refresh_data.py --list          # the steps, in run order
+./venv/bin/python refresh_data.py --only cve      # one fetch, then the build
+./venv/bin/python refresh_data.py --skip mail     # everything but the slow mbox sync (needs an existing .cache/mbox/)
+./venv/bin/python refresh_data.py --no-build      # refresh the sources without rebuilding
+./venv/bin/python postgres_clone.py               # or call a fetch script directly:
+./venv/bin/python mailing_list_sync.py            #   mailing_list_sync.py / scrape_cve_severity.py
+(cd transform && ../venv/bin/dbt build)           # just the transform (dbt build --select <models> while iterating)
+(cd transform && ../venv/bin/dct validate faces/*.yml)   # check the boards after editing one (the per-edit hook and pre-commit gate run this too)
+(cd transform && ../venv/bin/dct render faces/*.yml --format html --output "out/{stem}.html")   # export static HTML to transform/out/ (gitignored)
+```
+
+The release notes are parsed straight from the clone's SGML at build time —
+no separate extraction step, no HTTP. A first run cannot skip the mail
+step: the build reads the mbox cache.
 
 ## Optional dependency: Ollama (the local LLM)
 
@@ -63,8 +81,7 @@ text is already labeled and the build reads the cache. Ollama is only needed
 for texts the cache has never seen -- new commits, threads and release-notes
 items that arrive after the CSVs were last committed.
 
-**Without Ollama, or without the model tag (`qwen3:30b-a3b`, an ~18 GB pull
-that wants ~20 GB of memory)**, nothing is configured and nothing fails: at
+**Without Ollama, or without the model tag (`qwen3:30b-a3b`)**, nothing is configured and nothing fails: at
 build time each classifier probes `OLLAMA_HOST` (default
 `http://localhost:11434`) and, if the server is unreachable or the tag is not
 installed, switches to **cached-only mode** -- it emits the cached labels, gives
@@ -96,14 +113,12 @@ review, but read back by nothing (the faces read the typed mart tables in
 end to end with no re-casting). Nothing writes and reads the same directory. **Git-side and mail-side data have no CSV landing layer at all**:
 the clone at `.cache/postgres.git` is content-addressed and immutable — its
 own perfect raw store — so the transform's `models/raw_git/` Python models
-(commits, tags, AND the release-notes SGML, via `sources.git` / `sources.sgml`)
+(commits, tags, the commit → version tag-ancestry map, the weekly tree-size
+snapshots, AND the release-notes SGML, via `sources.git` / `sources.sgml`)
 read it directly at build time, and every git-derived table shares one
 consistent snapshot of the clone. Likewise the monthly mbox files at
 `.cache/mbox/` (immutable once a month is past) are decoded directly by
-`models/raw_mail/`. The mboxes replaced scraping the web archive's monthly
-index pages, which silently cap at 200 messages per page — the index route
-had lost ~28% of pgsql-bugs messages — and they carry full bodies and
-threading headers the indexes never had. pgsql-hackers joined pgsql-bugs
+`models/raw_mail/`. The pgsql-hackers list joined pgsql-bugs
 in the sync so commit Discussion: trailers can be resolved to their
 source list (the origin-attribution models).
 
@@ -117,51 +132,44 @@ Derived (`data/derived/`, the CSV audit exports of the mart tables, written
 by the transform's on-run-end hook — rerun `dbt build` to change analysis
 rules without re-scraping; one `.csv` per mart, same name). Only marts under
 `var('derived_csv_max_rows')` (1000) rows get a twin — the heavier ones
-(`fct_messages`, `fct_commit_files`, `dim_commit`, `dim_person`, `dim_date`,
-`dim_bug`, `fct_fixes`, `fct_threads`, `bridge_fix_contributor`) live only as typed tables in the warehouse:
-
-| File | Grain | Notes |
-|---|---|---|
-| `fct_release_categories_agg.csv` | (dim_release_key, category) | distinct-fix counts per category, aggregated from `fct_fixes`; conformed to `dim_release` via `dim_release_key` |
-| `fct_release_contributors_agg.csv` | (dim_release_key, contributor) | credit counts via `bridge_fix_contributor` (the notes' "(Name, Name)" parse lives in `int_fix_contributors`), with first-seen release; conformed to `dim_release` |
-| `fct_fix_projections.csv` | (dim_release_key, projection_method) | forecast fact: every projection method's (seed `projection_methods` — four series scenarios, four early-signal estimators, blend + seasonal baseline) estimate of a scheduled release's documented fix count, for the open release AND every shipped full-quarter release replayed from the releases before it; the actual is `dim_release.distinct_fix_cnt` on the same key, so the faces score each method |
-| `fct_category_vs_subsystem_agg.csv` | (category, subsystem) | content category (int_fix_content_categories) cross-tabbed against the changed-file subsystem |
-| `fct_bug_reports_monthly_agg.csv` | one month | pgsql-bugs report volume vs acted-upon rate (recent months right-censored) |
-| `fct_fix_origins_agg.csv` | (release, origin) | fixes per release by origin (Discussion:/Bug: trailers → pgsql-bugs, pgsql-hackers, or no public trail split security/not) in BOTH populations: documented (`fix_cnt`) and committed (`committed_fix_cnt`) with their `documentation_rate`; the open release carries the committed-so-far count (the dashed bar on the origins face's fix-commits chart); observed measures only, the forecast lives in `fct_fix_projections` |
-| `fct_origin_activity_monthly_agg.csv` | (month, origin) | master-branch activity by origin: commit count, AI-flagged commits, distinct cited threads |
-| `dim_version.csv` | one version | version dimension: one row per individual minor (e.g. `18.6`) below the release — major/minor, wrap + announced date, `dim_release_key` → `dim_release` (NULL for `.0` majors), and its dates conform to `dim_date` |
-| `fct_version_items_agg.csv` | one version | aggregate fact: changelog item count per minor, conformed to `dim_version` (the date/major/minor attributes live in the dimension) |
-| `dim_cve.csv` | one CVE | CVE dimension: CVSS v3 base score + band + vector + component for every CVE a corpus fix cites |
-| `bridge_fix_cve.csv` | (fix, CVE) | bridge for the fix<->CVE many-to-many |
-| `bridge_fix_bug.csv` | (fix, bug) | bridge for the fix<->bug many-to-many |
-| `dim_release.csv` | one release | the release dimension (unifies the retired dim_release_wave, dim_release_cycle, and fct_release_cycles): `status` = shipped/open/future, release scale (fixes/CVEs/security) + flags for shipped rows, wrap date, plus the cycle signals (early reports/messages/fixes, pace, window) folded onto the started scheduled cycles; keyed `dim_release_key` (a generate_surrogate_key hash) |
-
-(The message-grain `fct_messages` mart has **no** CSV twin — one row per
-archived message is too heavy to commit; its typed table in `transform.duckdb`
-is the interface, and `export_marts_csv` skips it.)
+(`fct_messages`, `fct_commit_files`, `fct_branch_size_weekly`, `dim_commit`,
+`dim_person`, `dim_date`, `dim_bug`, `fct_fixes`, `fct_threads`,
+`bridge_fix_contributor`) live only as typed tables in the warehouse:
 
 ## Dashboards (`transform/faces/`)
 
+- `1_fix_analysis.yml` (the leading `1_` orders it first in `dct serve`) —
+  source attribution: documented fixes per release by origin (counts and
+  share), committed fix commits per release by origin with the next
+  release's so-far bar, and AI-flagged master commits by origin — the
+  grounding for report-volume -> fix-volume projections.
 - `changelog.yml` — the release-notes view: fixes per release by branch,
   category mix (absolute + 100%), out-of-band releases, the security hockey
-  stick, contributors first-time-vs-returning, and the next-release projection
-  scenarios.
+  stick, contributors first-time-vs-returning, the next-release projection
+  scenarios with their assumptions, and a table of every release.
 - `git_activity.yml` — the commit-level view: quarterly distinct backpatched
-  fixes, per-branch series, AI-credited commits (chart + full credit-line
-  table), and the like-for-like release-cycle pace comparison.
+  fixes, per-branch and per-version series, codebase size over time by major
+  and its composition by subsystem (from `fct_branch_size_weekly`), lines
+  churned / backpatch breadth / trunk churn by subsystem per quarter, fix
+  commits disclosing AI involvement (chart, the per-quarter role breakdown,
+  and the full table), the like-for-like release-cycle pace comparison, and
+  commits by hour of day.
 - `bug_reports.yml` — the pgsql-bugs view: monthly report volume with a
   6-month average, weekly volume with a 3-week average, acted-upon
-  share, outcome and latency breakdowns, discussion volume by outcome,
-  and the most-discussed reports table.
-- `origins.yml` — source attribution: documented fixes per release by origin
-  (counts and share), committed fix commits per release by origin with the
-  next release's so-far bar, and AI-flagged master commits by origin — the
-  grounding for report-volume -> fix-volume projections.
+  share, fix front-loading by release quarter (first 20 days vs the full
+  cycle), outcome and latency breakdowns by year, discussion volume by
+  outcome, and the most-discussed reports table.
+- `projected_fixes.yml` — the forward-looking view of the next scheduled
+  minor: live accrual counters since the last wrap, the signal estimates
+  from `fct_fix_projections`, each estimator's ratio history, early vs
+  final fixes per cycle, and a backtest + method scorecard over the shipped
+  releases.
 - `email_list_analysis.yml` — the mailing lists themselves: monthly and
   weekly traffic vs the fix-linked subset, the fix-linked share,
   new pgsql-hackers threads by what they led to (backpatched fix / beta
   stabilization / trunk work / not cited) with latency and cited-share KPIs,
-  and the discussion threads cited by master commits per month.
+  the discussion threads cited by master commits per month, and threads
+  disclosing AI involvement (by role, by list, and the full table).
 - `fix_impact.yml` — impact & severity: security fixes by CVSS band, fix
   size and backpatch breadth by severity, and time-to-fix vs change size —
   how a fix's size and severity relate to its timeline and reach.
@@ -175,8 +183,11 @@ A dbt project targeting DuckDB (dbt-duckdb) — run `dbt build` from inside
 marts are typed tables inside `transform.duckdb` — the interface the faces
 query (dct's `warehouse` source opens the file read-only) and what dbt tests
 run against, so types survive with no sniffing or re-casting. An on-run-end
-hook (`macros/export_marts_csv.sql`) then exports every mart to its
-`data/derived/*.csv` twin for git-diffable review. `transform.duckdb` itself
+hook (`macros/export_marts_csv.sql`) then exports every mart under the size
+gate to its `data/derived/*.csv` twin for git-diffable review, and a second
+one (`macros/drop_orphaned_relations.sql`) drops any table or view in a
+dbt-managed schema that no model produces any more — the residue of renamed
+or deleted models, which dbt never removes itself. `transform.duckdb` itself
 stays gitignored — `dbt build` regenerates it — but note DuckDB is
 single-writer: close interactive `duckdb` CLI sessions on it before
 building. Each layer lives in
@@ -186,11 +197,16 @@ dbt's target-prefixed default), so browsing the .duckdb shows the layer in
 every object's name. Layers:
 
 - `models/raw_git/` — Python models (dbt-duckdb) that read
-  `.cache/postgres.git` directly via `transform/gitsource.py`: commits with
-  full message bodies, per-commit `--numstat` file rows, and every
-  `REL_1x_*` ref — verbatim strings, one consistent clone snapshot per
-  build. Requires the clone (run `postgres_clone.py` or either scraper
-  entry point first).
+  `.cache/postgres.git` directly via `transform/sources/git.py` (and
+  `sources/sgml.py` for the notes): commits with full message bodies,
+  per-commit `--numstat` file rows, every `REL_1x_*` ref, the release-notes
+  items and their commit annotations, the commit → version map by exact tag
+  ancestry (`raw_commit_versions`, one `rev-list` per tag, rebuilt in full),
+  and the weekly per-branch tree-size snapshots (`raw_branch_size_weekly`,
+  one `git grep -c` per branch HEAD — the one **incremental** model, since a
+  past week's snapshot is immutable) — verbatim strings, one consistent clone
+  snapshot per build. Requires the clone (run `postgres_clone.py` or
+  `refresh_data.py` first).
 - `models/raw_mail/` — Python model decoding the `.cache/mbox/` archives
   via `transform/sources/mail.py`: per message, the bare headers (RFC 2047
   decoded), the Date header as an ISO string with its original offset,
@@ -199,9 +215,11 @@ every object's name. Layers:
   line of attached git patches. Requires the cache (run
   `mailing_list_sync.py` first).
 - `models/staging/` — typed views over the raw CSVs and raw_git tables
-  (`stg_*`). The CSV source reader restricts type-sniffing to
-  BIGINT/DATE/VARCHAR so version strings like "15.10" can't collapse into
-  doubles.
+  (`stg_*`; `stg_git_tags` keeps the `REL_M_N` release tags and
+  `stg_git_prerelease_tags` the BETA/RC milestones it filters out, which
+  label the in-progress major's stage). The CSV source reader restricts
+  type-sniffing to BIGINT/DATE/VARCHAR so version strings like "15.10" can't
+  collapse into doubles.
 - `models/intermediate/` — the analysis steps as tables: `int_releases` (release
   grain + flags), `int_fix_items` (fix items + dedup keys + derived CVEs),
   `int_fix_groups` (cross-branch dedup as recursive-CTE connected
@@ -229,7 +247,7 @@ every object's name. Layers:
   `has_ai_involvement` = a vendor AND a work role, and `ai_label_source` =
   review / model / unclassified -- what `dim_commit` and `fct_threads` carry).
 - `models/marts/` — the typed tables the faces and CSV exports read: the
-  item-grain `fix_items` fact, the file-grain `fct_commit_files` churn fact
+  fix-grain `fct_fixes` fact, the file-grain `fct_commit_files` churn fact
   (with its `dim_commit` spine), the release/projection/pace rollups, and the
   star (dims + facts) described below. Watch aggregate types here: DuckDB's `SUM(INTEGER)` is HUGEINT,
   which downstream writers silently turn into DOUBLE — cast count-like
@@ -239,23 +257,29 @@ every object's name. Layers:
     authors + committers + list senders unified to one person, keyed by the
     shared `person_node()` macro + `int_person_map` connected-component
     resolution so several emails collapse to one person), `dim_date`,
-    `dim_release` (shipped releases + open/future cycles, status-flagged), `dim_cve`, `dim_bug`, and
+    `dim_release` (shipped releases + open/future cycles + the in-progress
+    major's `.0`, status-flagged), `dim_major` (the release line above a
+    version: stable branch, support window), `dim_cve`, `dim_bug`, and
     `dim_commit` (one row per git commit — its attributes + conformed keys, no
     measures), with the facts `fct_commit_files` (commit-file grain: churn),
-    `fct_messages` (message grain), `fct_threads` (thread grain: one row per
-    mailing-list thread with its start, size and outcome -- cited by a
-    backpatched fix, beta stabilization, trunk work, or not), and `fct_fixes`
-    (fix grain). A commit's
+    `fct_branch_size_weekly` (periodic snapshot: each stable branch's tree
+    size per week by subsystem and file_class), `fct_major_development`
+    (major grain: development activity per major), `fct_messages` (message
+    grain), `fct_threads` (thread grain: one row per mailing-list thread with
+    its start, size and outcome -- cited by a backpatched fix, beta
+    stabilization, trunk work, or not), and `fct_fixes` (fix grain). A commit's
     measures are aggregates of its `fct_commit_files` rows, so the commit-grain
     fact was retired into `dim_commit` + the atomic file fact; distinct-commit
     counts (non-additive) are `COUNT(DISTINCT ...)` over that grain in the
     faces' SQL, not a stored table. `dim_version` sits one grain below `dim_release`:
     one row per individual minor (e.g. `18.6`), conformed up to its release via
-    `dim_release_key` (NULL for the `.0` majors that ship alone); `fct_fixes` and
-    `fct_version_items_agg` carry a `dim_version_key` FK to it.
+    `dim_release_key` (NULL for the `.0` majors that ship alone) and to its
+    major via `dim_major_key`; `fct_fixes` and `dim_commit` carry a
+    `dim_version_key` FK to it (its changelog `item_cnt` absorbed the retired
+    one-measure `fct_version_items_agg`).
     **Key convention:** every non-date dimension's PK is its first column, named
-    `<table>_key` (`dim_release_key`, `dim_version_key`, `dim_bug_key`,
-    `dim_cve_key`, `dim_person_key`) and generated by
+    `<table>_key` (`dim_release_key`, `dim_version_key`, `dim_major_key`,
+    `dim_bug_key`, `dim_cve_key`, `dim_person_key`) and generated by
     `dbt_utils.generate_surrogate_key` (a uniform VARCHAR hash); facts link back
     with a matching `<table>_key`, role-prefixed where a fact plays the same
     dimension twice (`author_dim_person_key` / `committer_dim_person_key`,
@@ -317,19 +341,33 @@ every object's name. Layers:
   (extension -> file kind; the orthogonal what-kind-of-file taxonomy — both
   applied per file in `int_commit_files` and per weekly tree in
   `fct_branch_size_weekly`), and the range-bucket tables
-  `latency_windows` / `thread_size_windows` (each range and its label
+  `cvss_severity_bands` (CVSS v3 base score -> NONE/LOW/MEDIUM/HIGH/CRITICAL,
+  range-joined by `stg_cve_severity` per CVE and `int_fix_severity` per fix)
+  and `latency_windows` / `thread_size_windows` (each range and its label
   defined together; the marts join them, and relationships tests replace
   duplicated label lists).
 
-Analysis parameters live as dbt vars in `dbt_project.yml`
-(`scheduled_wave_min_items`, `wave_cadence_days`, `pace_comparison_cycles`,
-`wrap_tag_window_days`) plus the shared loose sanity floors the range tests
-use (`test_floor_major`, `test_floor_release_dt`, `test_floor_git_ts` —
-deliberately NOT the corpus bounds; `corpus.py` owns those). Editing a
-parameter changes what the results mean — treat it like a corpus change.
+Analysis parameters live as dbt vars in `transform/vars.yml` (dbt >= 1.12
+auto-parses it; the `vars:` block must live in that ONE file, not also in
+`dbt_project.yml`), each with a comment saying what it controls: the analysis
+knobs (`scheduled_release_min_items`, `pace_comparison_cycles`,
+`wrap_tag_window_days`, `seasonality_window_days`), the `fct_fix_projections`
+knobs (`reversion_baseline_releases`, `origin_projection_cycles`,
+`projection_min_window_days`), the AI-involvement classifier's
+`ai_involvement_text_cap_chars` / `ai_involvement_max_inline_classifications`,
+the build's clock `as_of_date` (null = today; only dbt unit tests set it),
+the CSV-export size gate `derived_csv_max_rows`, the `dim_date` spine bounds
+(`date_spine_start` / `date_spine_end`), and the shared loose sanity floors the
+range tests use (`test_floor_major`, `test_floor_release_dt`,
+`test_floor_git_ts` — deliberately NOT the corpus bounds; `corpus.py` owns
+those). No literal thresholds or dates appear in the models: a new constant
+is a new var. Editing a parameter changes what the results mean — treat it
+like a corpus change.
 
 Every model is heavily tested — roughly 900 data tests in all (`dbt ls
---resource-type test` for the exact count): column-level schema tests
+--resource-type test` for the exact count; 891 as of 2026-09-10, plus one dbt
+unit test that pins `as_of_date` to replay the wrap-Monday-to-Thursday
+window): column-level schema tests
 (uniqueness, not-null, relationships, accepted ranges on counts and dates,
 regex format checks) using `dbt_utils` and Metaplane's `dbt_expectations`
 (installed via `dbt deps`), plus the singular reconciliation tests in
@@ -379,16 +417,21 @@ SQL style for the dbt models is linted by `sqlfluff` (duckdb dialect + the
 real SQL during lint — it compiles the `transform/` project per run, which
 needs the DuckDB file unlocked, same as a build; config in the repo-root
 `.sqlfluff`); correctness of the models is
-covered by the dbt tests themselves. All three are enforced twice — per-edit
-via `.claude/hooks/` (`ruff-lint.sh`, `pyright-check.sh`, `sqlfluff-lint.sh`)
-and at commit time by the blocking pre-commit gate (`.pre-commit-config.yaml`;
-one-time setup: `./venv/bin/pre-commit install`). Auto-fix layout nits with
+covered by the dbt tests themselves; and the boards under `transform/faces/`
+are validated by `dct validate` (YAML schema + every query's columns against
+the compiled models). All four are enforced twice — per-edit via
+`.claude/hooks/` (`ruff-lint.sh`, `pyright-check.sh`, `sqlfluff-lint.sh`,
+`dct-validate.sh`, all blocking) and at commit time by the blocking
+pre-commit gate (`.pre-commit-config.yaml`; one-time setup:
+`./venv/bin/pre-commit install`). A `PreToolUse` guard
+(`bash-source-edit-guard.sh`) blocks shell writes to `.sql` / `.py` so an
+edit can't slip past the per-edit hooks. Auto-fix layout nits with
 `./venv/bin/sqlfluff fix <file>`.
 
 Python **unit tests** for the scrapers (`corpus.py`, `mailing_list_sync.py`,
 `scrape_cve_severity.py`, `postgres_clone.py`, `refresh_data.py`) and the
-`transform/sources/` readers live in `tests/` — pure parse/logic coverage, no
-network, clone, or warehouse. Run them with `./venv/bin/pytest` (~0.1s). They're
+`transform/sources/` readers (git, sgml, mail, classify, ai_involvement) live
+in `tests/` — pure parse/logic coverage, no network, clone, or warehouse. Run them with `./venv/bin/pytest` (~0.1s). They're
 enforced the same two ways: a per-edit `pytest.sh` hook on any `.py` change and
 the `pytest` hook in the pre-commit gate. The DuckDB Python models
 (`transform/models/raw_*`) are thin wrappers over the tested readers, so they
@@ -463,15 +506,16 @@ carry no separate unit tests.
   volume is structurally invisible.
 - The release notes are parsed from the clone's SGML at build time
   (`sources.sgml` -> `raw_release_items` / `raw_item_commits`), the primary
-  source. `scrape_release_notes.py` (HTML from postgresql.org) parses the same
-  notes and is kept as an independent manual cross-check (its output is not
-  wired into the build). Validated 2026-08-28: identical version coverage,
-  dates, and CVE sets,
-  and the commit-annotation dedup now used by the transform models (match on
-  summary text OR the exact annotation block) reproduces the pure-text
-  counts exactly across all 19 releases (Aug 2026: 142 both ways). Known divergence: nested remediation
-  sub-bullets (e.g. CVE-2024-4317's three steps) fold into their parent item
-  in SGML instead of counting as separate fixes — a correction.
+  source. The retired HTML scraper (`archive/scrape_release_notes.py`, from
+  postgresql.org) parses the same notes and is kept only as a manual
+  cross-check reference (not wired into the build, not maintained). Validated
+  2026-08-28, when the corpus held 19 shipped releases: identical version
+  coverage, dates, and CVE sets, and the commit-annotation dedup now used by
+  the transform models (match on summary text OR the exact annotation block)
+  reproduced the pure-text counts exactly (Aug 2026: 142 both ways). Known
+  divergence: nested remediation sub-bullets (e.g. CVE-2024-4317's three
+  steps) fold into their parent item in SGML instead of counting as separate
+  fixes — a correction.
 
 ## Tooling note: dbt charts (formerly dataface)
 
