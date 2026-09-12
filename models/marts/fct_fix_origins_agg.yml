@@ -7,10 +7,13 @@ models:
       the documented fixes (fix_cnt, release-notes items) and the committed fixes
       that shipped in the release (committed_fix_cnt), with documentation_rate
       between them. Every shipped release and the open one carry all four origins
-      (zero-filled). The open release has no items (fix_cnt NULL); observed
-      measures only -- its documented-units forecast is fct_fix_projections'
-      origin_scaled method. Replaces fct_pending_fix_origins_agg.
-      Grain = (release_dt, origin).
+      (zero-filled), so a chart needs no spine of its own and the categorical
+      sort stays chronological. The open release has no items (fix_cnt NULL)
+      and its committed_fix_cnt is the pending stream so far; observed measures
+      only -- its documented-units forecast is fct_fix_projections'
+      origin_scaled method, so an estimate never sits beside the actuals.
+      Carries is_out_of_band so consumers can exclude emergency re-releases
+      (tiny denominators that distort shares). Grain = (release_dt, origin).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

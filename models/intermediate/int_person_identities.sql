@@ -1,12 +1,3 @@
--- Every occurrence of a person acting in a role: git patch authors and git
--- committers (from int_git_commits, which resolves the real patch author from
--- the body's "Author:" trailer), mailing-list senders (from stg_list_messages),
--- and the real bug reporters (from int_bug_reports, parsed from the form
--- body). One row per occurrence. node_id is the (email, name) identity node
--- from the person_node() macro; int_person_map groups those nodes into people
--- (shared email OR name) and the facts compute the same node_id to join. The
--- pgsql-bugs web form (noreply@postgresql.org) stays as a list_sender here
--- (it IS the transport sender); the real person is the bug_reporter identity.
 WITH git_authors AS (
   SELECT
     patch_author_email AS person_email,

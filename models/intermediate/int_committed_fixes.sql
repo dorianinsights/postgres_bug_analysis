@@ -1,24 +1,3 @@
--- The COMMITTED-fix population, one row per distinct fix per release: every
--- non-housekeeping commit on a released major's stable branch, collapsed by
--- fix_key (normalized subject -- a fix backpatched to N branches is N commits,
--- one row here) within the release it ships in (int_commit_versions: exact tag
--- ancestry for shipped releases, the open release for not-yet-tagged commits).
---
--- This is the commit-side counterpart of int_fix_reps (the DOCUMENTED fixes,
--- one row per release-notes item). The two populations differ by construction:
--- the notes author folds several commits into one item and documents only
--- ~half of the committed subjects (typo fixes, test additions, dead-code
--- removal and comment cleanups never get an item). is_documented /
--- documented_item_ord link each committed fix to its item through the notes'
--- commit annotations (int_fix_commits), so the documented-per-committed rate
--- is measurable per release and per origin -- that rate is what turns the open
--- release's committed-so-far count into a projection in documented units.
---
--- origin uses the same precedence as the documented fixes (resolve_fix_origin);
--- a committed fix is security work when its item cites a CVE, so the open
--- release (no items yet, and embargoed security lands only on wrap day) never
--- shows security. Replaces int_backpatch_fixes + int_pending_fixes, which
--- windowed the same commits by calendar date. Grain = (release_dt, fix_key).
 WITH stable_commits AS (
   SELECT
     igc.branch,

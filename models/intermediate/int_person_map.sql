@@ -1,5 +1,3 @@
--- two nodes are the same person when they share a normalized email OR name,
--- transitively; empty keys form no edges
 WITH RECURSIVE node_keys AS (
   SELECT DISTINCT
     node_id,

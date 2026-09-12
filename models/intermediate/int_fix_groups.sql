@@ -1,7 +1,3 @@
--- Two items are the same fix when EITHER their text_key or their hash_key
--- matches within a release, transitively: a mere hash OVERLAP would over-merge
--- different fixes sharing a combined backpatch commit, so the identical full
--- hash set is the key.
 WITH RECURSIVE node_keys AS (
   SELECT
     item_ord,

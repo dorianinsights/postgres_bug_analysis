@@ -1,38 +1,4 @@
--- Commit dimension: one row per git commit (a backpatch is its own commit, with
--- its own hash) -- the single home for commit-level attributes and the conformed
--- keys resolved once per commit. It replaces the retired commit-grain fact: a
--- commit's MEASURES (churn, file count) are aggregates of its file rows in
--- fct_commit_files, so nothing measured lives here; only descriptors and FKs.
--- Foreign keys into dim_person (author + committer roles), dim_date (commit day),
--- dim_release / dim_version (the release + minor it shipped in) and dim_major (its
--- development line -- master included). branch_scope is the commit's own
--- lifecycle scope for churn views (trunk / beta / stable -- a stable branch holds
--- both its pre-GA beta work and its backpatch stream, told apart by
--- int_commit_versions). origin, the reviewed AI-involvement labels
--- (int_commit_ai_labels, per fix), the dominant subsystem and the subject ride
--- along as attributes. Each person key resolves via
--- the identity node (person_node + int_person_map), matching dim_person.
---
--- The fix-commit spine: fix_key (normalized subject, the identity of a committed
--- fix across its backpatches -- COUNT(DISTINCT fix_key) is "distinct fixes") and
--- is_housekeeping (stamps, translations, notes drafting: commits that are not
--- fixes) come from int_git_commits; is_representative_commit picks one
--- backpatch per fix so per-commit sums (churn) are not multiplied by the
--- number of branches in the corpus; is_documented / documented_item_ord say
--- whether a release-notes item cites this commit (the int_fix_commits bridge,
--- inverted). dim_release_key resolves through int_commit_versions: exact tag
--- ancestry for shipped commits, and the OPEN release for a released major's
--- stable-branch commits after its latest tag (the pending fix stream) -- so
--- "committed toward the next release" is a plain filter on this key.
---
--- NO Kimball special members (the deliberate exception, like dim_date): the only
--- fact that references this dimension, fct_commit_files, is BUILT from the commit
--- spine (every file row belongs to a real commit), so its dim_commit_key is
--- mandatory by construction and never resolves to Unknown / Not Applicable.
--- dim_commit_key is a generate_surrogate_key hash of commit_hash, computed ONCE
--- here; fct_commit_files conforms by joining on commit_hash. Grain = commit_hash.
--- the release-notes item citing each commit (the lowest item when a combined
--- commit is annotated under several)
+-- the lowest item when a combined commit is annotated under several
 WITH documented AS (
   SELECT
     commit_hash,

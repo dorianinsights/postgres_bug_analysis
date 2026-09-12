@@ -4,8 +4,10 @@ models:
   - name: stg_list_messages
     description: >
       One archived mailing-list message, typed from the mbox-decoded raw
-      layer: bare message id, TIMESTAMPTZ sent_ts from the Date header,
-      author name/email split, threading headers, full text body.
+      layer: bare message id (transport angle brackets dropped -- the canonical
+      identity commit Discussion trailers use), TIMESTAMPTZ sent_ts from the
+      Date header (strict cast), author name/email split, threading headers,
+      full text body. Empty strings become NULL.
       Grain = (list_name, message_id).
     tests:
       - dbt_utils.unique_combination_of_columns:

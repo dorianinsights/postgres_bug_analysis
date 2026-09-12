@@ -1,9 +1,3 @@
--- The bridge from a distinct fix (dedup group) to the git commits that
--- implement it: the fix's whole group -> its annotated 9-char hashes (from
--- item_commits) -> the matching full corpus commits (int_fix_changes,
--- int_fix_origins and int_fix_bug_links read it). commit_hash is NULL for annotation hashes that match
--- no corpus commit (pre-corpus REL9_x branches), so consumers can still count
--- annotation coverage. Grain = (group_ord, abbrev_hash, commit_hash).
 WITH fix_hashes AS (
   SELECT DISTINCT
     grp.group_ord,

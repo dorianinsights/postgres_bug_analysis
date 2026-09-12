@@ -1,9 +1,3 @@
--- (commit_hash, message_id) from the Discussion: trailers in commit
--- message bodies — the project's ground-truth link from fixes back to
--- mailing-list threads. Both URL spellings occur (postgr.es/m/ and
--- postgresql.org/message-id/). Hrefs in trailers are sometimes
--- percent-encoded; ids are decoded to the canonical form, but only when
--- every % begins a valid escape (URL_DECODE raises otherwise).
 WITH refs AS (
   SELECT
     commit_hash,
@@ -20,6 +14,7 @@ WITH refs AS (
 
 SELECT DISTINCT
   commit_hash,
+  -- decode percent-escapes only when every % starts a valid one (URL_DECODE raises otherwise)
   CASE
     WHEN REGEXP_MATCHES(REGEXP_REPLACE(raw_ref, '%[0-9A-Fa-f]{2}', '', 'g'), '%') THEN raw_ref
     ELSE URL_DECODE(raw_ref)

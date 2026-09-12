@@ -1,24 +1,3 @@
--- Fixes per release by origin, in BOTH fix populations on one row: the
--- DOCUMENTED fixes (release-notes items, fix_cnt -- what the release actually
--- reported) and the COMMITTED fixes (distinct non-housekeeping stable-branch
--- subjects that shipped in it, committed_fix_cnt), with the documentation rate
--- between them. Every shipped release AND the open one carry all four origins
--- (zero-filled), so a chart needs no spine of its own and the categorical sort
--- (which sums a per-release key) stays chronological.
---
--- The open release has no items yet, so its fix_cnt is NULL and its
--- committed_fix_cnt is the pending stream so far. Observed measures only: the
--- documented-units forecast of the open release that once rode here (a
--- per-origin projected_fix_cnt) is fct_fix_projections' origin_scaled method
--- now, so an estimated measure never sits beside the actuals.
---
--- Origins: pgsql-bugs / pgsql-hackers / no public trail split into embargoed
--- security vs the genuinely unsourceable (resolve_fix_origin, shared by both
--- populations). Carries is_out_of_band so consumers can exclude the surprise
--- emergency releases (tiny denominators that distort shares). fix_share is each
--- origin's share of its release's documented fixes (shipped rows only); ratios
--- are DECIMAL, not float. Replaces fct_pending_fix_origins_agg.
--- Grain = (release_dt, origin). -> data/derived/fct_fix_origins_agg.csv
 WITH releases AS (
   SELECT
     release_dt,

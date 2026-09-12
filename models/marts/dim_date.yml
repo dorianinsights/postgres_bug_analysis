@@ -9,7 +9,10 @@ models:
       past_eternity (1900-01-01) and future_eternity (9999-01-01) -- so an
       unknown / not-applicable date reference can point at a real row instead of
       NULL. Facts store the calendar DATE and join on date_day; there is no
-      separate integer date key. Grain = date_day.
+      separate integer date key. Depends on no other model: the coverage
+      guarantee is the relationships tests to date_day on the source-side date
+      columns and every mart date column, which fail the build if the data ever
+      outgrows the span (widen the var when it does). Grain = date_day.
     time_spine:
       standard_granularity_column: date_day
     columns:

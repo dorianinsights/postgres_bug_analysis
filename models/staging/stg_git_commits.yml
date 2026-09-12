@@ -8,7 +8,9 @@ models:
       from its fork point, master from the corpus floor), so ranges are
       disjoint, and PostgreSQL backpatches by cherry-pick (a new hash), never by
       merge. The commit side keys on commit_hash alone (dim_commit's PK) on
-      that invariant, so it is asserted here at the source. Grain = commit_hash.
+      that invariant, so it is asserted here at the source. Strict casts raise
+      on a malformed timestamp; empty strings become NULL (body is NULL when the
+      message has no body). Grain = commit_hash.
     columns:
       - name: branch
         tests:

@@ -4,9 +4,13 @@ models:
   - name: fct_origin_activity_monthly_agg
     description: >
       Monthly master-branch activity split by origin ->
-      data/derived/fct_origin_activity_monthly_agg.csv: commit
-      count, AI-flagged commit count, and distinct cited discussion
-      threads. Grain = (month_dt, origin).
+      data/derived/fct_origin_activity_monthly_agg.csv: commit count,
+      AI-flagged commit count, and distinct cited discussion threads. Origin is
+      filed bug report / hackers thread / no public trail, the last split into
+      embargoed security work (the commit belongs to a CVE-citing release-note
+      fix) and the genuinely unsourceable. Master only: a backpatch is the same
+      work under another hash, so counting every branch would multiply each fix
+      by its backpatch breadth. UTC months. Grain = (month_dt, origin).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

@@ -3,11 +3,13 @@ version: 2
 models:
   - name: int_commit_files
     description: >
-      Every file touched by every commit, classified by subsystem (directory,
-      subsystem_rules) and file_class (extension, file_class_rules). The per-file
-      area/type grain behind dim_commit.dominant_subsystem and the
-      churn-by-area rollups. Line counts are NULL for binary files (excluded from
-      churn). Grain = (commit_hash, file_path).
+      Every file touched by every commit, classified two ways: by directory into
+      a subsystem (subsystem_rules, lowest match_order wins, 'other' fallback --
+      where the change lives) and by extension into a file_class
+      (file_class_rules -- what kind of file it is). int_commit_profile rolls it
+      up per commit and fct_commit_files is built on it. Line counts are NULL
+      for binary files (git numstat emits '-'), so binary churn is never
+      counted. Grain = (commit_hash, file_path).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

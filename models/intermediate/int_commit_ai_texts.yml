@@ -4,9 +4,13 @@ models:
   - name: int_commit_ai_texts
     description: >
       The text the AI-involvement classifier reads per committed fix: the longest
-      commit message among a fix_key's backpatches, subject + body, capped at
-      var(ai_involvement_text_cap_chars). Every commit is in scope (no keyword
-      pre-filter). Grain = fix_key.
+      commit message among a fix_key's backpatches (a backpatch body sometimes
+      adds a "Back-patch to ..." line, so the longest carries every credit
+      line), subject + body, capped at var(ai_involvement_text_cap_chars) -- a
+      disclosure lives in the first screen and prompt length is the per-item
+      cost. One text per fix, not per commit, so a disclosure is not re-read N
+      times. Every commit is in scope, housekeeping included: the classifier,
+      not a keyword filter, decides what is a disclosure. Grain = fix_key.
     columns:
       - name: fix_key
         tests:

@@ -3,9 +3,11 @@ version: 2
 models:
   - name: stg_commit_files
     description: >
-      One file touched by one commit, from git log --numstat.
-      Grain = (commit_hash, file_path). lines_added/deleted are NULL for
-      binary files.
+      One file touched by one commit, from git log --numstat. lines_added /
+      lines_deleted are NULL for binary files (git emits "-"); the strict cast
+      raises on anything else malformed. file_path is verbatim, including git's
+      "{old => new}" rename spelling and quoted non-ASCII paths.
+      Grain = (commit_hash, file_path).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

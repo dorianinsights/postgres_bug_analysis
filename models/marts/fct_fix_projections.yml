@@ -10,12 +10,30 @@ models:
       it, so the actual on dim_release scores each method. Conformed to
       dim_release via dim_release_key (the actual is
       dim_release.distinct_fix_cnt on the same key); release_dt conforms to
-      dim_date. Grain = (dim_release_key, projection_method); a method with too
-      little history for a target has no row. The signal-family rows (and the
-      blend) measure every cycle's early signals at the OPEN cycle's current
-      age, so they -- and the backtest built on them -- change daily and are
-      withheld under var(projection_min_window_days) of age; the series and
-      seasonal rows are stable.
+      dim_date. Targets are the full-quarter scheduled releases with cycle
+      signals (out-of-band re-releases and the partial-window first release are
+      neither forecast nor history); a target's slot is its position in that
+      series and a method's history is the shipped targets with a lower slot, so
+      nothing leaks from the release being forecast. Method families: series
+      (trend fits a least-squares line over the history and extends it one
+      slot; reversion returns to the mean of the var(reversion_baseline_releases)
+      releases before the latest, with a one-sample-stdev band; regime_repeat
+      copies the latest; escalation adds the fitted slope to it), signal (the
+      target's own early signal times the median shipped-per-early ratio over
+      the history cycles carrying all three signals; origin_scaled scales each
+      origin's early committed fixes by its documented-per-early-committed
+      factor pooled over var(origin_projection_cycles) history releases, an
+      origin with no early commits taking their average documented count) and
+      reference (blended is the equal-weight mean of the three single-signal
+      estimates; seasonal_baseline the median shipped count of the history
+      releases in the target's calendar quarter). The seed carries each method's
+      label, family, order and assumption. Grain = (dim_release_key,
+      projection_method); a method with too little history for a target has no
+      row. The signal-family rows (and the blend) measure every cycle's early
+      signals at the OPEN cycle's current age, so they -- and the backtest built
+      on them -- change daily and are withheld under
+      var(projection_min_window_days) of age; the series and seasonal rows are
+      stable.
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

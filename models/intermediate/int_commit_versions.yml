@@ -8,8 +8,15 @@ models:
       shipped minor M.N for the backpatch stream or M.0 for a major's development
       (master between fork points + the branch's pre-GA stabilization); a released
       major's stable-branch commits after its latest tag are pending for the OPEN
-      release. release_status = shipped / open / development / NULL (master after
-      the newest fork). dim_commit reads it for dim_release_key / dim_version_key
+      release. release_status is the lifecycle of the release the commit counts
+      toward: shipped (a minor M.N, ship_release_dt = its release day), open
+      (pending for the open release, ship_release_dt = the next scheduled day,
+      version NULL), development (pre-GA work on a major's .0, no ship day --
+      the in-progress major's branch too, which is why status keys on the
+      tag-registered minor, not the version), or NULL (master after the newest
+      fork). This is what makes "committed so far toward the next release" the
+      same population, on the same rule, as every shipped release's fixes.
+      dim_commit reads it for dim_release_key / dim_version_key
       and branch_scope, dim_version aggregates it for each version's first/last
       commit, int_committed_fixes builds the committed-fix population on it, and
       int_major_development aggregates the development commits per major.

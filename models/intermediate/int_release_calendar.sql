@@ -1,11 +1,3 @@
--- The scheduled minor-release calendar: PostgreSQL minors ship on the
--- second Thursday of Feb/May/Aug/Nov, and the tarballs are wrapped
--- (tagged) the Monday before — the hard content cutoff. Computed from
--- the rule rather than observed tags so it extends one release into the
--- FUTURE (attribution needs "the next wrap" before it happens); the
--- assert_release_calendar_matches_observed_wraps singular test pins the
--- computed wraps to the tag-derived cycle starts where both exist.
--- Out-of-band emergency releases are not on this calendar by design.
 WITH anchor AS (
   -- Anchor the grid on the corpus itself: February of the year BEFORE the
   -- earliest corpus release tag (the first .0 at/above FIRST_MAJOR). February is

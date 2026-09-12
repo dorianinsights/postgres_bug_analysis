@@ -3,9 +3,15 @@ version: 2
 models:
   - name: int_person_identities
     description: >
-      One row per identity occurrence — git patch authors, git committers, and
-      mailing-list senders — with the shared person_key. The raw material
-      dim_person rolls up. Grain = one occurrence.
+      One row per occurrence of a person acting in a role: git patch authors
+      and committers (int_git_commits), mailing-list senders
+      (int_message_threads) and the real bug reporters parsed from the form
+      body (int_bug_reports). node_id is the (email, name) identity node from
+      the person_node() macro; int_person_map groups nodes into people and the
+      facts compute the same node_id to join. The pgsql-bugs web form sender
+      stays a list_sender here (it IS the transport sender); the real person is
+      the bug_reporter identity. The raw material dim_person rolls up.
+      Grain = one occurrence.
     columns:
       - name: node_id
         tests: [not_null]

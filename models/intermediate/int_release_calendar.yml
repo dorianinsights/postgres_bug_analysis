@@ -7,8 +7,10 @@ models:
       their wrap Mondays (release - 3 days, the content cutoff), computed
       from the rule so it extends one release past today. The grid is
       anchored on the corpus (February of the year before the earliest
-      corpus release tag in stg_git_tags), not on a date literal, so it moves
-      with FIRST_MAJOR. Out-of-band releases are deliberately absent.
+      corpus release in int_versions), not on a date literal, so it moves with
+      FIRST_MAJOR. The assert_release_calendar_matches_observed_wraps test pins
+      the computed wraps to the observed tags where both exist. Out-of-band
+      releases are deliberately absent.
     tests:
       - dbt_utils.expression_is_true:
           arguments:

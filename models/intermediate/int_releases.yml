@@ -8,7 +8,13 @@ models:
       dim_version both conform to the same dim_release_key. The open release is
       the first scheduled one after the latest TAGGED release (the registry, not
       the clock), so a release day is never both shipped and open; is_announced
-      says whether a shipped release's day has arrived. Grain = dim_release_key.
+      says whether a shipped release's day has arrived. Shipped releases are the
+      same-day groups of minor tags (int_versions, .0 majors excluded); a
+      release is out-of-band (an emergency re-release) when its largest minor
+      has fewer than var(scheduled_release_min_items) items, and the corpus's
+      first shipped release is a partial accumulation window. Upcoming releases
+      come from int_release_calendar with each active major's next minor
+      projected while it is still supported. Grain = dim_release_key.
     tests:
       # a scheduled release IS its own cycle's ship day; only out-of-band
       # releases fold forward

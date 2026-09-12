@@ -1,19 +1,3 @@
--- Commit-grain enrichment: the analysis flags formerly computed in the
--- scraper, now derived here from the verbatim subject/body.
---
--- fix_key: the normalized subject (lowercased, whitespace collapsed) -- the
--- identity of a COMMITTED fix. PostgreSQL backpatches by cherry-picking, so the
--- same fix on N branches is N commits with N hashes but one subject; every
--- distinct-fix count on the commit side is COUNT(DISTINCT fix_key). Defined
--- once here (int_committed_fixes, dim_commit and the faces all read it).
--- is_housekeeping: release mechanics that are commits but not fixes -- version
--- stamps, translation catalog refreshes, release-notes drafting, time-zone data
--- refreshes, copyright bumps, pgindent runs. Excluded from every fix count.
--- patch_author_*: the REAL patch author. PostgreSQL sets the git author
--- (%an/%ae) to the committer and credits the contributor in the body's
--- "Author: Name <email>" trailer (present on ~42% of commits — the rest are
--- written by the committer). So the patch author is that trailer when present,
--- else the committer (%cn/%ce). committer_* is passed through unchanged.
 WITH flagged AS (
   SELECT
     branch,

@@ -1,25 +1,3 @@
--- The release registry: one row per PostgreSQL release (a same-day group of
--- minors), shipped OR upcoming, with the surrogate key minted ONCE here so
--- dim_release and dim_version both conform to the same dim_release_key.
---   status  shipped (past, scheduled OR out-of-band) / open (in-flight, ships
---           next) / future (an upcoming scheduled release not yet started)
--- Shipped releases are grouped from the version tags (int_versions, minors
--- only; ".0" feature releases excluded). The OPEN release is the first
--- scheduled release AFTER the latest tagged one -- defined by the registry,
--- not by today's date: between a wrap Monday's tag and the Thursday
--- announcement the just-tagged release is already shipped here (is_announced
--- false until its day), and open is the next quarter's, so no release day is
--- ever both. (Keying open on CURRENT_DATE, as this once did, made those three
--- days produce the same release_dt twice.) A release is out-of-band (emergency
--- re-release) when its LARGEST release has fewer than
--- var(scheduled_release_min_items) items (from stg_release_items; the tag
--- registry and the parsed notes are reconciled both ways by the version
--- relationships tests on int_versions / stg_release_items). The corpus's first
--- shipped release is a
--- partial accumulation window (15.1 shipped ~4 weeks after 15.0). Upcoming
--- open/future releases come from the scheduled calendar (version numbers known
--- ahead of the release, but the fix/CVE counts are not -- those live in
--- dim_release for shipped releases only). Grain = dim_release_key.
 WITH grouped AS (
   SELECT
     release_dt,

@@ -3,11 +3,13 @@ version: 2
 models:
   - name: int_fix_commits
     description: >
-      Bridge from each distinct fix (group_ord) to its implementing git commits,
-      via the annotated 9-char hashes. commit_hash is NULL for annotation hashes
-      with no matching corpus commit. Grain = (group_ord, abbrev_hash,
-      commit_hash). Reused by int_fix_profile /
-      int_fix_bug_links.
+      Bridge from each distinct fix (its whole dedup group) to its implementing
+      git commits: the group's annotated 9-char hashes from item_commits matched
+      to the full corpus hashes on LEFT(hash, 9). commit_hash is NULL for an
+      annotation hash with no corpus commit (pre-corpus REL9_x branches), so
+      consumers can still count annotation coverage. Grain = (group_ord,
+      abbrev_hash, commit_hash). Read by int_fix_profile, int_fix_bug_links,
+      int_committed_fixes and dim_commit.
     columns:
       - name: group_ord
         tests: [not_null]

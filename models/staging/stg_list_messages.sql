@@ -1,14 +1,3 @@
--- One archived mailing-list message, typed from the mbox-decoded raw
--- layer. Message ids drop their transport angle brackets — the bare form
--- is the canonical identity that commit Discussion trailers use. sent_ts
--- comes from each message's own Date header (full seconds, original UTC
--- offset preserved in the ISO string) and lands as TIMESTAMPTZ; the
--- strict cast raises on malformed values. sent_dt is that instant's UTC
--- calendar day, derived once here (pinned to UTC so the day boundary can't
--- drift with the session timezone) so consumers group by day via a plain
--- column instead of re-truncating; NULL when sent_ts is (unparseable Date
--- header). The full-precision sent_ts instant is kept alongside. Subjects keep their decoded text but
--- collapse folded-header whitespace runs.
 SELECT
   list_name,
   TRIM(message_id, '<> ') AS message_id,

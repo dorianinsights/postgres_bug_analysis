@@ -3,8 +3,15 @@ version: 2
 models:
   - name: int_fix_groups
     description: >
-      item_ord -> group_ord (the component's lowest item_ord) from the
-      connected-components dedup. Every fix item appears exactly once.
+      item_ord -> group_ord (the component's lowest item_ord): the cross-branch
+      dedup of release-notes items as connected components (the shared
+      connected_components macro). Two items of one release are the same fix
+      when EITHER their text_key or their hash_key matches, transitively -- the
+      two signals cover each other's blind spots (wording drifts between branch
+      files; a branch's block carries an extra follow-up commit). The hash key is
+      the identical full hash set, since a mere hash overlap would merge
+      different fixes that share a combined backpatch commit. Every fix item
+      appears exactly once. Grain = item_ord.
     tests:
       # group_ord is the MIN item_ord of the component, so it can never
       # exceed any member's own ordinal.

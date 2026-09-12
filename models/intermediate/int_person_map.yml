@@ -4,8 +4,9 @@ models:
   - name: int_person_map
     description: >
       Identity resolution map: each (email, name) node_id from
-      int_person_identities to its resolved person_key (connected component over
-      shared email OR name). Grain = node_id.
+      int_person_identities to its resolved person_key: a connected component
+      (the shared connected_components macro) over nodes sharing a normalized
+      email OR name, transitively; empty keys form no edges. Grain = node_id.
     columns:
       - name: node_id
         tests: [not_null, unique]

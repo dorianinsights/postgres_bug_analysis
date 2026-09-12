@@ -4,7 +4,9 @@ models:
   - name: int_commit_discussions
     description: >
       (commit_hash, message_id) from Discussion: trailers in commit bodies
-      — the ground-truth link from fixes to mailing-list threads.
+      — the ground-truth link from fixes to mailing-list threads. Both URL
+      spellings occur (postgr.es/m/ and postgresql.org/message-id/), and
+      percent-encoded ids are decoded to the bare canonical form.
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

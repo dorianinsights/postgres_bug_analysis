@@ -1,13 +1,3 @@
--- Per-major feature-development activity, an AGGREGATE of the commit -> version
--- mapping rather than a separate git walk: every commit whose version is the
--- major's .0 (int_commit_versions release_status = 'development') -- master
--- between the previous major's fork point and this one's, plus the stable
--- branch's pre-GA stabilization -- which is exactly `git rev-list
--- REL_(M-1)_0..REL_M_0` (or ..HEAD for the in-progress major). dev_status comes
--- from the .0 release (int_versions) and latest_milestone from the newest BETA/RC
--- tag (stg_git_prerelease_tags) while the major is in beta. Covers every major
--- with a stable branch at/above the corpus floor, released AND in-progress.
--- Replaces raw_major_development / stg_major_development. Grain = major.
 WITH dev_commits AS (
   SELECT
     SPLIT_PART(version, '.', 1)::INTEGER AS major,

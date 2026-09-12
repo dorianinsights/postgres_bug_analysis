@@ -3,7 +3,14 @@ version: 2
 models:
   - name: int_fix_items
     description: >
-      Every fix-counting changelog item with its dedup keys.
+      Every changelog item that counts as a fix (a minor release, not a routine
+      time-zone-data refresh), with the CVEs extracted from its text and the two
+      dedup keys: text_key (the summary lowercased, whitespace collapsed, "§"
+      footnote markers stripped -- the wording the notes author copies verbatim
+      between branch files) and hash_key (the exact sorted set of annotated
+      commit hashes from item_commits; NULL when unannotated). item_ord numbers
+      items in file order (major, minor, item_index) so the dedup's
+      representative is the first item of each group in file order.
       Grain = (version, item_index); item_ord is a dense file-order ordinal.
     tests:
       - dbt_utils.unique_combination_of_columns:

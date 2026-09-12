@@ -1,10 +1,3 @@
--- Monthly master-branch development activity split by origin: how much
--- work traces to filed bug reports vs hackers-list threads vs no public
--- trail — the latter split into embargoed security work (the commit
--- belongs to a security-category release-note fix) and the genuinely
--- unsourceable. Master only — a backpatch is the same work under another
--- hash, so counting every branch would multiply each fix by its
--- backpatch breadth. UTC months.
 WITH security_fix_commits AS (
   SELECT DISTINCT fcm.commit_hash
   FROM {{ ref('int_fix_commits') }} AS fcm
