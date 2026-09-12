@@ -7,6 +7,10 @@ SELECT
   NULLIF(TRIM(from_email), '') AS author_email,
   NULLIF(TRIM(REGEXP_REPLACE(subject, '\s+', ' ', 'g')), '') AS subject,
   NULLIF(TRIM(in_reply_to, '<> '), '') AS in_reply_to,
-  NULLIF(TRIM(reference_ids), '') AS reference_ids,
+  -- the References header's <id> tokens, ancestors oldest first
+  CASE
+    WHEN LEN(REGEXP_EXTRACT_ALL(reference_ids, '<([^<>\s]+)>', 1)) > 0
+      THEN REGEXP_EXTRACT_ALL(reference_ids, '<([^<>\s]+)>', 1)
+  END AS reference_ids,
   NULLIF(body_text, '') AS body_text
 FROM {{ ref('raw_list_messages') }}

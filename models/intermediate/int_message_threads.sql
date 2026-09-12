@@ -8,10 +8,10 @@ WITH RECURSIVE messages AS (
     author_email,
     subject,
     -- the direct parent: In-Reply-To (first token; some clients append a
-    -- comment), else the LAST References id (RFC 5322 lists ancestors oldest first)
+    -- comment), else the last References id
     COALESCE(
       NULLIF(REGEXP_EXTRACT(in_reply_to, '^([^\s<>]+)', 1), ''),
-      NULLIF(REGEXP_EXTRACT(reference_ids, '<([^<>\s]+)>[^<]*$', 1), '')
+      reference_ids[-1]
     ) AS parent_id,
     -- the pgsql-bugs web form gives every report a "BUG #NNNNN:" subject and
     -- replies keep it after "Re:"

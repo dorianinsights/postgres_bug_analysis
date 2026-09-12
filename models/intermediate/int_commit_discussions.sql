@@ -1,13 +1,11 @@
 WITH refs AS (
   SELECT
     commit_hash,
-    UNNEST(REGEXP_EXTRACT_ALL(body, 'postgr\.es/m/([^\s>,)\]]+)', 1)) AS raw_ref
-  FROM {{ ref('int_git_commits') }}
-  WHERE body IS NOT null
-  UNION ALL
-  SELECT
-    commit_hash,
-    UNNEST(REGEXP_EXTRACT_ALL(body, 'postgresql\.org/message-id/(?:flat/)?([^\s>,)\]]+)', 1)) AS raw_ref
+    -- both URL spellings of a message-id link
+    UNNEST(
+      REGEXP_EXTRACT_ALL(body, 'postgr\.es/m/([^\s>,)\]]+)', 1)
+      || REGEXP_EXTRACT_ALL(body, 'postgresql\.org/message-id/(?:flat/)?([^\s>,)\]]+)', 1)
+    ) AS raw_ref
   FROM {{ ref('int_git_commits') }}
   WHERE body IS NOT null
 )
