@@ -18,6 +18,11 @@ models:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [group_ord, abbrev_hash]
+      # a resolved hash is the annotation's own prefix; fails if git ever
+      # abbreviates to a different length and the LEFT(hash, 9) join goes stale
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: commit_hash IS NULL OR abbrev_hash = LEFT(commit_hash, 9)
     columns:
       - name: group_ord
         tests:

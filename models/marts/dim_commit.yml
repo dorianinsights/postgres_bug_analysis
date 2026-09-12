@@ -167,7 +167,10 @@ models:
               arguments:
                 expression: "= false OR branch_scope = 'stable'"
       - name: is_documented
-        description: Whether a release-notes item cites this commit (int_fix_commits, inverted).
+        description: Whether a release-notes item cites this commit (int_commit_origins).
+        tests: [not_null]
+      - name: is_documented_security
+        description: A citing release-notes item names a CVE; false when undocumented. Splits the no-public-trail origin into embargoed security work and the unsourceable.
         tests: [not_null]
       - name: documented_item_ord
         description: The citing item's fct_fixes.item_ord; NULL when no item cites the commit (an attribute, not an FK).

@@ -1,32 +1,20 @@
-WITH releases AS (
-  SELECT
-    release_dt,
-    dim_release_key,
-    status,
-    is_out_of_band
-  FROM {{ ref('int_releases') }}
-  WHERE status IN ('shipped', 'open')
-),
-
-origins AS (
-  SELECT
-    UNNEST([
-      'pgsql-bugs',
-      'pgsql-hackers',
-      'unknown_or_internal_security',
-      'unknown_or_internal_not_security'
-    ]) AS origin
-),
-
-spine AS (
+-- every shipped and open release carries all four origins, zero-filled, so a
+-- chart needs no spine of its own
+WITH spine AS (
   SELECT
     rel.release_dt,
     rel.dim_release_key,
     rel.status,
     rel.is_out_of_band,
     org.origin
-  FROM releases AS rel
-  CROSS JOIN origins AS org
+  FROM {{ ref('int_releases') }} AS rel,
+    UNNEST([
+      'pgsql-bugs',
+      'pgsql-hackers',
+      'unknown_or_internal_security',
+      'unknown_or_internal_not_security'
+    ]) AS org (origin)
+  WHERE rel.status IN ('shipped', 'open')
 ),
 
 -- named apart from the output columns: a lateral alias is shadowed by a

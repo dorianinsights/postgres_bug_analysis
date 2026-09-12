@@ -1,13 +1,3 @@
--- the lowest item when a combined commit is annotated under several
-WITH documented AS (
-  SELECT
-    commit_hash,
-    MIN(group_ord) AS documented_item_ord
-  FROM {{ ref('int_fix_commits') }}
-  WHERE commit_hash IS NOT null
-  GROUP BY ALL
-)
-
 SELECT
   {{ dbt_utils.generate_surrogate_key(['gcm.commit_hash']) }} AS dim_commit_key,
   COALESCE(pmp_a.person_key, {{ unknown_key() }}) AS author_dim_person_key,
@@ -74,10 +64,11 @@ SELECT
       ORDER BY COALESCE(prf.churn, 0) DESC, dmj.major DESC, gcm.commit_ts DESC, gcm.commit_hash ASC
     ) = 1
   ) AS is_representative_commit,
-  dfx.documented_item_ord IS NOT null AS is_documented,
+  org.documented_item_ord IS NOT null AS is_documented,
   -- the citing release-notes item (fct_fixes.item_ord); NULL when none cites
   -- this commit -- an attribute, not an FK, so no special member stands in
-  dfx.documented_item_ord,
+  org.documented_item_ord,
+  org.is_documented_security,
   -- no Kimball special members here (built from the commit spine), so every
   -- row is real; the flag exists for uniformity across all dimensions
   false AS is_synthetic_row
@@ -86,7 +77,6 @@ LEFT OUTER JOIN {{ ref('int_commit_versions') }} AS icv ON gcm.commit_hash = icv
 LEFT OUTER JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
 -- the commit's file-level profile (churn, dominant subsystem), once per commit
 LEFT OUTER JOIN {{ ref('int_commit_profile') }} AS prf ON gcm.commit_hash = prf.commit_hash
-LEFT OUTER JOIN documented AS dfx ON gcm.commit_hash = dfx.commit_hash
 -- one label row per fix_key (int_commit_ai_texts covers every commit)
 LEFT OUTER JOIN {{ ref('int_commit_ai_labels') }} AS ail ON gcm.fix_key = ail.fix_key
 -- the release (shipped or open) from the registry that mints its key, and the

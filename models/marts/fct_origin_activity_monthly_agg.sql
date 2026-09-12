@@ -1,22 +1,15 @@
-WITH security_fix_commits AS (
-  SELECT DISTINCT fcm.commit_hash
-  FROM {{ ref('int_fix_commits') }} AS fcm
-  INNER JOIN {{ ref('int_fix_reps') }} AS reps ON fcm.group_ord = reps.item_ord
-  WHERE reps.cves IS NOT null AND fcm.commit_hash IS NOT null
-),
-
-master_commits AS (
+WITH master_commits AS (
   SELECT
     DATE_TRUNC('month', fcm.commit_dt)::DATE AS month_dt,
+    -- no public trail splits into embargoed security work and the unsourceable
     CASE
       WHEN fcm.origin != 'unknown_or_internal' THEN fcm.origin
-      WHEN sfc.commit_hash IS NOT null THEN 'unknown_or_internal_security'
+      WHEN fcm.is_documented_security THEN 'unknown_or_internal_security'
       ELSE 'unknown_or_internal_not_security'
     END AS origin,
     fcm.has_ai_involvement
   FROM {{ ref('dim_commit') }} AS fcm
   INNER JOIN {{ ref('dim_major') }} AS dmj ON fcm.dim_major_key = dmj.dim_major_key
-  LEFT OUTER JOIN security_fix_commits AS sfc ON fcm.commit_hash = sfc.commit_hash
   -- master (the development trunk) only. NOT is_released is no longer a proxy for
   -- this: the in-progress major's stable branch (e.g. PG19 beta) is also
   -- unreleased, but its commits are backpatch-style stabilization, not trunk

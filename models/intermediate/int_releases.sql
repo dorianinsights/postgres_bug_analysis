@@ -1,30 +1,23 @@
+-- a release is the same-day group of minor tags; out-of-band when its largest
+-- minor has too few items to be a scheduled release
 WITH grouped AS (
   SELECT
     release_dt,
     STRING_AGG(version, ' / ' ORDER BY major, minor) AS versions,
     COUNT(*) AS release_cnt,
-    MAX(item_cnt) < {{ var('scheduled_release_min_items') }} AS is_out_of_band
+    MAX(item_cnt) < {{ var('scheduled_release_min_items') }} AS is_out_of_band,
+    MAX(wrap_dt) AS tag_wrap_dt
   FROM {{ ref('int_versions') }}
   WHERE NOT is_major_release
   GROUP BY ALL
 ),
 
-version_wraps AS (
-  -- an out-of-band re-release has no scheduled calendar wrap (int_release_calendar
-  -- is the quarterly cadence only), but each of its versions carries a real wrap
-  -- tag -- use it so OOB releases get a wrap_dt too, consistent with dim_version.
-  SELECT
-    release_dt,
-    MAX(wrap_dt) AS wrap_dt
-  FROM {{ ref('int_versions') }}
-  WHERE NOT is_major_release AND wrap_dt IS NOT null
-  GROUP BY release_dt
-),
-
 shipped AS (
   SELECT
     grp.release_dt,
-    COALESCE(cal.wrap_dt, vwr.wrap_dt) AS wrap_dt,
+    -- the calendar's wrap Monday; an out-of-band re-release is off the
+    -- calendar and keeps its own tag day
+    COALESCE(cal.wrap_dt, grp.tag_wrap_dt) AS wrap_dt,
     'shipped' AS status,
     grp.versions,
     grp.release_cnt,
@@ -32,19 +25,12 @@ shipped AS (
     grp.release_dt = MIN(grp.release_dt) OVER () AS is_partial_window
   FROM grouped AS grp
   LEFT OUTER JOIN {{ ref('int_release_calendar') }} AS cal ON grp.release_dt = cal.scheduled_release_dt
-  LEFT OUTER JOIN version_wraps AS vwr ON grp.release_dt = vwr.release_dt
 ),
 
 -- the latest tagged release: everything scheduled after it is upcoming
 latest_shipped AS (
   SELECT MAX(release_dt) AS release_dt
   FROM grouped
-),
-
-next_release AS (
-  SELECT MIN(cal.scheduled_release_dt) AS release_dt
-  FROM {{ ref('int_release_calendar') }} AS cal
-  WHERE cal.scheduled_release_dt > (SELECT lsh.release_dt FROM latest_shipped AS lsh)
 ),
 
 -- each active major's next minor is its latest release tag's minor + 1; the
@@ -57,13 +43,15 @@ active_majors AS (
   GROUP BY major
 ),
 
+-- the scheduled releases after the latest tagged one: the first is OPEN (the
+-- registry, not the clock, decides), the rest future
 upcoming_dates AS (
   SELECT
     cal.scheduled_release_dt AS release_dt,
     cal.wrap_dt,
-    CASE WHEN cal.scheduled_release_dt = nxt.release_dt THEN 'open' ELSE 'future' END AS status,
-    ROW_NUMBER() OVER (ORDER BY cal.scheduled_release_dt) AS release_offset
-  FROM {{ ref('int_release_calendar') }} AS cal, next_release AS nxt
+    ROW_NUMBER() OVER (ORDER BY cal.scheduled_release_dt) AS release_offset,
+    CASE WHEN release_offset = 1 THEN 'open' ELSE 'future' END AS status
+  FROM {{ ref('int_release_calendar') }} AS cal
   WHERE cal.scheduled_release_dt > (SELECT lsh.release_dt FROM latest_shipped AS lsh)
 ),
 
@@ -108,13 +96,6 @@ SELECT
   -- (int_release_cycles, the projection comparators) fold an emergency
   -- release's fixes into the cycle that produced them through this column,
   -- while release-grain measures keep the exact release.
-  CASE
-    WHEN cmb.is_out_of_band
-      THEN (
-        SELECT MIN(cal.scheduled_release_dt)
-        FROM {{ ref('int_release_calendar') }} AS cal
-        WHERE cal.scheduled_release_dt >= cmb.release_dt
-      )
-    ELSE cmb.release_dt
-  END AS cycle_ships_at_dt
+  cal.scheduled_release_dt AS cycle_ships_at_dt
 FROM combined AS cmb
+ASOF LEFT OUTER JOIN {{ ref('int_release_calendar') }} AS cal ON cmb.release_dt <= cal.scheduled_release_dt

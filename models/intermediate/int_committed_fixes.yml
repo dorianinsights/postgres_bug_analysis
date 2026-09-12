@@ -69,6 +69,12 @@ models:
                 field: item_ord
       - name: is_security
         tests: [not_null]
+      - name: from_bugs
+        description: "Any of the fix's commits traces to a pgsql-bugs thread or a Bug: # ref (int_commit_origins); an input to origin."
+        tests: [not_null]
+      - name: from_hackers
+        description: "Any of the fix's commits traces to a pgsql-hackers thread; an input to origin."
+        tests: [not_null]
       - name: origin
         tests:
           - not_null

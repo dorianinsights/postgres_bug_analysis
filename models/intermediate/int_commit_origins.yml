@@ -3,10 +3,14 @@ version: 2
 models:
   - name: int_commit_origins
     description: >
-      One row per corpus commit hash with the origin its Discussion:
-      trailers resolve to — pgsql-bugs (bug-thread citation or Bug: #
-      trailer), pgsql-hackers, or unknown_or_internal (no trailer, an
-      uningested archive, or embargoed security work).
+      One row per corpus commit with its provenance: the origin its Discussion:
+      trailers resolve to — pgsql-bugs (bug-thread citation or Bug: # ref),
+      pgsql-hackers, or unknown_or_internal (no trailer, an uningested archive,
+      or embargoed security work) — and the release-notes item that documents
+      it (documented_item_ord, the lowest item when a combined commit is
+      annotated under several; is_documented_security when any of them cites a
+      CVE). dim_commit, int_committed_fixes, int_fix_profile and
+      fct_origin_activity_monthly_agg read it. Grain = commit_hash.
     columns:
       - name: commit_hash
         tests: [unique, not_null]
@@ -16,3 +20,17 @@ models:
           - accepted_values:
               arguments:
                 values: [pgsql-bugs, pgsql-hackers, unknown_or_internal]
+      - name: documented_item_ord
+        description: The citing release-notes item (int_fix_reps.item_ord); NULL when no item cites the commit.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('int_fix_reps')
+                field: item_ord
+      - name: is_documented_security
+        description: A citing item names a CVE; false when undocumented.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "= false OR documented_item_ord IS NOT NULL"

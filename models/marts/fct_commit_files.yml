@@ -6,8 +6,7 @@ models:
       Atomic churn fact: one row per file touched by one commit -- the lowest grain
       of the git change stream. Every churn metric rolls up from here dynamically
       (by area, file type, branch scope, author, at any interval), so no metric
-      needs a pre-aggregated table; the fct_commit_files_semantic MetricFlow model
-      exposes the measures, joined to dim_commit on the commit entity. Conforms to
+      needs a pre-aggregated table. Conforms to
       dim_commit (dim_commit_key -- commit attributes, keys, branch_scope live
       there) and dim_date (commit_dt). subsystem and file_class
       are file-grain degenerate dimensions. Line counts are NULL for binary files.

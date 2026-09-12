@@ -1,26 +1,18 @@
-WITH git_authors AS (
+WITH occurrences AS (
+  -- a commit yields two occurrences: the real patch author and the committer
   SELECT
-    patch_author_email AS person_email,
-    patch_author_name AS person_name,
-    'git_author' AS identity_role,
+    ident.person['email'] AS person_email,
+    ident.person['name'] AS person_name,
+    ident.person['identity_role'] AS identity_role,
     'git' AS source_list,
-    commit_ts AS seen_ts,
-    commit_dt AS seen_dt
-  FROM {{ ref('int_git_commits') }}
-),
-
-git_committers AS (
-  SELECT
-    committer_email AS person_email,
-    committer_name AS person_name,
-    'git_committer' AS identity_role,
-    'git' AS source_list,
-    commit_ts AS seen_ts,
-    commit_dt AS seen_dt
-  FROM {{ ref('int_git_commits') }}
-),
-
-list_senders AS (
+    gcm.commit_ts AS seen_ts,
+    gcm.commit_dt AS seen_dt
+  FROM {{ ref('int_git_commits') }} AS gcm,
+    UNNEST([
+      { 'email': gcm.patch_author_email, 'name': gcm.patch_author_name, 'identity_role': 'git_author' },
+      { 'email': gcm.committer_email, 'name': gcm.committer_name, 'identity_role': 'git_committer' }
+    ]) AS ident (person)
+  UNION ALL
   SELECT
     author_email AS person_email,
     author_name AS person_name,
@@ -29,9 +21,7 @@ list_senders AS (
     sent_ts AS seen_ts,
     sent_dt AS seen_dt
   FROM {{ ref('int_message_threads') }}
-),
-
-bug_reporters AS (
+  UNION ALL
   SELECT
     reporter_email AS person_email,
     reporter_name AS person_name,
@@ -40,16 +30,6 @@ bug_reporters AS (
     reported_ts AS seen_ts,
     reported_dt AS seen_dt
   FROM {{ ref('int_bug_reports') }}
-),
-
-occurrences AS (
-  SELECT * FROM git_authors
-  UNION ALL
-  SELECT * FROM git_committers
-  UNION ALL
-  SELECT * FROM list_senders
-  UNION ALL
-  SELECT * FROM bug_reporters
 )
 
 SELECT
