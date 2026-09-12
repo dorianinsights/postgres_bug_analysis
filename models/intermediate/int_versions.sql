@@ -1,14 +1,4 @@
-WITH wraps AS (
-  SELECT
-    major::VARCHAR || '.' || minor::VARCHAR AS version,
-    major,
-    minor,
-    tag_dt AS wrap_dt
-  FROM {{ ref('stg_git_tags') }}
-  WHERE tag_kind = 'release'
-),
-
-item_counts AS (
+WITH item_counts AS (
   SELECT
     version,
     COUNT(*)::BIGINT AS item_cnt
@@ -17,16 +7,16 @@ item_counts AS (
 )
 
 SELECT
-  wrp.version,
-  wrp.major,
-  wrp.minor,
-  -- the .0 that opens a major line, vs a minor of it
-  wrp.minor = 0 AS is_major_release,
-  'REL_' || wrp.major || '_STABLE' AS stable_branch,
-  wrp.wrap_dt,
+  tag.version,
+  tag.major,
+  tag.minor,
+  tag.is_major_release,
+  tag.stable_branch,
+  tag.tag_dt AS wrap_dt,
   -- the announced release day: the first Thursday on/after the wrap.
   -- ISODOW arithmetic yields BIGINT; DATE + n needs INTEGER
-  wrp.wrap_dt + (((4 - ISODOW(wrp.wrap_dt)) + 7) % 7)::INTEGER AS release_dt,
+  wrap_dt + (((4 - ISODOW(wrap_dt)) + 7) % 7)::INTEGER AS release_dt,
   itc.item_cnt
-FROM wraps AS wrp
-LEFT OUTER JOIN item_counts AS itc ON wrp.version = itc.version
+FROM {{ ref('stg_git_tags') }} AS tag
+LEFT OUTER JOIN item_counts AS itc ON tag.version = itc.version
+WHERE tag.tag_kind = 'release'

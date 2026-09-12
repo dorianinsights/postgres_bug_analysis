@@ -30,12 +30,37 @@ models:
           - accepted_values:
               arguments:
                 values: [release, prerelease]
+      - name: version
+        description: The release's version string (major.minor); NULL for a prerelease.
+        tests:
+          - unique
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "IS NOT NULL = (tag_kind = 'release')"
+      - name: is_major_release
+        description: The .0 that opens a major line (minor = 0); false for its minors and for prereleases.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "= (minor = 0) OR tag_kind = 'prerelease'"
+      - name: stable_branch
+        description: The git branch every tag of this major lives on (REL_M_STABLE), release and prerelease alike.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^REL_\d+_STABLE$'
       - name: major
         tests:
           - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: "{{ var('test_floor_major') }}"
+          # one .0 per major line
+          - unique:
+              config:
+                where: "is_major_release"
       - name: minor
         description: The minor number; NULL for a prerelease.
         tests:

@@ -1,6 +1,8 @@
 {#
   Connected components over a node-key CTE: two nodes are in the same component
-  when they share any join_key, transitively. Emits the edges / reachable CTEs
+  when they share any join_key, transitively. join_key may be a STRUCT with one
+  member set per signal (NULL members compare equal, so no tagging is needed).
+  Emits the edges / reachable CTEs
   and the final SELECT, so the calling model opens with
   `WITH RECURSIVE <node_keys> AS (SELECT <node_col>, join_key ...),` and ends
   with this macro. The component id is the component's lowest node.
