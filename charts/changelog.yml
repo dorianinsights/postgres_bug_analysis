@@ -16,12 +16,24 @@ style:
 
 queries:
   latest_release:
-    notes: The most recent release's headline numbers.
+    notes: >
+      The most recent release's headline numbers, each with its change against
+      the previous scheduled release (a ratio; the KPI support line prints it
+      as a signed percent). Out-of-band releases are skipped on both sides of
+      the comparison.
     source: warehouse
     sql: |
-      SELECT release_dt AS release_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt
+      SELECT
+        release_dt,
+        versions,
+        distinct_fix_cnt,
+        security_fix_cnt,
+        distinct_cve_cnt,
+        distinct_fix_cnt / NULLIF(LAG(distinct_fix_cnt) OVER (ORDER BY release_dt), 0) - 1 AS fix_delta,
+        security_fix_cnt / NULLIF(LAG(security_fix_cnt) OVER (ORDER BY release_dt), 0) - 1 AS security_delta,
+        distinct_cve_cnt / NULLIF(LAG(distinct_cve_cnt) OVER (ORDER BY release_dt), 0) - 1 AS cve_delta
       FROM {{ ref('dim_release') }}
-      WHERE status = 'shipped'
+      WHERE status = 'shipped' AND NOT is_out_of_band
       ORDER BY 1 DESC
       LIMIT 1
 
@@ -235,18 +247,30 @@ charts:
     query: latest_release
     value: distinct_fix_cnt
     label: "Distinct fixes, latest release"
+    support:
+      value: fix_delta
+      label: "vs the previous scheduled release"
+      format: percent_delta
 
   kpi_security:
     type: kpi
     query: latest_release
     value: security_fix_cnt
     label: "Security fixes, latest release"
+    support:
+      value: security_delta
+      label: "vs the previous scheduled release"
+      format: percent_delta
 
   kpi_cves:
     type: kpi
     query: latest_release
     value: distinct_cve_cnt
     label: "CVEs closed, latest release"
+    support:
+      value: cve_delta
+      label: "vs the previous scheduled release"
+      format: percent_delta
 
   kpi_upcoming_fixes:
     type: kpi

@@ -36,7 +36,8 @@ queries:
         STRFTIME(release_dt, '%b %y') AS release,
         EPOCH(release_dt)::BIGINT AS release_seq,
         SUM(fix_cnt) AS fix_cnt,
-        SUM(committed_fix_cnt) AS committed_fix_cnt
+        SUM(committed_fix_cnt) AS committed_fix_cnt,
+        ROUND(100.0 * SUM(fix_cnt) / NULLIF(SUM(committed_fix_cnt), 0)) AS documented_pct
       FROM {{ ref('fct_fix_origins_agg') }}
       WHERE status = 'shipped' AND NOT is_out_of_band
       GROUP BY 1, 2
@@ -147,8 +148,23 @@ charts:
     subtitle: "Documented fixes. a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band releases excluded"
     x: release
     y: fix_cnt
-    # string x would auto-flip horizontal; these are time series, keep vertical
-    style: { orientation: vertical }
+    # string x would auto-flip horizontal; these are time series, keep vertical.
+    # The support strip sits under the axis (the default is above the plot, where
+    # it collides with the subtitle); label_max_lines reserves room for the
+    # rotated x labels, which the bottom strip otherwise overprints.
+    style:
+      orientation: vertical
+      support_table: { position: bottom, label_max_lines: 3 }
+    # the commits behind each bar, and the share of them the release notes
+    # documented (whole percent points: a % on every cell runs together at
+    # this width, and the anchors mode prints it on the first cell only)
+    support_table:
+      - source: committed_fix_cnt
+        label: "committed"
+        format: integer
+      - source: documented_pct
+        label: "% documented"
+        format: integer
 
   fix_origin_counts:
     type: bar

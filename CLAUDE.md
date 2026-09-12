@@ -105,7 +105,15 @@ per-session memories, which aren't committed to git.)
   `stack: normalize` with no `axis_y` format:** the axis is labeled in percent
   anyway and the hover shows share, count and total; an authored percent axis
   format percent-formats the hover's raw count column ("2000%", report
-  item 9). Faces name models with `{{ ref() }}`
+  item 9). **KPI `support:`** is a second line under the label (a column,
+  a `format:` such as `percent_delta`, an optional static glyph/tone --
+  static, so no glyph or tone on a signed delta); avoid a hyphenated word in
+  its label (dct rewrites "full-quarter" as "full- quarter", the item 4
+  family). **`support_table:`** (a per-x strip of extra columns on a
+  bar/line/area chart) defaults to ABOVE the plot, touching the subtitle;
+  use `style.support_table: { position: bottom, label_max_lines: 3 }` so it
+  sits under the axis without overprinting rotated x labels (report item
+  10). Faces name models with `{{ ref() }}`
   (resolved from `target/manifest.json`, so run `dbt parse` after adding or
   renaming a model or column, and `dct validate charts/*.yml` checks the
   queries' columns statically -- the marts end in explicit projections, not
