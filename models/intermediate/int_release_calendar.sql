@@ -18,6 +18,7 @@ WITH anchor AS (
   -- that the fixed calendar spine still covers it.
   SELECT MAKE_DATE(YEAR(MIN(tag_dt)) - 1, 2, 1) AS grid_start
   FROM {{ ref('stg_git_tags') }}
+  WHERE tag_kind = 'release'
 ),
 
 month_starts AS (

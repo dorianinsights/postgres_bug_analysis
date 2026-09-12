@@ -237,9 +237,9 @@ every object's name. Layers:
   line of attached git patches. Requires the cache (run `pg-mail-sync`
   first).
 - `models/staging/` — typed views over the raw CSVs and raw_git tables
-  (`stg_*`; `stg_git_tags` keeps the `REL_M_N` release tags and
-  `stg_git_prerelease_tags` the BETA/RC milestones it filters out, which
-  label the in-progress major's stage). The CSV source reader restricts
+  (`stg_*`; `stg_git_tags` carries both the `REL_M_N` release tags and the
+  BETA/RC milestones that label the in-progress major's stage, told apart by
+  `tag_kind`). The CSV source reader restricts
   type-sniffing to BIGINT/DATE/VARCHAR so version strings like "15.10" can't
   collapse into doubles.
 - `models/intermediate/` — the analysis steps as tables: `int_releases` (release
@@ -291,8 +291,7 @@ every object's name. Layers:
     `dim_commit` (one row per git commit — its attributes + conformed keys, no
     measures), with the facts `fct_commit_files` (commit-file grain: churn),
     `fct_branch_size_weekly` (periodic snapshot: each stable branch's tree
-    size per week by subsystem and file_class), `fct_major_development`
-    (major grain: development activity per major), `fct_messages` (message
+    size per week by subsystem and file_class), `fct_messages` (message
     grain), `fct_threads` (thread grain: one row per mailing-list thread with
     its start, size and outcome -- cited by a backpatched fix, beta
     stabilization, trunk work, or not), and `fct_fixes` (fix grain). A commit's

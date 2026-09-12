@@ -76,6 +76,7 @@ active_majors AS (
     major,
     MAX(minor) AS latest_minor
   FROM {{ ref('stg_git_tags') }}
+  WHERE tag_kind = 'release'
   GROUP BY major
 ),
 
@@ -100,12 +101,9 @@ upcoming AS (
     false AS is_partial_window
   FROM upcoming_dates AS udt
   CROSS JOIN active_majors AS amj
-  -- Only project a major onto an upcoming release while it is still supported.
-  -- PostgreSQL majors get ~5 years: major M ships in the year 2007+M and its
-  -- final minor lands ~November of year 2012+M. Without this, an EOL major (once
-  -- the corpus reaches back far enough to include one) gets phantom future
-  -- minors, e.g. a 14.26 after PG14's Nov 2026 EOL.
-  WHERE udt.release_dt <= MAKE_DATE(amj.major + 2012, 11, 30)
+  -- only while the major is still supported, else an EOL major gets phantom
+  -- future minors
+  WHERE udt.release_dt <= {{ major_eol_dt('amj.major') }}
   GROUP BY udt.release_dt, udt.wrap_dt, udt.status
 ),
 

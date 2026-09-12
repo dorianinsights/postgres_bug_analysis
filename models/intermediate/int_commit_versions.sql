@@ -37,7 +37,7 @@ WITH open_release AS (
 released_majors AS (
   SELECT DISTINCT major
   FROM {{ ref('stg_git_tags') }}
-  WHERE minor = 0
+  WHERE tag_kind = 'release' AND minor = 0
 )
 
 SELECT

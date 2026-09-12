@@ -18,6 +18,39 @@
 {{ dbt_utils.generate_surrogate_key(['-2']) }}
 {%- endmacro %}
 
+
+{% macro past_eternity_dt() -%}
+DATE '{{ var('past_eternity') }}'
+{%- endmacro %}
+
+
+{% macro future_eternity_dt() -%}
+DATE '{{ var('future_eternity') }}'
+{%- endmacro %}
+
+
+{#
+  The two special-member rows for a dimension, as UNION ALL branches over its
+  projection `columns` (in order). key_column gets the sentinel key,
+  is_synthetic_row is true, every other column is the SQL literal given in the
+  `unknown` / `not_applicable` override maps, else NULL.
+#}
+{% macro special_member_rows(key_column, columns, unknown={}, not_applicable={}) %}
+{%- for member in [(unknown_key(), unknown), (not_applicable_key(), not_applicable)] %}
+UNION ALL
+SELECT
+{%- for col in columns %}
+  {%- if col == key_column %}
+  {{ member[0] }} AS {{ col }}
+  {%- elif col == 'is_synthetic_row' %}
+  true AS {{ col }}
+  {%- else %}
+  {{ member[1].get(col, 'null') }} AS {{ col }}
+  {%- endif %}{{ ',' if not loop.last }}
+{%- endfor %}
+{%- endfor %}
+{% endmacro %}
+
 -- Note: a test's `where:` config can't call a macro (dbt's generic-test config
 -- parser forbids it), so where a special row can't satisfy an attribute test we
 -- exempt it by its placeholder natural key (e.g. cve_id NOT IN ('(unknown)',

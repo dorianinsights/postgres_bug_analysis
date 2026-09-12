@@ -11,6 +11,5 @@ SELECT
   -- holds it exactly (no floating point)
   MEDIAN(days_to_commit)::DECIMAL(6, 1) AS days_to_commit_median
 FROM {{ ref('dim_bug') }}
--- exclude dim_bug's Unknown / Not Applicable special members (bug_number -1/-2)
-WHERE bug_number > 0
+WHERE NOT is_synthetic_row
 GROUP BY ALL

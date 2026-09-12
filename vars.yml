@@ -95,3 +95,8 @@ vars:
   # already did). Raise it to re-export a larger mart; git rm the stale CSV
   # of any mart that grows past it.
   derived_csv_max_rows: 1000
+  # a major's end of support (macro major_eol_dt): the final minor of major M
+  # lands on major_eol_month/major_eol_day of year M + major_eol_year_offset
+  major_eol_year_offset: 2012
+  major_eol_month: 11
+  major_eol_day: 30

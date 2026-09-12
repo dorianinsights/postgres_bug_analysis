@@ -6,9 +6,9 @@ models:
       Commit grain with the derived analysis attributes: fix_key (the normalized
       subject -- the identity of a committed fix across its backpatches),
       is_housekeeping (stamps, translation refreshes, release-notes drafting and
-      the like: commits that are not fixes), the real patch author from the
-      Author: trailer, and ai_credit (first message line crediting an AI tool,
-      NULL when none). Grain = (branch, commit_hash).
+      the like: commits that are not fixes), and the real patch author from the
+      Author: trailer. Every downstream commit reader starts here, not at
+      stg_git_commits. Grain = (branch, commit_hash).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -27,10 +27,3 @@ models:
         tests: [not_null]
       - name: is_housekeeping
         tests: [not_null]
-      # ai_credit: NULL for the overwhelming majority; when present it is a
-      # trimmed message line, at most 200 chars.
-      - name: ai_credit
-        tests:
-          - dbt_expectations.expect_column_values_to_match_regex:
-              arguments:
-                regex: '^\S(.{0,198}\S)?$'

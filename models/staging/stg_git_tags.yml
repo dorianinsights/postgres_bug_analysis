@@ -3,13 +3,19 @@ version: 2
 models:
   - name: stg_git_tags
     description: >
-      One minor-release tag (wrap moment). Grain = tag. Raw carries every
-      REL_1x_* ref; staging filters out BETA/RC prereleases and derives
-      major/minor from the tag name.
+      One REL_* git tag: a minor-release tag (tag_kind release, with major and
+      minor -- the wrap moment) or a BETA / RC milestone (tag_kind prerelease,
+      with major and milestone). Other refs are dropped. Every reader filters on
+      tag_kind. Grain = tag.
     tests:
       - dbt_utils.unique_combination_of_columns:
+          config:
+            where: "tag_kind = 'release'"
           arguments:
             combination_of_columns: [major, minor]
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(tag_kind = 'release') = (minor IS NOT NULL) AND (tag_kind = 'prerelease') = (milestone IS NOT NULL)"
     columns:
       - name: tag
         tests:
@@ -17,7 +23,13 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               arguments:
-                regex: '^REL_\d+_\d+$'
+                regex: '^REL_\d+_(\d+|(BETA|RC)\d+)$'
+      - name: tag_kind
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [release, prerelease]
       - name: major
         tests:
           - not_null
@@ -25,11 +37,17 @@ models:
               arguments:
                 min_value: "{{ var('test_floor_major') }}"
       - name: minor
+        description: The minor number; NULL for a prerelease.
         tests:
-          - not_null
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 0
+      - name: milestone
+        description: BETAn / RCn; NULL for a release.
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^(BETA|RC)\d+$'
       - name: tag_ts
         tests:
           - not_null
@@ -38,5 +56,5 @@ models:
                 min_value: "{{ var('test_floor_git_ts') }}"
                 max_value: current_date + 2
       - name: tag_dt
-        description: tag_ts (the wrap moment) truncated to its UTC calendar day.
+        description: tag_ts truncated to its UTC calendar day.
         tests: [not_null]

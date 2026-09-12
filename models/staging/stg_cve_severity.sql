@@ -27,6 +27,4 @@ SELECT
   bands.severity_band_order
 FROM typed
 LEFT JOIN {{ ref('cvss_severity_bands') }} AS bands
-  ON
-    typed.cvss_base_score >= bands.min_base_score
-    AND typed.cvss_base_score <= COALESCE(bands.max_base_score, typed.cvss_base_score)
+  ON {{ in_range('typed.cvss_base_score', 'bands.min_base_score', 'bands.max_base_score') }}

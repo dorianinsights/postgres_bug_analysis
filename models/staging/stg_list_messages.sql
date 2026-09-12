@@ -13,7 +13,7 @@ SELECT
   list_name,
   TRIM(message_id, '<> ') AS message_id,
   sent_ts::TIMESTAMPTZ AS sent_ts,
-  (sent_ts::TIMESTAMPTZ AT TIME ZONE 'utc')::DATE AS sent_dt,
+  {{ utc_date('sent_ts::TIMESTAMPTZ') }} AS sent_dt,
   NULLIF(TRIM(from_name), '') AS author_name,
   NULLIF(TRIM(from_email), '') AS author_email,
   NULLIF(TRIM(REGEXP_REPLACE(subject, '\s+', ' ', 'g')), '') AS subject,

@@ -5,6 +5,7 @@ WITH wraps AS (
     minor,
     tag_dt AS wrap_dt
   FROM {{ ref('stg_git_tags') }}
+  WHERE tag_kind = 'release'
 ),
 
 item_counts AS (

@@ -32,14 +32,15 @@ per_major AS (
 ga_majors AS (
   SELECT DISTINCT major
   FROM {{ ref('stg_git_tags') }}
-  WHERE minor = 0
+  WHERE tag_kind = 'release' AND minor = 0
 ),
 
 latest_prerelease AS (
   SELECT
     major,
     ARG_MAX(milestone, tag_ts) AS milestone
-  FROM {{ ref('stg_git_prerelease_tags') }}
+  FROM {{ ref('stg_git_tags') }}
+  WHERE tag_kind = 'prerelease'
   GROUP BY ALL
 )
 
@@ -54,10 +55,10 @@ SELECT
   pmj.dev_commit_cnt,
   pmj.first_dev_commit_hash,
   pmj.first_dev_commit_ts,
-  (pmj.first_dev_commit_ts AT TIME ZONE 'utc')::DATE AS first_dev_commit_dt,
+  {{ utc_date('pmj.first_dev_commit_ts') }} AS first_dev_commit_dt,
   pmj.last_dev_commit_hash,
   pmj.last_dev_commit_ts,
-  (pmj.last_dev_commit_ts AT TIME ZONE 'utc')::DATE AS last_dev_commit_dt
+  {{ utc_date('pmj.last_dev_commit_ts') }} AS last_dev_commit_dt
 FROM per_major AS pmj
 LEFT JOIN ga_majors AS gam ON pmj.major = gam.major
 LEFT JOIN latest_prerelease AS lpr ON pmj.major = lpr.major

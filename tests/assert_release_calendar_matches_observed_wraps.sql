@@ -13,7 +13,9 @@ WITH observed_wraps AS (
     ON
       (tag.tag_ts AT TIME ZONE 'utc')::DATE
       BETWEEN wvs.release_dt - {{ var('wrap_tag_window_days') }} AND wvs.release_dt
-  WHERE wvs.status = 'shipped' AND NOT wvs.is_out_of_band AND NOT wvs.is_partial_window
+  WHERE
+    tag.tag_kind = 'release'
+    AND wvs.status = 'shipped' AND NOT wvs.is_out_of_band AND NOT wvs.is_partial_window
   GROUP BY ALL
 )
 

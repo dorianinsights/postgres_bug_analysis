@@ -179,9 +179,12 @@ per-session memories, which aren't committed to git.)
   `config: where:` filtered on the placeholder natural key (e.g. `status NOT IN
   ('unknown','not applicable')`) — dbt forbids a macro in a test's `where`.
   `dim_date`'s equivalents are its real `past_eternity` (1900-01-01) /
-  `future_eternity` (9999-01-01) rows (vars). Append special rows with an
-  explicit-column `UNION ALL` — NOT `UNION ALL BY NAME` (sqlfluff AM07 can't
-  parse it). **Every dimension carries a `not_null` boolean `is_synthetic_row`**
+  `future_eternity` (9999-01-01) rows (vars; `past_eternity_dt()` /
+  `future_eternity_dt()` render the literals). Append the special rows with
+  the `special_member_rows(key_column, columns, unknown, not_applicable)`
+  macro (`macros/dim_special_members.sql`): the dim declares its projection
+  once as a jinja `columns` list and passes only the non-NULL overrides. Never
+  `UNION ALL BY NAME` (sqlfluff AM07 can't parse it). **Every dimension carries a `not_null` boolean `is_synthetic_row`**
   — `true` for exactly these synthetic rows (the Unknown / Not Applicable
   members; `dim_date`'s two eternity sentinels), `false` for every real entity
   (`master`, the in-development version/release, and `dim_commit`'s rows, which
@@ -247,9 +250,8 @@ per-session memories, which aren't committed to git.)
   independent, so a role breakdown counts role-mentions, not fixes. A prompt
   change means a full re-scan: batch prompt fixes in TODO.md and bump once.
   Bumping `AI_PROMPT_VERSION` re-infers everything; tune the prompt against the
-  hand-labeled set BEFORE a full scan. The regex `ai_credit` on
-  `int_git_commits` is the legacy single-boolean signal (role-blind; vendor
-  list only) and is superseded by these flags. The model cannot see undisclosed
+  hand-labeled set BEFORE a full scan. There is no keyword-regex AI signal any
+  more (the old `ai_credit` column was retired). The model cannot see undisclosed
   AI use: a rising line partly measures disclosure norms (PostgreSQL had no AI
   policy as of mid-2026), which is why `disclosure_form` is recorded.
 - **Thread identity is transitive** (`int_message_threads`): parent = In-Reply-To

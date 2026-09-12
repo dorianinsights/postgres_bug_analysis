@@ -84,8 +84,8 @@ unit_tests:
           - {version: "17.6", major: 17, minor: 6, wrap_dt: 2026-08-10, release_dt: 2026-08-13, item_cnt: 1}
       - input: ref('stg_git_tags')
         rows:
-          - {major: 17, minor: 5}
-          - {major: 17, minor: 6}
+          - {tag_kind: release, major: 17, minor: 5}
+          - {tag_kind: release, major: 17, minor: 6}
       - input: ref('int_release_calendar')
         rows:
           - {scheduled_release_dt: 2026-05-14, wrap_dt: 2026-05-11}

@@ -77,7 +77,7 @@ models:
           UTC day of the earliest commit that went into this version. For a minor:
           the earliest stable-branch commit that shipped in it (int_commit_versions,
           OOB re-releases included). For a .0 major: the earliest commit of the
-          major's whole feature development (fct_major_development, git tag
+          major's whole feature development (int_major_development, git tag
           ancestry). NULL only for the special members.
         tests:
           - not_null:
