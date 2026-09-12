@@ -1,13 +1,15 @@
 version: 2
 
 models:
-  - name: int_fix_changes
+  - name: int_fix_profile
     description: >
-      Fix-grain change profile from git: annotation-hash coverage, the
-      representative commit's size (files, lines), test/docs involvement,
-      and the path-derived dominant subsystem. Grain = item_ord (one row
-      per distinct fix, NULL profile when no annotated commit matched the
-      corpus).
+      Per-fix rollup of its implementing commits (int_fix_commits): annotation
+      coverage, the representative commit's change profile (int_commit_profile
+      -- the master commit when there is one, else the newest match; NULL when
+      no annotated commit matched the corpus or it touched no files), and the
+      origin resolved from every matched commit (resolve_fix_origin; a fix with
+      no matched commit has no public trail and splits by its CVE mention).
+      fct_fixes and fct_fix_origins_agg read it. Grain = item_ord.
     tests:
       - dbt_utils.expression_is_true:
           arguments:
@@ -38,3 +40,13 @@ models:
                   - build_platform
                   - core_server
                   - other
+      - name: origin
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - pgsql-bugs
+                  - pgsql-hackers
+                  - unknown_or_internal_security
+                  - unknown_or_internal_not_security

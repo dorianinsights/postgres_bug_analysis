@@ -2,10 +2,13 @@ WITH roots AS (
   SELECT
     bug_number,
     sent_dt AS reported_dt,
+    sent_ts AS reported_ts,
     message_id AS root_message_id,
-    subject
-  FROM {{ ref('int_bug_messages') }}
-  WHERE is_root
+    subject,
+    author_name,
+    author_email
+  FROM {{ ref('int_message_threads') }}
+  WHERE is_bug_root
   QUALIFY ROW_NUMBER() OVER (PARTITION BY bug_number ORDER BY sent_dt ASC, message_id ASC) = 1
 ),
 
@@ -14,7 +17,7 @@ threads AS (
     bug_number,
     COUNT(*) AS thread_message_cnt,
     MAX(sent_dt) AS last_message_dt
-  FROM {{ ref('int_bug_messages') }}
+  FROM {{ ref('int_message_threads') }}
   WHERE bug_number IS NOT null
   GROUP BY ALL
 ),
@@ -37,15 +40,15 @@ SELECT
   roots.subject,
   threads.thread_message_cnt,
   threads.last_message_dt,
-  slm.sent_ts AS reported_ts,
+  roots.reported_ts,
   -- the real reporter from the web-form body, else the transport From header
   COALESCE(
     NULLIF(TRIM(REGEXP_EXTRACT(slm.body_text, 'Logged by:\s*(.+)', 1)), ''),
-    slm.author_name
+    roots.author_name
   ) AS reporter_name,
   COALESCE(
     NULLIF(TRIM(REGEXP_EXTRACT(slm.body_text, 'Email address:\s*(.+)', 1)), ''),
-    slm.author_email
+    roots.author_email
   ) AS reporter_email,
   otc.bug_number IS NOT null AS is_acted_upon,
   CASE

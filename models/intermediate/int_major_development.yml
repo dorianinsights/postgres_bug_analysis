@@ -20,6 +20,12 @@ models:
                 values: ["released", "beta"]
       - name: latest_milestone
         tests: [not_null]
+      - name: ga_dt
+        description: The .0 release day (int_versions); NULL while the major is in beta.
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "IS NOT NULL OR dev_status = 'beta'"
       - name: dev_commit_cnt
         tests:
           - not_null

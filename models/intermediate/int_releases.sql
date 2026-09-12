@@ -75,8 +75,7 @@ active_majors AS (
   SELECT
     major,
     MAX(minor) AS latest_minor
-  FROM {{ ref('stg_git_tags') }}
-  WHERE tag_kind = 'release'
+  FROM {{ ref('int_versions') }}
   GROUP BY major
 ),
 

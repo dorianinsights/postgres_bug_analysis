@@ -1,45 +1,29 @@
--- Thread identity for every archived message, resolved TRANSITIVELY: each
--- message's direct parent is its In-Reply-To id (else the LAST id in
--- References -- RFC 5322 lists ancestors oldest first, so the last one is the
--- parent), and the thread root is the topmost archived ancestor reached by
--- climbing that chain within the list. Climbing matters: many clients send
--- only the parent in References, so "the first References id" (the former
--- rule) named different roots for different replies to one thread and split
--- pgsql-hackers into ~27.5k fragments instead of ~17.5k threads.
---
---   parent_id        the direct parent's id (NULL: no reply headers at all)
---   root_id          the thread's root: the topmost archived ancestor, or the
---                    earliest-sent one if a malformed header chain forms a cycle
---   is_thread_start  a genuinely new thread: the message has no parent header
---   is_thread_root   the earliest archived message of its thread -- a thread
---                    start, or the archive's first sight of a thread that began
---                    off-archive (a reply to a pre-corpus or private message)
---   is_fix_linked    the thread was eventually cited by a commit Discussion:
---                    trailer (any message of the thread counts, since trailers
---                    usually cite a mid-thread message)
---   earliest_ship_release_dt  the first scheduled minor whose wrap comes
---                    strictly after the send date -- a message sent ON wrap
---                    Monday counts toward the NEXT release (conservative)
--- Grain = (list_name, message_id).
 WITH RECURSIVE messages AS (
   SELECT
     list_name,
     message_id,
     sent_ts,
     sent_dt,
+    author_name,
+    author_email,
     subject,
-    -- In-Reply-To is bare in staging, but some clients append a
-    -- "(X's message of ...)" comment or a second id: keep the first token.
-    -- References: the last bracketed id.
+    -- the direct parent: In-Reply-To (first token; some clients append a
+    -- comment), else the LAST References id (RFC 5322 lists ancestors oldest first)
     COALESCE(
       NULLIF(REGEXP_EXTRACT(in_reply_to, '^([^\s<>]+)', 1), ''),
       NULLIF(REGEXP_EXTRACT(reference_ids, '<([^<>\s]+)>[^<]*$', 1), '')
-    ) AS parent_id
+    ) AS parent_id,
+    -- the pgsql-bugs web form gives every report a "BUG #NNNNN:" subject and
+    -- replies keep it after "Re:"
+    CASE
+      WHEN list_name = 'pgsql-bugs' THEN NULLIF(REGEXP_EXTRACT(subject, 'BUG #(\d+):', 1), '')::INTEGER
+    END AS bug_number,
+    list_name = 'pgsql-bugs' AND COALESCE(REGEXP_MATCHES(subject, '^BUG #\d+:'), false) AS is_bug_root
   FROM {{ ref('stg_list_messages') }}
 ),
 
--- climb the parent chain within the list while the parent is archived. UNION
--- (not UNION ALL) dedups rows, so a malformed cycle terminates on its own.
+-- climb the parent chain within the list while the parent is archived; UNION
+-- (not UNION ALL) dedups, so a malformed cycle terminates on its own
 ancestors (list_name, message_id, ancestor_id) AS (
   SELECT
     list_name,
@@ -58,8 +42,8 @@ ancestors (list_name, message_id, ancestor_id) AS (
     ON cur.list_name = par.list_name AND cur.parent_id = par.message_id
 ),
 
--- the root: the topmost archived ancestor (its own parent is absent or not in
--- the archive); the earliest-sent one when a cycle leaves none on top
+-- the root: the topmost archived ancestor (its own parent is absent or not
+-- archived); the earliest-sent one when a cycle leaves none on top
 roots AS (
   SELECT
     anc.list_name,
@@ -89,12 +73,17 @@ SELECT
   msg.message_id,
   msg.sent_ts,
   msg.sent_dt,
+  msg.author_name,
+  msg.author_email,
   msg.subject,
   msg.parent_id,
   rts.root_id,
   msg.parent_id IS null AS is_thread_start,
   msg.message_id = rts.root_id AS is_thread_root,
   crt.root_id IS NOT null AS is_fix_linked,
+  msg.bug_number,
+  msg.is_bug_root,
+  -- a message sent ON wrap Monday counts toward the NEXT release
   cal.scheduled_release_dt AS earliest_ship_release_dt
 FROM messages AS msg
 INNER JOIN roots AS rts ON msg.list_name = rts.list_name AND msg.message_id = rts.message_id

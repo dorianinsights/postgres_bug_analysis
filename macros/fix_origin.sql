@@ -4,7 +4,7 @@
   traces to pgsql-bugs makes the fix bug-sourced; else any that traces to
   pgsql-hackers; else no public trail, split by whether the fix is security work
   (embargoed on the private security@ list, so a missing trail is expected) or
-  the genuinely unsourceable remainder. Used by int_fix_origins (documented
+  the genuinely unsourceable remainder. Used by int_fix_profile (documented
   fixes) and int_committed_fixes (committed fixes) so the two fix populations
   are classified identically.
 #}

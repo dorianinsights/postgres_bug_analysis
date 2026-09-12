@@ -52,13 +52,10 @@ spine AS (
 
 documented AS (
   SELECT
-    reps.release_dt,
-    -- a fix none of whose annotated commits matched the corpus has no origin
-    -- row: no public trail, split by its CVE mention like the rest
-    COALESCE(org.origin, {{ resolve_fix_origin('false', 'false', 'reps.cves IS NOT null') }}) AS origin,
+    release_dt,
+    origin,
     COUNT(*) AS fix_cnt
-  FROM {{ ref('int_fix_reps') }} AS reps
-  LEFT JOIN {{ ref('int_fix_origins') }} AS org ON reps.item_ord = org.group_ord
+  FROM {{ ref('int_fix_profile') }}
   GROUP BY ALL
 ),
 

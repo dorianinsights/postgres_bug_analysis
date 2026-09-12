@@ -16,9 +16,8 @@ WITH anchor AS (
   -- signals to corpus releases. Derived, so the calendar moves with FIRST_MAJOR
   -- and carries no date literal; the relationships tests to dim_date guard
   -- that the fixed calendar spine still covers it.
-  SELECT MAKE_DATE(YEAR(MIN(tag_dt)) - 1, 2, 1) AS grid_start
-  FROM {{ ref('stg_git_tags') }}
-  WHERE tag_kind = 'release'
+  SELECT MAKE_DATE(YEAR(MIN(wrap_dt)) - 1, 2, 1) AS grid_start
+  FROM {{ ref('int_versions') }}
 ),
 
 month_starts AS (

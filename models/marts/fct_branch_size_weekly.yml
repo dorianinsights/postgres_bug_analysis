@@ -41,7 +41,7 @@ models:
       - name: subsystem
         description: >
           The area of the tree this row measures, from the subsystem_rules seed
-          (the same path taxonomy fct_fixes / int_fix_changes use), plus 'other'
+          (the same path taxonomy int_commit_files uses), plus 'other'
           for source files no rule matches.
         tests:
           - not_null

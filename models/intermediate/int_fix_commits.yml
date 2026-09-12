@@ -6,7 +6,7 @@ models:
       Bridge from each distinct fix (group_ord) to its implementing git commits,
       via the annotated 9-char hashes. commit_hash is NULL for annotation hashes
       with no matching corpus commit. Grain = (group_ord, abbrev_hash,
-      commit_hash). Reused by int_fix_changes / int_fix_origins /
+      commit_hash). Reused by int_fix_profile /
       int_fix_bug_links.
     columns:
       - name: group_ord

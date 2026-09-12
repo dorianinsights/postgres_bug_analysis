@@ -259,7 +259,8 @@ every object's name. Layers:
   report's outcome, `int_fix_bug_links` and `int_commit_origins`),
   `int_commit_profile` (per-commit file/line counts, churn and the
   dominant-subsystem vote over `int_commit_files`, carried by `dim_commit` and
-  read for a fix's representative commit by `int_fix_changes`),
+  read for a fix's representative commit by `int_fix_profile`, the per-fix
+  rollup of its commits: coverage, change profile and origin),
   `int_commit_ai_texts` / `int_thread_ai_texts` (the text the AI-involvement
   classifier reads: one per committed fix, one per thread root, capped at
   `var('ai_involvement_text_cap_chars')`, NO keyword pre-filter) and

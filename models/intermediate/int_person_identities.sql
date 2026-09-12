@@ -37,7 +37,7 @@ list_senders AS (
     list_name AS source_list,
     sent_ts AS seen_ts,
     sent_dt AS seen_dt
-  FROM {{ ref('stg_list_messages') }}
+  FROM {{ ref('int_message_threads') }}
 ),
 
 bug_reporters AS (

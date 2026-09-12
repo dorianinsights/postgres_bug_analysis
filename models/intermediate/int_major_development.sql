@@ -4,7 +4,7 @@
 -- between the previous major's fork point and this one's, plus the stable
 -- branch's pre-GA stabilization -- which is exactly `git rev-list
 -- REL_(M-1)_0..REL_M_0` (or ..HEAD for the in-progress major). dev_status comes
--- from the GA tag (stg_git_tags) and latest_milestone from the newest BETA/RC
+-- from the .0 release (int_versions) and latest_milestone from the newest BETA/RC
 -- tag (stg_git_prerelease_tags) while the major is in beta. Covers every major
 -- with a stable branch at/above the corpus floor, released AND in-progress.
 -- Replaces raw_major_development / stg_major_development. Grain = major.
@@ -29,10 +29,12 @@ per_major AS (
   GROUP BY ALL
 ),
 
-ga_majors AS (
-  SELECT DISTINCT major
-  FROM {{ ref('stg_git_tags') }}
-  WHERE tag_kind = 'release' AND minor = 0
+ga_versions AS (
+  SELECT
+    major,
+    release_dt AS ga_dt
+  FROM {{ ref('int_versions') }}
+  WHERE minor = 0
 ),
 
 latest_prerelease AS (
@@ -52,6 +54,7 @@ SELECT
     WHEN gam.major IS NOT null THEN 'GA'
     ELSE COALESCE(lpr.milestone, 'pre-beta')
   END AS latest_milestone,
+  gam.ga_dt,
   pmj.dev_commit_cnt,
   pmj.first_dev_commit_hash,
   pmj.first_dev_commit_ts,
@@ -60,5 +63,5 @@ SELECT
   pmj.last_dev_commit_ts,
   {{ utc_date('pmj.last_dev_commit_ts') }} AS last_dev_commit_dt
 FROM per_major AS pmj
-LEFT JOIN ga_majors AS gam ON pmj.major = gam.major
+LEFT JOIN ga_versions AS gam ON pmj.major = gam.major
 LEFT JOIN latest_prerelease AS lpr ON pmj.major = lpr.major

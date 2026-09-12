@@ -2,20 +2,14 @@
 -- release, the latest release tag within the wrap window before it (the OBSERVED
 -- wrap) must fall within a couple of days of a computed calendar wrap Monday.
 -- A row here means the schedule rule drifted from what the project actually did.
--- (Inlined here now that the cycle fact uses the computed calendar wraps
--- directly, rather than leaning on the former git_cycle_pace's observed wraps.)
 WITH observed_wraps AS (
   SELECT
     wvs.release_dt,
-    MAX((tag.tag_ts AT TIME ZONE 'utc')::DATE) AS observed_wrap_dt
+    MAX(ver.wrap_dt) AS observed_wrap_dt
   FROM {{ ref('int_releases') }} AS wvs
-  INNER JOIN {{ ref('stg_git_tags') }} AS tag
-    ON
-      (tag.tag_ts AT TIME ZONE 'utc')::DATE
-      BETWEEN wvs.release_dt - {{ var('wrap_tag_window_days') }} AND wvs.release_dt
-  WHERE
-    tag.tag_kind = 'release'
-    AND wvs.status = 'shipped' AND NOT wvs.is_out_of_band AND NOT wvs.is_partial_window
+  INNER JOIN {{ ref('int_versions') }} AS ver
+    ON ver.wrap_dt BETWEEN wvs.release_dt - {{ var('wrap_tag_window_days') }} AND wvs.release_dt
+  WHERE wvs.status = 'shipped' AND NOT wvs.is_out_of_band AND NOT wvs.is_partial_window
   GROUP BY ALL
 )
 

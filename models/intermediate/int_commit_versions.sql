@@ -36,8 +36,8 @@ WITH open_release AS (
 -- majors with a GA tag: only their stable branches carry pending (open) commits
 released_majors AS (
   SELECT DISTINCT major
-  FROM {{ ref('stg_git_tags') }}
-  WHERE tag_kind = 'release' AND minor = 0
+  FROM {{ ref('int_versions') }}
+  WHERE minor = 0
 )
 
 SELECT

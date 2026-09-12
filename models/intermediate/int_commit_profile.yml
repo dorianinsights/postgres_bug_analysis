@@ -6,7 +6,7 @@ models:
       Per-commit change profile rolled up once from int_commit_files: file
       count, line counts, total churn, test/docs involvement and the
       weighted-vote dominant_subsystem. dim_commit carries it per commit and
-      int_fix_changes reads its representative commit's row. Commits with no
+      int_fix_profile reads its representative commit's row. Commits with no
       file rows have no row. Grain = commit_hash.
     tests:
       - dbt_utils.expression_is_true:

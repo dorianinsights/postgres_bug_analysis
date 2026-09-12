@@ -3,8 +3,7 @@ _schema_version: "0.6.0"  # written automatically by dct migrate
 # outcomes — time to fix, backpatch breadth, emergency handling. Size comes
 # from the representative commit's diff (files + line churn); severity from
 # the CVSS v3 base score PostgreSQL publishes for each CVE. Data from the
-# transform/ dbt project (fct_fixes, which joins int_fix_changes +
-# int_fix_severity + the bug-report latency link).
+# transform/ dbt project (fct_fixes).
 #
 # Caveat worth stating up front: security fixes are reported through the
 # private security@ list and embargoed, so they almost never carry a public

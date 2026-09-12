@@ -3,13 +3,15 @@ version: 2
 models:
   - name: int_message_threads
     description: >
-      Every archived message with its thread resolved TRANSITIVELY: the direct
-      parent (In-Reply-To, else the last References id), the thread root (the
-      topmost archived ancestor reached by climbing the parent chain within the
-      list), whether it starts a thread (no parent header), whether it is its
-      thread's root (the earliest archived message), and whether its thread was
-      eventually cited by a commit Discussion: trailer.
-      Grain = (list_name, message_id).
+      The message-grain model: every archived message with its sender, its
+      thread resolved TRANSITIVELY (the direct parent -- In-Reply-To, else the
+      last References id -- and the thread root, the topmost archived ancestor
+      reached by climbing the parent chain within the list), whether it starts
+      a thread (no parent header), whether it is its thread's root (the
+      earliest archived message), whether its thread was eventually cited by a
+      commit Discussion: trailer, and for pgsql-bugs the BUG # the subject
+      carries (bug_number; is_bug_root marks the report itself, no Re:). The
+      body stays in stg_list_messages. Grain = (list_name, message_id).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -22,8 +24,14 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: NOT is_thread_root OR root_id = message_id
+      # a bug tag only ever comes from pgsql-bugs, and a bug root carries one
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (bug_number IS NULL OR list_name = 'pgsql-bugs') AND (NOT is_bug_root OR bug_number IS NOT NULL)
     columns:
       - name: message_id
+        tests: [not_null]
+      - name: sent_dt
         tests: [not_null]
       - name: parent_id
         description: The direct parent's message id; NULL when the message carries no reply header.
@@ -40,6 +48,14 @@ models:
       - name: is_thread_root
         tests: [not_null]
       - name: is_fix_linked
+        tests: [not_null]
+      - name: bug_number
+        description: The numbered pgsql-bugs report the subject names; NULL for free-form posts and other lists.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: is_bug_root
         tests: [not_null]
       - name: earliest_ship_release_dt
         description: >
