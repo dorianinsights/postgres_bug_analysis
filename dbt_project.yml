@@ -3,7 +3,8 @@ version: "1.0.0"
 profile: postgres_bug_analysis
 
 flags:
-  send_anonymous_usage_stats: false
+  send_anonymous_usage_stats: false  # no Snowplow usage events to dbt Labs
+  version_check: false               # no PyPI lookup / "Update available!" on every run
 
 model-paths: ["models"]
 seed-paths: ["seeds"]
