@@ -8,16 +8,13 @@ models:
       is_housekeeping (stamps, translation refreshes, release-notes drafting and
       the like: commits that are not fixes), and the real patch author from the
       Author: trailer. Every downstream commit reader starts here, not at
-      stg_git_commits. Grain = (branch, commit_hash).
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: [branch, commit_hash]
+      stg_git_commits. Grain = commit_hash (a hash lives on exactly one
+      branch, asserted on stg_git_commits).
     columns:
       - name: branch
         tests: [not_null]
       - name: commit_hash
-        tests: [not_null]
+        tests: [not_null, unique]
       - name: commit_ts
         tests: [not_null]
       - name: subject

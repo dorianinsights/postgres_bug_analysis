@@ -116,8 +116,7 @@ SELECT
   -- row is real; the flag exists for uniformity across all dimensions
   false AS is_synthetic_row
 FROM {{ ref('int_git_commits') }} AS gcm
-LEFT JOIN {{ ref('int_commit_versions') }} AS icv
-  ON gcm.branch = icv.branch AND gcm.commit_hash = icv.commit_hash
+LEFT JOIN {{ ref('int_commit_versions') }} AS icv ON gcm.commit_hash = icv.commit_hash
 LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
 -- the commit's file-level profile (churn, dominant subsystem), once per commit
 LEFT JOIN {{ ref('int_commit_profile') }} AS prf ON gcm.commit_hash = prf.commit_hash

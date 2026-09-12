@@ -13,11 +13,9 @@ models:
       and branch_scope, dim_version aggregates it for each version's first/last
       commit, int_committed_fixes builds the committed-fix population on it, and
       int_major_development aggregates the development commits per major.
-      Grain = (branch, commit_hash).
+      Grain = commit_hash (a hash lives on exactly one branch, asserted on
+      stg_git_commits).
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: [branch, commit_hash]
       # a release day exists exactly for the commits counting toward a minor
       # release: shipped (its release) or open (the next scheduled one)
       - dbt_utils.expression_is_true:
@@ -39,7 +37,7 @@ models:
       - name: branch
         tests: [not_null]
       - name: commit_hash
-        tests: [not_null]
+        tests: [not_null, unique]
       - name: commit_ts
         tests: [not_null]
       - name: commit_dt

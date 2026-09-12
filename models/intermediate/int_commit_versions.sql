@@ -26,7 +26,7 @@
 -- major's branch commits (e.g. 19.0) are 'development' like every major's
 -- pre-GA commits: 19.0 conforms to dim_version's in-development row but has no
 -- release day yet, so status keys on the tag-registered minor, not the version.
--- Grain = (branch, commit_hash).
+-- Grain = commit_hash.
 WITH open_release AS (
   SELECT release_dt
   FROM {{ ref('int_releases') }}
@@ -57,7 +57,6 @@ SELECT
       THEN (SELECT opn.release_dt FROM open_release AS opn)
   END AS ship_release_dt
 FROM {{ ref('int_git_commits') }} AS gcm
-LEFT JOIN {{ ref('stg_commit_versions') }} AS cvs
-  ON gcm.branch = cvs.branch AND gcm.commit_hash = cvs.commit_hash
+LEFT JOIN {{ ref('stg_commit_versions') }} AS cvs ON gcm.commit_hash = cvs.commit_hash
 LEFT JOIN {{ ref('int_versions') }} AS ver ON cvs.version = ver.version
 LEFT JOIN released_majors AS rmj ON gcm.branch = 'REL_' || rmj.major || '_STABLE'

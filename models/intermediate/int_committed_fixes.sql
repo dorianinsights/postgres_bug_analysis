@@ -27,8 +27,7 @@ WITH stable_commits AS (
     igc.fix_key,
     icv.ship_release_dt AS release_dt
   FROM {{ ref('int_git_commits') }} AS igc
-  INNER JOIN {{ ref('int_commit_versions') }} AS icv
-    ON igc.branch = icv.branch AND igc.commit_hash = icv.commit_hash
+  INNER JOIN {{ ref('int_commit_versions') }} AS icv ON igc.commit_hash = icv.commit_hash
   -- the backpatch stream only: shipped in a minor, or pending for the open one
   -- (a major's pre-GA 'development' commits are not minor-release fixes)
   WHERE icv.release_status IN ('shipped', 'open') AND NOT igc.is_housekeeping

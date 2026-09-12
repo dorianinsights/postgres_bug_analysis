@@ -6,16 +6,18 @@ models:
       Typed commit -> version mapping by EXACT git tag ancestry (from
       raw_commit_versions): a shipped minor M.N, or M.0 for a major's development
       (master between fork points + the branch's pre-GA stabilization). Pending
-      commits and master after the newest fork are absent.
-      Grain = (branch, commit_hash).
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: [branch, commit_hash]
+      commits and master after the newest fork are absent. A subset of
+      stg_git_commits, keyed like it on commit_hash alone. Grain = commit_hash.
     columns:
       - name: branch
         tests: [not_null]
       - name: commit_hash
-        tests: [not_null]
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_git_commits')
+                field: commit_hash
       - name: version
         tests: [not_null]

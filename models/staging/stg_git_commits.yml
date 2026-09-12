@@ -2,11 +2,13 @@ version: 2
 
 models:
   - name: stg_git_commits
-    description: One commit per branch since the corpus history floor.
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: [branch, commit_hash]
+    description: >
+      One commit per branch since the corpus history floor. A hash appears on
+      exactly one branch: each branch's range is tag-bounded (a stable branch
+      from its fork point, master from the corpus floor), so ranges are
+      disjoint, and PostgreSQL backpatches by cherry-pick (a new hash), never by
+      merge. The commit side keys on commit_hash alone (dim_commit's PK) on
+      that invariant, so it is asserted here at the source. Grain = commit_hash.
     columns:
       - name: branch
         tests:
@@ -19,6 +21,7 @@ models:
       - name: commit_hash
         tests:
           - not_null
+          - unique
           - dbt_expectations.expect_column_values_to_match_regex:
               arguments:
                 regex: '^[0-9a-f]{40}$'
