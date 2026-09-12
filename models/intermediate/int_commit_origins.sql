@@ -1,17 +1,9 @@
-WITH thread_links AS (
-  SELECT
-    dsc.commit_hash,
-    ths.source_list
-  FROM {{ ref('int_commit_discussions') }} AS dsc
-  LEFT OUTER JOIN {{ ref('int_thread_sources') }} AS ths ON dsc.message_id = ths.message_id
-),
-
-per_commit AS (
+WITH per_commit AS (
   SELECT
     commit_hash,
     BOOL_OR(source_list = 'pgsql-bugs') AS has_bugs_thread,
     BOOL_OR(source_list = 'pgsql-hackers') AS has_hackers_thread
-  FROM thread_links
+  FROM {{ ref('int_commit_discussions') }}
   GROUP BY ALL
 ),
 

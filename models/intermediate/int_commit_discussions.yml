@@ -6,7 +6,13 @@ models:
       (commit_hash, message_id) from Discussion: trailers in commit bodies
       — the ground-truth link from fixes to mailing-list threads. Both URL
       spellings occur (postgr.es/m/ and postgresql.org/message-id/), and
-      percent-encoded ids are decoded to the bare canonical form.
+      percent-encoded ids are decoded to the bare canonical form. source_list
+      is the archive that claims the cited id: a cross-posted message (about
+      1,400 ids sit on both lists) resolves to pgsql-bugs, since a citation of
+      a BUG thread means the work traces to a filed report; NULL when the id is
+      not in the archive (pre-corpus, or a list we don't ingest). Reads
+      stg_list_messages rather than int_message_threads because the thread
+      model depends on this one. Grain = (commit_hash, message_id).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -16,3 +22,8 @@ models:
         tests: [not_null]
       - name: message_id
         tests: [not_null]
+      - name: source_list
+        tests:
+          - accepted_values:
+              arguments:
+                values: [pgsql-bugs, pgsql-hackers]
