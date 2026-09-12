@@ -9,9 +9,9 @@ models:
       reached by climbing the parent chain within the list), whether it starts
       a thread (no parent header), whether it is its thread's root (the
       earliest archived message), whether its thread was eventually cited by a
-      commit Discussion: trailer, and for pgsql-bugs the BUG # the subject
-      carries (bug_number; is_bug_root marks the report itself, no Re:). The
-      body stays in stg_list_messages. Grain = (list_name, message_id).
+      commit Discussion: trailer, plus the pgsql-bugs report tag parsed in
+      staging (bug_number, is_bug_root). The body stays in stg_list_messages.
+      Grain = (list_name, message_id).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -24,10 +24,6 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: NOT is_thread_root OR root_id = message_id
-      # a bug tag only ever comes from pgsql-bugs, and a bug root carries one
-      - dbt_utils.expression_is_true:
-          arguments:
-            expression: (bug_number IS NULL OR list_name = 'pgsql-bugs') AND (NOT is_bug_root OR bug_number IS NOT NULL)
     columns:
       - name: message_id
         tests: [not_null]

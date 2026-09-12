@@ -1,12 +1,12 @@
 WITH bug_agg AS (
   -- the primary bug is the fastest-resolved linked report
   SELECT
-    fbl.item_ord,
+    bfb.item_ord,
     COUNT(*)::BIGINT AS bug_link_cnt,
-    MIN(rpt.days_to_commit) AS days_to_fix_min,
-    FIRST(fbl.bug_number ORDER BY rpt.days_to_commit ASC NULLS LAST, fbl.bug_number ASC) AS primary_bug_number
-  FROM {{ ref('int_fix_bug_links') }} AS fbl
-  INNER JOIN {{ ref('int_bug_reports') }} AS rpt ON fbl.bug_number = rpt.bug_number
+    MIN(dbg.days_to_commit) AS days_to_fix_min,
+    FIRST(dbg.dim_bug_key ORDER BY dbg.days_to_commit ASC NULLS LAST, dbg.bug_number ASC) AS primary_dim_bug_key
+  FROM {{ ref('bridge_fix_bug') }} AS bfb
+  INNER JOIN {{ ref('dim_bug') }} AS dbg ON bfb.dim_bug_key = dbg.dim_bug_key
   GROUP BY ALL
 ),
 
@@ -29,7 +29,7 @@ SELECT
   prf.item_ord,
   COALESCE(drl.dim_release_key, {{ unknown_key() }}) AS dim_release_key,
   COALESCE(dvr.dim_version_key, {{ unknown_key() }}) AS dim_version_key,
-  COALESCE(dbg.dim_bug_key, {{ not_applicable_key() }}) AS primary_dim_bug_key,
+  COALESCE(bag.primary_dim_bug_key, {{ not_applicable_key() }}) AS primary_dim_bug_key,
   prf.release_dt,
   prf.item_index,
   reps.summary,
@@ -70,4 +70,3 @@ LEFT OUTER JOIN bug_agg AS bag ON prf.item_ord = bag.item_ord
 -- surrogate keys come from the dimensions, never recomputed here
 LEFT OUTER JOIN {{ ref('dim_release') }} AS drl ON prf.release_dt = drl.release_dt
 LEFT OUTER JOIN {{ ref('dim_version') }} AS dvr ON prf.version = dvr.version
-LEFT OUTER JOIN {{ ref('dim_bug') }} AS dbg ON bag.primary_bug_number = dbg.bug_number

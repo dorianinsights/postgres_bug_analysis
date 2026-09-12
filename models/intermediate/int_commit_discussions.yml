@@ -4,9 +4,8 @@ models:
   - name: int_commit_discussions
     description: >
       (commit_hash, message_id) from Discussion: trailers in commit bodies
-      — the ground-truth link from fixes to mailing-list threads. Both URL
-      spellings occur (postgr.es/m/ and postgresql.org/message-id/), and
-      percent-encoded ids are decoded to the bare canonical form. source_list
+      — the ground-truth link from fixes to mailing-list threads, unnested
+      from int_git_commits.discussion_refs (where the body is parsed). source_list
       is the archive that claims the cited id: a cross-posted message (about
       1,400 ids sit on both lists) resolves to pgsql-bugs, since a citation of
       a BUG thread means the work traces to a filed report; NULL when the id is
@@ -27,3 +26,9 @@ models:
           - accepted_values:
               arguments:
                 values: [pgsql-bugs, pgsql-hackers]
+      - name: bug_number
+        description: The numbered pgsql-bugs report the cited message belongs to; NULL for hackers threads, free-form bug posts and unarchived ids.
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "IS NULL OR source_list = 'pgsql-bugs'"

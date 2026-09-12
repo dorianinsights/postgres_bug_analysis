@@ -4,7 +4,10 @@ models:
   - name: bridge_fix_bug
     description: >
       Fix<->bug bridge -> data/derived/bridge_fix_bug.csv: one row per
-      (fix, bug report). Grain = (item_ord, dim_bug_key).
+      (fix, bug report), through the fix's implementing commits
+      (int_fix_commits) and their commit -> bug links (int_commit_bug_links);
+      the dim_bug join restricts it to corpus-window reports. fct_fixes rolls
+      it up for bug_link_cnt and the primary bug. Grain = (item_ord, dim_bug_key).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

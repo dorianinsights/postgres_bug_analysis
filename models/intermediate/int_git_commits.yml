@@ -13,10 +13,31 @@ models:
       excluded from every fix count. patch_author_*: the REAL patch author --
       PostgreSQL sets the git author to the committer and credits the
       contributor in the body's "Author: Name <email>" trailer (about 42% of
-      commits), so it is that trailer when present, else the committer. Every
-      downstream commit reader starts here, not at stg_git_commits.
-      Grain = commit_hash (a hash lives on exactly one branch, asserted on
-      stg_git_commits).
+      commits), so it is that trailer when present, else the committer.
+      bug_refs / discussion_refs: the body's "Bug: #NNNNN" numbers and its
+      Discussion: trailer message ids (both URL spellings, percent-decoded to
+      the bare id), each a sorted distinct list or NULL -- every parse of the
+      commit body lives here, and int_commit_bug_links / int_commit_discussions
+      just unnest them. Every downstream commit reader starts here, not at
+      stg_git_commits. Grain = commit_hash (a hash lives on exactly one branch,
+      asserted on stg_git_commits).
+    tests:
+      - dbt_utils.expression_is_true:
+          config:
+            where: "bug_refs IS NOT NULL"
+          arguments:
+            expression: >-
+              LEN(bug_refs) >= 1
+              AND bug_refs = LIST_SORT(LIST_DISTINCT(bug_refs))
+              AND LEN(LIST_FILTER(bug_refs, num -> num < 1)) = 0
+      - dbt_utils.expression_is_true:
+          config:
+            where: "discussion_refs IS NOT NULL"
+          arguments:
+            expression: >-
+              LEN(discussion_refs) >= 1
+              AND discussion_refs = LIST_SORT(LIST_DISTINCT(discussion_refs))
+              AND LEN(LIST_FILTER(discussion_refs, msg -> msg = '' OR msg LIKE '%<%' OR msg LIKE '%>%')) = 0
     columns:
       - name: branch
         tests: [not_null]
@@ -25,6 +46,20 @@ models:
       - name: commit_ts
         tests: [not_null]
       - name: subject
+        tests: [not_null]
+      - name: body_author_name
+        description: The name in the body's "Author:" trailer; NULL when the committer wrote the patch.
+      - name: body_author_email
+        description: The email in the body's "Author:" trailer; NULL when the committer wrote the patch.
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "IS NOT NULL = (body_author_name IS NOT NULL)"
+      - name: patch_author_name
+        description: body_author_name, else committer_name.
+        tests: [not_null]
+      - name: patch_author_email
+        description: body_author_email, else committer_email.
         tests: [not_null]
       - name: fix_key
         description: LOWER(TRIM(subject)) with internal whitespace collapsed; the single dedup key for "distinct fix commits".

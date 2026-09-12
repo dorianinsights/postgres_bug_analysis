@@ -8,14 +8,20 @@ models:
       identity commit Discussion trailers use), TIMESTAMPTZ sent_ts from the
       Date header (strict cast), author name/email split, threading headers
       (in_reply_to bare; reference_ids as the VARCHAR[] of the References
-      header's ids, ancestors oldest first), full text body. Empty strings and
-      empty lists become NULL. Grain = (list_name, message_id).
+      header's ids, ancestors oldest first), full text body, and for pgsql-bugs
+      the numbered report the subject names (bug_number; is_bug_root marks the
+      report itself, no Re:). Empty strings and empty lists become NULL.
+      Grain = (list_name, message_id).
     tests:
       - dbt_utils.expression_is_true:
           config:
             where: "reference_ids IS NOT NULL"
           arguments:
             expression: "LEN(reference_ids) >= 1 AND LEN(LIST_FILTER(reference_ids, ref -> ref = '')) = 0"
+      # a bug tag only ever comes from pgsql-bugs, and a bug root carries one
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (bug_number IS NULL OR list_name = 'pgsql-bugs') AND (NOT is_bug_root OR bug_number IS NOT NULL)
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -63,6 +69,14 @@ models:
         description: >
           NULL for the rare message sent with no Subject header (2 in the
           corpus) — sender-controlled, so not tested not_null.
+      - name: bug_number
+        description: The numbered pgsql-bugs report the subject names; NULL for free-form posts and other lists.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: is_bug_root
+        tests: [not_null]
       - name: body_text
         description: >
           NULL for the rare message with no text part (1 in the corpus) —

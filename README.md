@@ -256,7 +256,7 @@ every object's name. Layers:
   per-release rollup of both populations + documentation rate lives on
   `dim_release`), `int_commit_bug_links` (every commit -> bug-report link, by
   Discussion trailer or `Bug: #` mention -- read by `int_bug_reports` for the
-  report's outcome, `int_fix_bug_links` and `int_commit_origins`),
+  report's outcome and `bridge_fix_bug`),
   `int_commit_profile` (per-commit file/line counts, churn and the
   dominant-subsystem vote over `int_commit_files`, carried by `dim_commit` and
   read for a fix's representative commit by `int_fix_profile`, the per-fix

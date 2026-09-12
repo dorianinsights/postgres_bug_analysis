@@ -13,12 +13,8 @@ WITH RECURSIVE messages AS (
       NULLIF(REGEXP_EXTRACT(in_reply_to, '^([^\s<>]+)', 1), ''),
       reference_ids[-1]
     ) AS parent_id,
-    -- the pgsql-bugs web form gives every report a "BUG #NNNNN:" subject and
-    -- replies keep it after "Re:"
-    CASE
-      WHEN list_name = 'pgsql-bugs' THEN NULLIF(REGEXP_EXTRACT(subject, 'BUG #(\d+):', 1), '')::INTEGER
-    END AS bug_number,
-    list_name = 'pgsql-bugs' AND COALESCE(REGEXP_MATCHES(subject, '^BUG #\d+:'), false) AS is_bug_root
+    bug_number,
+    is_bug_root
   FROM {{ ref('stg_list_messages') }}
 ),
 
