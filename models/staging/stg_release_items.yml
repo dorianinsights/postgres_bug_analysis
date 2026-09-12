@@ -29,6 +29,11 @@ models:
                 min_value: "{{ var('test_floor_release_dt') }}"
                 max_value: current_date
       - name: item_index
+        description: >
+          The item's zero-based position in its release's "Changes" list,
+          assigned by the SGML parser (not recorded by PostgreSQL). Restarts per
+          version, so it is only meaningful paired with version; it is the key
+          that ties stg_item_commits' annotations back to their item.
         tests:
           - not_null
           - dbt_utils.accepted_range:

@@ -26,6 +26,10 @@ models:
                 to: ref('int_versions')
                 field: version
       - name: item_index
+        description: >
+          The annotated item's zero-based position in its release's "Changes"
+          list, from the same SGML parse that numbers stg_release_items, so
+          (version, item_index) joins the two exactly.
         tests:
           - not_null
           - dbt_utils.accepted_range:

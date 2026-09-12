@@ -3,7 +3,7 @@ version: 2
 models:
   - name: int_fix_cves
     description: >
-      One row per (distinct fix, CVE) — the fix cves list exploded once. Grain =
+      One row per (distinct fix, CVE) — the fix's cves list unnested once. Grain =
       (item_ord, cve_id). Reused by dim_cve, bridge_fix_cve, fct_fixes (worst
       severity per fix) and dim_release (distinct CVEs per release).
     tests:

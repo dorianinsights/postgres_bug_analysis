@@ -54,6 +54,8 @@ models:
                 to: ref('dim_version')
                 field: dim_version_key
           - not_unknown_member
+      - name: cves
+        description: The CVE ids the fix's release-notes item names, VARCHAR[] sorted and distinct; NULL when none (bridge_fix_cve has the per-CVE rows).
       - name: category
         description: >
           The fix's content category (int_fix_content_categories, via the

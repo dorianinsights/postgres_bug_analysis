@@ -3,10 +3,11 @@ version: 2
 models:
   - name: int_fix_reps
     description: >
-      One representative item per distinct fix — its text, CVEs, keys and the
-      size of its dedup group (branch_item_cnt: the branch files it was
-      documented in), with no category (assigned downstream by
-      int_fix_content_categories). Grain = item_ord (= its group's group_ord).
+      One representative item per distinct fix — its text, CVEs (cves, a
+      VARCHAR[]; NULL when none) and the size of its dedup group
+      (branch_item_cnt: the branch files it was documented in), with no
+      category (assigned downstream by int_fix_content_categories).
+      Grain = item_ord (= its group's group_ord).
     columns:
       - name: item_ord
         tests:

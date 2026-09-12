@@ -4,18 +4,37 @@ models:
   - name: int_fix_items
     description: >
       Every changelog item that counts as a fix (a minor release, not a routine
-      time-zone-data refresh), with the CVEs extracted from its text and the two
-      dedup keys: text_key (the summary lowercased, whitespace collapsed, "§"
-      footnote markers stripped -- the wording the notes author copies verbatim
-      between branch files) and hash_key (the exact sorted set of annotated
-      commit hashes from item_commits; NULL when unannotated). item_ord numbers
-      items in file order (major, minor, item_index) so the dedup's
-      representative is the first item of each group in file order.
+      time-zone-data refresh), with the CVEs extracted from its text (cves, a
+      sorted list; NULL when none) and the two dedup keys: text_key (the summary
+      lowercased, whitespace collapsed, "§" footnote markers stripped -- the
+      wording the notes author copies verbatim between branch files) and
+      hash_set (the sorted list of annotated commit hashes from item_commits;
+      NULL when unannotated). int_fix_groups turns them into join keys.
+      item_ord numbers items in file order (major, minor, item_index) so the
+      dedup's representative is the first item of each group in file order.
       Grain = (version, item_index); item_ord is a dense file-order ordinal.
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [version, item_index]
+      # a present list is non-empty, sorted and distinct, and every element has
+      # the right shape
+      - dbt_utils.expression_is_true:
+          config:
+            where: "cves IS NOT NULL"
+          arguments:
+            expression: >-
+              LEN(cves) >= 1
+              AND cves = LIST_SORT(LIST_DISTINCT(cves))
+              AND LEN(LIST_FILTER(cves, cve -> NOT REGEXP_MATCHES(cve, '^CVE-\d{4}-\d+$'))) = 0
+      - dbt_utils.expression_is_true:
+          config:
+            where: "hash_set IS NOT NULL"
+          arguments:
+            expression: >-
+              LEN(hash_set) >= 1
+              AND hash_set = LIST_SORT(LIST_DISTINCT(hash_set))
+              AND LEN(LIST_FILTER(hash_set, hsh -> NOT REGEXP_MATCHES(hsh, '^[0-9a-f]+$'))) = 0
     columns:
       - name: item_ord
         tests:
@@ -44,23 +63,10 @@ models:
       - name: full_text
         tests: [not_null]
       - name: cves
-        tests:
-          # Derived from full_text; NULL when the item mentions no CVE,
-          # else sorted distinct ids joined by semicolons.
-          - dbt_expectations.expect_column_values_to_match_regex:
-              arguments:
-                regex: '^CVE-\d{4}-\d+(;CVE-\d{4}-\d+)*$'
+        description: The CVE ids the item's text names, VARCHAR[] sorted and distinct; NULL when it names none.
       - name: text_key
         tests:
           - not_null
-          # Prefix plus a non-empty normalized payload.
-          - dbt_expectations.expect_column_values_to_match_regex:
-              arguments:
-                regex: '^t:.+$'
-      - name: hash_key
-        tests:
-          # Nullable (items without commit annotations); when present, the
-          # prefix plus a comma-joined sorted list of hex hashes.
-          - dbt_expectations.expect_column_values_to_match_regex:
-              arguments:
-                regex: '^h:[0-9a-f]+(,[0-9a-f]+)*$'
+          - dbt_utils.not_empty_string
+      - name: hash_set
+        description: The item's annotated commit hashes (9-char), VARCHAR[] sorted and distinct; NULL when unannotated.
