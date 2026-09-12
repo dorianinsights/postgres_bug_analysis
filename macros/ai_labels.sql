@@ -31,7 +31,7 @@ SELECT
   END AS ai_label_source,
   mdl.rationale AS ai_rationale
 FROM {{ ref(model_name) }} AS mdl
-LEFT JOIN {{ ref('ai_involvement_reviews') }} AS rev
+LEFT OUTER JOIN {{ ref('ai_involvement_reviews') }} AS rev
   ON
     rev.population = '{{ population }}'
     {%- for col in key_columns %}

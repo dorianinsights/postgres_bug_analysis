@@ -8,7 +8,7 @@ WITH classified AS (
     CAST(rbs.code_lines AS BIGINT) AS code_lines,
     CAST(rbs.file_cnt AS BIGINT) AS file_cnt
   FROM {{ ref('raw_branch_size_weekly') }} AS rbs
-  LEFT JOIN {{ ref('file_class_rules') }} AS fcr ON rbs.extension = fcr.extension
+  LEFT OUTER JOIN {{ ref('file_class_rules') }} AS fcr ON rbs.extension = fcr.extension
 )
 
 SELECT

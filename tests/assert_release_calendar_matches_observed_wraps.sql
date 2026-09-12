@@ -17,6 +17,6 @@ SELECT
   obs.release_dt,
   obs.observed_wrap_dt
 FROM observed_wraps AS obs
-LEFT JOIN {{ ref('int_release_calendar') }} AS cal
+LEFT OUTER JOIN {{ ref('int_release_calendar') }} AS cal
   ON obs.observed_wrap_dt BETWEEN cal.wrap_dt AND cal.wrap_dt + 2
 WHERE cal.wrap_dt IS null

@@ -8,6 +8,6 @@ WITH group_ids AS (
 
 SELECT gid.group_ord
 FROM group_ids AS gid
-LEFT JOIN {{ ref('int_fix_groups') }} AS grp
+LEFT OUTER JOIN {{ ref('int_fix_groups') }} AS grp
   ON gid.group_ord = grp.item_ord AND gid.group_ord = grp.group_ord
 WHERE grp.item_ord IS null

@@ -61,5 +61,5 @@ SELECT
   (fix_cnt::DECIMAL(15, 6) / NULLIF(committed_fix_cnt, 0))::DECIMAL(7, 6) AS documentation_rate,
   (fix_cnt::DECIMAL(18, 6) / NULLIF(SUM(fix_cnt) OVER (PARTITION BY spn.release_dt), 0))::DECIMAL(7, 6) AS fix_share
 FROM spine AS spn
-LEFT JOIN documented AS doc ON spn.release_dt = doc.release_dt AND spn.origin = doc.origin
-LEFT JOIN committed AS cmt ON spn.release_dt = cmt.release_dt AND spn.origin = cmt.origin
+LEFT OUTER JOIN documented AS doc ON spn.release_dt = doc.release_dt AND spn.origin = doc.origin
+LEFT OUTER JOIN committed AS cmt ON spn.release_dt = cmt.release_dt AND spn.origin = cmt.origin

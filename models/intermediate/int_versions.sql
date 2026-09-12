@@ -26,4 +26,4 @@ SELECT
   wrp.wrap_dt + (((4 - ISODOW(wrp.wrap_dt)) + 7) % 7)::INTEGER AS release_dt,
   itc.item_cnt
 FROM wraps AS wrp
-LEFT JOIN item_counts AS itc ON wrp.version = itc.version
+LEFT OUTER JOIN item_counts AS itc ON wrp.version = itc.version

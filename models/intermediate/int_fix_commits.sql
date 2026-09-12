@@ -23,4 +23,4 @@ SELECT
   cmt.branch,
   cmt.commit_ts
 FROM fix_hashes AS fhs
-LEFT JOIN corpus_commits AS cmt ON LEFT(cmt.commit_hash, 9) = fhs.abbrev_hash
+LEFT OUTER JOIN corpus_commits AS cmt ON LEFT(cmt.commit_hash, 9) = fhs.abbrev_hash

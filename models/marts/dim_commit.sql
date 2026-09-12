@@ -82,19 +82,19 @@ SELECT
   -- row is real; the flag exists for uniformity across all dimensions
   false AS is_synthetic_row
 FROM {{ ref('int_git_commits') }} AS gcm
-LEFT JOIN {{ ref('int_commit_versions') }} AS icv ON gcm.commit_hash = icv.commit_hash
-LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
+LEFT OUTER JOIN {{ ref('int_commit_versions') }} AS icv ON gcm.commit_hash = icv.commit_hash
+LEFT OUTER JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
 -- the commit's file-level profile (churn, dominant subsystem), once per commit
-LEFT JOIN {{ ref('int_commit_profile') }} AS prf ON gcm.commit_hash = prf.commit_hash
-LEFT JOIN documented AS dfx ON gcm.commit_hash = dfx.commit_hash
+LEFT OUTER JOIN {{ ref('int_commit_profile') }} AS prf ON gcm.commit_hash = prf.commit_hash
+LEFT OUTER JOIN documented AS dfx ON gcm.commit_hash = dfx.commit_hash
 -- one label row per fix_key (int_commit_ai_texts covers every commit)
-LEFT JOIN {{ ref('int_commit_ai_labels') }} AS ail ON gcm.fix_key = ail.fix_key
+LEFT OUTER JOIN {{ ref('int_commit_ai_labels') }} AS ail ON gcm.fix_key = ail.fix_key
 -- the release (shipped or open) from the registry that mints its key, and the
 -- shipped minor from dim_version (1:1 on version)
-LEFT JOIN {{ ref('int_releases') }} AS irl ON icv.ship_release_dt = irl.release_dt
-LEFT JOIN {{ ref('dim_version') }} AS dvr ON icv.version = dvr.version
-LEFT JOIN {{ ref('dim_major') }} AS dmj ON gcm.branch = dmj.stable_branch
-LEFT JOIN {{ ref('int_person_map') }} AS pmp_a
+LEFT OUTER JOIN {{ ref('int_releases') }} AS irl ON icv.ship_release_dt = irl.release_dt
+LEFT OUTER JOIN {{ ref('dim_version') }} AS dvr ON icv.version = dvr.version
+LEFT OUTER JOIN {{ ref('dim_major') }} AS dmj ON gcm.branch = dmj.stable_branch
+LEFT OUTER JOIN {{ ref('int_person_map') }} AS pmp_a
   ON pmp_a.node_id = {{ person_node('gcm.patch_author_email', 'gcm.patch_author_name') }}
-LEFT JOIN {{ ref('int_person_map') }} AS pmp_c
+LEFT OUTER JOIN {{ ref('int_person_map') }} AS pmp_c
   ON pmp_c.node_id = {{ person_node('gcm.committer_email', 'gcm.committer_name') }}

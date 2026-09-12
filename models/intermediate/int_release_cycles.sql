@@ -76,9 +76,9 @@ SELECT
   COALESCE(fxc.first_window_fix_cnt, 0) AS first_window_fix_cnt
 FROM cycles AS cyc
 CROSS JOIN age
-LEFT JOIN early_reports AS erp ON cyc.cycle_start_dt = erp.cycle_start_dt
-LEFT JOIN early_messages AS ems ON cyc.cycle_start_dt = ems.cycle_start_dt
-LEFT JOIN fix_counts AS fxc ON cyc.cycle_start_dt = fxc.cycle_start_dt
+LEFT OUTER JOIN early_reports AS erp ON cyc.cycle_start_dt = erp.cycle_start_dt
+LEFT OUTER JOIN early_messages AS ems ON cyc.cycle_start_dt = ems.cycle_start_dt
+LEFT OUTER JOIN fix_counts AS fxc ON cyc.cycle_start_dt = fxc.cycle_start_dt
 -- started cycles only, and only those shipping a corpus release (or still open)
 WHERE
   cyc.cycle_start_dt <= {{ as_of_date() }}

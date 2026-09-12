@@ -123,8 +123,8 @@ origin_factors AS (
     AVG(COALESCE(doc.fix_cnt, 0)) AS documented_avg
   FROM comparators AS cmp
   CROSS JOIN origins AS org
-  LEFT JOIN documented_by_release AS doc ON cmp.release_dt = doc.release_dt AND org.origin = doc.origin
-  LEFT JOIN early_committed_by_cycle AS ecm ON cmp.release_dt = ecm.ships_at_dt AND org.origin = ecm.origin
+  LEFT OUTER JOIN documented_by_release AS doc ON cmp.release_dt = doc.release_dt AND org.origin = doc.origin
+  LEFT OUTER JOIN early_committed_by_cycle AS ecm ON cmp.release_dt = ecm.ships_at_dt AND org.origin = ecm.origin
   GROUP BY ALL
 ),
 
@@ -144,7 +144,7 @@ origin_projection AS (
     ) AS projected_fix_cnt
   FROM targets AS tgt
   INNER JOIN origin_factors AS fac ON tgt.dim_release_key = fac.dim_release_key
-  LEFT JOIN early_committed_by_cycle AS ecm ON tgt.release_dt = ecm.ships_at_dt AND fac.origin = ecm.origin
+  LEFT OUTER JOIN early_committed_by_cycle AS ecm ON tgt.release_dt = ecm.ships_at_dt AND fac.origin = ecm.origin
   WHERE tgt.window_days >= {{ var('projection_min_window_days') }}
   GROUP BY tgt.dim_release_key
 ),

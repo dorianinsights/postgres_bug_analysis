@@ -19,7 +19,7 @@ SELECT
   sev.cve_id IS null AS is_severity_unlisted,
   false AS is_synthetic_row
 FROM corpus_cves AS cvs
-LEFT JOIN {{ ref('stg_cve_severity') }} AS sev ON cvs.cve_id = sev.cve_id
+LEFT OUTER JOIN {{ ref('stg_cve_severity') }} AS sev ON cvs.cve_id = sev.cve_id
 {{ special_member_rows(
   'dim_cve_key', columns,
   unknown={'cve_id': "'(unknown)'", 'is_severity_unlisted': 'true'},

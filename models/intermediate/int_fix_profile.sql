@@ -47,7 +47,7 @@ SELECT
     'COALESCE(org.from_bugs, false)', 'COALESCE(org.from_hackers, false)', 'reps.cves IS NOT null'
   ) }} AS origin
 FROM {{ ref('int_fix_reps') }} AS reps
-LEFT JOIN coverage AS cov ON reps.item_ord = cov.group_ord
-LEFT JOIN rep_commit AS rpc ON reps.item_ord = rpc.group_ord
-LEFT JOIN {{ ref('int_commit_profile') }} AS prf ON rpc.commit_hash = prf.commit_hash
-LEFT JOIN origins AS org ON reps.item_ord = org.group_ord
+LEFT OUTER JOIN coverage AS cov ON reps.item_ord = cov.group_ord
+LEFT OUTER JOIN rep_commit AS rpc ON reps.item_ord = rpc.group_ord
+LEFT OUTER JOIN {{ ref('int_commit_profile') }} AS prf ON rpc.commit_hash = prf.commit_hash
+LEFT OUTER JOIN origins AS org ON reps.item_ord = org.group_ord

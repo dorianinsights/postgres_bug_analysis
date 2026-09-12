@@ -27,6 +27,6 @@ SELECT
     WHEN 'open' THEN (SELECT opn.release_dt FROM open_release AS opn)
   END AS ship_release_dt
 FROM {{ ref('int_git_commits') }} AS gcm
-LEFT JOIN {{ ref('stg_commit_versions') }} AS cvs ON gcm.commit_hash = cvs.commit_hash
-LEFT JOIN {{ ref('int_versions') }} AS ver ON cvs.version = ver.version
-LEFT JOIN released_majors AS rmj ON gcm.branch = 'REL_' || rmj.major || '_STABLE'
+LEFT OUTER JOIN {{ ref('stg_commit_versions') }} AS cvs ON gcm.commit_hash = cvs.commit_hash
+LEFT OUTER JOIN {{ ref('int_versions') }} AS ver ON cvs.version = ver.version
+LEFT OUTER JOIN released_majors AS rmj ON gcm.branch = 'REL_' || rmj.major || '_STABLE'

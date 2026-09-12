@@ -53,5 +53,5 @@ SELECT
   pmj.last_dev_commit_ts,
   {{ utc_date('pmj.last_dev_commit_ts') }} AS last_dev_commit_dt
 FROM per_major AS pmj
-LEFT JOIN ga_versions AS gam ON pmj.major = gam.major
-LEFT JOIN latest_prerelease AS lpr ON pmj.major = lpr.major
+LEFT OUTER JOIN ga_versions AS gam ON pmj.major = gam.major
+LEFT OUTER JOIN latest_prerelease AS lpr ON pmj.major = lpr.major

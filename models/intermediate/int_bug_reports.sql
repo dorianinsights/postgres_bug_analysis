@@ -62,4 +62,4 @@ FROM roots
 INNER JOIN threads ON roots.bug_number = threads.bug_number
 INNER JOIN {{ ref('stg_list_messages') }} AS slm
   ON roots.root_message_id = slm.message_id AND slm.list_name = 'pgsql-bugs'
-LEFT JOIN outcomes AS otc ON roots.bug_number = otc.bug_number
+LEFT OUTER JOIN outcomes AS otc ON roots.bug_number = otc.bug_number

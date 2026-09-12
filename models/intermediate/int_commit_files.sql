@@ -17,8 +17,8 @@ SELECT
   cfl.lines_added,
   cfl.lines_deleted
 FROM {{ ref('stg_commit_files') }} AS cfl
-LEFT JOIN file_rules AS fru
+LEFT OUTER JOIN file_rules AS fru
   ON cfl.commit_hash = fru.commit_hash AND cfl.file_path = fru.file_path
-LEFT JOIN {{ ref('subsystem_rules') }} AS rules ON fru.match_order = rules.match_order
-LEFT JOIN {{ ref('file_class_rules') }} AS fcr
+LEFT OUTER JOIN {{ ref('subsystem_rules') }} AS rules ON fru.match_order = rules.match_order
+LEFT OUTER JOIN {{ ref('file_class_rules') }} AS fcr
   ON LOWER(REGEXP_EXTRACT(cfl.file_path, '\.([A-Za-z0-9]+)$', 1)) = fcr.extension

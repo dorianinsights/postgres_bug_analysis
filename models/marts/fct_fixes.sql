@@ -21,7 +21,7 @@ severity AS (
     ARG_MAX(sev.severity_band, sev.cvss_base_score) AS severity_band,
     ARG_MAX(sev.severity_band_order, sev.cvss_base_score) AS severity_band_order
   FROM {{ ref('int_fix_cves') }} AS fcv
-  LEFT JOIN {{ ref('stg_cve_severity') }} AS sev ON fcv.cve_id = sev.cve_id
+  LEFT OUTER JOIN {{ ref('stg_cve_severity') }} AS sev ON fcv.cve_id = sev.cve_id
   GROUP BY ALL
 )
 
@@ -63,11 +63,11 @@ SELECT
 FROM {{ ref('int_fix_profile') }} AS prf
 INNER JOIN {{ ref('int_fix_reps') }} AS reps ON prf.item_ord = reps.item_ord
 INNER JOIN {{ ref('int_fix_content_categories') }} AS cls ON prf.item_ord = cls.item_ord
-LEFT JOIN {{ ref('content_categories') }} AS cats ON cls.category_content = cats.category
+LEFT OUTER JOIN {{ ref('content_categories') }} AS cats ON cls.category_content = cats.category
 INNER JOIN {{ ref('int_releases') }} AS releases ON prf.release_dt = releases.release_dt
-LEFT JOIN severity AS sev ON prf.item_ord = sev.item_ord
-LEFT JOIN bug_agg AS bag ON prf.item_ord = bag.item_ord
+LEFT OUTER JOIN severity AS sev ON prf.item_ord = sev.item_ord
+LEFT OUTER JOIN bug_agg AS bag ON prf.item_ord = bag.item_ord
 -- surrogate keys come from the dimensions, never recomputed here
-LEFT JOIN {{ ref('dim_release') }} AS drl ON prf.release_dt = drl.release_dt
-LEFT JOIN {{ ref('dim_version') }} AS dvr ON prf.version = dvr.version
-LEFT JOIN {{ ref('dim_bug') }} AS dbg ON bag.primary_bug_number = dbg.bug_number
+LEFT OUTER JOIN {{ ref('dim_release') }} AS drl ON prf.release_dt = drl.release_dt
+LEFT OUTER JOIN {{ ref('dim_version') }} AS dvr ON prf.version = dvr.version
+LEFT OUTER JOIN {{ ref('dim_bug') }} AS dbg ON bag.primary_bug_number = dbg.bug_number

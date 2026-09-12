@@ -14,7 +14,7 @@ WITH open_release AS (
 SELECT mth.projection_method
 FROM {{ ref('projection_methods') }} AS mth
 CROSS JOIN open_release AS opn
-LEFT JOIN {{ ref('fct_fix_projections') }} AS prj
+LEFT OUTER JOIN {{ ref('fct_fix_projections') }} AS prj
   ON opn.dim_release_key = prj.dim_release_key AND mth.projection_method = prj.projection_method
 WHERE
   prj.projection_method IS null

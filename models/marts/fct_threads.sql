@@ -63,8 +63,8 @@ threads AS (
     LEAST(cte.first_cite_dt, CASE WHEN dbg.is_acted_upon THEN dbg.first_commit_dt END) AS first_action_dt
   FROM {{ ref('fct_messages') }} AS fmg
   INNER JOIN rollup AS rlp ON fmg.list_name = rlp.list_name AND fmg.message_id = rlp.root_id
-  LEFT JOIN cite_rollup AS cte ON fmg.list_name = cte.list_name AND fmg.message_id = cte.root_id
-  LEFT JOIN {{ ref('dim_bug') }} AS dbg ON fmg.dim_bug_key = dbg.dim_bug_key
+  LEFT OUTER JOIN cite_rollup AS cte ON fmg.list_name = cte.list_name AND fmg.message_id = cte.root_id
+  LEFT OUTER JOIN {{ ref('dim_bug') }} AS dbg ON fmg.dim_bug_key = dbg.dim_bug_key
   WHERE fmg.is_thread_root
 )
 
@@ -112,9 +112,9 @@ SELECT
   COALESCE(ail.ai_label_source, 'unclassified') AS ai_label_source,
   thr.subject
 FROM threads AS thr
-LEFT JOIN {{ ref('int_thread_ai_labels') }} AS ail
+LEFT OUTER JOIN {{ ref('int_thread_ai_labels') }} AS ail
   ON thr.list_name = ail.list_name AND thr.message_id = ail.root_message_id
-LEFT JOIN {{ ref('latency_windows') }} AS ltw
+LEFT OUTER JOIN {{ ref('latency_windows') }} AS ltw
   ON {{ in_range('thr.first_action_dt - thr.sent_dt', 'ltw.min_days', 'ltw.max_days') }}
-LEFT JOIN {{ ref('thread_size_windows') }} AS tsw
+LEFT OUTER JOIN {{ ref('thread_size_windows') }} AS tsw
   ON {{ in_range('thr.message_cnt', 'tsw.min_messages', 'tsw.max_messages') }}

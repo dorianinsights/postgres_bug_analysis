@@ -57,7 +57,7 @@ SELECT
   pky.source_list_cnt,
   false AS is_synthetic_row
 FROM per_key AS pky
-LEFT JOIN name_votes AS nvt ON pky.person_key = nvt.person_key
+LEFT OUTER JOIN name_votes AS nvt ON pky.person_key = nvt.person_key
 {{ special_member_rows(
   'dim_person_key', columns,
   unknown={

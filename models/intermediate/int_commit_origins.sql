@@ -3,7 +3,7 @@ WITH thread_links AS (
     dsc.commit_hash,
     ths.source_list
   FROM {{ ref('int_commit_discussions') }} AS dsc
-  LEFT JOIN {{ ref('int_thread_sources') }} AS ths ON dsc.message_id = ths.message_id
+  LEFT OUTER JOIN {{ ref('int_thread_sources') }} AS ths ON dsc.message_id = ths.message_id
 ),
 
 per_commit AS (
@@ -30,5 +30,5 @@ SELECT DISTINCT
     ELSE 'unknown_or_internal'
   END AS origin
 FROM {{ ref('int_git_commits') }} AS gcm
-LEFT JOIN per_commit AS pcm ON gcm.commit_hash = pcm.commit_hash
-LEFT JOIN bug_ref_commits AS bref ON gcm.commit_hash = bref.commit_hash
+LEFT OUTER JOIN per_commit AS pcm ON gcm.commit_hash = pcm.commit_hash
+LEFT OUTER JOIN bug_ref_commits AS bref ON gcm.commit_hash = bref.commit_hash

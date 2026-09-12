@@ -52,7 +52,7 @@ roots AS (
   FROM ancestors AS anc
   INNER JOIN messages AS amsg
     ON anc.list_name = amsg.list_name AND anc.ancestor_id = amsg.message_id
-  LEFT JOIN messages AS apar
+  LEFT OUTER JOIN messages AS apar
     ON amsg.list_name = apar.list_name AND amsg.parent_id = apar.message_id
   QUALIFY ROW_NUMBER() OVER (
     PARTITION BY anc.list_name, anc.message_id
@@ -87,6 +87,6 @@ SELECT
   cal.scheduled_release_dt AS earliest_ship_release_dt
 FROM messages AS msg
 INNER JOIN roots AS rts ON msg.list_name = rts.list_name AND msg.message_id = rts.message_id
-LEFT JOIN cited_roots AS crt ON rts.list_name = crt.list_name AND rts.root_id = crt.root_id
-ASOF LEFT JOIN {{ ref('int_release_calendar') }} AS cal
+LEFT OUTER JOIN cited_roots AS crt ON rts.list_name = crt.list_name AND rts.root_id = crt.root_id
+ASOF LEFT OUTER JOIN {{ ref('int_release_calendar') }} AS cal
   ON msg.sent_dt < cal.wrap_dt

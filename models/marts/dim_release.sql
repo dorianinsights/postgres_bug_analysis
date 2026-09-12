@@ -45,9 +45,9 @@ shipped_measures AS (
       COALESCE(fix.distinct_fix_cnt, 0)::DECIMAL(15, 6) / NULLIF(cmt.committed_fix_cnt, 0)
     )::DECIMAL(7, 6) AS documentation_rate
   FROM {{ ref('int_releases') }} AS rel
-  LEFT JOIN fix_counts AS fix ON rel.release_dt = fix.release_dt
-  LEFT JOIN cve_counts AS cve ON rel.release_dt = cve.release_dt
-  LEFT JOIN committed_counts AS cmt ON rel.release_dt = cmt.release_dt
+  LEFT OUTER JOIN fix_counts AS fix ON rel.release_dt = fix.release_dt
+  LEFT OUTER JOIN cve_counts AS cve ON rel.release_dt = cve.release_dt
+  LEFT OUTER JOIN committed_counts AS cmt ON rel.release_dt = cmt.release_dt
   WHERE rel.status = 'shipped'
 )
 
@@ -83,8 +83,8 @@ SELECT
   (rrs.distinct_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.early_fix_cnt, 0))::DECIMAL(12, 6) AS fix_per_early_fix,
   false AS is_synthetic_row
 FROM {{ ref('int_releases') }} AS rel
-LEFT JOIN shipped_measures AS rrs ON rel.release_dt = rrs.release_dt
-LEFT JOIN {{ ref('int_release_cycles') }} AS irc ON rel.release_dt = irc.ships_at_dt
+LEFT OUTER JOIN shipped_measures AS rrs ON rel.release_dt = rrs.release_dt
+LEFT OUTER JOIN {{ ref('int_release_cycles') }} AS irc ON rel.release_dt = irc.ships_at_dt
 {{ special_member_rows(
   'dim_release_key', columns,
   unknown={

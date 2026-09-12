@@ -43,9 +43,9 @@ SELECT
   csp.last_commit_hash,
   false AS is_synthetic_row
 FROM {{ ref('int_versions') }} AS rel
-LEFT JOIN {{ ref('int_releases') }} AS irl ON rel.release_dt = irl.release_dt
-LEFT JOIN {{ ref('dim_major') }} AS dmj ON rel.major = dmj.major
-LEFT JOIN commit_span AS csp ON rel.version = csp.version
+LEFT OUTER JOIN {{ ref('int_releases') }} AS irl ON rel.release_dt = irl.release_dt
+LEFT OUTER JOIN {{ ref('dim_major') }} AS dmj ON rel.major = dmj.major
+LEFT OUTER JOIN commit_span AS csp ON rel.version = csp.version
 UNION ALL
 -- the in-progress major's GA-to-be (e.g. 19.0): its release is the matching
 -- in_development row in dim_release (same key)

@@ -5,6 +5,6 @@ SELECT
   itc.item_index,
   itc.commit_hash
 FROM {{ ref('stg_item_commits') }} AS itc
-LEFT JOIN {{ ref('stg_release_items') }} AS itm
+LEFT OUTER JOIN {{ ref('stg_release_items') }} AS itm
   ON itc.version = itm.version AND itc.item_index = itm.item_index
 WHERE itm.version IS null

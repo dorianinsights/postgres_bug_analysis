@@ -19,7 +19,7 @@ SELECT
   ihs.hash_set
 FROM {{ ref('stg_release_items') }} AS itm
 INNER JOIN {{ ref('int_versions') }} AS rel ON itm.version = rel.version
-LEFT JOIN item_hashes AS ihs
+LEFT OUTER JOIN item_hashes AS ihs
   ON itm.version = ihs.version AND itm.item_index = ihs.item_index
 WHERE
   rel.minor > 0

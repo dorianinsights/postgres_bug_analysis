@@ -26,13 +26,13 @@ SELECT
   cal.scheduled_release_dt AS earliest_ship_release_dt,
   false AS is_synthetic_row
 FROM {{ ref('int_bug_reports') }} AS rpt
-LEFT JOIN {{ ref('int_person_map') }} AS pmp
+LEFT OUTER JOIN {{ ref('int_person_map') }} AS pmp
   ON pmp.node_id = {{ person_node('rpt.reporter_email', 'rpt.reporter_name') }}
-LEFT JOIN {{ ref('thread_size_windows') }} AS tsw
+LEFT OUTER JOIN {{ ref('thread_size_windows') }} AS tsw
   ON {{ in_range('rpt.thread_message_cnt', 'tsw.min_messages', 'tsw.max_messages') }}
-LEFT JOIN {{ ref('latency_windows') }} AS ltw
+LEFT OUTER JOIN {{ ref('latency_windows') }} AS ltw
   ON {{ in_range('rpt.days_to_commit', 'ltw.min_days', 'ltw.max_days') }}
-ASOF LEFT JOIN {{ ref('int_release_calendar') }} AS cal
+ASOF LEFT OUTER JOIN {{ ref('int_release_calendar') }} AS cal
   ON rpt.reported_dt < cal.wrap_dt
 {{ special_member_rows(
   'dim_bug_key', columns,

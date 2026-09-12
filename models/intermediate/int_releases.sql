@@ -31,8 +31,8 @@ shipped AS (
     grp.is_out_of_band,
     grp.release_dt = MIN(grp.release_dt) OVER () AS is_partial_window
   FROM grouped AS grp
-  LEFT JOIN {{ ref('int_release_calendar') }} AS cal ON grp.release_dt = cal.scheduled_release_dt
-  LEFT JOIN version_wraps AS vwr ON grp.release_dt = vwr.release_dt
+  LEFT OUTER JOIN {{ ref('int_release_calendar') }} AS cal ON grp.release_dt = cal.scheduled_release_dt
+  LEFT OUTER JOIN version_wraps AS vwr ON grp.release_dt = vwr.release_dt
 ),
 
 -- the latest tagged release: everything scheduled after it is upcoming

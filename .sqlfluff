@@ -16,6 +16,10 @@ target = lint
 ignore_comment_lines = True
 ignore_comment_clauses = True
 
+# every join names its kind in full: INNER JOIN, LEFT OUTER JOIN, FULL OUTER JOIN
+[sqlfluff:rules:ambiguous.join]
+fully_qualify_join_types = both
+
 [sqlfluff:rules:aliasing.length]
 min_alias_length = 3
 

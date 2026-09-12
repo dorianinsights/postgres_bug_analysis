@@ -17,7 +17,7 @@ SELECT
   imt.earliest_ship_release_dt,
   imt.subject
 FROM {{ ref('int_message_threads') }} AS imt
-LEFT JOIN {{ ref('dim_bug') }} AS dbg ON imt.bug_number = dbg.bug_number
-LEFT JOIN {{ ref('int_person_map') }} AS pmp
+LEFT OUTER JOIN {{ ref('dim_bug') }} AS dbg ON imt.bug_number = dbg.bug_number
+LEFT OUTER JOIN {{ ref('int_person_map') }} AS pmp
   ON pmp.node_id = {{ person_node('imt.author_email', 'imt.author_name') }}
-LEFT JOIN {{ ref('dim_release') }} AS drl ON imt.earliest_ship_release_dt = drl.release_dt
+LEFT OUTER JOIN {{ ref('dim_release') }} AS drl ON imt.earliest_ship_release_dt = drl.release_dt

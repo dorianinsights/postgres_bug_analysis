@@ -23,9 +23,9 @@ commit_facts AS (
     fcm.group_ord AS documented_item_ord,
     reps.cves IS NOT null AS is_security_item
   FROM stable_commits AS stc
-  LEFT JOIN {{ ref('int_commit_origins') }} AS org ON stc.commit_hash = org.commit_hash
-  LEFT JOIN {{ ref('int_fix_commits') }} AS fcm ON stc.commit_hash = fcm.commit_hash
-  LEFT JOIN {{ ref('int_fix_reps') }} AS reps ON fcm.group_ord = reps.item_ord
+  LEFT OUTER JOIN {{ ref('int_commit_origins') }} AS org ON stc.commit_hash = org.commit_hash
+  LEFT OUTER JOIN {{ ref('int_fix_commits') }} AS fcm ON stc.commit_hash = fcm.commit_hash
+  LEFT OUTER JOIN {{ ref('int_fix_reps') }} AS reps ON fcm.group_ord = reps.item_ord
 ),
 
 rollup AS (
