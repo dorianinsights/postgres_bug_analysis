@@ -1,8 +1,8 @@
 WITH coverage AS (
   SELECT
     group_ord,
-    COUNT(DISTINCT abbrev_hash) AS annotated_commit_cnt,
-    COUNT(DISTINCT abbrev_hash) FILTER (WHERE commit_hash IS NOT null) AS matched_commit_cnt
+    COUNT(*) AS annotated_commit_cnt,
+    COUNT(commit_hash) AS matched_commit_cnt
   FROM {{ ref('int_fix_commits') }}
   GROUP BY ALL
 ),

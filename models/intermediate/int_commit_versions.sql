@@ -1,16 +1,3 @@
-WITH open_release AS (
-  SELECT release_dt
-  FROM {{ ref('int_releases') }}
-  WHERE status = 'open'
-),
-
--- majors with a GA tag: only their stable branches carry pending (open) commits
-released_majors AS (
-  SELECT DISTINCT major
-  FROM {{ ref('int_versions') }}
-  WHERE minor = 0
-)
-
 SELECT
   gcm.branch,
   gcm.commit_hash,
@@ -18,15 +5,19 @@ SELECT
   gcm.commit_dt,
   cvs.version,
   CASE
-    WHEN ver.minor > 0 THEN 'shipped'
+    WHEN NOT ver.is_major_release THEN 'shipped'
     WHEN cvs.version IS NOT null THEN 'development'
-    WHEN rmj.major IS NOT null THEN 'open'
+    WHEN gav.major IS NOT null THEN 'open'
   END AS release_status,
   CASE release_status
     WHEN 'shipped' THEN ver.release_dt
-    WHEN 'open' THEN (SELECT opn.release_dt FROM open_release AS opn)
+    WHEN 'open' THEN opn.release_dt
   END AS ship_release_dt
 FROM {{ ref('int_git_commits') }} AS gcm
 LEFT OUTER JOIN {{ ref('stg_commit_versions') }} AS cvs ON gcm.commit_hash = cvs.commit_hash
 LEFT OUTER JOIN {{ ref('int_versions') }} AS ver ON cvs.version = ver.version
-LEFT OUTER JOIN released_majors AS rmj ON gcm.branch = 'REL_' || rmj.major || '_STABLE'
+-- only a released major's stable branch carries pending (open) commits
+LEFT OUTER JOIN {{ ref('int_versions') }} AS gav
+  ON gav.is_major_release AND gcm.branch = gav.stable_branch
+-- the one open release attaches to every commit
+LEFT OUTER JOIN {{ ref('int_releases') }} AS opn ON opn.status = 'open'

@@ -20,6 +20,9 @@ SELECT
   wrp.version,
   wrp.major,
   wrp.minor,
+  -- the .0 that opens a major line, vs a minor of it
+  wrp.minor = 0 AS is_major_release,
+  'REL_' || wrp.major || '_STABLE' AS stable_branch,
   wrp.wrap_dt,
   -- the announced release day: the first Thursday on/after the wrap.
   -- ISODOW arithmetic yields BIGINT; DATE + n needs INTEGER

@@ -86,8 +86,8 @@ unit_tests:
     given:
       - input: ref('int_versions')
         rows:
-          - {version: "17.5", major: 17, minor: 5, wrap_dt: 2026-05-11, release_dt: 2026-05-14, item_cnt: 1}
-          - {version: "17.6", major: 17, minor: 6, wrap_dt: 2026-08-10, release_dt: 2026-08-13, item_cnt: 1}
+          - {version: "17.5", major: 17, minor: 5, is_major_release: false, wrap_dt: 2026-05-11, release_dt: 2026-05-14, item_cnt: 1}
+          - {version: "17.6", major: 17, minor: 6, is_major_release: false, wrap_dt: 2026-08-10, release_dt: 2026-08-13, item_cnt: 1}
       - input: ref('int_release_calendar')
         rows:
           - {scheduled_release_dt: 2026-05-14, wrap_dt: 2026-05-11}

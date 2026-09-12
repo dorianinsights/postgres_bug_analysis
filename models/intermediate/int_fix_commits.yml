@@ -7,11 +7,31 @@ models:
       git commits: the group's annotated 9-char hashes from item_commits matched
       to the full corpus hashes on LEFT(hash, 9). commit_hash is NULL for an
       annotation hash with no corpus commit (pre-corpus REL9_x branches), so
-      consumers can still count annotation coverage. Grain = (group_ord,
-      abbrev_hash, commit_hash). Read by int_fix_profile, bridge_fix_bug,
-      int_committed_fixes and dim_commit.
+      consumers can still count annotation coverage. A full hash can sit under
+      several groups (a combined commit annotated on two items), but one
+      annotated hash matches at most one corpus commit, so
+      Grain = (group_ord, abbrev_hash). Read by int_fix_profile,
+      bridge_fix_bug, int_committed_fixes and dim_commit.
+    tests:
+      # one row per annotated hash per fix; a duplicate would mean a 9-char
+      # prefix matched two corpus commits and the LEFT(hash, 9) join is unsafe
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [group_ord, abbrev_hash]
     columns:
       - name: group_ord
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_fix_groups')
+                field: group_ord
       - name: abbrev_hash
         tests: [not_null]
+      - name: commit_hash
+        description: The matched corpus commit; NULL when the annotation predates the corpus.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('int_git_commits')
+                field: commit_hash

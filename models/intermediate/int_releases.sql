@@ -5,7 +5,7 @@ WITH grouped AS (
     COUNT(*) AS release_cnt,
     MAX(item_cnt) < {{ var('scheduled_release_min_items') }} AS is_out_of_band
   FROM {{ ref('int_versions') }}
-  WHERE minor > 0
+  WHERE NOT is_major_release
   GROUP BY ALL
 ),
 
@@ -17,7 +17,7 @@ version_wraps AS (
     release_dt,
     MAX(wrap_dt) AS wrap_dt
   FROM {{ ref('int_versions') }}
-  WHERE minor > 0 AND wrap_dt IS NOT null
+  WHERE NOT is_major_release AND wrap_dt IS NOT null
   GROUP BY release_dt
 ),
 

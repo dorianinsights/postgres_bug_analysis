@@ -19,14 +19,6 @@ per_major AS (
   GROUP BY ALL
 ),
 
-ga_versions AS (
-  SELECT
-    major,
-    release_dt AS ga_dt
-  FROM {{ ref('int_versions') }}
-  WHERE minor = 0
-),
-
 latest_prerelease AS (
   SELECT
     major,
@@ -44,7 +36,7 @@ SELECT
     WHEN gam.major IS NOT null THEN 'GA'
     ELSE COALESCE(lpr.milestone, 'pre-beta')
   END AS latest_milestone,
-  gam.ga_dt,
+  gam.release_dt AS ga_dt,
   pmj.dev_commit_cnt,
   pmj.first_dev_commit_hash,
   pmj.first_dev_commit_ts,
@@ -53,5 +45,5 @@ SELECT
   pmj.last_dev_commit_ts,
   {{ utc_date('pmj.last_dev_commit_ts') }} AS last_dev_commit_dt
 FROM per_major AS pmj
-LEFT OUTER JOIN ga_versions AS gam ON pmj.major = gam.major
+LEFT OUTER JOIN {{ ref('int_versions') }} AS gam ON pmj.major = gam.major AND gam.is_major_release
 LEFT OUTER JOIN latest_prerelease AS lpr ON pmj.major = lpr.major

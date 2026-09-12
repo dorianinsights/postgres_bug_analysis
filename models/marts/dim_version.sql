@@ -29,7 +29,7 @@ SELECT
   rel.version,
   rel.major,
   rel.minor,
-  rel.minor = 0 AS is_major_release,
+  rel.is_major_release,
   rel.wrap_dt,
   rel.release_dt,
   rel.item_cnt,

@@ -22,5 +22,5 @@ INNER JOIN {{ ref('int_versions') }} AS rel ON itm.version = rel.version
 LEFT OUTER JOIN item_hashes AS ihs
   ON itm.version = ihs.version AND itm.item_index = ihs.item_index
 WHERE
-  rel.minor > 0
+  NOT rel.is_major_release
   AND NOT REGEXP_MATCHES(itm.full_text, 'Update time zone data files', 'i')

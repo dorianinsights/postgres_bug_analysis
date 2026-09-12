@@ -27,9 +27,24 @@ models:
                 to: ref('stg_release_items')
                 field: version
       - name: major
-        tests: [not_null]
+        tests:
+          - not_null
+          # one .0 per major line
+          - unique:
+              config:
+                where: "is_major_release"
       - name: minor
         tests: [not_null]
+      - name: is_major_release
+        description: The .0 that opens a major line (minor = 0); false for its minors. Readers filter on this, not on minor arithmetic.
+        tests: [not_null]
+      - name: stable_branch
+        description: The git branch every version of this major lives on (REL_M_STABLE).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^REL_\d+_STABLE$'
       - name: wrap_dt
         tests: [not_null]
       - name: release_dt

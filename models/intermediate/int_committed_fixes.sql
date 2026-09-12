@@ -12,38 +12,36 @@ WITH stable_commits AS (
   WHERE icv.release_status IN ('shipped', 'open') AND NOT igc.is_housekeeping
 ),
 
-commit_facts AS (
+-- the release-notes item citing each commit: the lowest item when a combined
+-- commit is annotated under several, security if any of them cites a CVE
+documented AS (
   SELECT
-    stc.release_dt,
-    stc.fix_key,
-    stc.branch,
-    stc.commit_hash,
-    stc.commit_dt,
-    org.origin,
-    fcm.group_ord AS documented_item_ord,
-    reps.cves IS NOT null AS is_security_item
-  FROM stable_commits AS stc
-  LEFT OUTER JOIN {{ ref('int_commit_origins') }} AS org ON stc.commit_hash = org.commit_hash
-  LEFT OUTER JOIN {{ ref('int_fix_commits') }} AS fcm ON stc.commit_hash = fcm.commit_hash
-  LEFT OUTER JOIN {{ ref('int_fix_reps') }} AS reps ON fcm.group_ord = reps.item_ord
+    fcm.commit_hash,
+    MIN(fcm.group_ord) AS documented_item_ord,
+    BOOL_OR(reps.cves IS NOT null) AS is_security_item
+  FROM {{ ref('int_fix_commits') }} AS fcm
+  INNER JOIN {{ ref('int_fix_reps') }} AS reps ON fcm.group_ord = reps.item_ord
+  WHERE fcm.commit_hash IS NOT null
+  GROUP BY ALL
 ),
 
 rollup AS (
   SELECT
-    release_dt,
-    fix_key,
-    MIN(commit_dt) AS first_commit_dt,
-    MAX(commit_dt) AS last_commit_dt,
-    -- DISTINCT: a commit annotated under two items appears twice in commit_facts
-    COUNT(DISTINCT commit_hash) AS commit_cnt,
-    COUNT(DISTINCT branch) AS branch_cnt,
-    BOOL_OR(origin = 'pgsql-bugs') AS from_bugs,
-    BOOL_OR(origin = 'pgsql-hackers') AS from_hackers,
-    BOOL_OR(documented_item_ord IS NOT null) AS is_documented,
-    -- the lowest item when a combined commit is annotated under several
-    MIN(documented_item_ord) AS documented_item_ord,
-    BOOL_OR(is_security_item) AS is_security
-  FROM commit_facts
+    stc.release_dt,
+    stc.fix_key,
+    MIN(stc.commit_dt) AS first_commit_dt,
+    MAX(stc.commit_dt) AS last_commit_dt,
+    COUNT(*) AS commit_cnt,
+    -- a fix can land twice on one branch (a same-subject follow-up)
+    COUNT(DISTINCT stc.branch) AS branch_cnt,
+    BOOL_OR(org.origin = 'pgsql-bugs') AS from_bugs,
+    BOOL_OR(org.origin = 'pgsql-hackers') AS from_hackers,
+    BOOL_OR(dfx.documented_item_ord IS NOT null) AS is_documented,
+    MIN(dfx.documented_item_ord) AS documented_item_ord,
+    COALESCE(BOOL_OR(dfx.is_security_item), false) AS is_security
+  FROM stable_commits AS stc
+  LEFT OUTER JOIN {{ ref('int_commit_origins') }} AS org ON stc.commit_hash = org.commit_hash
+  LEFT OUTER JOIN documented AS dfx ON stc.commit_hash = dfx.commit_hash
   GROUP BY ALL
 )
 
