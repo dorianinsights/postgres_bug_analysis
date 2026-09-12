@@ -72,6 +72,16 @@ per-session memories, which aren't committed to git.)
   statement (incl. a scalar subquery) references more than one table; reserved
   words (`out`, `map`, `year`, `month`, `quarter`) can't be bare aliases/columns;
   `GROUP BY ALL` can't combine with `QUALIFY` (enumerate the columns there).
+  **Lateral column aliases** (reusing a SELECT alias in a later expression,
+  a `WHERE`, or a window's `PARTITION BY`) are used throughout, but a bare
+  name that also exists as a column of any table in the FROM resolves to the
+  COLUMN, not the alias -- silently when only one table has it, as an
+  "ambiguous reference" error when two do. So never give a CTE output the
+  same name as a final-select alias you mean to reuse (`fct_fix_origins_agg`
+  names its CTE counts `documented_cnt` / `committed_cnt` for that reason),
+  and an alias can't be used in a `JOIN ... ON` at all. A window over an
+  aggregate alias (`COUNT(*) AS n, n / SUM(n) OVER ()`) works with an
+  explicit `GROUP BY`.
   **Marts end in an explicit column list, never `SELECT *`** (in the final
   SELECT and every top-level UNION branch): `dct validate` derives a model's
   columns statically from that projection to check the boards' queries, and a

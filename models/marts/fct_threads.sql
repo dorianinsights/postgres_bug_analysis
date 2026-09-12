@@ -95,7 +95,7 @@ SELECT
   thr.first_cite_dt - thr.sent_dt AS days_to_first_cite,
   thr.first_action_dt IS NOT null AS is_acted_upon,
   CASE
-    WHEN thr.first_action_dt IS NOT null THEN 'linked to a fix commit'
+    WHEN is_acted_upon THEN 'linked to a fix commit'
     ELSE 'no linked commit'
   END AS action_outcome,
   thr.first_action_dt - thr.sent_dt AS days_to_action,

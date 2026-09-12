@@ -20,17 +20,10 @@ month_starts AS (
     DATE_TRUNC('month', {{ as_of_date() }} + INTERVAL 6 MONTH),
     INTERVAL 3 MONTH
   ) AS gsr (month_start)
-),
-
-second_thursdays AS (
-  -- DATE + n needs INTEGER; ISODOW arithmetic yields BIGINT
-  SELECT
-    month_start
-    + (((4 - ISODOW(month_start) + 7) % 7) + 7)::INTEGER AS scheduled_release_dt
-  FROM month_starts
 )
 
 SELECT
-  scheduled_release_dt,
+  -- the second Thursday; DATE + n needs INTEGER (ISODOW arithmetic yields BIGINT)
+  month_start + (((4 - ISODOW(month_start) + 7) % 7) + 7)::INTEGER AS scheduled_release_dt,
   scheduled_release_dt - 3 AS wrap_dt
-FROM second_thursdays
+FROM month_starts

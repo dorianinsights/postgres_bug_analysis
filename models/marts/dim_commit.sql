@@ -68,9 +68,9 @@ SELECT
   -- with the corpus rather than the work; churn views sum the representatives
   -- instead. False outside the backpatch stream.
   (
-    COALESCE(icv.release_status IN ('shipped', 'open'), false)
+    branch_scope = 'stable'
     AND ROW_NUMBER() OVER (
-      PARTITION BY gcm.fix_key, COALESCE(icv.release_status IN ('shipped', 'open'), false)
+      PARTITION BY gcm.fix_key, branch_scope = 'stable'
       ORDER BY COALESCE(prf.churn, 0) DESC, dmj.major DESC, gcm.commit_ts DESC, gcm.commit_hash ASC
     ) = 1
   ) AS is_representative_commit,

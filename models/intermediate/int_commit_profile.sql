@@ -4,6 +4,7 @@ WITH profile AS (
     COUNT(*)::BIGINT AS file_cnt,
     SUM(COALESCE(lines_added, 0))::BIGINT AS lines_added_sum,
     SUM(COALESCE(lines_deleted, 0))::BIGINT AS lines_deleted_sum,
+    lines_added_sum + lines_deleted_sum AS churn,
     MAX(subsystem = 'tests') AS has_test_changes,
     MIN(subsystem = 'docs') AS is_docs_only
   FROM {{ ref('int_commit_files') }}
@@ -37,7 +38,7 @@ SELECT
   prf.file_cnt,
   prf.lines_added_sum,
   prf.lines_deleted_sum,
-  prf.lines_added_sum + prf.lines_deleted_sum AS churn,
+  prf.churn,
   prf.has_test_changes,
   prf.is_docs_only,
   dom.dominant_subsystem

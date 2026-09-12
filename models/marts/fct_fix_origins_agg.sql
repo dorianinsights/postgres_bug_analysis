@@ -29,11 +29,13 @@ spine AS (
   CROSS JOIN origins AS org
 ),
 
+-- named apart from the output columns: a lateral alias is shadowed by a
+-- same-named column from a joined table
 documented AS (
   SELECT
     release_dt,
     origin,
-    COUNT(*) AS fix_cnt
+    COUNT(*) AS documented_cnt
   FROM {{ ref('int_fix_profile') }}
   GROUP BY ALL
 ),
@@ -42,36 +44,22 @@ committed AS (
   SELECT
     release_dt,
     origin,
-    COUNT(*) AS committed_fix_cnt
+    COUNT(*) AS committed_cnt
   FROM {{ ref('int_committed_fixes') }}
   GROUP BY ALL
-),
-
-measures AS (
-  SELECT
-    spn.release_dt,
-    spn.dim_release_key,
-    spn.status,
-    spn.is_out_of_band,
-    spn.origin,
-    CASE WHEN spn.status = 'shipped' THEN COALESCE(doc.fix_cnt, 0) END AS fix_cnt,
-    COALESCE(cmt.committed_fix_cnt, 0) AS committed_fix_cnt
-  FROM spine AS spn
-  LEFT JOIN documented AS doc ON spn.release_dt = doc.release_dt AND spn.origin = doc.origin
-  LEFT JOIN committed AS cmt ON spn.release_dt = cmt.release_dt AND spn.origin = cmt.origin
 )
 
 SELECT
-  release_dt,
-  dim_release_key,
-  status,
-  is_out_of_band,
-  origin,
-  fix_cnt,
-  committed_fix_cnt,
+  spn.release_dt,
+  spn.dim_release_key,
+  spn.status,
+  spn.is_out_of_band,
+  spn.origin,
+  -- the open release has no items yet
+  CASE WHEN spn.status = 'shipped' THEN COALESCE(doc.documented_cnt, 0) END AS fix_cnt,
+  COALESCE(cmt.committed_cnt, 0) AS committed_fix_cnt,
   (fix_cnt::DECIMAL(15, 6) / NULLIF(committed_fix_cnt, 0))::DECIMAL(7, 6) AS documentation_rate,
-  (
-    fix_cnt::DECIMAL(18, 6)
-    / NULLIF(SUM(fix_cnt) OVER (PARTITION BY release_dt), 0)
-  )::DECIMAL(7, 6) AS fix_share
-FROM measures
+  (fix_cnt::DECIMAL(18, 6) / NULLIF(SUM(fix_cnt) OVER (PARTITION BY spn.release_dt), 0))::DECIMAL(7, 6) AS fix_share
+FROM spine AS spn
+LEFT JOIN documented AS doc ON spn.release_dt = doc.release_dt AND spn.origin = doc.origin
+LEFT JOIN committed AS cmt ON spn.release_dt = cmt.release_dt AND spn.origin = cmt.origin

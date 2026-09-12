@@ -22,10 +22,9 @@ SELECT
     WHEN cvs.version IS NOT null THEN 'development'
     WHEN rmj.major IS NOT null THEN 'open'
   END AS release_status,
-  CASE
-    WHEN ver.minor > 0 THEN ver.release_dt
-    WHEN cvs.version IS null AND rmj.major IS NOT null
-      THEN (SELECT opn.release_dt FROM open_release AS opn)
+  CASE release_status
+    WHEN 'shipped' THEN ver.release_dt
+    WHEN 'open' THEN (SELECT opn.release_dt FROM open_release AS opn)
   END AS ship_release_dt
 FROM {{ ref('int_git_commits') }} AS gcm
 LEFT JOIN {{ ref('stg_commit_versions') }} AS cvs ON gcm.commit_hash = cvs.commit_hash
