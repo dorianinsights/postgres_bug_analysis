@@ -1,18 +1,4 @@
-WITH roots AS (
-  SELECT
-    bug_number,
-    sent_dt AS reported_dt,
-    sent_ts AS reported_ts,
-    message_id AS root_message_id,
-    subject,
-    author_name,
-    author_email
-  FROM {{ ref('int_message_threads') }}
-  WHERE is_bug_root
-  QUALIFY ROW_NUMBER() OVER (PARTITION BY bug_number ORDER BY sent_dt ASC, message_id ASC) = 1
-),
-
-threads AS (
+WITH threads AS (
   SELECT
     bug_number,
     COUNT(*) AS thread_message_cnt,
@@ -34,22 +20,16 @@ outcomes AS (
 )
 
 SELECT
-  roots.bug_number,
-  roots.reported_dt,
-  roots.root_message_id,
-  roots.subject,
-  threads.thread_message_cnt,
-  threads.last_message_dt,
-  roots.reported_ts,
+  rpt.bug_number,
+  rpt.sent_dt AS reported_dt,
+  rpt.message_id AS root_message_id,
+  rpt.subject,
+  thr.thread_message_cnt,
+  thr.last_message_dt,
+  rpt.sent_ts AS reported_ts,
   -- the real reporter from the web-form body, else the transport From header
-  COALESCE(
-    NULLIF(TRIM(REGEXP_EXTRACT(slm.body_text, 'Logged by:\s*(.+)', 1)), ''),
-    roots.author_name
-  ) AS reporter_name,
-  COALESCE(
-    NULLIF(TRIM(REGEXP_EXTRACT(slm.body_text, 'Email address:\s*(.+)', 1)), ''),
-    roots.author_email
-  ) AS reporter_email,
+  COALESCE(rpt.form_reporter_name, rpt.author_name) AS reporter_name,
+  COALESCE(rpt.form_reporter_email, rpt.author_email) AS reporter_email,
   otc.bug_number IS NOT null AS is_acted_upon,
   CASE
     WHEN otc.has_discussion_link AND otc.has_bug_ref_link THEN 'both'
@@ -57,9 +37,8 @@ SELECT
     WHEN otc.has_bug_ref_link THEN 'bug_ref'
   END AS linked_via,
   otc.first_commit_dt,
-  otc.first_commit_dt - roots.reported_dt AS days_to_commit
-FROM roots
-INNER JOIN threads ON roots.bug_number = threads.bug_number
-INNER JOIN {{ ref('stg_list_messages') }} AS slm
-  ON roots.root_message_id = slm.message_id AND slm.list_name = 'pgsql-bugs'
-LEFT OUTER JOIN outcomes AS otc ON roots.bug_number = otc.bug_number
+  otc.first_commit_dt - reported_dt AS days_to_commit
+FROM {{ ref('int_message_threads') }} AS rpt
+INNER JOIN threads AS thr ON rpt.bug_number = thr.bug_number
+LEFT OUTER JOIN outcomes AS otc ON rpt.bug_number = otc.bug_number
+WHERE rpt.is_bug_report

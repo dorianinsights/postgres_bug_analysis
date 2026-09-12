@@ -7,10 +7,13 @@ models:
       layer: bare message id (transport angle brackets dropped -- the canonical
       identity commit Discussion trailers use), TIMESTAMPTZ sent_ts from the
       Date header (strict cast), author name/email split, threading headers
-      (in_reply_to bare; reference_ids as the VARCHAR[] of the References
-      header's ids, ancestors oldest first), full text body, and for pgsql-bugs
-      the numbered report the subject names (bug_number; is_bug_root marks the
-      report itself, no Re:). Empty strings and empty lists become NULL.
+      (in_reply_to as the first bare id; reference_ids as the VARCHAR[] of the
+      References header's ids, ancestors oldest first), full text body, and for
+      pgsql-bugs
+      the numbered report the subject names (bug_number; has_bug_report_subject
+      marks a bare "BUG #NNNNN:" subject with no Re: -- a shape, not an
+      identity, since a re-post can repeat it; int_message_threads picks the
+      report). Empty strings and empty lists become NULL.
       Grain = (list_name, message_id).
     tests:
       - dbt_utils.expression_is_true:
@@ -21,7 +24,7 @@ models:
       # a bug tag only ever comes from pgsql-bugs, and a bug root carries one
       - dbt_utils.expression_is_true:
           arguments:
-            expression: (bug_number IS NULL OR list_name = 'pgsql-bugs') AND (NOT is_bug_root OR bug_number IS NOT NULL)
+            expression: (bug_number IS NULL OR list_name = 'pgsql-bugs') AND (NOT has_bug_report_subject OR bug_number IS NOT NULL)
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -69,14 +72,20 @@ models:
         description: >
           NULL for the rare message sent with no Subject header (2 in the
           corpus) — sender-controlled, so not tested not_null.
+      - name: in_reply_to
+        description: The In-Reply-To header's first bare id; NULL when absent.
       - name: bug_number
         description: The numbered pgsql-bugs report the subject names; NULL for free-form posts and other lists.
         tests:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: is_bug_root
+      - name: has_bug_report_subject
         tests: [not_null]
+      - name: form_reporter_name
+        description: The "Logged by:" name in a pgsql-bugs web-form body; NULL off that list or when the body isn't the form.
+      - name: form_reporter_email
+        description: The "Email address:" in a pgsql-bugs web-form body; NULL off that list or when the body isn't the form.
       - name: body_text
         description: >
           NULL for the rare message with no text part (1 in the corpus) —

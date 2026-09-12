@@ -10,7 +10,9 @@ models:
       a thread (no parent header), whether it is its thread's root (the
       earliest archived message), whether its thread was eventually cited by a
       commit Discussion: trailer, plus the pgsql-bugs report tag parsed in
-      staging (bug_number, is_bug_root). The body stays in stg_list_messages.
+      staging (bug_number) and is_bug_report, the report itself: the earliest
+      bare "BUG #NNNNN:" message of its bug number, exactly one per bug (a
+      re-post can repeat the subject). The body stays in stg_list_messages.
       Grain = (list_name, message_id).
     tests:
       - dbt_utils.unique_combination_of_columns:
@@ -30,7 +32,7 @@ models:
       - name: sent_dt
         tests: [not_null]
       - name: parent_id
-        description: The direct parent's message id; NULL when the message carries no reply header.
+        description: The direct parent's message id (in_reply_to, else the last References id); NULL when the message carries no reply header.
       - name: root_id
         description: The thread root's message id -- always an archived message on the same list.
         tests:
@@ -51,8 +53,21 @@ models:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
-      - name: is_bug_root
-        tests: [not_null]
+          # exactly one report message per bug
+          - unique:
+              config:
+                where: "is_bug_report"
+      - name: form_reporter_name
+        description: From staging; the web form's "Logged by:" name, NULL when the body isn't the form.
+      - name: form_reporter_email
+        description: From staging; the web form's "Email address:", NULL when the body isn't the form.
+      - name: is_bug_report
+        description: The one message that IS the numbered report (int_bug_reports' grain); false for replies, re-posts, free-form posts and other lists.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "= false OR bug_number IS NOT NULL"
       - name: earliest_ship_release_dt
         description: >
           First scheduled minor whose wrap falls strictly after the send

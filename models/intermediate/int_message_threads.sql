@@ -7,14 +7,15 @@ WITH RECURSIVE messages AS (
     author_name,
     author_email,
     subject,
-    -- the direct parent: In-Reply-To (first token; some clients append a
-    -- comment), else the last References id
-    COALESCE(
-      NULLIF(REGEXP_EXTRACT(in_reply_to, '^([^\s<>]+)', 1), ''),
-      reference_ids[-1]
-    ) AS parent_id,
+    -- the direct parent: In-Reply-To, else the last References id (RFC 5322
+    -- lists ancestors oldest first). Derived here, not in staging, where the
+    -- typed headers keep their raw names and a lateral reference would be
+    -- shadowed by the raw column.
+    COALESCE(in_reply_to, reference_ids[-1]) AS parent_id,
     bug_number,
-    is_bug_root
+    has_bug_report_subject,
+    form_reporter_name,
+    form_reporter_email
   FROM {{ ref('stg_list_messages') }}
 ),
 
@@ -78,7 +79,14 @@ SELECT
   msg.message_id = rts.root_id AS is_thread_root,
   crt.root_id IS NOT null AS is_fix_linked,
   msg.bug_number,
-  msg.is_bug_root,
+  -- the report itself: the earliest bare "BUG #NNNNN:" message of its bug (a
+  -- re-post can repeat the subject), so exactly one per bug number
+  msg.has_bug_report_subject AND ROW_NUMBER() OVER (
+    PARTITION BY msg.bug_number, msg.has_bug_report_subject
+    ORDER BY msg.sent_ts ASC, msg.message_id ASC
+  ) = 1 AS is_bug_report,
+  msg.form_reporter_name,
+  msg.form_reporter_email,
   -- a message sent ON wrap Monday counts toward the NEXT release
   cal.scheduled_release_dt AS earliest_ship_release_dt
 FROM messages AS msg
