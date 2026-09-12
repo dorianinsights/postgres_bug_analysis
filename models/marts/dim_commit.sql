@@ -31,38 +31,9 @@
 -- mandatory by construction and never resolves to Unknown / Not Applicable.
 -- dim_commit_key is a generate_surrogate_key hash of commit_hash, computed ONCE
 -- here; fct_commit_files conforms by joining on commit_hash. Grain = commit_hash.
-WITH dominant_subsystem AS (
-  SELECT
-    commit_hash,
-    subsystem AS dominant_subsystem
-  FROM (
-    SELECT
-      commit_hash,
-      subsystem,
-      COUNT(*) AS file_cnt,
-      SUM(COALESCE(lines_added, 0) + COALESCE(lines_deleted, 0)) AS line_sum
-    FROM {{ ref('int_commit_files') }}
-    GROUP BY ALL
-  ) AS votes
-  QUALIFY ROW_NUMBER() OVER (
-    PARTITION BY commit_hash
-    ORDER BY (subsystem IN ('tests', 'docs')) ASC, file_cnt DESC, line_sum DESC, subsystem ASC
-  ) = 1
-),
-
--- each commit's total churn (all files), the size a fix's representative
--- backpatch is chosen by
-commit_churn AS (
-  SELECT
-    commit_hash,
-    SUM(COALESCE(lines_added, 0) + COALESCE(lines_deleted, 0)) AS churn
-  FROM {{ ref('int_commit_files') }}
-  GROUP BY ALL
-),
-
 -- the release-notes item citing each commit (the lowest item when a combined
 -- commit is annotated under several)
-documented AS (
+WITH documented AS (
   SELECT
     commit_hash,
     MIN(group_ord) AS documented_item_ord
@@ -116,12 +87,12 @@ SELECT
   ail.ai_disclosure_form,
   ail.ai_label_source,
   ail.ai_rationale,
-  -- the area this commit mostly touched (weighted vote over its files); 'other'
-  -- for an empty commit with no file changes
-  COALESCE(dsub.dominant_subsystem, 'other') AS dominant_subsystem,
+  -- the area this commit mostly touched (int_commit_profile's weighted vote over
+  -- its files); 'other' for an empty commit with no file changes
+  COALESCE(prf.dominant_subsystem, 'other') AS dominant_subsystem,
   gcm.subject,
-  igc.fix_key,
-  igc.is_housekeeping,
+  gcm.fix_key,
+  gcm.is_housekeeping,
   -- ONE commit per backpatched fix: within the stable (backpatch) scope, the
   -- fix_key's LARGEST backpatch by total churn (an older branch's version can
   -- carry extra conflict-resolution lines, so this is the fix's full size),
@@ -133,8 +104,8 @@ SELECT
   (
     COALESCE(icv.release_status IN ('shipped', 'open'), false)
     AND ROW_NUMBER() OVER (
-      PARTITION BY igc.fix_key, COALESCE(icv.release_status IN ('shipped', 'open'), false)
-      ORDER BY COALESCE(cch.churn, 0) DESC, dmj.major DESC, gcm.commit_ts DESC, gcm.commit_hash ASC
+      PARTITION BY gcm.fix_key, COALESCE(icv.release_status IN ('shipped', 'open'), false)
+      ORDER BY COALESCE(prf.churn, 0) DESC, dmj.major DESC, gcm.commit_ts DESC, gcm.commit_hash ASC
     ) = 1
   ) AS is_representative_commit,
   dfx.documented_item_ord IS NOT null AS is_documented,
@@ -144,23 +115,21 @@ SELECT
   -- no Kimball special members here (built from the commit spine), so every
   -- row is real; the flag exists for uniformity across all dimensions
   false AS is_synthetic_row
-FROM {{ ref('stg_git_commits') }} AS gcm
-INNER JOIN {{ ref('int_git_commits') }} AS igc
-  ON gcm.branch = igc.branch AND gcm.commit_hash = igc.commit_hash
+FROM {{ ref('int_git_commits') }} AS gcm
 LEFT JOIN {{ ref('int_commit_versions') }} AS icv
   ON gcm.branch = icv.branch AND gcm.commit_hash = icv.commit_hash
 LEFT JOIN {{ ref('int_commit_origins') }} AS org ON gcm.commit_hash = org.commit_hash
-LEFT JOIN dominant_subsystem AS dsub ON gcm.commit_hash = dsub.commit_hash
-LEFT JOIN commit_churn AS cch ON gcm.commit_hash = cch.commit_hash
+-- the commit's file-level profile (churn, dominant subsystem), once per commit
+LEFT JOIN {{ ref('int_commit_profile') }} AS prf ON gcm.commit_hash = prf.commit_hash
 LEFT JOIN documented AS dfx ON gcm.commit_hash = dfx.commit_hash
 -- one label row per fix_key (int_commit_ai_texts covers every commit)
-LEFT JOIN {{ ref('int_commit_ai_labels') }} AS ail ON igc.fix_key = ail.fix_key
+LEFT JOIN {{ ref('int_commit_ai_labels') }} AS ail ON gcm.fix_key = ail.fix_key
 -- the release (shipped or open) from the registry that mints its key, and the
 -- shipped minor from dim_version (1:1 on version)
 LEFT JOIN {{ ref('int_releases') }} AS irl ON icv.ship_release_dt = irl.release_dt
 LEFT JOIN {{ ref('dim_version') }} AS dvr ON icv.version = dvr.version
 LEFT JOIN {{ ref('dim_major') }} AS dmj ON gcm.branch = dmj.stable_branch
 LEFT JOIN {{ ref('int_person_map') }} AS pmp_a
-  ON pmp_a.node_id = {{ person_node('igc.patch_author_email', 'igc.patch_author_name') }}
+  ON pmp_a.node_id = {{ person_node('gcm.patch_author_email', 'gcm.patch_author_name') }}
 LEFT JOIN {{ ref('int_person_map') }} AS pmp_c
-  ON pmp_c.node_id = {{ person_node('igc.committer_email', 'igc.committer_name') }}
+  ON pmp_c.node_id = {{ person_node('gcm.committer_email', 'gcm.committer_name') }}

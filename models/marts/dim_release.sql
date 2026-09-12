@@ -3,7 +3,8 @@
 --   open     the in-flight cycle (its wrap has passed, ships next) — no measures
 --   future   an upcoming scheduled release not yet started — no measures
 -- The registry and the dim_release_key (minted once, upstream) come from
--- int_releases; the shipped fix/CVE/security measures from int_release_summary;
+-- int_releases; the shipped fix/CVE/security measures are rolled up here from
+-- int_fix_reps / int_fix_cves / int_committed_fixes;
 -- and the cycle signals (int_release_cycles, once a standalone
 -- fct_release_cycles) fold onto the same row — a cycle IS a release earlier in
 -- its life. They are non-NULL only for the started scheduled cycles. Forecasts
@@ -11,7 +12,51 @@
 -- fct_fix_projections (the open release, and every shipped one replayed so
 -- distinct_fix_cnt here scores it), not here. Plus the two Kimball
 -- special members. Grain = dim_release_key. -> data/derived/dim_release.csv
-WITH real_members AS (
+WITH fix_counts AS (
+  SELECT
+    release_dt,
+    COUNT(*) AS distinct_fix_cnt,
+    COUNT(*) FILTER (WHERE cves IS NOT null) AS security_fix_cnt
+  FROM {{ ref('int_fix_reps') }}
+  GROUP BY ALL
+),
+
+cve_counts AS (
+  SELECT
+    release_dt,
+    COUNT(DISTINCT cve_id) AS distinct_cve_cnt
+  FROM {{ ref('int_fix_cves') }}
+  GROUP BY ALL
+),
+
+committed_counts AS (
+  SELECT
+    release_dt,
+    COUNT(*) AS committed_fix_cnt
+  FROM {{ ref('int_committed_fixes') }}
+  GROUP BY ALL
+),
+
+-- shipped releases only: the upcoming ones have no items yet
+shipped_measures AS (
+  SELECT
+    rel.release_dt,
+    COALESCE(fix.distinct_fix_cnt, 0) AS distinct_fix_cnt,
+    COALESCE(cve.distinct_cve_cnt, 0) AS distinct_cve_cnt,
+    COALESCE(fix.security_fix_cnt, 0) AS security_fix_cnt,
+    COALESCE(cmt.committed_fix_cnt, 0) AS committed_fix_cnt,
+    -- documented fixes per committed fix; NULL when nothing was committed
+    (
+      COALESCE(fix.distinct_fix_cnt, 0)::DECIMAL(15, 6) / NULLIF(cmt.committed_fix_cnt, 0)
+    )::DECIMAL(7, 6) AS documentation_rate
+  FROM {{ ref('int_releases') }} AS rel
+  LEFT JOIN fix_counts AS fix ON rel.release_dt = fix.release_dt
+  LEFT JOIN cve_counts AS cve ON rel.release_dt = cve.release_dt
+  LEFT JOIN committed_counts AS cmt ON rel.release_dt = cmt.release_dt
+  WHERE rel.status = 'shipped'
+),
+
+real_members AS (
   SELECT
     rel.dim_release_key,
     rel.release_dt,
@@ -27,9 +72,6 @@ WITH real_members AS (
     rrs.distinct_fix_cnt,
     rrs.distinct_cve_cnt,
     rrs.security_fix_cnt,
-    -- the committed-fix population that shipped in this release (distinct
-    -- non-housekeeping stable-branch subjects) and how much of it the notes
-    -- documented (distinct_fix_cnt / committed_fix_cnt); shipped rows only
     rrs.committed_fix_cnt,
     rrs.documentation_rate,
     -- cycle signals: non-NULL only for the started scheduled cycles, NULL for
@@ -58,7 +100,7 @@ WITH real_members AS (
     (rrs.distinct_fix_cnt::DECIMAL(15, 6) / NULLIF(irc.early_fix_cnt, 0))::DECIMAL(12, 6) AS fix_per_early_fix,
     false AS is_synthetic_row
   FROM {{ ref('int_releases') }} AS rel
-  LEFT JOIN {{ ref('int_release_summary') }} AS rrs ON rel.release_dt = rrs.release_dt
+  LEFT JOIN shipped_measures AS rrs ON rel.release_dt = rrs.release_dt
   LEFT JOIN {{ ref('int_release_cycles') }} AS irc ON rel.release_dt = irc.ships_at_dt
 )
 

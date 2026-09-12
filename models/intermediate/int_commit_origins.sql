@@ -1,12 +1,3 @@
--- Where each corpus commit's work came from: the archive its Discussion:
--- trailers resolve to. Precedence: any pgsql-bugs thread OR a "Bug: #"
--- trailer means the commit traces to a filed bug report; else any
--- pgsql-hackers thread; else unknown_or_internal (no trailer, or a
--- trailer into an archive we don't ingest — other lists, or embargoed
--- security work with no public thread at all). Deliberately 3-valued:
--- the security split of the unknown bucket needs release-note context,
--- so the marts refine unknown_or_internal downstream. Grain =
--- commit_hash (branch-distinct: a backpatch is its own commit).
 WITH thread_links AS (
   SELECT
     dsc.commit_hash,
@@ -26,7 +17,8 @@ per_commit AS (
 
 bug_ref_commits AS (
   SELECT DISTINCT commit_hash
-  FROM {{ ref('int_commit_bug_refs') }}
+  FROM {{ ref('int_commit_bug_links') }}
+  WHERE link_kind = 'bug_ref'
 )
 
 SELECT DISTINCT
@@ -37,6 +29,6 @@ SELECT DISTINCT
     WHEN COALESCE(pcm.has_hackers_thread, false) THEN 'pgsql-hackers'
     ELSE 'unknown_or_internal'
   END AS origin
-FROM {{ ref('stg_git_commits') }} AS gcm
+FROM {{ ref('int_git_commits') }} AS gcm
 LEFT JOIN per_commit AS pcm ON gcm.commit_hash = pcm.commit_hash
 LEFT JOIN bug_ref_commits AS bref ON gcm.commit_hash = bref.commit_hash

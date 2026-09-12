@@ -45,6 +45,25 @@ models:
             lower_bound_column: wrap_dt
             upper_bound_column: release_dt
             gaps: allowed
+      # shipped measures: every shipped release has fixes, security fixes are a
+      # subset of them (distinct_cve_cnt is NOT bounded by security_fix_cnt: one
+      # item can carry several CVEs), and the documentation rate is defined
+      # exactly when something was committed
+      - dbt_utils.expression_is_true:
+          config:
+            where: "status = 'shipped'"
+          arguments:
+            expression: "distinct_fix_cnt >= 1 AND distinct_cve_cnt >= 0 AND security_fix_cnt BETWEEN 0 AND distinct_fix_cnt"
+      - dbt_utils.expression_is_true:
+          config:
+            where: "status = 'shipped'"
+          arguments:
+            expression: "(documentation_rate IS NULL) = (committed_fix_cnt = 0)"
+      - dbt_utils.expression_is_true:
+          config:
+            where: "status <> 'shipped'"
+          arguments:
+            expression: "distinct_fix_cnt IS NULL AND committed_fix_cnt IS NULL"
     columns:
       - name: dim_release_key
         tests: [not_null, unique]

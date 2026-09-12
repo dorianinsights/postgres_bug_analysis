@@ -56,7 +56,7 @@ SELECT
     WHEN cvs.version IS null AND rmj.major IS NOT null
       THEN (SELECT opn.release_dt FROM open_release AS opn)
   END AS ship_release_dt
-FROM {{ ref('stg_git_commits') }} AS gcm
+FROM {{ ref('int_git_commits') }} AS gcm
 LEFT JOIN {{ ref('stg_commit_versions') }} AS cvs
   ON gcm.branch = cvs.branch AND gcm.commit_hash = cvs.commit_hash
 LEFT JOIN {{ ref('int_versions') }} AS ver ON cvs.version = ver.version

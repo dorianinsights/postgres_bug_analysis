@@ -108,12 +108,24 @@ models:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 0
+      - name: cve_cnt
+        description: CVEs the fix cites; NULL for non-CVE fixes.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
       - name: max_cvss_base_score
         tests:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 0
                 max_value: 10
+      - name: severity_band
+        description: The worst cited CVE's CVSS band (stg_cve_severity); NULL when none is scored.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [NONE, LOW, MEDIUM, HIGH, CRITICAL]
       - name: severity_band_order
         description: Ordinal rank of severity_band (NONE=0 … CRITICAL=4) for chart sorting; NULL for non-CVE fixes.
         tests:

@@ -2,9 +2,10 @@
 -- by DIRECTORY into a subsystem (subsystem_rules -- the same taxonomy fct_fixes /
 -- fct_branch_size_weekly use, lowest match_order wins, 'other' fallback) and by
 -- EXTENSION into a file_class (file_class_rules -- what KIND of file it is). Where
--- a change lives vs what kind of file it is. The per-commit area signal:
--- dim_commit reads it for dominant_subsystem, and fct_commit_files is built on it. Line counts are NULL for binary files (git numstat emits '-'), so binary
--- churn is never counted. Grain = (commit_hash, file_path).
+-- a change lives vs what kind of file it is. int_commit_profile rolls it up per
+-- commit, and fct_commit_files is built on it. Line counts are NULL for binary
+-- files (git numstat emits '-'), so binary churn is never counted.
+-- Grain = (commit_hash, file_path).
 WITH file_rules AS (
   SELECT
     cfl.commit_hash,

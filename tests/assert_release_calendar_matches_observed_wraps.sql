@@ -8,12 +8,12 @@ WITH observed_wraps AS (
   SELECT
     wvs.release_dt,
     MAX((tag.tag_ts AT TIME ZONE 'utc')::DATE) AS observed_wrap_dt
-  FROM {{ ref('int_release_summary') }} AS wvs
+  FROM {{ ref('int_releases') }} AS wvs
   INNER JOIN {{ ref('stg_git_tags') }} AS tag
     ON
       (tag.tag_ts AT TIME ZONE 'utc')::DATE
       BETWEEN wvs.release_dt - {{ var('wrap_tag_window_days') }} AND wvs.release_dt
-  WHERE NOT wvs.is_out_of_band AND NOT wvs.is_partial_window
+  WHERE wvs.status = 'shipped' AND NOT wvs.is_out_of_band AND NOT wvs.is_partial_window
   GROUP BY ALL
 )
 

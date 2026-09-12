@@ -234,7 +234,7 @@ class BranchSizeRecord(NamedTuple):
 def _subsystem_rules() -> list[tuple[str, "re.Pattern[str]"]]:
     """The (subsystem, compiled-pattern) rules from the subsystem_rules seed, in
     match_order precedence. Read from the SAME seed the SQL side uses
-    (int_fix_changes), so the path -> subsystem taxonomy has one source of truth.
+    (int_commit_files), so the path -> subsystem taxonomy has one source of truth.
     Loaded lazily (not at import) so tests that import this module from any cwd
     don't need the seed on disk."""
     path = SEEDS_DIR / "subsystem_rules.csv"

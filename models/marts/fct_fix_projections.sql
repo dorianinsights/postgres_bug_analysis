@@ -121,17 +121,14 @@ seasonal AS (
   GROUP BY tgt.dim_release_key
 ),
 
--- origin_scaled: documented fixes per (scheduled release, origin), release
--- grain -- a fix none of whose annotated commits matched the corpus has no
--- origin row: no public trail, split by its CVE mention like the rest
+-- origin_scaled: documented fixes per (shipped release, origin), release grain
 documented_by_release AS (
   SELECT
-    reps.release_dt,
-    COALESCE(org.origin, {{ resolve_fix_origin('false', 'false', 'reps.cves IS NOT null') }}) AS origin,
-    COUNT(*) AS fix_cnt
-  FROM {{ ref('int_fix_reps') }} AS reps
-  LEFT JOIN {{ ref('int_fix_origins') }} AS org ON reps.item_ord = org.group_ord
-  GROUP BY ALL
+    release_dt,
+    origin,
+    fix_cnt
+  FROM {{ ref('fct_fix_origins_agg') }}
+  WHERE status = 'shipped'
 ),
 
 -- ... and the distinct committed fixes per (cycle, origin) that had landed by

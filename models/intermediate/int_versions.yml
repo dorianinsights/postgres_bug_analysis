@@ -34,3 +34,10 @@ models:
         tests: [not_null]
       - name: release_dt
         tests: [not_null]
+      - name: item_cnt
+        description: Parsed changelog items for the version (stg_release_items); int_releases' out-of-band rule and dim_version read it.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

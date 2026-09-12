@@ -252,8 +252,14 @@ every object's name. Layers:
   development, plus the open release for a released major's not-yet-tagged
   stable commits), `int_major_development` (per-major development activity,
   aggregated from it), `int_committed_fixes` (the committed-fix population: one
-  row per distinct fix per release, linked to its release-notes item),
-  `int_release_summary` (both populations per release + documentation rate),
+  row per distinct fix per release, linked to its release-notes item; the
+  per-release rollup of both populations + documentation rate lives on
+  `dim_release`), `int_commit_bug_links` (every commit -> bug-report link, by
+  Discussion trailer or `Bug: #` mention -- read by `int_bug_reports` for the
+  report's outcome, `int_fix_bug_links` and `int_commit_origins`),
+  `int_commit_profile` (per-commit file/line counts, churn and the
+  dominant-subsystem vote over `int_commit_files`, carried by `dim_commit` and
+  read for a fix's representative commit by `int_fix_changes`),
   `int_commit_ai_texts` / `int_thread_ai_texts` (the text the AI-involvement
   classifier reads: one per committed fix, one per thread root, capped at
   `var('ai_involvement_text_cap_chars')`, NO keyword pre-filter) and
@@ -311,13 +317,13 @@ every object's name. Layers:
     on `dim_release`. The
     fix<->CVE, fix<->bug, and fix<->contributor many-to-manys go through
     `bridge_fix_cve` / `bridge_fix_bug` / `bridge_fix_contributor` (the last
-    fed by `int_fix_contributors`); `fct_release_categories_agg` and `fct_release_contributors_agg`
+    parses the item's "(Name, Name)" credit list); `fct_release_categories_agg` and `fct_release_contributors_agg`
     are conformed aggregates of `fct_fixes` (+ the contributor bridge). The period aggregates (`fct_bug_reports_monthly_agg`,
     `fct_origin_activity_monthly_agg`) are aggregate facts rolled up from those
     grains and conformed on `dim_date` by their month/week DATE. `dim_commit`
-    carries a `dominant_subsystem` (a weighted vote over its files via the
-    per-file `int_commit_files`, which classifies each changed file by subsystem
-    and by extension `file_class`), plus `branch_scope` (trunk/stable/beta) and
+    carries a `dominant_subsystem` (`int_commit_profile`'s weighted vote over
+    the per-file `int_commit_files`, which classifies each changed file by
+    subsystem and by extension `file_class`), plus `branch_scope` (trunk/stable/beta) and
     the AI-credit and origin flags. The atomic churn fact **`fct_commit_files`** (one
     row per file per commit — line counts + subsystem + file_class, FK to
     `dim_commit`, conformed to `dim_date`) is where every churn metric rolls up
@@ -364,7 +370,7 @@ every object's name. Layers:
   applied per file in `int_commit_files` and per weekly tree in
   `fct_branch_size_weekly`), and the range-bucket tables
   `cvss_severity_bands` (CVSS v3 base score -> NONE/LOW/MEDIUM/HIGH/CRITICAL,
-  range-joined by `stg_cve_severity` per CVE and `int_fix_severity` per fix)
+  range-joined by `stg_cve_severity` per CVE; `fct_fixes` keeps the worst CVE's band per fix)
   and `latency_windows` / `thread_size_windows` (each range and its label
   defined together; the marts join them, and relationships tests replace
   duplicated label lists).
@@ -482,8 +488,9 @@ carry no separate unit tests.
 - Cross-branch dedup: two items in a release are the same fix when EITHER their
   normalized summary text (lowercased, whitespace collapsed, "§" markers
   stripped) OR their exact annotated commit-hash set matches, transitively
-  (connected components in `int_fix_groups.sql` — its header comment
-  documents the four real-world cases behind the rule).
+  (connected components via the `connected_components` macro in
+  `int_fix_groups.sql`, the same walk `int_person_map` uses for identity
+  resolution).
 - The corpus's first shipped release accumulated only a partial cycle of fixes
   (with FIRST_MAJOR = 14 that is 14.1, Nov 2021, six weeks after 14.0) and is
   flagged `is_partial_window` on `dim_release` -- derived as the earliest shipped
@@ -518,7 +525,7 @@ carry no separate unit tests.
 - **Reports link to fixes exactly, not fuzzily**: commit messages carry
   `Discussion: https://postgr.es/m/<message-id>` trailers (and sometimes
   `Bug: #NNNNN`), extracted by `int_commit_discussions` /
-  `int_commit_bug_refs` from the bodies already in `raw`. A pgsql-bugs
+  `int_commit_bug_links` from the bodies already in `raw`. A pgsql-bugs
   report counts as acted upon when any message of its thread is cited by
   a commit, or the bug number is mentioned.
 - **The scrapers are pure extraction** — fields land raw verbatim. Every

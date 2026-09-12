@@ -1,13 +1,3 @@
--- The authoritative release registry, sourced from git release tags (the same
--- postgres.git clone the commit models read) rather than the SGML release
--- notes. One row per REL_MAJOR_MINOR tag (stg_git_tags already drops BETA/RC).
---
--- release_dt is the ANNOUNCED release day, always a Thursday: PostgreSQL wraps
--- the tarball Mon-Wed and ships the first Thursday on/after the wrap, so we snap
--- the tag's wrap date forward to that Thursday (ISODOW 4). This reproduces the
--- old SGML <date> EXACTLY for every corpus release -- scheduled, out-of-band,
--- and .0 majors alike -- and covers the out-of-band releases that the quarterly
--- int_release_calendar deliberately omits. Grain = version.
 WITH wraps AS (
   SELECT
     major::VARCHAR || '.' || minor::VARCHAR AS version,
@@ -15,13 +5,24 @@ WITH wraps AS (
     minor,
     tag_dt AS wrap_dt
   FROM {{ ref('stg_git_tags') }}
+),
+
+item_counts AS (
+  SELECT
+    version,
+    COUNT(*)::BIGINT AS item_cnt
+  FROM {{ ref('stg_release_items') }}
+  GROUP BY ALL
 )
 
 SELECT
-  version,
-  major,
-  minor,
-  wrap_dt,
+  wrp.version,
+  wrp.major,
+  wrp.minor,
+  wrp.wrap_dt,
+  -- the announced release day: the first Thursday on/after the wrap.
   -- ISODOW arithmetic yields BIGINT; DATE + n needs INTEGER
-  wrap_dt + (((4 - ISODOW(wrap_dt)) + 7) % 7)::INTEGER AS release_dt
-FROM wraps
+  wrp.wrap_dt + (((4 - ISODOW(wrp.wrap_dt)) + 7) % 7)::INTEGER AS release_dt,
+  itc.item_cnt
+FROM wraps AS wrp
+LEFT JOIN item_counts AS itc ON wrp.version = itc.version

@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: int_commit_profile
+    description: >
+      Per-commit change profile rolled up once from int_commit_files: file
+      count, line counts, total churn, test/docs involvement and the
+      weighted-vote dominant_subsystem. dim_commit carries it per commit and
+      int_fix_changes reads its representative commit's row. Commits with no
+      file rows have no row. Grain = commit_hash.
+    tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: churn = lines_added_sum + lines_deleted_sum
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: NOT is_docs_only OR dominant_subsystem = 'docs'
+    columns:
+      - name: commit_hash
+        tests: [not_null, unique]
+      - name: file_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: lines_added_sum
+        tests: [not_null]
+      - name: lines_deleted_sum
+        tests: [not_null]
+      - name: churn
+        tests: [not_null]
+      - name: has_test_changes
+        tests: [not_null]
+      - name: is_docs_only
+        tests: [not_null]
+      - name: dominant_subsystem
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - core_server
+                  - client_tools
+                  - extensions_contrib
+                  - replication_recovery
+                  - planner
+                  - tests
+                  - docs
+                  - build_platform
+                  - other

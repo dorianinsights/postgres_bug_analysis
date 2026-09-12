@@ -17,19 +17,11 @@
 -- one-measure fact; it is NULL for the .0 majors and the special members, which
 -- have no release-note items.
 -- Grain = version. -> data/derived/dim_version.csv
-WITH item_counts AS (
-  SELECT
-    version,
-    COUNT(*)::BIGINT AS item_cnt
-  FROM {{ ref('stg_release_items') }}
-  GROUP BY ALL
-),
-
 -- first / last commit of each version, from the commit->version map: the
 -- backpatch commits that shipped in a minor, or the major's whole development
 -- (master between fork points + pre-GA stabilization) for a .0 -- including the
 -- in-progress major's. NULL only for the special members.
-commit_span AS (
+WITH commit_span AS (
   SELECT
     version,
     MIN(commit_dt) AS first_commit_dt,
@@ -54,7 +46,7 @@ real_members AS (
     rel.minor = 0 AS is_major_release,
     rel.wrap_dt,
     rel.release_dt,
-    itc.item_cnt,
+    rel.item_cnt,
     -- inherited from the version's release: a release is out-of-band (emergency
     -- re-release) when its LARGEST minor has fewer than
     -- var(scheduled_release_min_items) items -- a release-group property, so read
@@ -71,7 +63,6 @@ real_members AS (
   FROM {{ ref('int_versions') }} AS rel
   LEFT JOIN {{ ref('int_releases') }} AS irl ON rel.release_dt = irl.release_dt
   LEFT JOIN {{ ref('dim_major') }} AS dmj ON rel.major = dmj.major
-  LEFT JOIN item_counts AS itc ON rel.version = itc.version
   LEFT JOIN commit_span AS csp ON rel.version = csp.version
 ),
 

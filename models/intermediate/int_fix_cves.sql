@@ -1,6 +1,6 @@
 -- One row per (distinct fix, CVE): the fix's ';'-joined cves list exploded
--- once here, instead of in dim_cve, bridge_fix_cve, int_fix_severity and
--- int_release_summary separately. Carries release_dt so the release rollup can count
+-- once here, instead of in dim_cve, bridge_fix_cve, fct_fixes and dim_release
+-- separately. Carries release_dt so the release rollup can count
 -- distinct CVEs without re-exploding. Grain = (item_ord, cve_id).
 SELECT DISTINCT
   reps.item_ord,

@@ -4,8 +4,10 @@ models:
   - name: bridge_fix_contributor
     description: >
       Fix<->contributor bridge -> data/derived/bridge_fix_contributor.csv:
-      one row per (fix, credited contributor) from the release-notes name list.
-      Grain = (item_ord, contributor).
+      one row per (fix, credited contributor), parsed here from the trailing
+      "(Name, Name)" list on the fix's release-notes item (int_fix_reps); a
+      list is rejected wholesale when any part looks like prose rather than a
+      name. Grain = (item_ord, contributor).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

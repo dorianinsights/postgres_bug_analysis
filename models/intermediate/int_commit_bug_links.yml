@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: int_commit_bug_links
+    description: >
+      Every (commit, numbered pgsql-bugs report) link, by kind: a Discussion:
+      trailer citing a BUG # thread message (discussion) or a direct "Bug: #"
+      mention in the body (bug_ref). The single definition of commit -> bug
+      linkage; int_bug_reports, int_fix_bug_links and int_commit_origins read
+      it. Not restricted to corpus-window reports. Grain = (commit_hash,
+      bug_number, link_kind).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [commit_hash, bug_number, link_kind]
+    columns:
+      - name: commit_hash
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_git_commits')
+                field: commit_hash
+      - name: bug_number
+        tests: [not_null]
+      - name: link_kind
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [discussion, bug_ref]

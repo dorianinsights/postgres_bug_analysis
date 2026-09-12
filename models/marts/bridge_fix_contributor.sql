@@ -1,9 +1,36 @@
--- Fix<->contributor bridge: one row per (fix, credited contributor) from the
--- release-notes "(Name, Name)" list, since a fix can credit several people.
--- Mirrors bridge_fix_cve / bridge_fix_bug. The contributor is the notes display
--- name -- a separate identity space from dim_person (email-keyed); reconciling
--- them is the person-alias future work. Grain = (item_ord, contributor).
-SELECT
+WITH extracted AS (
+  SELECT
+    item_ord,
+    REGEXP_EXTRACT(summary, '\(([^()]{2,200})\)\s*(?:§+\s*)*$', 1) AS credit_blob
+  FROM {{ ref('int_fix_reps') }}
+),
+
+name_lists AS (
+  SELECT
+    item_ord,
+    LIST_TRANSFORM(STRING_SPLIT(credit_blob, ','), part -> TRIM(part)) AS name_list
+  FROM extracted
+  WHERE credit_blob != ''
+),
+
+-- a list is rejected wholesale when any part looks like prose rather than a name
+valid_lists AS (
+  SELECT
+    item_ord,
+    name_list
+  FROM name_lists
+  WHERE LEN(LIST_FILTER(name_list, part -> LENGTH(part) > 40 OR REGEXP_MATCHES(part, '\d'))) = 0
+),
+
+unnested AS (
+  SELECT
+    item_ord,
+    UNNEST(name_list) AS contributor
+  FROM valid_lists
+)
+
+SELECT DISTINCT
   item_ord,
   contributor
-FROM {{ ref('int_fix_contributors') }}
+FROM unnested
+WHERE contributor != ''

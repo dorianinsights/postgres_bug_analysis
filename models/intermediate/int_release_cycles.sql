@@ -120,4 +120,8 @@ LEFT JOIN first_window_fixes AS fwf ON cyc.cycle_start_dt = fwf.cycle_start_dt
 -- — cycles shipping a pre-corpus scheduled date have no release and are noise
 WHERE
   cyc.cycle_start_dt <= {{ as_of_date() }}
-  AND cyc.ships_at_dt >= (SELECT MIN(iws.release_dt) FROM {{ ref('int_release_summary') }} AS iws)
+  AND cyc.ships_at_dt >= (
+    SELECT MIN(irl.release_dt)
+    FROM {{ ref('int_releases') }} AS irl
+    WHERE irl.status = 'shipped'
+  )

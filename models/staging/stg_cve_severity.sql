@@ -7,7 +7,7 @@
 -- severity_band and its display order
 -- come from the cvss_severity_bands seed via a range join on the score --
 -- the seed owns the NONE/LOW/MEDIUM/HIGH/CRITICAL thresholds so they live in
--- exactly one place (shared with int_fix_severity). Empty scores (a listed
+-- exactly one place (fct_fixes carries the worst CVE's band per fix). Empty scores (a listed
 -- CVE with no CVSS) become NULL and match no band.
 WITH typed AS (
   SELECT

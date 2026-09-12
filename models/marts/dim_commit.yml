@@ -124,7 +124,7 @@ models:
               arguments:
                 values: [review, model, unclassified]
       - name: dominant_subsystem
-        description: The area this commit mostly touched -- a weighted vote over its files (int_commit_files).
+        description: The area this commit mostly touched -- int_commit_profile's weighted vote over its files; 'other' for an empty commit.
         tests:
           - not_null
           - accepted_values:

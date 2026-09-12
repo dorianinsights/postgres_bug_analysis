@@ -4,8 +4,18 @@ models:
   - name: int_bug_reports
     description: >
       One row per numbered pgsql-bugs report whose root message falls in
-      the corpus window, with the real reporter parsed from the form body.
-      Grain = bug_number.
+      the corpus window, with the real reporter parsed from the form body and
+      the report's outcome (linked to any commit via int_commit_bug_links,
+      earliest linked commit day, report-to-fix latency; recent reports are
+      right-censored). Grain = bug_number.
+    tests:
+      # is_acted_upon, the commit date and the link kind must agree
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: is_acted_upon = (first_commit_dt IS NOT NULL)
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: is_acted_upon = (linked_via IS NOT NULL)
     columns:
       - name: bug_number
         tests: [unique, not_null]
@@ -28,3 +38,15 @@ models:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
+      - name: is_acted_upon
+        tests: [not_null]
+      - name: linked_via
+        description: How the report was linked to a commit; NULL when never linked.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [both, discussion_link, bug_ref]
+      - name: first_commit_dt
+        description: The report's first linked fix-commit day (UTC); NULL when never linked.
+      - name: days_to_commit
+        description: first_commit_dt - reported_dt; NULL when never linked.

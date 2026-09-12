@@ -8,7 +8,7 @@
 -- branch_scope: trunk feature work, a backpatched stable fix, beta
 -- stabilization), and how long that took. is_acted_upon widens "cited" for the
 -- BUG # form reports with dim_bug's other exact link, a commit's Bug: #NNNNN
--- trailer (int_bug_outcomes), so it is the chart-facing "linked to a fix" flag
+-- trailer (int_bug_reports), so it is the chart-facing "linked to a fix" flag
 -- for every bug report, form or free-form; first_action_dt / days_to_action are
 -- the earlier of the two links, with action_outcome / days_to_action_window /
 -- thread_size_window the chart-facing labels (the same latency_windows and

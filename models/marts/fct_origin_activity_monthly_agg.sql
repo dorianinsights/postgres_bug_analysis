@@ -6,10 +6,10 @@
 -- hash, so counting every branch would multiply each fix by its
 -- backpatch breadth. UTC months.
 WITH security_fix_commits AS (
-  SELECT DISTINCT fcm.abbrev_hash
+  SELECT DISTINCT fcm.commit_hash
   FROM {{ ref('int_fix_commits') }} AS fcm
   INNER JOIN {{ ref('int_fix_reps') }} AS reps ON fcm.group_ord = reps.item_ord
-  WHERE reps.cves IS NOT null
+  WHERE reps.cves IS NOT null AND fcm.commit_hash IS NOT null
 ),
 
 master_commits AS (
@@ -17,13 +17,13 @@ master_commits AS (
     DATE_TRUNC('month', fcm.commit_dt)::DATE AS month_dt,
     CASE
       WHEN fcm.origin != 'unknown_or_internal' THEN fcm.origin
-      WHEN sfc.abbrev_hash IS NOT null THEN 'unknown_or_internal_security'
+      WHEN sfc.commit_hash IS NOT null THEN 'unknown_or_internal_security'
       ELSE 'unknown_or_internal_not_security'
     END AS origin,
     fcm.has_ai_involvement
   FROM {{ ref('dim_commit') }} AS fcm
   INNER JOIN {{ ref('dim_major') }} AS dmj ON fcm.dim_major_key = dmj.dim_major_key
-  LEFT JOIN security_fix_commits AS sfc ON LEFT(fcm.commit_hash, 9) = sfc.abbrev_hash
+  LEFT JOIN security_fix_commits AS sfc ON fcm.commit_hash = sfc.commit_hash
   -- master (the development trunk) only. NOT is_released is no longer a proxy for
   -- this: the in-progress major's stable branch (e.g. PG19 beta) is also
   -- unreleased, but its commits are backpatch-style stabilization, not trunk
@@ -50,7 +50,7 @@ thread_rollup AS (
     COALESCE(ths.source_list, 'unknown_or_internal_not_security') AS origin,
     COUNT(DISTINCT dsc.message_id) AS cited_thread_cnt
   FROM {{ ref('int_commit_discussions') }} AS dsc
-  INNER JOIN {{ ref('stg_git_commits') }} AS gcm
+  INNER JOIN {{ ref('int_git_commits') }} AS gcm
     ON dsc.commit_hash = gcm.commit_hash AND gcm.branch = 'master'
   LEFT JOIN {{ ref('int_thread_sources') }} AS ths ON dsc.message_id = ths.message_id
   GROUP BY ALL

@@ -19,34 +19,15 @@
 -- partial accumulation window (15.1 shipped ~4 weeks after 15.0). Upcoming
 -- open/future releases come from the scheduled calendar (version numbers known
 -- ahead of the release, but the fix/CVE counts are not -- those live in
--- int_release_summary for shipped releases only). Grain = dim_release_key.
-WITH item_counts AS (
-  SELECT
-    version,
-    COUNT(*) AS parsed_item_cnt
-  FROM {{ ref('stg_release_items') }}
-  GROUP BY ALL
-),
-
-fix_releases AS (
-  SELECT
-    rel.version,
-    rel.major,
-    rel.minor,
-    rel.release_dt,
-    cnt.parsed_item_cnt
-  FROM {{ ref('int_versions') }} AS rel
-  INNER JOIN item_counts AS cnt ON rel.version = cnt.version
-  WHERE rel.minor > 0
-),
-
-grouped AS (
+-- dim_release for shipped releases only). Grain = dim_release_key.
+WITH grouped AS (
   SELECT
     release_dt,
     STRING_AGG(version, ' / ' ORDER BY major, minor) AS versions,
     COUNT(*) AS release_cnt,
-    MAX(parsed_item_cnt) < {{ var('scheduled_release_min_items') }} AS is_out_of_band
-  FROM fix_releases
+    MAX(item_cnt) < {{ var('scheduled_release_min_items') }} AS is_out_of_band
+  FROM {{ ref('int_versions') }}
+  WHERE minor > 0
   GROUP BY ALL
 ),
 

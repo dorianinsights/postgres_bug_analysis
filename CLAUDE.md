@@ -139,7 +139,8 @@ per-session memories, which aren't committed to git.)
 ## Design decisions worth remembering
 - **Identity resolution is connected-components.** `macros/person_node.sql`
   yields a per-(email,name) node key; `int_person_map` merges nodes that share a
-  normalized email OR name (transitively, à la `int_fix_groups`) into one
+  normalized email OR name (transitively, through the shared
+  `connected_components` macro that `int_fix_groups` also uses) into one
   `person_key`. Facts compute the node key and JOIN `int_person_map`;
   `dim_person`, `dim_bug` reporters, and `dim_commit` authors all resolve
   through it. Real patch authors come from the commit body's `Author:` trailer,

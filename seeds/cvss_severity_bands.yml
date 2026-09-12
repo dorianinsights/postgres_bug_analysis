@@ -6,7 +6,7 @@ seeds:
       The CVSS v3 base-score -> severity band mapping (NONE/LOW/MEDIUM/HIGH/
       CRITICAL) and each band's display order, defined once here so the
       thresholds live in a single place instead of being duplicated between
-      stg_cve_severity (per CVE) and int_fix_severity (per fix's worst CVE).
+      stg_cve_severity (per CVE) and fct_fixes (per fix's worst CVE).
       Inclusive, contiguous one-decimal score ranges; max_base_score NULL =
       unbounded (CRITICAL, 9.0+). Consumers range-join on the score
       (score >= min_base_score AND score <= COALESCE(max_base_score, score));

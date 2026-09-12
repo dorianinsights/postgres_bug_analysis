@@ -1,6 +1,5 @@
 -- (release-release, contributor) credit counts, aggregated from the
--- fix<->contributor bridge joined to the fix-grain star (the "(Name, Name)"
--- parse now lives in int_fix_contributors, not inline here). Conforms to
+-- fix<->contributor bridge joined to the fix-grain star. Conforms to
 -- dim_release via dim_release_key. is_first_release marks a contributor's debut,
 -- except in the corpus's first release (everyone is trivially "new" there).
 -- Grain = (dim_release_key, contributor).
