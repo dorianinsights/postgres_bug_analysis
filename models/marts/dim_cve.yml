@@ -26,11 +26,12 @@ models:
                 min_value: 0
                 max_value: 10
       - name: severity_band_order
-        description: Ordinal rank of severity_band (NONE=0 … CRITICAL=4) from the seed; NULL for unlisted-severity and special-member rows.
+        description: The band's display order from the cvss_severity_bands seed; NULL for unlisted-severity and special-member rows.
         tests:
-          - accepted_values:
+          - relationships:
               arguments:
-                values: [0, 1, 2, 3, 4]
+                to: ref('cvss_severity_bands')
+                field: severity_band_order
       - name: is_severity_unlisted
         tests: [not_null]
       - name: is_synthetic_row

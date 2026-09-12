@@ -121,17 +121,19 @@ models:
                 min_value: 0
                 max_value: 10
       - name: severity_band
-        description: The worst cited CVE's CVSS band (stg_cve_severity); NULL when none is scored.
+        description: The worst cited CVE's band from the cvss_severity_bands seed (via stg_cve_severity); NULL when none of the fix's CVEs is on the security page.
         tests:
-          - accepted_values:
+          - relationships:
               arguments:
-                values: [NONE, LOW, MEDIUM, HIGH, CRITICAL]
+                to: ref('cvss_severity_bands')
+                field: severity_band
       - name: severity_band_order
-        description: Ordinal rank of severity_band (NONE=0 … CRITICAL=4) for chart sorting; NULL for non-CVE fixes.
+        description: The band's display order from the same seed row, for chart sorting; NULL for non-CVE fixes.
         tests:
-          - accepted_values:
+          - relationships:
               arguments:
-                values: [0, 1, 2, 3, 4]
+                to: ref('cvss_severity_bands')
+                field: severity_band_order
       - name: bug_link_cnt
         tests:
           - not_null
