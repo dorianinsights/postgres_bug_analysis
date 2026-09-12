@@ -1,13 +1,6 @@
-WITH dev_commits AS (
-  SELECT
-    SPLIT_PART(version, '.', 1)::INTEGER AS major,
-    commit_hash,
-    commit_ts
-  FROM {{ ref('int_commit_versions') }}
-  WHERE release_status = 'development'
-),
-
-per_major AS (
+-- every commit developed FOR the major: master between fork points plus the
+-- branch's pre-GA stabilization
+WITH per_major AS (
   SELECT
     major,
     COUNT(*)::BIGINT AS dev_commit_cnt,
@@ -15,7 +8,8 @@ per_major AS (
     MIN(commit_ts) AS first_dev_commit_ts,
     ARG_MAX(commit_hash, commit_ts) AS last_dev_commit_hash,
     MAX(commit_ts) AS last_dev_commit_ts
-  FROM dev_commits
+  FROM {{ ref('int_commit_versions') }}
+  WHERE release_status = 'development'
   GROUP BY ALL
 ),
 

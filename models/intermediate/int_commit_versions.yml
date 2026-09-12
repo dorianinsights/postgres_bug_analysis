@@ -60,6 +60,12 @@ models:
               arguments:
                 to: ref('dim_version')
                 field: version
+      - name: major
+        description: The version's major line (stg_commit_versions); NULL exactly when version is NULL. int_major_development groups the development commits on it.
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "IS NULL = (version IS NULL)"
       - name: release_status
         description: "'shipped' (tagged minor), 'open' (pending for the next release), 'development' (a major's .0), NULL (master after the newest fork)."
         tests:

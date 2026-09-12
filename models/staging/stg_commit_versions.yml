@@ -21,3 +21,13 @@ models:
                 field: commit_hash
       - name: version
         tests: [not_null]
+      - name: major
+        description: The version's major, parsed from the M.N string.
+        tests: [not_null]
+      - name: minor
+        description: The version's minor; 0 for a major's development (M.0).
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
