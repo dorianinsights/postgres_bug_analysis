@@ -7,13 +7,16 @@
   'is_synthetic_row',
 ] %}
 
-WITH fix_counts AS (
+-- shipped releases only: the upcoming ones have no items yet
+WITH shipped_measures AS (
   SELECT
     release_dt,
-    COUNT(*) AS distinct_fix_cnt,
-    COUNT(*) FILTER (WHERE cves IS NOT null) AS security_fix_cnt
-  FROM {{ ref('int_fix_reps') }}
-  GROUP BY ALL
+    SUM(fix_cnt)::BIGINT AS distinct_fix_cnt,
+    SUM(security_fix_cnt)::BIGINT AS security_fix_cnt,
+    SUM(committed_fix_cnt)::BIGINT AS committed_fix_cnt
+  FROM {{ ref('int_release_origin_fixes') }}
+  WHERE status = 'shipped'
+  GROUP BY release_dt
 ),
 
 cve_counts AS (
@@ -22,33 +25,6 @@ cve_counts AS (
     COUNT(DISTINCT cve_id) AS distinct_cve_cnt
   FROM {{ ref('int_fix_cves') }}
   GROUP BY ALL
-),
-
-committed_counts AS (
-  SELECT
-    release_dt,
-    COUNT(*) AS committed_fix_cnt
-  FROM {{ ref('int_committed_fixes') }}
-  GROUP BY ALL
-),
-
--- shipped releases only: the upcoming ones have no items yet
-shipped_measures AS (
-  SELECT
-    rel.release_dt,
-    COALESCE(fix.distinct_fix_cnt, 0) AS distinct_fix_cnt,
-    COALESCE(cve.distinct_cve_cnt, 0) AS distinct_cve_cnt,
-    COALESCE(fix.security_fix_cnt, 0) AS security_fix_cnt,
-    COALESCE(cmt.committed_fix_cnt, 0) AS committed_fix_cnt,
-    -- documented fixes per committed fix; NULL when nothing was committed
-    (
-      COALESCE(fix.distinct_fix_cnt, 0)::DECIMAL(15, 6) / NULLIF(cmt.committed_fix_cnt, 0)
-    )::DECIMAL(7, 6) AS documentation_rate
-  FROM {{ ref('int_releases') }} AS rel
-  LEFT OUTER JOIN fix_counts AS fix ON rel.release_dt = fix.release_dt
-  LEFT OUTER JOIN cve_counts AS cve ON rel.release_dt = cve.release_dt
-  LEFT OUTER JOIN committed_counts AS cmt ON rel.release_dt = cmt.release_dt
-  WHERE rel.status = 'shipped'
 )
 
 SELECT
@@ -62,10 +38,11 @@ SELECT
   rel.versions,
   rel.release_cnt,
   rrs.distinct_fix_cnt,
-  rrs.distinct_cve_cnt,
+  CASE WHEN rel.status = 'shipped' THEN COALESCE(cve.distinct_cve_cnt, 0) END AS distinct_cve_cnt,
   rrs.security_fix_cnt,
   rrs.committed_fix_cnt,
-  rrs.documentation_rate,
+  -- documented fixes per committed fix; NULL when nothing was committed
+  (rrs.distinct_fix_cnt::DECIMAL(15, 6) / NULLIF(rrs.committed_fix_cnt, 0))::DECIMAL(7, 6) AS documentation_rate,
   -- cycle signals: non-NULL only for the started scheduled cycles
   irc.cycle_start_dt,
   irc.window_days,
@@ -84,6 +61,7 @@ SELECT
   false AS is_synthetic_row
 FROM {{ ref('int_releases') }} AS rel
 LEFT OUTER JOIN shipped_measures AS rrs ON rel.release_dt = rrs.release_dt
+LEFT OUTER JOIN cve_counts AS cve ON rel.release_dt = cve.release_dt
 LEFT OUTER JOIN {{ ref('int_release_cycles') }} AS irc ON rel.release_dt = irc.ships_at_dt
 {{ special_member_rows(
   'dim_release_key', columns,

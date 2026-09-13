@@ -1,0 +1,54 @@
+version: 2
+
+models:
+  - name: int_release_origin_fixes
+    description: >
+      Fixes per release by origin, counted once for both populations: the
+      documented fixes (release-notes items, from int_fix_profile), how many of
+      those cite a CVE, and the committed fixes that shipped in the release
+      (from int_committed_fixes). Every shipped and open release carries all
+      four origins, zero-filled; the open release has no items yet, so its
+      documented counts are NULL. fct_fix_origins_agg reads the rows as they
+      are and dim_release sums them per release. Grain = (release_dt, origin).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [release_dt, origin]
+      # exactly the shipped rows carry documented counts
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (fix_cnt IS NOT NULL) = (status = 'shipped')
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: security_fix_cnt IS NULL OR security_fix_cnt <= fix_cnt
+    columns:
+      - name: release_dt
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_releases')
+                field: release_dt
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [shipped, open]
+      - name: origin
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - pgsql-bugs
+                  - pgsql-hackers
+                  - unknown_or_internal_security
+                  - unknown_or_internal_not_security
+      - name: fix_cnt
+        description: Documented fixes of this origin; zero-filled for shipped releases, NULL for the open one.
+      - name: security_fix_cnt
+        description: The documented fixes of this origin that cite a CVE (a list-reported CVE fix keeps its list origin, so this is not just the security origin's fix_cnt).
+      - name: committed_fix_cnt
+        description: Distinct committed fixes of this origin that shipped in (or are pending for) the release; zero-filled.
+        tests: [not_null]

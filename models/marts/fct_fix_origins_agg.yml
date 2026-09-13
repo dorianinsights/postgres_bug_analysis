@@ -6,9 +6,10 @@ models:
       Fixes per release by origin in both populations -> data/derived/fct_fix_origins_agg.csv:
       the documented fixes (fix_cnt, release-notes items) and the committed fixes
       that shipped in the release (committed_fix_cnt), with documentation_rate
-      between them. Every shipped release and the open one carry all four origins
-      (zero-filled), so a chart needs no spine of its own and the categorical
-      sort stays chronological. The open release has no items (fix_cnt NULL)
+      between them. The counts are int_release_origin_fixes as they are (the
+      same rows dim_release sums per release); every shipped release and the
+      open one carry all four origins (zero-filled), so a chart needs no spine
+      of its own and the categorical sort stays chronological. The open release has no items (fix_cnt NULL)
       and its committed_fix_cnt is the pending stream so far; observed measures
       only -- its documented-units forecast is fct_fix_projections'
       origin_scaled method, so an estimate never sits beside the actuals.

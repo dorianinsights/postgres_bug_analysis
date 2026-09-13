@@ -36,9 +36,8 @@ SELECT
   prf.has_test_changes,
   prf.is_docs_only,
   prf.dominant_subsystem,
-  {{ resolve_fix_origin(
-    'COALESCE(cmr.from_bugs, false)', 'COALESCE(cmr.from_hackers, false)', 'reps.cves IS NOT null'
-  ) }} AS origin
+  reps.cves IS NOT null AS is_security,
+  {{ resolve_fix_origin('COALESCE(cmr.from_bugs, false)', 'COALESCE(cmr.from_hackers, false)', 'is_security') }} AS origin
 FROM {{ ref('int_fix_reps') }} AS reps
 LEFT OUTER JOIN commit_rollup AS cmr ON reps.item_ord = cmr.group_ord
 LEFT OUTER JOIN rep_commit AS rpc ON reps.item_ord = rpc.group_ord

@@ -50,27 +50,27 @@ UNION ALL
 -- the in-progress major's GA-to-be (e.g. 19.0): its release is the matching
 -- in_development row in dim_release (same key)
 SELECT
-  {{ dbt_utils.generate_surrogate_key(["smd.major || '.0'"]) }} AS dim_version_key,
+  {{ dbt_utils.generate_surrogate_key(['csp.version']) }} AS dim_version_key,
   dmj.dim_major_key,
-  {{ dbt_utils.generate_surrogate_key(["smd.major || '.0'"]) }} AS dim_release_key,
-  smd.major || '.0' AS version,
-  smd.major,
+  {{ dbt_utils.generate_surrogate_key(['csp.version']) }} AS dim_release_key,
+  csp.version,
+  dmj.major,
   0 AS minor,
   true AS is_major_release,
   {{ future_eternity_dt() }} AS wrap_dt,
   {{ future_eternity_dt() }} AS release_dt,
   null AS item_cnt,
   false AS is_out_of_band,
-  smd.first_dev_commit_dt AS first_commit_dt,
-  smd.first_dev_commit_ts AS first_commit_ts,
-  smd.first_dev_commit_hash AS first_commit_hash,
-  smd.last_dev_commit_dt AS last_commit_dt,
-  smd.last_dev_commit_ts AS last_commit_ts,
-  smd.last_dev_commit_hash AS last_commit_hash,
+  csp.first_commit_dt,
+  csp.first_commit_ts,
+  csp.first_commit_hash,
+  csp.last_commit_dt,
+  csp.last_commit_ts,
+  csp.last_commit_hash,
   false AS is_synthetic_row
-FROM {{ ref('int_major_development') }} AS smd
-INNER JOIN {{ ref('dim_major') }} AS dmj ON smd.major = dmj.major
-WHERE smd.dev_status = 'beta'
+FROM {{ ref('dim_major') }} AS dmj
+INNER JOIN commit_span AS csp ON dmj.major || '.0' = csp.version
+WHERE dmj.lifecycle = 'beta'
 {{ special_member_rows(
   'dim_version_key', columns,
   unknown={
