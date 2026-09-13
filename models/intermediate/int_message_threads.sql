@@ -79,10 +79,11 @@ SELECT
   msg.message_id = rts.root_id AS is_thread_root,
   crt.root_id IS NOT null AS is_fix_linked,
   msg.bug_number,
-  -- the report itself: the earliest bare "BUG #NNNNN:" message of its bug (a
-  -- re-post can repeat the subject), so exactly one per bug number
-  msg.has_bug_report_subject AND ROW_NUMBER() OVER (
-    PARTITION BY msg.bug_number, msg.has_bug_report_subject
+  -- the report itself: the earliest bare "BUG #NNNNN:" message that starts a
+  -- thread (a re-post, or a reply that dropped the "Re:", repeats the
+  -- subject), so at most one per bug number
+  msg.has_bug_report_subject AND msg.parent_id IS null AND ROW_NUMBER() OVER (
+    PARTITION BY msg.bug_number, msg.has_bug_report_subject AND msg.parent_id IS null
     ORDER BY msg.sent_ts ASC, msg.message_id ASC
   ) = 1 AS is_bug_report,
   msg.form_reporter_name,

@@ -1,7 +1,7 @@
 _schema_version: "0.6.0"  # written automatically by dct migrate
 title: "PostgreSQL Fix Velocity — Changelog"
 notes: >
-  Every minor release of the corpus majors (PG14 onward, the upper bound
+  Every minor release of the corpus majors (PG12 onward, the upper bound
   discovered from the clone), parsed from the official
   release notes: fix volume per quarterly release, fix categories,
   security fixes, contributors, and next-release projection scenarios.
@@ -384,7 +384,7 @@ charts:
     type: bar
     query: contributors_by_release
     title: "Contributors per release: first-time vs returning"
-    subtitle: "Names credited in the release notes; first-time = new to this 2022+ corpus"
+    subtitle: "Names credited in the release notes; first-time = new to this 2019+ corpus"
     x: release_dt
     y: contributors
     color: cohort

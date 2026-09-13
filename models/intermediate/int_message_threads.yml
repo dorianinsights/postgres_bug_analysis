@@ -11,8 +11,10 @@ models:
       earliest archived message), whether its thread was eventually cited by a
       commit Discussion: trailer, plus the pgsql-bugs report tag parsed in
       staging (bug_number) and is_bug_report, the report itself: the earliest
-      bare "BUG #NNNNN:" message of its bug number, exactly one per bug (a
-      re-post can repeat the subject). The body stays in stg_list_messages.
+      bare "BUG #NNNNN:" message of its bug number that starts a thread, at most
+      one per bug (a re-post, or a reply that dropped the "Re:", repeats the
+      subject; a bug whose report predates the archive has none). The body
+      stays in stg_list_messages.
       Grain = (list_name, message_id).
     tests:
       - dbt_utils.unique_combination_of_columns:
@@ -62,7 +64,7 @@ models:
       - name: form_reporter_email
         description: From staging; the web form's "Email address:", NULL when the body isn't the form.
       - name: is_bug_report
-        description: The one message that IS the numbered report (int_bug_reports' grain); false for replies, re-posts, free-form posts and other lists.
+        description: The one message that IS the numbered report (int_bug_reports' grain); false for replies (even one without a "Re:"), re-posts, free-form posts and other lists.
         tests:
           - not_null
           - dbt_utils.expression_is_true:

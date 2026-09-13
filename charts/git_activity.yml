@@ -184,7 +184,7 @@ queries:
       conflict-resolution lines), so a fix landed on five majors counts its
       churn once. Summing every backpatch instead would inflate the series with the
       corpus, not the work: the number of stable branches inside the corpus
-      grew from one in 2021 to five since mid-2025 (see the backpatch-breadth
+      grew from one in 2019 to every supported major since mid-2023 (see the backpatch-breadth
       chart below). Generated file classes (translation catalogs .po,
       regression fixtures .out) are excluded -- source churn only -- and so are
       housekeeping commits (the release-notes SGML drafts are the largest single
@@ -219,9 +219,10 @@ queries:
       How many stable branches each backpatched fix landed on, per quarter:
       stable-branch fix commits divided by distinct fixes (fix_key). This is
       the multiplier the per-branch charts carry. It climbs with the corpus,
-      not the project -- one branch in 2021 (only REL_14 is inside the corpus
-      floor), five since mid-2025 -- which is why churn is summed per fix
-      above and why the per-branch charts are comparable only from Q3 2025 on.
+      not the project -- one branch in 2019 (only REL_12 is inside the corpus
+      floor), every supported major since mid-2023 -- which is why churn is
+      summed per fix above and why the per-branch charts are comparable only
+      from Q3 2023 on.
       The current quarter is partial.
     source: warehouse
     sql: |
@@ -403,7 +404,7 @@ charts:
     type: line
     query: quarterly_by_branch
     title: "Fix commits per non-master branch per quarter"
-    subtitle: "Each branch counts its own backpatches, so one fix landed on every stable major is one commit per branch here. Read each line on its own, not their sum: branches enter the corpus as majors ship, so all five are present only from Q3 2025"
+    subtitle: "Each branch counts its own backpatches, so one fix landed on every stable major is one commit per branch here. Read each line on its own, not their sum: branches enter the corpus as majors ship, so every supported major is present only from Q3 2023"
     x: quarter
     y: fix_commits
     y_label: "fix commits"
@@ -413,7 +414,7 @@ charts:
     type: bar
     query: commits_per_version
     title: "Fix commits per released version"
-    subtitle: "Stable-branch fix commits (housekeeping excluded) binned by the release they shipped in, split by major; shipped releases only. Bar height grows a layer per major entering the corpus -- comparable from Nov 2025 (five majors) on"
+    subtitle: "Stable-branch fix commits (housekeeping excluded) binned by the release they shipped in, split by major; shipped releases only. Bar height grows a layer per major entering the corpus -- comparable from Nov 2023 (five majors) on"
     x: release
     y: commit_cnt
     y_label: "fix commits"
@@ -455,7 +456,7 @@ charts:
     type: line
     query: backpatch_breadth
     title: "Backpatch breadth per quarter"
-    subtitle: "Stable-branch fix commits per distinct fix. Rises with the corpus (one branch in 2021, five since mid-2025), not the project -- the multiplier behind per-branch counts; current quarter partial"
+    subtitle: "Stable-branch fix commits per distinct fix. Rises with the corpus (one branch in 2019, every supported major since mid-2023), not the project -- the multiplier behind per-branch counts; current quarter partial"
     x: quarter
     y: branches_per_fix
     y_label: "branches per fix"

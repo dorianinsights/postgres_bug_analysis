@@ -6,7 +6,7 @@ models:
       Bridge from each distinct fix (its whole dedup group) to its implementing
       git commits: the group's annotated 9-char hashes from item_commits matched
       to the full corpus hashes on LEFT(hash, 9). commit_hash is NULL for an
-      annotation hash with no corpus commit (pre-corpus REL9_x branches), so
+      annotation hash with no corpus commit (a pre-corpus branch, REL_11 and older), so
       consumers can still count annotation coverage. A full hash can sit under
       several groups (a combined commit annotated on two items), but one
       annotated hash matches at most one corpus commit, so

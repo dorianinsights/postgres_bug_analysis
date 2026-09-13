@@ -3,18 +3,21 @@ version: 2
 models:
   - name: int_releases
     description: >
-      The release registry -- one row per PostgreSQL release (shipped, open, or
-      future), with the surrogate key minted once here so dim_release and
-      dim_version both conform to the same dim_release_key. The open release is
-      the first scheduled one after the latest TAGGED release (the registry, not
-      the clock), so a release day is never both shipped and open; is_announced
-      says whether a shipped release's day has arrived. Shipped releases are the
-      same-day groups of minor tags (int_versions, .0 majors excluded); a
-      release is out-of-band (an emergency re-release) when its largest minor
-      has fewer than var(scheduled_release_min_items) items, and the corpus's
-      first shipped release is a partial accumulation window. Upcoming releases
-      come from int_release_calendar with each active major's next minor
-      projected while it is still supported. Grain = dim_release_key.
+      One row per PostgreSQL release day, past and upcoming, with its status.
+      Shipped releases are the minor tags cut on the same day (from int_versions,
+      .0 majors excluded); the open release is the first scheduled date after
+      the latest tagged release, and the scheduled dates after that are future
+      releases, with each supported major's next minor number projected
+      (from int_release_calendar). A shipped release is out-of-band (an
+      emergency re-release) when its largest minor has fewer than
+      var(scheduled_release_min_items) items; such a release ships mid-cycle,
+      so cycle_ships_at_dt points at the next scheduled release day for
+      measures that work per cycle. is_announced says whether a shipped
+      release's day has arrived (a release is tagged on the Monday and
+      announced on the Thursday); the corpus's first shipped release is flagged
+      is_partial_window because it collected fixes for only part of a cycle.
+      The dim_release_key is minted here so dim_release and dim_version share
+      it. Grain = release_dt.
     tests:
       # a scheduled release IS its own cycle's ship day; only out-of-band
       # releases fold forward

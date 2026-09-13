@@ -491,7 +491,7 @@ carry no separate unit tests.
   `int_fix_groups.sql`, the same walk `int_person_map` uses for identity
   resolution).
 - The corpus's first shipped release accumulated only a partial cycle of fixes
-  (with FIRST_MAJOR = 14 that is 14.1, Nov 2021, six weeks after 14.0) and is
+  (with FIRST_MAJOR = 12 that is 12.1, Nov 2019, six weeks after 12.0) and is
   flagged `is_partial_window` on `dim_release` -- derived as the earliest shipped
   release, never named -- so projection fits and the trend charts exclude it.
 - Timestamps keep full fidelity (ISO 8601 with offset) through raw and

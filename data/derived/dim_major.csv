@@ -6,5 +6,7 @@ dim_major_key,major,major_label,stable_branch,ga_dt,eol_dt,is_released,is_suppor
 70efdf2ec9b086079795c442636b55fb,17,PG17,REL_17_STABLE,2024-09-26,2029-11-08,true,true,released,false
 9bf31c7ff062936a96d3c8bd1f8f2ff3,15,PG15,REL_15_STABLE,2022-10-13,2027-11-11,true,true,released,false
 aab3238922bcc25a6f606eb525ffdc56,14,PG14,REL_14_STABLE,2021-09-30,2026-11-12,true,true,released,false
+c20ad4d76fe97759aa27a0c99bff6710,12,PG12,REL_12_STABLE,2019-10-03,2024-11-14,true,false,released,false
+c51ce410c124a10e0db5e4b97fc2af39,13,PG13,REL_13_STABLE,2020-09-24,2025-11-13,true,false,released,false
 c74d97b01eae257e44aa9d5bade97baf,16,PG16,REL_16_STABLE,2023-09-14,2028-11-09,true,true,released,false
 eb0a191797624dd3a48fa681d3061212,,master,master,9999-01-01,9999-01-01,false,false,development,false

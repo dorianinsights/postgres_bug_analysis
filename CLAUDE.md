@@ -218,11 +218,11 @@ per-session memories, which aren't committed to git.)
   and `int_major_development` is an aggregate of it (no separate git walk).
   **Never SUM anything per stable-branch commit across branches** (churn, file
   counts): a fix is one commit per branch it was backpatched to, and the number
-  of branches inside the corpus grew from one (2021) to five (2025+), so the
-  sum tracks the corpus, not the work. Sum over
+  of branches inside the corpus grew from one (2019) to every supported major
+  (2023+), so the sum tracks the corpus, not the work. Sum over
   `dim_commit.is_representative_commit` (one backpatch per fix, its largest
   by churn) instead; the
-  per-branch charts are comparable only from Q3 2025 on. `int_git_commits` defines `fix_key` (normalized subject —
+  per-branch charts are comparable only from Q3 2023 on. `int_git_commits` defines `fix_key` (normalized subject —
   the identity of a fix across its backpatches) and `is_housekeeping` (stamps,
   translations, notes drafting, tz data: not fixes) once; every "distinct fix
   commits" count is `COUNT(DISTINCT fix_key) ... WHERE NOT is_housekeeping`

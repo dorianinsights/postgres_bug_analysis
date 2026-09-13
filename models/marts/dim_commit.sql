@@ -54,7 +54,7 @@ SELECT
   -- carry extra conflict-resolution lines, so this is the fix's full size),
   -- newest major then newest commit as the tiebreaks. A fix backpatched to N
   -- branches is N commits, and the number of branches inside the corpus grew
-  -- from one (2021) to five (2025+), so anything summed per commit inflates
+  -- from one (2019) to every supported major (2023+), so anything summed per commit inflates
   -- with the corpus rather than the work; churn views sum the representatives
   -- instead. False outside the backpatch stream.
   (

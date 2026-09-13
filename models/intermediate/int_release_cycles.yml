@@ -3,13 +3,21 @@ version: 2
 models:
   - name: int_release_cycles
     description: >
-      Cycle-grain signals for each started release cycle, joined into dim_release
-      on ships_at_dt = release_dt (a cycle is a release at an earlier lifecycle
-      stage). Early-signal counts over the open cycle's age-window, the
-      like-for-like pace (early vs full distinct committed fixes, from
-      int_committed_fixes -- each fix already belongs to the release it ships
-      in), and the window. Replaces the standalone fct_release_cycles fact.
-      Grain = ships_at_dt.
+      What happened early in each release cycle, measured the same way for every
+      cycle so the open one can be compared with the past ones. A cycle runs
+      from one wrap Monday (cycle_start_dt) to the next scheduled release day
+      (ships_at_dt). window_days is how old the open cycle is today; the
+      early_* counts are the bug reports, list messages and distinct committed
+      fixes that had arrived within that many days of each cycle's start, and
+      full_fix_cnt is the cycle's eventual total, so early versus full is the
+      pace comparison fct_fix_projections uses. first_window_fix_cnt is the
+      same fix count over a fixed var(seasonality_window_days) so it does not
+      move as the open cycle ages. Because window_days changes daily, every row
+      changes daily. Fixes are assigned to cycles through
+      int_releases.cycle_ships_at_dt, so an emergency re-release counts toward
+      the cycle it came from. Only started cycles that ship a corpus release
+      (or are still open) are kept; dim_release folds these columns onto the
+      matching release row. Grain = ships_at_dt.
     columns:
       - name: ships_at_dt
         tests: [not_null, unique]

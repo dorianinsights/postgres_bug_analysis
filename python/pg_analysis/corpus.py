@@ -28,7 +28,7 @@ from datetime import UTC, date, datetime
 
 from pg_analysis import paths
 
-FIRST_MAJOR = 14
+FIRST_MAJOR = 12
 
 # Lowest FIRST_MAJOR the tag-naming assumption below supports (see the docstring).
 MIN_FIRST_MAJOR = 11
