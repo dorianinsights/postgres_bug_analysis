@@ -136,7 +136,8 @@ queries:
         END AS origin,
         ai_commit_cnt
       FROM {{ ref('fct_origin_activity_monthly_agg') }}
-      WHERE month_dt >= DATE '2026-01-01'
+      -- from the first month with a disclosed AI involvement
+      WHERE month_dt >= (SELECT MIN(month_dt) FROM {{ ref('fct_origin_activity_monthly_agg') }} WHERE ai_commit_cnt > 0)
       ORDER BY 1, 2
 
 charts:

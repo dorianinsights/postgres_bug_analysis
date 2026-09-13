@@ -59,9 +59,8 @@ models:
         description: >
           sent_ts truncated to its UTC calendar day — the day-grain grouping key
           consumers use in place of re-truncating the instant. Conforms to
-          dim_date: if the relationships test fails, the archive has outgrown the
-          fixed calendar spine (or a skewed client Date header landed outside it)
-          — widen date_spine_start / date_spine_end in vars.yml and rebuild.
+          dim_date; the relationships test fails on a skewed client Date header
+          outside the corpus span.
         tests:
           - not_null
           - relationships:

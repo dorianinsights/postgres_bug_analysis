@@ -9,7 +9,8 @@ SELECT
   smd.major_label,
   'REL_' || smd.major || '_STABLE' AS stable_branch,
   COALESCE(smd.ga_dt, {{ future_eternity_dt() }}) AS ga_dt,
-  {{ major_eol_dt('smd.major') }} AS eol_dt,
+  -- no support window until GA
+  COALESCE({{ major_eol_dt('smd.ga_dt') }}, {{ future_eternity_dt() }}) AS eol_dt,
   smd.dev_status = 'released' AS is_released,
   is_released AND {{ as_of_date() }} <= eol_dt AS is_supported,
   smd.dev_status AS lifecycle,

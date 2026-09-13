@@ -38,7 +38,8 @@ latest_shipped AS (
 active_majors AS (
   SELECT
     major,
-    MAX(minor) AS latest_minor
+    MAX(minor) AS latest_minor,
+    MAX(release_dt) FILTER (WHERE is_major_release) AS ga_dt
   FROM {{ ref('int_versions') }}
   GROUP BY major
 ),
@@ -68,7 +69,7 @@ upcoming AS (
   CROSS JOIN active_majors AS amj
   -- only while the major is still supported, else an EOL major gets phantom
   -- future minors
-  WHERE udt.release_dt <= {{ major_eol_dt('amj.major') }}
+  WHERE udt.release_dt <= {{ major_eol_dt('amj.ga_dt') }}
   GROUP BY udt.release_dt, udt.wrap_dt, udt.status
 ),
 

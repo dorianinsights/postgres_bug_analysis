@@ -3,14 +3,14 @@ version: 2
 models:
   - name: int_release_calendar
     description: >
-      Scheduled minor releases (second Thursday of Feb/May/Aug/Nov) and
-      their wrap Mondays (release - 3 days, the content cutoff), computed
-      from the rule so it extends one release past today. The grid is
-      anchored on the corpus (February of the year before the earliest
-      corpus release in int_versions), not on a date literal, so it moves with
-      FIRST_MAJOR. The assert_release_calendar_matches_observed_wraps test pins
-      the computed wraps to the observed tags where both exist. Out-of-band
-      releases are deliberately absent.
+      Scheduled minor releases (the second Thursday of each var(release_months)
+      month) and their wrap Mondays (the Monday of release week, the content
+      cutoff), computed from the rule from the year before the earliest corpus
+      release tag through var(release_calendar_horizon_months) past today. No
+      date literal: the grid moves with FIRST_MAJOR, and dim_date's spine is
+      this calendar's span. The assert_release_calendar_matches_observed_wraps
+      test pins the computed wraps to the observed tags where both exist.
+      Out-of-band releases are deliberately absent.
     tests:
       - dbt_utils.expression_is_true:
           arguments:
@@ -18,14 +18,7 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: ISODOW(wrap_dt) = 1
-      - dbt_utils.expression_is_true:
-          arguments:
-            expression: MONTH(scheduled_release_dt) IN (2, 5, 8, 11)
     columns:
-      # both dates conform to dim_date: the calendar is generated from 2016-08
-      # through six months past today, so if either relationships test fails the
-      # fixed calendar spine no longer covers the schedule — widen
-      # date_spine_start / date_spine_end in vars.yml and rebuild
       - name: scheduled_release_dt
         tests:
           - unique

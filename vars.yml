@@ -53,38 +53,23 @@ vars:
   # (a bare ISO date) to pin the clock -- dbt unit tests do, to replay the
   # wrap-Monday-to-Thursday window; never set it for a real build.
   as_of_date: null
-  # -- Loose sanity floors shared by the date/major range tests. These are
-  # deliberately NOT the corpus bounds (corpus.py owns those; a dbt copy
-  # could silently drift) — just "obviously wrong data" backstops.
-  test_floor_major: 10
-  # Lower sanity bound for the dim_date range test; keep <= date_spine_start so
-  # pushing the corpus floor back never trips it.
-  test_floor_release_dt: "'2016-07-01'"
-  test_floor_git_ts: "'2016-10-01'"
-  # -- Calendar spine bounds for dim_date. FIXED on purpose so the date
-  # dimension builds without depending on any other model: the spine comes from
-  # dbt_date.get_base_dates(start, end) over these literals. Unlike the
-  # test_floor_* values above these are BARE dates (no embedded quotes) --
-  # get_base_dates wraps them in its own cast('...'). end_date is EXCLUSIVE
-  # (dbt_date's spine is [start, end)). start sits safely before the earliest
-  # corpus row; end runs a couple years past the last scheduled release.
-  # The relationships tests to dim_date on the source-side date columns
-  # (stg_git_commits.commit_dt, stg_list_messages.sent_dt, int_release_calendar)
-  # fail the build if the corpus ever outgrows this span -- widen the var and
-  # rebuild when it does.
-  # Covers the lowest allowed corpus floor AND the release calendar's own start
-  # (int_release_calendar anchors a year before the earliest corpus release tag,
-  # so the earliest corpus release has a prior cycle). Set wide enough that
-  # pushing FIRST_MAJOR back never needs a change here; those relationships
-  # tests guard it.
-  date_spine_start: "2016-07-01"
-  date_spine_end: "2029-01-01"
+  # -- The release schedule (int_release_calendar, macros/release_dates.sql):
+  # a scheduled minor release is the second Thursday of each of these months,
+  # and its wrap Monday is the Monday of that week. The calendar runs from the
+  # year before the earliest corpus release tag through this many months past
+  # today, and dim_date's spine spans the same calendar, so no date literal
+  # anchors either -- both move with FIRST_MAJOR.
+  release_months: [2, 5, 8, 11]
+  release_calendar_horizon_months: 6
+  # A major's final minor is the last scheduled release of the year this many
+  # years after its GA (macro major_eol_dt).
+  major_support_years: 5
   # -- Sentinel "eternity" dates carried as real dim_date rows (outside the
-  # spine above), so an unknown / not-applicable date reference can point at a
-  # real calendar row instead of NULL and still pass its dim_date relationships
-  # test. past_eternity is the unknown/oldest marker, future_eternity the
-  # not-yet/newest one. Bare dates (rendered as DATE literals). dim_date's
-  # date-range test excludes these two rows.
+  # calendar spine), so an unknown / not-applicable date reference can point at
+  # a real calendar row instead of NULL and still pass its dim_date
+  # relationships test. past_eternity is the unknown/oldest marker,
+  # future_eternity the not-yet/newest one. Bare dates (rendered as DATE
+  # literals).
   past_eternity: "1900-01-01"
   future_eternity: "9999-01-01"
   # -- Build parameter (not an analysis knob). The on-run-end audit exporter
@@ -95,8 +80,3 @@ vars:
   # already did). Raise it to re-export a larger mart; git rm the stale CSV
   # of any mart that grows past it.
   derived_csv_max_rows: 1000
-  # a major's end of support (macro major_eol_dt): the final minor of major M
-  # lands on major_eol_month/major_eol_day of year M + major_eol_year_offset
-  major_eol_year_offset: 2012
-  major_eol_month: 11
-  major_eol_day: 30

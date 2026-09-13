@@ -180,7 +180,8 @@ queries:
         role,
         COUNT(*) AS threads
       FROM roles
-      WHERE started_dt >= DATE '2025-01-01'
+      -- from the first month with a disclosed AI involvement
+      WHERE started_dt >= (SELECT DATE_TRUNC('month', MIN(started_dt)) FROM {{ ref('fct_threads') }} WHERE has_ai_involvement)
       GROUP BY 1, 2
       ORDER BY 1, 2
 
@@ -194,7 +195,8 @@ queries:
         COUNT(*) FILTER (WHERE has_ai_involvement) AS ai_threads,
         ROUND(COUNT(*) FILTER (WHERE has_ai_involvement) * 1.0 / COUNT(*), 4) AS ai_share
       FROM {{ ref('fct_threads') }}
-      WHERE started_dt >= DATE '2025-01-01'
+      -- from the first month with a disclosed AI involvement
+      WHERE started_dt >= (SELECT DATE_TRUNC('month', MIN(started_dt)) FROM {{ ref('fct_threads') }} WHERE has_ai_involvement)
       GROUP BY 1, 2
       ORDER BY 1, 2
 

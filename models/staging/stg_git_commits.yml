@@ -30,22 +30,16 @@ models:
       - name: commit_ts
         tests:
           - not_null
-          # Floor: a loose sanity bound below the earliest branch point the
-          # corpus allows (FIRST_MAJOR >= 11 -> PG10's branch point, mid-2017);
-          # the real lower bound is tag ancestry (corpus.HISTORY_FLOOR_TAG).
-          # Ceiling: committer-local dates can sit up to a calendar day ahead
-          # of us, hence the +2 slop.
+          # the lower bound is tag ancestry (corpus.HISTORY_FLOOR_TAG); the
+          # ceiling allows committer-local dates up to a calendar day ahead of us
           - dbt_utils.accepted_range:
               arguments:
-                min_value: "{{ var('test_floor_git_ts') }}"
                 max_value: current_date + 2
       - name: commit_dt
         description: >
           commit_ts truncated to its UTC calendar day — the day-grain grouping key
           consumers use in place of re-truncating the instant. Conforms to
-          dim_date: if the relationships test fails, the git history has outgrown
-          the fixed calendar spine — widen date_spine_start / date_spine_end in
-          vars.yml and rebuild.
+          dim_date.
         tests:
           - not_null
           - relationships:

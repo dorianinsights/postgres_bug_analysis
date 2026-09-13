@@ -1,29 +1,18 @@
-WITH anchor AS (
-  -- Anchor the grid on the corpus itself: February of the year BEFORE the
-  -- earliest corpus release tag (the first .0 at/above FIRST_MAJOR). February is
-  -- on the Feb/May/Aug/Nov grid, and a full year's head start guarantees the
-  -- earliest corpus release has a prior scheduled cycle (its cycle_start_dt).
-  -- Pre-corpus entries only supply cycle boundaries -- they never become
-  -- releases (those come from tags) and int_release_cycles filters cycle
-  -- signals to corpus releases. Derived, so the calendar moves with FIRST_MAJOR
-  -- and carries no date literal; the relationships tests to dim_date guard
-  -- that the fixed calendar spine still covers it.
-  SELECT MAKE_DATE(YEAR(MIN(wrap_dt)) - 1, 2, 1) AS grid_start
+WITH years AS (
+  -- from the year before the earliest corpus release tag, so the earliest
+  -- corpus release has a prior scheduled cycle, through the horizon year
+  SELECT
+    UNNEST(
+      GENERATE_SERIES(
+        YEAR(MIN(wrap_dt)) - 1,
+        YEAR({{ as_of_date() }} + INTERVAL {{ var('release_calendar_horizon_months') }} MONTH)
+      )
+    ) AS release_year
   FROM {{ ref('int_versions') }}
-),
-
-month_starts AS (
-  SELECT gsr.month_start::DATE AS month_start
-  FROM anchor
-  CROSS JOIN GENERATE_SERIES(
-    anchor.grid_start,
-    DATE_TRUNC('month', {{ as_of_date() }} + INTERVAL 6 MONTH),
-    INTERVAL 3 MONTH
-  ) AS gsr (month_start)
 )
 
 SELECT
-  -- the second Thursday; DATE + n needs INTEGER (ISODOW arithmetic yields BIGINT)
-  month_start + (((4 - ISODOW(month_start) + 7) % 7) + 7)::INTEGER AS scheduled_release_dt,
-  scheduled_release_dt - 3 AS wrap_dt
-FROM month_starts
+  {{ scheduled_release_dt('MAKE_DATE(yrs.release_year, mth.release_month, 1)') }} AS scheduled_release_dt,
+  DATE_TRUNC('week', scheduled_release_dt)::DATE AS wrap_dt
+FROM years AS yrs, UNNEST({{ var('release_months') }}) AS mth (release_month)
+WHERE scheduled_release_dt <= {{ as_of_date() }} + INTERVAL {{ var('release_calendar_horizon_months') }} MONTH

@@ -258,13 +258,6 @@ def _extension_of(path: str) -> str:
     return name.rpartition(".")[2].lower() if "." in name else ""
 
 
-def _major_eol(major: int) -> date:
-    # PostgreSQL majors get ~5 years of support; major M's final minor lands
-    # ~November of year 2012 + M. Caps the snapshot span once the corpus reaches
-    # a since-retired major -- no point sampling a frozen branch past its EOL.
-    return date(major + 2012, 11, 30)
-
-
 def _tree_size_by_area(
     rev: str, sub_rules: list[tuple[str, "re.Pattern[str]"]]
 ) -> dict[tuple[str, str], tuple[int, int]]:
@@ -307,9 +300,9 @@ def branch_size_weekly_records(
 ) -> list[BranchSizeRecord]:
     """Weekly (branch, week) codebase-size snapshots for every stable branch,
     from the branch's .0 release (or, for the in-progress major, its fork from
-    master) to min(today, its ~5-year EOL). A STOCK -- the
-    state of the tree -- sampled at each week's end. Only DISTINCT resolved
-    commits are grepped (quiet weeks share a HEAD), and any (branch, week) in
+    master) to today. A STOCK -- the state of the tree -- sampled at each
+    week's end. Only DISTINCT resolved commits are grepped (quiet weeks share a
+    HEAD, so a branch frozen at its EOL costs one grep), and any (branch, week) in
     `known` is skipped without grepping: the incremental model passes what it
     already has, so a normal build measures only the new weeks. Past weeks are
     immutable, so caching them is safe.
@@ -325,11 +318,10 @@ def branch_size_weekly_records(
         start = _branch_size_start(branch, major)
         if start is None:
             continue
-        end = min(today, _major_eol(major))
-        # weekly Mondays covering [branch .0 release, end]
+        # weekly Mondays covering [branch .0 release, today]
         monday = start - timedelta(days=start.weekday())
         todo: list[date] = []
-        while monday <= end:
+        while monday <= today:
             if (branch, monday.isoformat()) not in known:
                 todo.append(monday)
             monday += timedelta(days=7)

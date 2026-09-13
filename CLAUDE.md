@@ -44,7 +44,7 @@ per-session memories, which aren't committed to git.)
   Do **not** kill the user's live Harlequin — ask them to quit it; only
   terminate a leftover process they've confirmed is closed. Note the sqlfluff
   lint now uses the **dbt templater** (so package macros like
-  `dbt_date.get_base_dates` expand) — it compiles the project per run, so a
+  `dbt_utils.generate_surrogate_key` expand) — it compiles the project per run, so a
   write-locked DuckDB breaks *linting* too, not just builds. `requirements.txt`
   pins `sqlfluff-templater-dbt` in lockstep with `sqlfluff`.
 - A full `dbt build` re-reads the git clone + mbox cache each run. The mbox
@@ -139,10 +139,13 @@ per-session memories, which aren't committed to git.)
   or `.py`. Before writing a literal, **check `vars.yml`** for an
   existing variable and use `{{ var('...') }}` — analysis knobs
   (`scheduled_release_min_items`, `reversion_baseline_releases`, the `*_window_days`,
-  the sentinel `past_eternity` / `future_eternity` dates, the date-spine bounds,
-  etc.) all live there so a change means the same thing everywhere and is a
-  reviewed edit. If the constant you need isn't a var yet, add it to `vars.yml`
-  rather than inlining it. The sentinel `1900-01-01` / `9999-01-01` are
+  the sentinel `past_eternity` / `future_eternity` dates, the release schedule
+  `release_months` / `major_support_years`, etc.) all live there so a change
+  means the same thing everywhere and is a reviewed edit. If the constant you
+  need isn't a var yet, add it to `vars.yml` rather than inlining it. Calendar
+  bounds are never literals at all: the release calendar, the `dim_date`
+  spine and a major's EOL all derive from the corpus's tags
+  (`macros/release_dates.sql`). The sentinel `1900-01-01` / `9999-01-01` are
   `var('past_eternity')` / `var('future_eternity')`; a "< N items" or "N days"
   threshold is almost always already a var.
 

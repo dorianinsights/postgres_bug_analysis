@@ -1,13 +1,17 @@
-WITH all_days AS (
+WITH spine AS (
+  -- the release calendar's span: from the start of its first year (before the
+  -- earliest corpus commit or message) through its last scheduled release
   SELECT
-    base.date_day::DATE AS date_day,
+    DATE_TRUNC('year', MIN(wrap_dt))::DATE AS spine_start,
+    MAX(scheduled_release_dt) AS spine_end
+  FROM {{ ref('int_release_calendar') }}
+),
+
+all_days AS (
+  SELECT
+    UNNEST(GENERATE_SERIES(spine_start, spine_end, INTERVAL 1 DAY))::DATE AS date_day,
     false AS is_synthetic_row
-  FROM (
-    {{ dbt_date.get_base_dates(
-        start_date=var('date_spine_start'),
-        end_date=var('date_spine_end')
-    ) }}
-  ) AS base
+  FROM spine
   -- the two "eternity" sentinels are synthetic rows just outside the real spine
   UNION ALL
   SELECT DATE '{{ var('past_eternity') }}' AS date_day, true AS is_synthetic_row

@@ -34,14 +34,14 @@ models:
                 field: date_day
       - name: eol_dt
         description: >
-          End of the ~5-year support window (final minor ~Nov of 2012 + major).
-          future_eternity for master (unreleased) and the special members. Not
-          FK-tested against dim_date -- the newest major's EOL can fall past the
-          calendar spine's end.
+          The major's final scheduled minor: the last scheduled release of the
+          year var(major_support_years) after GA. future_eternity until GA (the
+          beta major, master) and for the special members. Not FK-tested
+          against dim_date -- the newest majors' EOL falls past the calendar.
         tests: [not_null]
       - name: is_released
         description: >
-          True for the five released majors; false for master (the development
+          True for the released majors; false for master (the development
           trunk) and the special members. The clean "released majors only"
           filter, replacing an older branch-string test.
         tests: [not_null]
@@ -56,7 +56,7 @@ models:
               arguments:
                 values: ["released", "beta", "development", "(unknown)", "(not applicable)"]
       - name: is_supported
-        description: Released AND still inside its ~5-year window (CURRENT_DATE <= eol_dt). False for master and specials.
+        description: Released AND still inside its support window (CURRENT_DATE <= eol_dt). False for master and specials.
         tests: [not_null]
       - name: is_synthetic_row
         description: >

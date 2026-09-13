@@ -384,13 +384,12 @@ knobs (`reversion_baseline_releases`, `origin_projection_cycles`,
 `projection_min_window_days`), the AI-involvement classifier's
 `ai_involvement_text_cap_chars` / `ai_involvement_max_inline_classifications`,
 the build's clock `as_of_date` (null = today; only dbt unit tests set it),
-the CSV-export size gate `derived_csv_max_rows`, the `dim_date` spine bounds
-(`date_spine_start` / `date_spine_end`), and the shared loose sanity floors the
-range tests use (`test_floor_major`, `test_floor_release_dt`,
-`test_floor_git_ts` — deliberately NOT the corpus bounds; `corpus.py` owns
-those). No literal thresholds or dates appear in the models: a new constant
-is a new var. Editing a parameter changes what the results mean — treat it
-like a corpus change.
+the CSV-export size gate `derived_csv_max_rows`, and the release schedule
+(`release_months`, `release_calendar_horizon_months`, `major_support_years`).
+No literal thresholds or dates appear in the models: a new constant is a new
+var, and every calendar bound (the release calendar, the `dim_date` spine, a
+major's EOL) is derived from the corpus's tags. Editing a parameter changes
+what the results mean — treat it like a corpus change.
 
 Every model is heavily tested — roughly 900 data tests in all (`dbt ls
 --resource-type test` for the exact count; 891 as of 2026-09-10, plus one dbt
@@ -441,7 +440,7 @@ wrote CRLF line endings, DuckDB writes LF).
 Repo-wide (config in the repo-root `pyproject.toml`, mirroring
 property_analysis): `ruff` (format + lint) and `pyright` (strict mode, all files).
 SQL style for the dbt models is linted by `sqlfluff` (duckdb dialect + the
-**dbt templater**, so package macros like `dbt_date.get_base_dates` expand to
+**dbt templater**, so package macros like `dbt_utils.generate_surrogate_key` expand to
 real SQL during lint — it compiles the dbt project per run, which
 needs the DuckDB file unlocked, same as a build; config in the repo-root
 `.sqlfluff`); correctness of the models is
