@@ -1,16 +1,16 @@
 # Requires Python 3.10-3.13.
-python-dotenv==1.2.1
+python-dotenv==1.2.3
 requests==2.34.2
 beautifulsoup4==4.15.0
-lxml==6.1.2
+lxml==6.1.3
 dbt-charts==0.7.1
-dbt-core==1.12.3
+dbt-core==1.12.4
 dbt-duckdb==1.11.0
 # The raw_git dbt Python models return pyarrow tables (pyarrow itself
 # arrives via dbt-charts); the stubs keep pyright strict happy.
 pyarrow-stubs==20.0.0.20260819
-ruff==0.16.5
-pyright==1.1.411
+ruff==0.16.7
+pyright==1.1.414
 pre_commit==4.6.2
 pytest==9.1.1
 sqlfluff==4.3.0
