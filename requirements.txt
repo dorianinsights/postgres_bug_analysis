@@ -3,38 +3,16 @@ python-dotenv==1.2.1
 requests==2.34.2
 beautifulsoup4==4.15.0
 lxml==6.1.2
-# The visualization layer — docs at https://docs.dbtcharts.com/, CLI `dct`.
-# 0.6.0 dropped MetricFlow support (the faces are plain SQL + `{{ ref() }}`
-# now) and pins plotext<6. The package was previously published as `dataface`
-# (CLI `dft`). Do NOT install `dataface` alongside: both wheels ship the same
-# top-level `d3_format` and `mdsvg` modules, so the wheels clobber each other
-# and uninstalling either breaks the survivor. If `dct` ever fails with "No
-# module named 'd3_format'" or "not enough values to unpack", recover with:
-#   pip install --force-reinstall --no-deps dbt-charts==0.7.0
-dbt-charts==0.7.0
-# The transform layer (transform/ dbt project targeting DuckDB). Both arrive
-# as dependencies of dbt-charts anyway, but they're direct dependencies now —
-# `dbt build` runs from transform/ — so pin them explicitly.
+dbt-charts==0.7.1
 dbt-core==1.12.3
 dbt-duckdb==1.11.0
 # The raw_git dbt Python models return pyarrow tables (pyarrow itself
 # arrives via dbt-charts); the stubs keep pyright strict happy.
 pyarrow-stubs==20.0.0.20260819
-# Dev tooling (repo-wide, mirrors property_analysis): config in the repo-root
-# pyproject.toml; enforced by .claude/hooks/ post-edit hooks and the blocking
-# git pre-commit gate (.pre-commit-config.yaml; one-time: ./venv/bin/pre-commit install).
 ruff==0.16.5
 pyright==1.1.411
 pre_commit==4.6.2
-# Unit tests for the scrapers and the transform/ source readers (pure parse
-# logic — regex splitters, HTML/SGML/mbox parsers, date + selection helpers).
-# Run from the repo root: `./venv/bin/pytest`.
 pytest==9.1.1
-# SQL linter for the dbt models (duckdb dialect + dbt templater; config in
-# the repo-root .sqlfluff). Enforced per-edit by .claude/hooks/sqlfluff-lint.sh
-# and at commit time by the pre-commit gate. The dbt templater compiles each
-# model through the transform/ project so package macros (dbt_date,
-# dbt_utils) expand during lint; its version tracks sqlfluff's exactly.
 sqlfluff==4.3.0
 sqlfluff-templater-dbt==4.3.0
 # The repo's own Python side, installed editable so `pg_analysis` imports and the

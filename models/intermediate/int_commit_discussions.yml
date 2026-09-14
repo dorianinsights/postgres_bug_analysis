@@ -4,10 +4,10 @@ models:
   - name: int_commit_discussions
     description: >
       (commit_hash, message_id) from Discussion: trailers in commit bodies
-      — the ground-truth link from fixes to mailing-list threads, unnested
+      — the connection between fixes to mailing-list threads, unnested
       from int_git_commits.discussion_refs (where the body is parsed). source_list
       is the archive that claims the cited id: a cross-posted message (about
-      1,400 ids sit on both lists) resolves to pgsql-bugs, since a citation of
+      1,400 ids sit on both lists) defaults to pgsql-bugs, since a citation of
       a BUG thread means the work traces to a filed report; NULL when the id is
       not in the archive (pre-corpus, or a list we don't ingest). Reads
       stg_list_messages rather than int_message_threads because the thread
