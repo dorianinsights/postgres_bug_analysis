@@ -119,6 +119,42 @@ queries:
       QUALIFY report_week >= (DATE_TRUNC('week', CURRENT_DATE - INTERVAL 3 MONTH) + INTERVAL 7 DAY)::DATE
       ORDER BY 1
 
+  report_funnel:
+    # single-series horizontal bar: dct's value-descending default already puts
+    # the widest stage on top, so this needs no sort: -- the counts descend by
+    # construction (each stage is a subset of the one above, bar the ~20
+    # acted-upon reports that never drew a reply). Each stage label carries its
+    # % of the reports-filed total, computed here in SQL: dct has no per-bar data
+    # label, and a support_table would show the % but scrambles the bar order on
+    # a horizontal chart (0.7.0), so the percentage rides in the axis label.
+    notes: >
+      The report-to-fix pipeline as a funnel, corpus-wide: every new pgsql-bugs
+      thread (form + free-form, fct_threads), then those that drew at least one
+      reply (message_cnt > 1), then those linked to a fix commit (is_acted_upon
+      -- the thread cited by a Discussion: trailer or a form report named by a
+      Bug: # trailer). Each stage's label shows its share of the reports-filed
+      total. A LOWER BOUND on the linked stage (exact links only), and fresh
+      reports are right-censored -- their fixes haven't landed yet. Deliberately
+      stops at the fix commit: a further "shipped in a release" stage would
+      miscount fixes already committed to an unreleased upcoming version as not
+      shipped, skewing recent periods.
+    source: warehouse
+    sql: |
+      WITH stage_counts AS (
+        SELECT
+          COUNT(*)                                AS filed,
+          COUNT(*) FILTER (WHERE message_cnt > 1) AS discussed,
+          COUNT(*) FILTER (WHERE is_acted_upon)   AS linked
+        FROM {{ ref('fct_threads') }}
+        WHERE list_name = 'pgsql-bugs' AND is_new_thread
+      )
+      SELECT 'Reports filed (100%)' AS stage, filed AS report_cnt FROM stage_counts
+      UNION ALL
+      SELECT 'Drew discussion (' || ROUND(discussed * 100.0 / filed)::INTEGER || '%)', discussed FROM stage_counts
+      UNION ALL
+      SELECT 'Linked to a fix commit (' || ROUND(linked * 100.0 / filed)::INTEGER || '%)', linked FROM stage_counts
+      ORDER BY report_cnt DESC
+
   monthly_acted_data:
     # AVG over the monthly share is exactly what a rolling average is
     notes: >
@@ -304,6 +340,20 @@ charts:
         y: avg_reports
         color: series
 
+  report_funnel:
+    type: bar
+    query: report_funnel
+    title: "From bug report to fix commit"
+    subtitle: "Corpus-wide; each stage shows its share of all reports filed. Lower bound (exact links only); recent reports right-censored"
+    x: stage
+    y: report_cnt
+    # single-series horizontal bar -> value-descending by default, so the widest
+    # stage sits on top and the funnel narrows downward with no sort:
+    style:
+      orientation: horizontal
+      number_format: integer
+    height: 300
+
   monthly_acted:
     type: bar
     query: monthly_acted_data
@@ -405,6 +455,7 @@ charts:
 rows:
   - monthly_reports
   - weekly_reports
+  - report_funnel
   - monthly_acted
   - cols: [seasonality_counts, seasonality_share]
   - cols: [yearly_outcomes, yearly_latency]
