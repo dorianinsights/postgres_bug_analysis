@@ -7,7 +7,7 @@ style:
   charts:
     min_height: 360
     max_height: 360
-    bar: { stack: zero }
+    bar: { stack: zero, orientation: vertical }
     category_colors:
       origin:
         values:
@@ -149,13 +149,12 @@ charts:
     subtitle: "Documented fixes. a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band releases excluded"
     x: release
     y: fix_cnt
-    # string x would auto-flip horizontal; these are time series, keep vertical.
-    # The support strip sits under the axis (the default is above the plot, where
-    # it collides with the subtitle); label_max_lines reserves room for the
-    # rotated x labels, which the bottom strip otherwise overprints.
+    # Time series; the board default (style.charts.bar.orientation) keeps bars
+    # vertical. The support strip sits under the axis (the default is above the
+    # plot, where it collides with the subtitle); 0.8.0 sizes the gap from the
+    # label angle, so it no longer needs label_max_lines to clear rotated x labels.
     style:
-      orientation: vertical
-      support_table: { position: bottom, label_max_lines: 3 }
+      support_table: { position: bottom }
     # the commits behind each bar, and the share of them the release notes
     # documented (whole percent points: a % on every cell runs together at
     # this width, and the anchors mode prints it on the first cell only)
@@ -175,8 +174,6 @@ charts:
     x: release
     y: fix_cnt
     color: origin
-    # string x would auto-flip horizontal; these are time series, keep vertical
-    style: { orientation: vertical }
 
   fix_commit_origins:
     type: bar
@@ -186,7 +183,6 @@ charts:
     x: release
     y: fix_commits
     color: origin
-    style: { orientation: vertical }
     # the open release's bar is the same measure, still accumulating: mark it
     # with a dashed outline -- a bar layer on the same query whose y (so_far)
     # is NULL on every shipped row, so it draws only that bar (bar charts take
@@ -210,7 +206,7 @@ charts:
     color: origin
     # no axis_y format: normalize already labels the axis in percent, and an
     # authored percent format leaks into the hover's raw count column ("2000%")
-    style: { stack: normalize, orientation: vertical }
+    style: { stack: normalize }
 
   ai_commits:
     type: area

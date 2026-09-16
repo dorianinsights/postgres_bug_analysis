@@ -22,6 +22,9 @@ style:
   charts:
     min_height: 320
     max_height: 320
+    # these categorical-x bars would auto-flip horizontal; keep them vertical
+    # board-wide (0.8.0 cascades style.charts.bar.orientation to every bar)
+    bar: { orientation: vertical }
 
 queries:
 
@@ -197,7 +200,6 @@ charts:
     x: severity_band
     y: fix_cnt
     color: severity_band
-    style: { orientation: vertical }
 
   churn_by_severity:
     type: bar
@@ -207,7 +209,6 @@ charts:
     x: severity_band
     y: churn_median
     color: severity_band
-    style: { orientation: vertical }
 
   breadth_by_severity:
     type: bar
@@ -217,7 +218,6 @@ charts:
     x: severity_band
     y: breadth_median
     color: severity_band
-    style: { orientation: vertical }
 
   size_vs_latency:
     type: scatter
@@ -256,7 +256,6 @@ charts:
     subtitle: "Median report-to-fix latency per size bucket (bug-linked fixes) — does a bigger change take longer to land?"
     x: size_bucket
     y: days_median
-    style: { orientation: vertical }
 
 rows:
   - cols: [kpi_fixes, kpi_cve, kpi_churn, kpi_latency]
