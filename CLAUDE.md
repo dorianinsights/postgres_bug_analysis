@@ -5,6 +5,13 @@ holds working preferences, operational gotchas, and forward-looking notes —
 things that would otherwise be lost between sessions. (Use this file instead of
 per-session memories, which aren't committed to git.)
 
+**Document the current state, not its history.** These files (this one and
+`README.md`) describe how the repo works *now* — not how it used to work, what
+changed, or what was renamed, retired, or fixed in some version. When you change
+something, rewrite the affected note to the new truth and delete the old
+wording; don't append "was X, now Y", "used to", "no longer", "fixed in vN", or
+before/after numbers. History lives in git; docs that narrate it only bloat.
+
 ## Commits
 - **Never `git commit` or push without asking first and getting explicit
   confirmation.** Finish and verify the work (dbt build / tests / lint), leave
@@ -48,10 +55,10 @@ per-session memories, which aren't committed to git.)
   write-locked DuckDB breaks *linting* too, not just builds. `requirements.txt`
   pins `sqlfluff-templater-dbt` in lockstep with `sqlfluff`.
 - A full `dbt build` re-reads the git clone + mbox cache each run. The mbox
-  parse (`raw_list_messages` via `pg_analysis.sources.mail`) is the dominant cost and now
+  parse (`raw_list_messages` via `pg_analysis.sources.mail`) is the dominant cost and
   fans out across a process `Pool` (spawn — the parent is multithreaded, so fork
-  is unsafe), ~6x faster (~257s -> ~43s); `raw_commit_files` (git side) is the
-  next-slowest and still serial. Use `dbt build --select <models>` while
+  is unsafe), ~43s; `raw_commit_files` (git side) is the
+  next-slowest and serial. Use `dbt build --select <models>` while
   iterating; do one full build to confirm.
 - **Edit `.sql`/`.py` files with the Edit/Write tools — never `sed -i`, a `>`
   redirect, or a `cat >` heredoc through Bash** (even in "auto mode", which
@@ -96,34 +103,34 @@ per-session memories, which aren't committed to git.)
   the file and query from anywhere. So, from the root,
   `harlequin -r transform.duckdb` (or `duckdb -readonly transform.duckdb`).
 
-- **dct (0.7.0): the query's ORDER BY orders a categorical axis, so do NOT
-  author `sort:`** -- every board renders pixel-identical without it, and an
-  authored sort key is SUMMED per x category (0.7.0 report item 3), which
-  scrambles the axis whenever categories have unequal row counts. The one
-  exception is a single-series HORIZONTAL bar, which defaults to
-  value-descending order (`projected_fixes` `estimates` keeps its `sort:` for
-  that reason). Overlay series get their own tooltip rows now, so the 0.6-era
-  "one reference series per overlay" rule is gone too. The list-traffic charts
-  still draw the partial current period as the last point of the main series
-  (simpler than a dashed overlay tail, and the subtitle says so).
+- **dct: the query's ORDER BY orders a categorical axis** -- the simplest way to
+  order one, and every board renders pixel-identical relying on it. An authored
+  `sort:` orders a bar by the sort column's own value -- a stacked bar by its
+  stacked total, a grouped bar by its SMALLEST series (sort by a pre-summed
+  column when you want the group total). A single-series HORIZONTAL bar defaults
+  to value-descending order (`projected_fixes` `estimates` keeps its `sort:` for
+  that reason); a `support_table` on such a bar drops that default (dbt-charts
+  issue #8), so keep a single-series horizontal bar's ranking in its axis labels,
+  not a support_table. The list-traffic charts draw the partial current period
+  as the last point of the main series (the subtitle says so).
   **Board-level `style.charts` cascades like inline** for `min_height` /
   `max_height` (= one height pin per board) and `bar: { stack: ... }` (only
   on boards where EVERY bar chart is stacked -- the four mixed boards keep
-  `stack:` inline; the bar block does not reach area charts), but
-  `bar.orientation` is silently ignored (report item 8), so `orientation:
-  vertical` stays per chart. **Share (100%-stacked) charts feed COUNTS through
+  `stack:` inline; the bar block does not reach area charts) and
+  `bar.orientation` (hoist a board-wide orientation there and drop the per-chart
+  `orientation:` where every bar shares it, as `1_fix_analysis` and `fix_impact`
+  do; boards that MIX bar orientations keep it inline). **Share (100%-stacked) charts feed COUNTS through
   `stack: normalize` with no `axis_y` format:** the axis is labeled in percent
   anyway and the hover shows share, count and total; an authored percent axis
-  format percent-formats the hover's raw count column ("2000%", report
-  item 9). **KPI `support:`** is a second line under the label (a column,
+  format percent-formats the hover's raw count column ("2000%") and dct warns
+  (WARN-NORMALIZE-PERCENT-FORMAT-READS-RAW-VALUE), so keep the no-format rule. **KPI `support:`** is a second line under the label (a column,
   a `format:` such as `percent_delta`, an optional static glyph/tone --
   static, so no glyph or tone on a signed delta); avoid a hyphenated word in
   its label (dct rewrites "full-quarter" as "full- quarter", the item 4
   family). **`support_table:`** (a per-x strip of extra columns on a
   bar/line/area chart) defaults to ABOVE the plot, touching the subtitle;
-  use `style.support_table: { position: bottom, label_max_lines: 3 }` so it
-  sits under the axis without overprinting rotated x labels (report item
-  10). Faces name models with `{{ ref() }}`
+  use `style.support_table: { position: bottom }` to sit it under the axis (the
+  gap auto-sizes to rotated x labels). Faces name models with `{{ ref() }}`
   (resolved from `target/manifest.json`, so run `dbt parse` after adding or
   renaming a model or column, and `dct validate charts/*.yml` checks the
   queries' columns statically -- the marts end in explicit projections, not
@@ -132,7 +139,7 @@ per-session memories, which aren't committed to git.)
   read it. Rerun `dct migrate charts/` after a dct upgrade and keep its
   `_schema_version` stamp. The dct workflow skills live in the gitignored
   `.claude/skills/dct-*/` (`dct init skills claude`; rerun after an upgrade --
-  it overwrites and sweeps retired skills, there is no `-f` any more).
+  it overwrites the skills and removes any no longer shipped; no `-f` flag).
 
 ## Coding conventions
 - **No hardcoded dates or magic numbers** (other than `0` and `1`) in `.sql`
@@ -263,8 +270,7 @@ per-session memories, which aren't committed to git.)
   independent, so a role breakdown counts role-mentions, not fixes. A prompt
   change means a full re-scan: batch prompt fixes in TODO.md and bump once.
   Bumping `AI_PROMPT_VERSION` re-infers everything; tune the prompt against the
-  hand-labeled set BEFORE a full scan. There is no keyword-regex AI signal any
-  more (the old `ai_credit` column was retired). The model cannot see undisclosed
+  hand-labeled set BEFORE a full scan. There is no keyword-regex AI signal. The model cannot see undisclosed
   AI use: a rising line partly measures disclosure norms (PostgreSQL had no AI
   policy as of mid-2026), which is why `disclosure_form` is recorded.
 - **Thread identity is transitive** (`int_message_threads`): parent = In-Reply-To
@@ -286,9 +292,10 @@ per-session memories, which aren't committed to git.)
   (a release is a shipped cycle), unified in **`dim_release`** (`status` =
   shipped/open/future; shipped measures NULL for non-shipped). The cycle signals
   (`cycle_start_dt`, `window_days`, `early_*_cnt`, `full_fix_cnt`, from
-  `int_release_cycles`) are **folded onto the same row** — a cycle was a fact 1:1
-  with this dimension, so `fct_release_cycles` was retired into it; they're
-  non-NULL only for the started scheduled cycles (`cycle_start_dt IS NOT NULL`).
+  `int_release_cycles`) are **folded onto the same row** — a cycle is a release
+  earlier in its life, so its signals ride on this dimension rather than a
+  separate fact; they're non-NULL only for the started scheduled cycles
+  (`cycle_start_dt IS NOT NULL`).
   `fct_fixes.dim_release_key` conforms to `dim_release.dim_release_key`.
   `dim_release.release_dt` is the release day — the changelog aliases it back to
   `release_dt` for its charts.
