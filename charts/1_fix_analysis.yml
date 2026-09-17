@@ -15,6 +15,23 @@ style:
           pgsql-bugs: category[2]
           unsourced: category[3]
           embargoed security: category[4]
+      # fix_counts colors bars by calendar year (query labels them CYYYYY; dct
+      # disqualifies a bare "2020" as a temporal value and won't seat a pin on
+      # it). Each year gets a DISTINCT qualitative hue from the categorical
+      # palette so the boundary between one year's block of quarters and the
+      # next is obvious; the slots are chosen (and checked in the render) so no
+      # two adjacent years read as a similar hue. Legend order is pinned
+      # chronologically on the chart (style.legend.values). Add a free slot for
+      # a new release year.
+      release_year:
+        values:
+          "CY2020": category[1]
+          "CY2021": category[5]
+          "CY2022": category[3]
+          "CY2023": category[4]
+          "CY2024": category[6]
+          "CY2025": category[2]
+          "CY2026": category[7]
 title: "PostgreSQL Fix Analysis"
 notes: >
   Source attribution for fixes and development activity: each fix and
@@ -35,11 +52,60 @@ queries:
       SELECT
         STRFTIME(release_dt, '%b %y') AS release,
         EPOCH(release_dt)::BIGINT AS release_seq,
-        SUM(fix_cnt) AS fix_cnt,
-        SUM(committed_fix_cnt) AS committed_fix_cnt,
-        ROUND(100.0 * SUM(fix_cnt) / NULLIF(SUM(committed_fix_cnt), 0)) AS documented_pct
+        'CY' || STRFTIME(release_dt, '%Y') AS release_year,
+        SUM(fix_cnt) AS fix_cnt
       FROM {{ ref('fct_fix_origins_agg') }}
-      WHERE status = 'shipped' AND NOT is_out_of_band
+      WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
+      GROUP BY 1, 2, 3
+      ORDER BY 2
+
+  fix_cve_split:
+    notes: >
+      The same documented fixes as fix_count, but each release split into the
+      CVE-bearing subset (security_fix_cnt summed over origins) and the
+      remainder that names no CVE, long-form for the stacked bar. cve_pct rides
+      on both rows (the per-release CVE share) so the support strip can read it.
+      The stacked total equals the "Fixes by release" chart above. Shipped
+      releases only; out-of-band and partial post-GA releases excluded.
+    source: warehouse
+    sql: |
+      WITH per_release AS (
+        SELECT
+          release_dt,
+          SUM(fix_cnt) AS total_fixes,
+          SUM(security_fix_cnt) AS cve_fixes
+        FROM {{ ref('fct_fix_origins_agg') }}
+        WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
+        GROUP BY release_dt
+      )
+
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        'with CVE' AS security_class,
+        cve_fixes AS fix_cnt,
+        cve_fixes::DOUBLE / NULLIF(total_fixes, 0) AS cve_pct
+      FROM per_release
+      UNION ALL
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        'no CVE' AS security_class,
+        total_fixes - cve_fixes AS fix_cnt,
+        cve_fixes::DOUBLE / NULLIF(total_fixes, 0) AS cve_pct
+      FROM per_release
+      ORDER BY 2, 3
+
+  fix_cve_pct:
+    notes: The per-release CVE share (CVE-bearing fixes / total documented fixes), one row per release for the dual-axis line.
+    source: warehouse
+    sql: |
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        SUM(security_fix_cnt)::DOUBLE / NULLIF(SUM(fix_cnt), 0) AS cve_pct
+      FROM {{ ref('fct_fix_origins_agg') }}
+      WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
       GROUP BY 1, 2
       ORDER BY 2
 
@@ -52,6 +118,8 @@ queries:
       four origins (zero-filled upstream) so each stack has the same series.
       Out-of-band emergency releases excluded. committed_fix_cnt and rate ride along for the hover:
       the commits behind each bar and the share of them the notes documented.
+      security_fix_cnt (the CVE-bearing subset of fix_cnt, all origins) totals
+      per release into the Security support strip below the axis.
     source: warehouse
     sql: |
       SELECT
@@ -62,11 +130,12 @@ queries:
           WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
           ELSE origin
         END AS origin,
+        security_fix_cnt,
         fix_cnt,
         committed_fix_cnt,
         documentation_rate AS rate
       FROM {{ ref('fct_fix_origins_agg') }}
-      WHERE status = 'shipped' AND NOT is_out_of_band
+      WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
       ORDER BY 2, 3
 
   fix_commit_origins:
@@ -98,7 +167,7 @@ queries:
         fix_cnt AS documented_fix_cnt,
         documentation_rate AS rate
       FROM {{ ref('fct_fix_origins_agg') }}
-      WHERE NOT is_out_of_band
+      WHERE NOT is_out_of_band AND NOT is_partial_window
       ORDER BY 2, 3
 
   fix_origin_shares:
@@ -120,7 +189,7 @@ queries:
         END AS origin,
         COALESCE(fix_cnt, 0) AS fix_cnt
       FROM {{ ref('fct_fix_origins_agg') }}
-      WHERE status = 'shipped' AND NOT is_out_of_band
+      WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
       ORDER BY 2, 3
 
   ai_commits:
@@ -146,34 +215,78 @@ charts:
     type: bar
     query: fix_count
     title: "Fixes by release"
-    subtitle: "Documented fixes. a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band releases excluded"
+    subtitle: "Documented fixes. a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band and partial post-GA releases excluded"
     x: release
     y: fix_cnt
-    # Time series; the board default (style.charts.bar.orientation) keeps bars
-    # vertical. The support strip sits under the axis (the default is above the
-    # plot, where it collides with the subtitle); 0.8.0 sizes the gap from the
-    # label angle, so it no longer needs label_max_lines to clear rotated x labels.
+    # color one bar per calendar year so the year reads at a glance across the
+    # quarterly x labels; release_year is its own category scale (the board's
+    # origin colors don't apply to this single-series chart)
+    color: release_year
+    # pin the legend to chronological order -- the emitter otherwise lists the
+    # color-scale domain in an arbitrary order; values resolve by rendered text
     style:
-      support_table: { position: bottom }
-    # the commits behind each bar, and the share of them the release notes
-    # documented (whole percent points: a % on every cell runs together at
-    # this width, and the anchors mode prints it on the first cell only)
+      legend:
+        values: [CY2020, CY2021, CY2022, CY2023, CY2024, CY2025, CY2026]
+      axis_y:
+        mirror: true
+
+  fix_cve_split:
+    type: bar
+    query: fix_cve_split
+    title: "Fixes by release: CVE split and share"
+    subtitle: "Documented fixes split by CVE status (left, same total as above); line = CVE share of the release (right). Out-of-band and partial post-GA excluded"
+    x: release
+    y: fix_cnt
+    color: security_class
+    # dual axis: the stacked bar (counts) on the left, a line for the CVE share
+    # on its own right axis. A layered chart doesn't take part in the board's
+    # category_colors, so the two bar series are colored with an inline palette
+    # (blue = no CVE bulk, category[4] maroon = with CVE, the board's security hue).
+    layers:
+      - type: line
+        query: fix_cve_pct
+        y: cve_pct
+        label: "CVE share"
+        axis_y: { position: right, title: "CVE share", labels: { format: ".0%" } }
+        style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
+    # support strip (top to bottom): total fixes, fixes without a CVE, fixes
+    # with one (per series), and the CVE share. The first authored entry sits at
+    # the top. Total = aggregate: sum of the two series; cve_pct is constant per
+    # release, so aggregate: max reads it back as that one value. Font 8 keeps
+    # the three-digit / percent cells legible.
     support_table:
-      - source: committed_fix_cnt
-        label: "committed"
-        format: integer
-      - source: documented_pct
-        label: "% documented"
-        format: integer
+      - { aggregate: sum, source: fix_cnt, format: integer, label: "Total" }
+      - { per_series: fix_cnt }
+      - { aggregate: max, source: cve_pct, format: percent, label: "CVE %" }
+    style:
+      color:
+        categorical:
+          palette: ["category[1]", "category[4]"]
+      legend:
+        values: ["with CVE", "no CVE"]
+      support_table: { position: bottom, font: { size: 8 } }
 
   fix_origin_counts:
     type: bar
     query: fix_origins_count
     title: "Fixes by release by origin"
-    subtitle: "Documented fixes by source: a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band releases excluded"
+    subtitle: "Documented fixes by source: a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band and partial post-GA releases excluded"
     x: release
     y: fix_cnt
     color: origin
+    # support_table is a LIST of entries; each is source: / aggregate:+source: /
+    # per_series:. The query has one row per (release, origin), so aggregate: sum
+    # folds security_fix_cnt to one value per release (the x group).
+    support_table:
+      - aggregate: sum
+        source: security_fix_cnt
+        format: integer
+        label: "Security"
+    # smaller strip font so the two-digit counts (e.g. 14, 29) don't collide in
+    # the narrow per-release bands; a 1px divider rule separates the strip from
+    # the axis above it
+    style:
+      support_table: { position: bottom, font: { size: 10 }, divider: { width: 1 } }
 
   fix_commit_origins:
     type: bar
@@ -200,7 +313,7 @@ charts:
     type: bar
     query: fix_origin_shares
     title: "Fix origin share per release"
-    subtitle: "Same documented fixes as shares; shipped releases only, out-of-band excluded — pgsql-bugs supplies a quarter to a third"
+    subtitle: "Same documented fixes as shares; shipped releases only, out-of-band and partial post-GA excluded — pgsql-bugs supplies a quarter to a third"
     x: release
     y: fix_cnt
     color: origin
@@ -223,6 +336,7 @@ charts:
 
 rows:
   - fix_counts
+  - fix_cve_split
   - fix_origin_counts
   - fix_commit_origins
   - fix_origin_share

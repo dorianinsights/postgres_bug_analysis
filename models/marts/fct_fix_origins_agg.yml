@@ -4,9 +4,9 @@ models:
   - name: fct_fix_origins_agg
     description: >
       Fixes per release by origin in both populations -> data/derived/fct_fix_origins_agg.csv:
-      the documented fixes (fix_cnt, release-notes items) and the committed fixes
-      that shipped in the release (committed_fix_cnt), with documentation_rate
-      between them. The counts are int_release_origin_fixes as they are (the
+      the documented fixes (fix_cnt, release-notes items; security_fix_cnt the
+      CVE-bearing subset) and the committed fixes that shipped in the release
+      (committed_fix_cnt), with documentation_rate between them. The counts are int_release_origin_fixes as they are (the
       same rows dim_release sums per release); every shipped release and the
       open one carry all four origins (zero-filled), so a chart needs no spine
       of its own and the categorical sort stays chronological. The open release has no items (fix_cnt NULL)
@@ -14,7 +14,9 @@ models:
       only -- its documented-units forecast is fct_fix_projections'
       origin_scaled method, so an estimate never sits beside the actuals.
       Carries is_out_of_band so consumers can exclude emergency re-releases
-      (tiny denominators that distort shares). Grain = (release_dt, origin).
+      (tiny denominators that distort shares) and is_partial_window so they can
+      exclude the first post-GA release, a short window whose count is not
+      comparable to full quarters. Grain = (release_dt, origin).
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -27,6 +29,16 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: (documentation_rate IS NOT NULL) = (status = 'shipped' AND committed_fix_cnt > 0)
+      # the security count is present on exactly the shipped rows, like fix_cnt
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (security_fix_cnt IS NOT NULL) = (status = 'shipped')
+      # CVE-bearing fixes are a subset of this origin's documented fixes
+      - dbt_utils.expression_is_true:
+          config:
+            where: "status = 'shipped'"
+          arguments:
+            expression: security_fix_cnt <= fix_cnt
     columns:
       - name: release_dt
         tests:
@@ -50,6 +62,9 @@ models:
                 values: [shipped, open]
       - name: is_out_of_band
         tests: [not_null]
+      - name: is_partial_window
+        description: True for the first post-GA release only, a short window not comparable to full quarters; boards exclude it.
+        tests: [not_null]
       - name: origin
         tests:
           - not_null
@@ -62,6 +77,12 @@ models:
                   - unknown_or_internal_not_security
       - name: fix_cnt
         description: Documented fixes (release-notes items) of this origin; zero-filled for shipped releases, NULL for the open one.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: security_fix_cnt
+        description: The CVE-bearing subset of fix_cnt for this origin (a documented fix whose notes name a CVE); zero-filled for shipped releases, NULL for the open one.
         tests:
           - dbt_utils.accepted_range:
               arguments:
