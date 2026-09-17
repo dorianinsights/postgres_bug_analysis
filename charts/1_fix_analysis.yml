@@ -109,6 +109,55 @@ queries:
       GROUP BY 1, 2
       ORDER BY 2
 
+  fix_hardening_split:
+    notes: >
+      Mirrors fix_cve_split, counting the classifier's security-hardening subset
+      (security_hardening_cnt) instead of CVEs: each release split into hardening
+      vs the rest, long-form for the stacked bar, with hardening_pct riding on
+      both rows for the support strip. Same total as the "Fixes by release"
+      chart. Shipped releases only; out-of-band and partial post-GA excluded.
+    source: warehouse
+    sql: |
+      WITH per_release AS (
+        SELECT
+          release_dt,
+          SUM(fix_cnt) AS total_fixes,
+          SUM(security_hardening_cnt) AS hardening_fixes
+        FROM {{ ref('fct_fix_origins_agg') }}
+        WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
+        GROUP BY release_dt
+      )
+
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        'hardening' AS hardening_class,
+        hardening_fixes AS fix_cnt,
+        hardening_fixes::DOUBLE / NULLIF(total_fixes, 0) AS hardening_pct
+      FROM per_release
+      UNION ALL
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        'no hardening' AS hardening_class,
+        total_fixes - hardening_fixes AS fix_cnt,
+        hardening_fixes::DOUBLE / NULLIF(total_fixes, 0) AS hardening_pct
+      FROM per_release
+      ORDER BY 2, 3
+
+  fix_hardening_pct:
+    notes: The per-release security-hardening share (hardening fixes / total documented fixes), one row per release for the dual-axis line.
+    source: warehouse
+    sql: |
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        SUM(security_hardening_cnt)::DOUBLE / NULLIF(SUM(fix_cnt), 0) AS hardening_pct
+      FROM {{ ref('fct_fix_origins_agg') }}
+      WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
+      GROUP BY 1, 2
+      ORDER BY 2
+
   fix_origins_count:
     notes: >
       DOCUMENTED fixes per shipped release by origin: a fix is one release-notes
@@ -229,6 +278,13 @@ charts:
         values: [CY2020, CY2021, CY2022, CY2023, CY2024, CY2025, CY2026]
       axis_y:
         mirror: true
+      # print the fix count above each bar. each release is a single year-series,
+      # so the stack total IS that release's count; total_label draws it above
+      # the bar (outside the fill, foreground ink) rather than a white segment
+      # label inside it
+      marks:
+        bar:
+          total_label: { visible: true, font: { size: 10 } }
 
   fix_cve_split:
     type: bar
@@ -264,6 +320,37 @@ charts:
           palette: ["category[1]", "category[4]"]
       legend:
         values: ["with CVE", "no CVE"]
+      support_table: { position: bottom, font: { size: 8 } }
+
+  fix_hardening_split:
+    type: bar
+    query: fix_hardening_split
+    title: "Fixes by release: hardening split and share"
+    subtitle: "Documented fixes split by security-hardening status (left, same total as above); line = hardening share (right). Out-of-band and partial post-GA excluded"
+    x: release
+    y: fix_cnt
+    color: hardening_class
+    # mirror of the CVE chart above, counting is_security_hardening instead of
+    # CVEs: stacked bar (counts) on the left, hardening-share line on the right.
+    # Layered charts opt out of board category_colors, so the two series are
+    # coloured inline (blue = the non-hardening bulk, category[4] maroon = hardening).
+    layers:
+      - type: line
+        query: fix_hardening_pct
+        y: hardening_pct
+        label: "hardening share"
+        axis_y: { position: right, title: "hardening share", labels: { format: ".0%" } }
+        style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
+    support_table:
+      - { aggregate: sum, source: fix_cnt, format: integer, label: "Total" }
+      - { per_series: fix_cnt }
+      - { aggregate: max, source: hardening_pct, format: percent, label: "Hardening %" }
+    style:
+      color:
+        categorical:
+          palette: ["category[1]", "category[4]"]
+      legend:
+        values: ["hardening", "no hardening"]
       support_table: { position: bottom, font: { size: 8 } }
 
   fix_origin_counts:
@@ -337,6 +424,7 @@ charts:
 rows:
   - fix_counts
   - fix_cve_split
+  - fix_hardening_split
   - fix_origin_counts
   - fix_commit_origins
   - fix_origin_share

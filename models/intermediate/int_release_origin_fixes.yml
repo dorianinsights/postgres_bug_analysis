@@ -5,7 +5,8 @@ models:
     description: >
       Fixes per release by origin, counted once for both populations: the
       documented fixes (release-notes items, from int_fix_profile), how many of
-      those cite a CVE, and the committed fixes that shipped in the release
+      those cite a CVE, how many the classifier flags as security hardening, and
+      the committed fixes that shipped in the release
       (from int_committed_fixes). Every shipped and open release carries all
       four origins, zero-filled; the open release has no items yet, so its
       documented counts are NULL. fct_fix_origins_agg reads the rows as they
@@ -21,6 +22,9 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: security_fix_cnt IS NULL OR security_fix_cnt <= fix_cnt
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: security_hardening_cnt IS NULL OR security_hardening_cnt <= fix_cnt
     columns:
       - name: release_dt
         tests:
@@ -49,6 +53,8 @@ models:
         description: Documented fixes of this origin; zero-filled for shipped releases, NULL for the open one.
       - name: security_fix_cnt
         description: The documented fixes of this origin that cite a CVE (a list-reported CVE fix keeps its list origin, so this is not just the security origin's fix_cnt).
+      - name: security_hardening_cnt
+        description: The documented fixes of this origin the classifier flags is_security_hardening (closing a security or memory-safety weakness); broader than and orthogonal to the CVE count.
       - name: committed_fix_cnt
         description: Distinct committed fixes of this origin that shipped in (or are pending for) the release; zero-filled.
         tests: [not_null]

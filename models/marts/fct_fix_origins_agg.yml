@@ -5,7 +5,8 @@ models:
     description: >
       Fixes per release by origin in both populations -> data/derived/fct_fix_origins_agg.csv:
       the documented fixes (fix_cnt, release-notes items; security_fix_cnt the
-      CVE-bearing subset) and the committed fixes that shipped in the release
+      CVE-bearing subset, security_hardening_cnt the classifier's security-
+      hardening subset) and the committed fixes that shipped in the release
       (committed_fix_cnt), with documentation_rate between them. The counts are int_release_origin_fixes as they are (the
       same rows dim_release sums per release); every shipped release and the
       open one carry all four origins (zero-filled), so a chart needs no spine
@@ -33,12 +34,20 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: (security_fix_cnt IS NOT NULL) = (status = 'shipped')
-      # CVE-bearing fixes are a subset of this origin's documented fixes
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: (security_hardening_cnt IS NOT NULL) = (status = 'shipped')
+      # CVE-bearing / hardening fixes are each a subset of this origin's documented fixes
       - dbt_utils.expression_is_true:
           config:
             where: "status = 'shipped'"
           arguments:
             expression: security_fix_cnt <= fix_cnt
+      - dbt_utils.expression_is_true:
+          config:
+            where: "status = 'shipped'"
+          arguments:
+            expression: security_hardening_cnt <= fix_cnt
     columns:
       - name: release_dt
         tests:
@@ -83,6 +92,12 @@ models:
                 min_value: 0
       - name: security_fix_cnt
         description: The CVE-bearing subset of fix_cnt for this origin (a documented fix whose notes name a CVE); zero-filled for shipped releases, NULL for the open one.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: security_hardening_cnt
+        description: The security-hardening subset of fix_cnt for this origin (the classifier flags is_security_hardening); broader than security_fix_cnt. Zero-filled for shipped releases, NULL for the open one.
         tests:
           - dbt_utils.accepted_range:
               arguments:

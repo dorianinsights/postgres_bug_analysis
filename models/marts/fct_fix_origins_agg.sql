@@ -7,6 +7,7 @@ SELECT
   rof.origin,
   rof.fix_cnt,
   rof.security_fix_cnt,
+  rof.security_hardening_cnt,
   rof.committed_fix_cnt,
   (rof.fix_cnt::DECIMAL(15, 6) / NULLIF(rof.committed_fix_cnt, 0))::DECIMAL(7, 6) AS documentation_rate,
   (rof.fix_cnt::DECIMAL(18, 6) / NULLIF(SUM(rof.fix_cnt) OVER (PARTITION BY rof.release_dt), 0))::DECIMAL(7, 6) AS fix_share

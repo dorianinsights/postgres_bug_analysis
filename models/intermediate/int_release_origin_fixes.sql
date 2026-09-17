@@ -16,11 +16,13 @@ WITH spine AS (
 
 documented AS (
   SELECT
-    release_dt,
-    origin,
+    prf.release_dt,
+    prf.origin,
     COUNT(*) AS documented_cnt,
-    COUNT(*) FILTER (WHERE is_security) AS documented_security_cnt
-  FROM {{ ref('int_fix_profile') }}
+    COUNT(*) FILTER (WHERE prf.is_security) AS documented_security_cnt,
+    COUNT(*) FILTER (WHERE cls.is_security_hardening) AS documented_hardening_cnt
+  FROM {{ ref('int_fix_profile') }} AS prf
+  LEFT OUTER JOIN {{ ref('int_fix_content_categories') }} AS cls ON prf.item_ord = cls.item_ord
   GROUP BY ALL
 ),
 
@@ -40,6 +42,7 @@ SELECT
   -- the open release has no items yet
   CASE WHEN spn.status = 'shipped' THEN COALESCE(doc.documented_cnt, 0) END AS fix_cnt,
   CASE WHEN spn.status = 'shipped' THEN COALESCE(doc.documented_security_cnt, 0) END AS security_fix_cnt,
+  CASE WHEN spn.status = 'shipped' THEN COALESCE(doc.documented_hardening_cnt, 0) END AS security_hardening_cnt,
   COALESCE(cmt.committed_cnt, 0) AS committed_fix_cnt
 FROM spine AS spn
 LEFT OUTER JOIN documented AS doc ON spn.release_dt = doc.release_dt AND spn.origin = doc.origin
