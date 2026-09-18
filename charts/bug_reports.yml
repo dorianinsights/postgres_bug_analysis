@@ -159,10 +159,11 @@ queries:
     # AVG over the monthly share is exactly what a rolling average is
     notes: >
       Per month, over ALL bug reports (new pgsql-bugs threads, form +
-      free-form, fct_threads): reports acted upon (count, the bars -- the
-      thread was cited by a commit's Discussion: trailer, or a form report was
-      named by a Bug: # trailer), the acted-upon share and its 3-month trailing
-      average (the two right-axis lines). The two share columns are emitted as
+      free-form, fct_threads): the reports filed (support strip only), the
+      reports acted upon (count, the bars -- the thread was cited by a commit's
+      Discussion: trailer, or a form report was named by a Bug: # trailer),
+      the acted-upon share and its 6-month trailing average (the two
+      right-axis lines). The two share columns are emitted as
       FRACTIONS (0-1), not percentage points, so the chart's per-layer
       axis_y.label.format ".1%" renders them as real percentages on the right
       axis AND in the tooltip (d3's % type multiplies by 100). Wide (one row
@@ -179,13 +180,17 @@ queries:
         WHERE list_name = 'pgsql-bugs' AND is_new_thread
         GROUP BY 1
       )
+      -- identifier-safe names: a support_table source: with a space in it
+      -- breaks the strip's Vega expression (dbt-charts #32); the display
+      -- names are set on the chart (y_label) and its layers (label)
       SELECT
         report_month,
-        acted_cnt AS "reports acted upon",
-        acted_cnt / report_cnt AS "acted upon (%)",
+        report_cnt AS reports,
+        acted_cnt,
+        acted_cnt / report_cnt AS acted_share,
         AVG(acted_cnt / report_cnt) OVER (
-          ORDER BY report_month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-        ) AS "3-month rolling average"
+          ORDER BY report_month ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
+        ) AS acted_avg_6m
       FROM monthly
       ORDER BY 1
 
@@ -358,12 +363,13 @@ charts:
     type: bar
     query: monthly_acted_data
     title: "Bug reports acted upon, by month"
-    subtitle: "All reports (form + free-form). Bars: reports later linked to a fix commit (count, left axis). Lines: acted-upon share (right axis) with its 3-month rolling average. Lower bound (exact links only); trailing months right-censored"
+    subtitle: "All reports (form + free-form). Bars: reports later linked to a fix commit (count, left axis). Lines: acted-upon share (right axis) with its 6-month rolling average. Lower bound (exact links only); trailing months right-censored"
     # ~75 months on a temporal x: dct labels it by year, so the "too many x
     # categories" warning (temporal wording since dct 0.7.0) is a false positive
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
     x: report_month
-    y: "reports acted upon"
+    y: acted_cnt
+    y_label: "reports acted upon"
     # the two % lines are distinct columns (so a hover reads both, plus the bar);
     # both share the same right axis, pinned to [0, 0.5] (the data is fractions)
     # with a per-layer axis_y.labels.format ".1%" -- that scopes the percent
@@ -373,7 +379,8 @@ charts:
     layers:
       - type: line
         x: report_month
-        y: "acted upon (%)"
+        y: acted_share
+        label: "acted upon (%)"
         axis_y:
           position: right
           title: "acted upon (%)"
@@ -381,13 +388,27 @@ charts:
           labels: { format: ".1%" }
       - type: line
         x: report_month
-        y: "3-month rolling average"
+        y: acted_avg_6m
+        label: "6-month average"
         axis_y:
           position: right
           title: "acted upon (%)"
           scale: { domain: [0, 0.5] }
           labels: { format: ".1%" }
-        style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
+        # same ink as the 6-month average on "Bug reports per month": the
+        # theme's third category slot, solid, default width
+        style: { marks: { line: { stroke: { color: "category[3]" } } } }
+    # support strip (top to bottom): reports filed, reports acted upon, the
+    # acted-upon share and its 6-month average. One row per month, so each
+    # entry reads its column's raw value; the shares are whole percents
+    support_table:
+      - { source: reports, format: integer, label: "Reports" }
+      - { source: acted_cnt, format: integer, label: "Acted upon" }
+      - { source: acted_share, format: percent_whole, label: "Acted upon %" }
+      # no hyphen in the label: dct line-breaks "6-month" as "6- month"
+      - { source: acted_avg_6m, format: percent_whole, label: "6 month avg %" }
+    style:
+      support_table: { position: bottom, font: { size: 8 } }
 
   seasonality_counts:
     type: bar
