@@ -303,7 +303,7 @@ charts:
         query: fix_cve_pct
         y: cve_pct
         label: "CVE share"
-        axis_y: { position: right, title: "CVE share", labels: { format: ".0%" } }
+        axis_y: { position: right, title: "CVE share", labels: { format: "0%" } }
         style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
     # support strip (top to bottom): total fixes, fixes without a CVE, fixes
     # with one (per series), and the CVE share. The first authored entry sits at
@@ -313,7 +313,7 @@ charts:
     support_table:
       - { aggregate: sum, source: fix_cnt, format: integer, label: "Total" }
       - { per_series: fix_cnt }
-      - { aggregate: max, source: cve_pct, format: percent, label: "CVE %" }
+      - { aggregate: max, source: cve_pct, format: percent_whole, label: "CVE %" }
     style:
       color:
         categorical:
