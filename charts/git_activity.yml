@@ -207,12 +207,25 @@ queries:
         GROUP BY 1
       )
 
-      SELECT q.quarter, 'total churn (adds + deletes)' AS series, q.adds + q.deletes AS lines FROM q
+      -- the quarter as a label ("Q1 22"), not a date: on a temporal x the
+      -- support strip thins its cells to the axis-label cadence (one a year
+      -- here), while a categorical x shows every quarter. quarter_seq keeps
+      -- the ORDER BY chronological
+      , labeled AS (
+        SELECT
+          'Q' || QUARTER(quarter) || ' ' || STRFTIME(quarter, '%y') AS quarter,
+          EPOCH(quarter)::BIGINT AS quarter_seq,
+          adds,
+          deletes
+        FROM q
+      )
+
+      SELECT lb.quarter, lb.quarter_seq, 'total churn (adds + deletes)' AS series, lb.adds + lb.deletes AS lines FROM labeled AS lb
       UNION ALL
-      SELECT q.quarter, 'lines added' AS series, q.adds FROM q
+      SELECT lb.quarter, lb.quarter_seq, 'lines added' AS series, lb.adds FROM labeled AS lb
       UNION ALL
-      SELECT q.quarter, 'lines deleted' AS series, q.deletes FROM q
-      ORDER BY 1, 2
+      SELECT lb.quarter, lb.quarter_seq, 'lines deleted' AS series, lb.deletes FROM labeled AS lb
+      ORDER BY 2, 3
 
   backpatch_breadth:
     notes: >
@@ -442,6 +455,23 @@ charts:
     color: subsystem
     style: { stack: zero }
 
+  codebase_composition_share:
+    type: bar
+    # same query (and so the same file-class dropdown) as the absolute chart
+    # above, normalized: the hover reads each subsystem's share of the major's
+    # tree AND its line count, with the total. Answers "what fraction of PG19
+    # is the core server" beside the bars that show how big PG19 is
+    query: codebase_composition
+    title: "Codebase composition by subsystem, as shares"
+    subtitle: "The same snapshot as shares of each major's tree; the core server holds at about half while tests grow from under 6% to nearly 9% and docs slip from 16% to 14%"
+    x: major
+    y: code_lines
+    y_label: "share of source lines"
+    color: subsystem
+    # no axis_y format: normalize already labels the axis in percent, and an
+    # authored percent format leaks into the hover's raw count column
+    style: { stack: normalize }
+
   churn_by_quarter:
     type: line
     query: churn_by_quarter
@@ -451,6 +481,13 @@ charts:
     y: lines
     y_label: "lines changed"
     color: series
+    # the three plotted series as a strip under the axis, in thousands: the
+    # `number` preset (.3~s) spells them 24k / 18.1k / 5.89k with the k
+    # declared once per row (dct's house rule for its own presets)
+    support_table:
+      - { per_series: lines, format: number }
+    style:
+      support_table: { position: bottom, font: { size: 9 } }
 
   backpatch_breadth:
     type: line
@@ -556,6 +593,7 @@ rows:
   - commits_per_version
   - codebase_size
   - codebase_composition
+  - codebase_composition_share
   - churn_by_quarter
   - backpatch_breadth
   - trunk_churn_by_subsystem
