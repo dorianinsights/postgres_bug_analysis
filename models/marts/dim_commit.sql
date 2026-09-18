@@ -49,6 +49,8 @@ SELECT
   gcm.subject,
   gcm.fix_key,
   gcm.is_housekeeping,
+  gcm.backpatch_through_major,
+  gcm.is_backpatch_declared_none,
   -- ONE commit per backpatched fix: within the stable (backpatch) scope, the
   -- fix_key's LARGEST backpatch by total churn (an older branch's version can
   -- carry extra conflict-resolution lines, so this is the fix's full size),

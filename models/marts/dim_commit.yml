@@ -152,6 +152,16 @@ models:
       - name: is_housekeeping
         description: Release mechanics (version stamps, translation refreshes, release-notes drafting, tz data, pgindent), excluded from every fix count.
         tests: [not_null]
+      - name: backpatch_through_major
+        description: >
+          The oldest major the fix was applied to, as the commit's
+          "Backpatch-through: N" trailer states it (int_git_commits); 9.x
+          majors included, so it can reach below the corpus floor, and the
+          in-development major on a master-only fix. Standard since 2025,
+          sparse before; NULL when absent or "master".
+      - name: is_backpatch_declared_none
+        description: 'True when the trailer reads "Backpatch-through: master", an explicit "not backpatched".'
+        tests: [not_null]
       - name: is_representative_commit
         description: >
           One commit per backpatched fix: within the stable (backpatch) scope,

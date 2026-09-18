@@ -1,7 +1,7 @@
 release_dt,dim_release_key,status,is_out_of_band,is_partial_window,origin,fix_cnt,security_fix_cnt,security_hardening_cnt,committed_fix_cnt,documentation_rate,fix_share
 2019-11-14,ae9513a94b08054b5257585a7ac8c738,shipped,false,true,pgsql-bugs,11,0,0,20,0.550000,0.215686
 2019-11-14,ae9513a94b08054b5257585a7ac8c738,shipped,false,true,pgsql-hackers,38,0,2,52,0.730769,0.745098
-2019-11-14,ae9513a94b08054b5257585a7ac8c738,shipped,false,true,unknown_or_internal_not_security,2,0,0,27,0.074074,0.039216
+2019-11-14,ae9513a94b08054b5257585a7ac8c738,shipped,false,true,unknown_or_internal_not_security,2,0,0,26,0.076923,0.039216
 2019-11-14,ae9513a94b08054b5257585a7ac8c738,shipped,false,true,unknown_or_internal_security,0,0,0,0,,0.000000
 2020-02-13,9a9b07da41bc7c7dcffbecd2fec341cf,shipped,false,false,pgsql-bugs,27,0,0,35,0.771429,0.360000
 2020-02-13,9a9b07da41bc7c7dcffbecd2fec341cf,shipped,false,false,pgsql-hackers,43,1,0,80,0.537500,0.573333
@@ -33,7 +33,7 @@ release_dt,dim_release_key,status,is_out_of_band,is_partial_window,origin,fix_cn
 2021-08-12,c9d8a0790659e1de2e133ca63969ffde,shipped,false,false,unknown_or_internal_security,1,1,1,1,1.000000,0.012987
 2021-11-11,dbd342bf889401ef27850f02400ed7c3,shipped,false,false,pgsql-bugs,29,0,0,37,0.783784,0.329545
 2021-11-11,dbd342bf889401ef27850f02400ed7c3,shipped,false,false,pgsql-hackers,52,0,3,101,0.514851,0.590909
-2021-11-11,dbd342bf889401ef27850f02400ed7c3,shipped,false,false,unknown_or_internal_not_security,5,0,0,29,0.172414,0.056818
+2021-11-11,dbd342bf889401ef27850f02400ed7c3,shipped,false,false,unknown_or_internal_not_security,5,0,0,28,0.178571,0.056818
 2021-11-11,dbd342bf889401ef27850f02400ed7c3,shipped,false,false,unknown_or_internal_security,2,2,2,2,1.000000,0.022727
 2022-02-10,7fdb94d944fa9b4ec8f39e9170f26ece,shipped,false,false,pgsql-bugs,24,0,2,36,0.666667,0.421053
 2022-02-10,7fdb94d944fa9b4ec8f39e9170f26ece,shipped,false,false,pgsql-hackers,31,0,1,72,0.430556,0.543860
@@ -65,11 +65,11 @@ release_dt,dim_release_key,status,is_out_of_band,is_partial_window,origin,fix_cn
 2023-05-11,14d8b6c36187f5adc35e95280a91c9cb,shipped,false,false,unknown_or_internal_security,2,2,2,3,0.666667,0.024096
 2023-08-10,086ceaa75240d0c8218ee8cd31103e84,shipped,false,false,pgsql-bugs,17,0,2,19,0.894737,0.340000
 2023-08-10,086ceaa75240d0c8218ee8cd31103e84,shipped,false,false,pgsql-hackers,30,0,1,63,0.476190,0.600000
-2023-08-10,086ceaa75240d0c8218ee8cd31103e84,shipped,false,false,unknown_or_internal_not_security,1,0,0,18,0.055556,0.020000
+2023-08-10,086ceaa75240d0c8218ee8cd31103e84,shipped,false,false,unknown_or_internal_not_security,1,0,0,17,0.058824,0.020000
 2023-08-10,086ceaa75240d0c8218ee8cd31103e84,shipped,false,false,unknown_or_internal_security,2,2,2,2,1.000000,0.040000
-2023-11-09,3aa0dcd869a782cee2f08c40235e2762,shipped,false,false,pgsql-bugs,27,0,4,39,0.692308,0.364865
+2023-11-09,3aa0dcd869a782cee2f08c40235e2762,shipped,false,false,pgsql-bugs,27,0,4,37,0.729730,0.364865
 2023-11-09,3aa0dcd869a782cee2f08c40235e2762,shipped,false,false,pgsql-hackers,43,0,3,96,0.447917,0.581081
-2023-11-09,3aa0dcd869a782cee2f08c40235e2762,shipped,false,false,unknown_or_internal_not_security,1,0,0,35,0.028571,0.013514
+2023-11-09,3aa0dcd869a782cee2f08c40235e2762,shipped,false,false,unknown_or_internal_not_security,1,0,0,33,0.030303,0.013514
 2023-11-09,3aa0dcd869a782cee2f08c40235e2762,shipped,false,false,unknown_or_internal_security,3,3,3,4,0.750000,0.040541
 2024-02-08,ad89edc9dc5c9a74a8d3f9e6941f425d,shipped,false,false,pgsql-bugs,35,0,4,40,0.875000,0.492958
 2024-02-08,ad89edc9dc5c9a74a8d3f9e6941f425d,shipped,false,false,pgsql-hackers,35,0,1,70,0.500000,0.492958
@@ -84,8 +84,8 @@ release_dt,dim_release_key,status,is_out_of_band,is_partial_window,origin,fix_cn
 2024-08-08,54b845081bd089efb1f91a1b5a00304b,shipped,false,false,unknown_or_internal_not_security,1,0,0,19,0.052632,0.018182
 2024-08-08,54b845081bd089efb1f91a1b5a00304b,shipped,false,false,unknown_or_internal_security,1,1,1,1,1.000000,0.018182
 2024-11-14,941e22d8a4f291e3ef640e97c4354a02,shipped,false,false,pgsql-bugs,33,0,4,40,0.825000,0.478261
-2024-11-14,941e22d8a4f291e3ef640e97c4354a02,shipped,false,false,pgsql-hackers,30,0,2,87,0.344828,0.434783
-2024-11-14,941e22d8a4f291e3ef640e97c4354a02,shipped,false,false,unknown_or_internal_not_security,2,0,0,32,0.062500,0.028986
+2024-11-14,941e22d8a4f291e3ef640e97c4354a02,shipped,false,false,pgsql-hackers,30,0,2,81,0.370370,0.434783
+2024-11-14,941e22d8a4f291e3ef640e97c4354a02,shipped,false,false,unknown_or_internal_not_security,2,0,0,27,0.074074,0.028986
 2024-11-14,941e22d8a4f291e3ef640e97c4354a02,shipped,false,false,unknown_or_internal_security,4,4,3,9,0.444444,0.057971
 2024-11-21,9913f136f555e8d180895e7b13f3cc29,shipped,true,false,pgsql-bugs,6,1,0,7,0.857143,0.750000
 2024-11-21,9913f136f555e8d180895e7b13f3cc29,shipped,true,false,pgsql-hackers,2,0,0,2,1.000000,0.250000

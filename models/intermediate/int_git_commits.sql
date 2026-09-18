@@ -16,9 +16,18 @@ SELECT
   REGEXP_MATCHES(
     subject,
     '^(stamp |translation updates|(first-draft |second-draft |last-minute updates for )?release notes'
-    || '|docs?: .*release notes|update time zone data|update copyright|re-?pgindent|bump catversion)',
+    || '|docs?: .*release notes|.*relnotes|update time zone data|update copyright|re-?pgindent|bump catversion)',
     'i'
   ) AS is_housekeeping,
+  -- the "Backpatch-through: 13" trailer: the oldest major the fix was applied
+  -- to, as the committer states it (standard on backpatched fixes since 2025,
+  -- about a third of them before). 9.x majors included, so it reaches below
+  -- the corpus floor; NULL when absent or non-numeric ("master")
+  TRY_CAST(
+    REGEXP_EXTRACT(body, '(?i)back-?patch(?:ed)?-through:[ \t]*v?(\d+(?:\.\d+)?)', 1) AS DECIMAL(4, 1)
+  ) AS backpatch_through_major,
+  -- "Backpatch-through: master" (or head / none): an explicit "not backpatched"
+  REGEXP_MATCHES(body, '(?i)back-?patch(?:ed)?-through:[ \t]*(master|head|none)\b') AS is_backpatch_declared_none,
   -- "Bug: #17434" trailers and prose "bug #17434" alike
   NULLIF(
     LIST_SORT(

@@ -50,6 +50,15 @@ style:
   charts:
     min_height: 380
     max_height: 380
+    # churn_by_quarter's series: pinned so adding a series doesn't reshuffle
+    # the palette (dct seats colors in series sort order)
+    category_colors:
+      series:
+        values:
+          "lines added": category[1]
+          "lines deleted": category[2]
+          "total churn (adds + deletes)": category[3]
+          "12-month average": category[4]
 
 queries:
   quarterly_distinct:
@@ -177,8 +186,9 @@ queries:
 
   churn_by_quarter:
     notes: >
-      Lines of code churned per calendar quarter by backpatched fixes, as three
-      series: total churn (adds + deletes), additions, and deletions. ONE commit
+      Lines of code churned per calendar quarter by backpatched fixes, as four
+      series: total churn (adds + deletes), its 12-month (four-quarter) trailing
+      average, additions, and deletions. ONE commit
       per fix (dim_commit.is_representative_commit: the fix's largest backpatch
       by churn, since an older branch's version can carry extra
       conflict-resolution lines), so a fix landed on five majors counts its
@@ -216,16 +226,49 @@ queries:
           'Q' || QUARTER(quarter) || ' ' || STRFTIME(quarter, '%y') AS quarter,
           EPOCH(quarter)::BIGINT AS quarter_seq,
           adds,
-          deletes
+          deletes,
+          -- 12-month rolling average of total churn = this quarter and the three before
+          AVG(adds + deletes) OVER (ORDER BY quarter ROWS BETWEEN 3 PRECEDING AND CURRENT ROW)::BIGINT AS churn_12m
         FROM q
       )
 
       SELECT lb.quarter, lb.quarter_seq, 'total churn (adds + deletes)' AS series, lb.adds + lb.deletes AS lines FROM labeled AS lb
       UNION ALL
+      SELECT lb.quarter, lb.quarter_seq, '12-month average' AS series, lb.churn_12m FROM labeled AS lb
+      UNION ALL
       SELECT lb.quarter, lb.quarter_seq, 'lines added' AS series, lb.adds FROM labeled AS lb
       UNION ALL
       SELECT lb.quarter, lb.quarter_seq, 'lines deleted' AS series, lb.deletes FROM labeled AS lb
       ORDER BY 2, 3
+
+  churn_vs_average:
+    notes: >
+      Each quarter's total churn divided by the mean quarterly churn over every
+      quarter on the chart (the same population, file classes and housekeeping
+      exclusion as churn_by_quarter, so the ratio's 1.0 is that chart's
+      average; the chart prints it as a percent), one row per quarter for its
+      own chart below it. The mean includes
+      the Q1 2022 ppport.h spike and the partial current quarter as they are.
+    source: warehouse
+    sql: |
+      WITH q AS (
+        SELECT
+          DATE_TRUNC('quarter', cf.commit_dt)::DATE AS quarter,
+          SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS churn
+        FROM {{ ref('fct_commit_files') }} AS cf
+        INNER JOIN {{ ref('dim_commit') }} AS dc ON cf.dim_commit_key = dc.dim_commit_key
+        WHERE dc.is_representative_commit
+          AND NOT dc.is_housekeeping
+          AND {{ filter('cf.file_class', stable_churn_classes) }}
+        GROUP BY 1
+      )
+
+      SELECT
+        'Q' || QUARTER(quarter) || ' ' || STRFTIME(quarter, '%y') AS quarter,
+        EPOCH(quarter)::BIGINT AS quarter_seq,
+        churn / AVG(churn) OVER () AS churn_ratio
+      FROM q
+      ORDER BY 2
 
   backpatch_breadth:
     notes: >
@@ -319,6 +362,9 @@ queries:
       SELECT
         MIN(commit_dt) AS commit_dt,
         subject,
+        -- hidden in the table; the subject cell links to the fix's first landing
+        -- (its earliest commit, usually master) on GitHub by it
+        ARG_MIN(commit_hash, commit_ts) AS commit_hash,
         CONCAT_WS(' + ',
           CASE WHEN BOOL_OR(ai_found) THEN 'found' END,
           CASE WHEN BOOL_OR(ai_analyzed) THEN 'analyzed' END,
@@ -476,18 +522,32 @@ charts:
     type: line
     query: churn_by_quarter
     title: "Lines of code churned per quarter"
-    subtitle: "One backpatch per fix, its largest (housekeeping excluded); total churn, additions, and deletions -- work per fix, not per branch; current quarter partial"
+    subtitle: "One backpatch per fix, its largest (housekeeping excluded); total churn with its 12-month average, additions, and deletions -- work per fix, not per branch; current quarter partial. Q1 2022's spike is one commit, a one-time refresh of PL/Perl's vendored ppport.h header for Perl 5.34 (~18.6k lines), not fix work"
     x: quarter
     y: lines
     y_label: "lines changed"
     color: series
-    # the three plotted series as a strip under the axis, in thousands: the
+    # the four plotted series as a strip under the axis, in thousands: the
     # `number` preset (.3~s) spells them 24k / 18.1k / 5.89k with the k
     # declared once per row (dct's house rule for its own presets)
     support_table:
       - { per_series: lines, format: number }
     style:
       support_table: { position: bottom, font: { size: 9 } }
+
+  churn_vs_average:
+    type: line
+    query: churn_vs_average
+    title: "Churn per quarter relative to the chart average"
+    subtitle: "Each quarter's total churn from the chart above as a percentage of the mean over all its quarters; 100% = an average quarter. The mean includes the Q1 2022 ppport.h spike and the partial current quarter"
+    x: quarter
+    y: churn_ratio
+    y_label: "% of chart average"
+    # churn_ratio is a fraction (0.6, 2.1); the percent format multiplies by
+    # 100 on the axis and in the hover
+    style:
+      axis_y: { labels: { format: ".0%" } }
+    height: 300
 
   backpatch_breadth:
     type: line
@@ -548,6 +608,15 @@ charts:
     type: table
     query: ai_involved_lines
     title: "AI-involved fix commits"
+    # link-blue + underline so the subject reads as a link before hover: a
+    # column font's `decoration` never reaches a cell, only conditional
+    # formatting emits it, and a role token there crashes the compiler
+    # (dbt-charts #34), hence the literal hex (= category[1])
+    conditional_formatting:
+      subject:
+        when:
+          - default: true
+            font: { color: "#40639c", decoration: underline }
     # the evidence prose wraps to two or three lines: pin the two text columns'
     # widths (else the sizer wants a 1700px frame) and a row height + page size
     # the slot actually fits (else it pages at 12 and warns)
@@ -556,7 +625,12 @@ charts:
       pagination: { page_rows: 10 }
       columns:
         commit_dt: { label: "committed" }
-        subject: { width: "26%" }
+        # opens the commit on the GitHub mirror, keyed by the hidden hash
+        # (same tab: dct has no new-tab option for a cell link, dbt-charts #33)
+        subject:
+          width: "26%"
+          link: "https://github.com/postgres/postgres/commit/{{ commit_hash }}"
+        commit_hash: { visible: false }
         label_source: { label: "source" }
         evidence: { width: "38%" }
 
@@ -595,6 +669,7 @@ rows:
   - codebase_composition
   - codebase_composition_share
   - churn_by_quarter
+  - churn_vs_average
   - backpatch_breadth
   - trunk_churn_by_subsystem
   - cols: [ai_involved, ai_roles]

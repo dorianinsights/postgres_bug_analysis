@@ -66,3 +66,18 @@ models:
         tests: [not_null]
       - name: is_housekeeping
         tests: [not_null]
+      - name: backpatch_through_major
+        description: >
+          The oldest major the fix was applied to, from the body's
+          "Backpatch-through: N" trailer (9.x majors included, so it can name a
+          branch below the corpus floor; the in-development major on a
+          master-only fix). Standard on backpatched fixes since 2025, on about
+          a third before; NULL when absent or non-numeric.
+        tests:
+          # a stated major and an explicit "master" are mutually exclusive
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: IS NULL OR NOT is_backpatch_declared_none
+      - name: is_backpatch_declared_none
+        description: 'True when the trailer reads "Backpatch-through: master" (or head / none), an explicit "not backpatched".'
+        tests: [not_null]
