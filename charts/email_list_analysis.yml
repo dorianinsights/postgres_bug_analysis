@@ -200,6 +200,23 @@ queries:
       GROUP BY 1, 2
       ORDER BY 1, 2
 
+  ai_share_monthly:
+    notes: >
+      The share of all new threads (every list) whose first message discloses
+      AI involvement, per month, one row per month for the dual-axis line on
+      ai_threads_by_list. A FRACTION (0-1): the layer's percent axis format
+      multiplies by 100.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('month', started_dt)::DATE AS month_dt,
+        COUNT(*) FILTER (WHERE has_ai_involvement) * 1.0 / COUNT(*) AS ai_share
+      FROM {{ ref('fct_threads') }}
+      -- from the first month with a disclosed AI involvement
+      WHERE started_dt >= (SELECT DATE_TRUNC('month', MIN(started_dt)) FROM {{ ref('fct_threads') }} WHERE has_ai_involvement)
+      GROUP BY 1
+      ORDER BY 1
+
   ai_thread_lines:
     notes: The AI-involved threads with their roles, vendor and the model's evidence, newest first.
     source: warehouse
@@ -208,6 +225,8 @@ queries:
         started_dt,
         list_name,
         subject,
+        -- hidden in the table; the subject cell links to the thread's archive page by it
+        root_message_id,
         CONCAT_WS(' + ',
           CASE WHEN ai_found THEN 'found' END,
           CASE WHEN ai_analyzed THEN 'analyzed' END,
@@ -319,20 +338,48 @@ charts:
     type: bar
     query: ai_threads_by_list
     title: "AI-involved threads per month, by list"
-    subtitle: "Count of new threads whose first message discloses AI involvement"
+    subtitle: "Count of new threads whose first message discloses AI involvement (bars, left); line = those threads as a share of all new threads that month, every list (right)"
     x: month_dt
     y: ai_threads
     color: list_name
+    # the layer's own axis carries the percent format; the missing-formatter
+    # check reads the primary (count) axis instead (dbt-charts #30)
+    warnings_ignore: [WARN-LIKELY-CURRENCY-OR-PERCENT-MISSING-FORMATTER]
+    # dual axis: the stacked count on the left, the all-list share on its own
+    # right axis
+    layers:
+      - type: line
+        query: ai_share_monthly
+        x: month_dt
+        y: ai_share
+        label: "AI share of new threads"
+        axis_y: { position: right, title: "share of new threads", labels: { format: ".1%" } }
+        style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
 
   ai_thread_table:
     type: table
     query: ai_thread_lines
     title: "AI-involved threads"
+    # link-blue + underline so the subject reads as a link before hover. A
+    # column font's `decoration` never reaches a cell (only its color does):
+    # the renderer emits text-decoration from conditional formatting alone,
+    # so an always-on default rule carries it. Literal hex (= category[1]):
+    # a role token here has no theme context and crashes the compiler
+    conditional_formatting:
+      subject:
+        when:
+          - default: true
+            font: { color: "#40639c", decoration: underline }
     # short headers: the eight auto headers overflowed the slot by ~35px
     style:
       columns:
         started_dt: { label: "started" }
         list_name: { label: "list" }
+        # the subject opens the thread in the postgresql.org archive, keyed by
+        # the root message id (a hidden column, still usable in the template).
+        # Same tab: dct has no new-tab option for a cell link (dbt-charts #33)
+        subject: { link: "https://www.postgresql.org/message-id/{{ root_message_id }}" }
+        root_message_id: { visible: false }
         label_source: { label: "source" }
         is_acted_upon: { label: "acted" }
 
