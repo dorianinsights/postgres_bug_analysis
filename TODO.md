@@ -129,6 +129,63 @@ count per major). `fct_fix_projections`' origin_scaled method (per-origin
 documented-per-early-committed factors over `origin_projection_cycles` cycles)
 exists if a documented-units projection is ever wanted instead.
 
+## Pull the commitfest app into the warehouse (`pg-cf-sync`)
+
+https://commitfest.postgresql.org/ tracks every patch through review: the
+pipeline BEFORE a commit, which nothing in the warehouse sees today. It
+joins to what we have through the mailing-list thread: a patch's threads
+are keyed by root message id, the same key as `fct_threads`, and a commit's
+`Discussion:` trailer (`int_git_commits.discussion_refs`) closes the loop
+thread -> patch -> commit.
+
+What the site exposes (surveyed 2026-09-17; no login needed for any of it):
+- **JSON** `/api/v1/commitfests/<id>/patches` — per patch: id, name, status
+  in THAT commitfest (Needs review / Waiting on Author / Ready for Committer /
+  Committed / Moved to different CF / Returned with feedback / Withdrawn /
+  Rejected), authors, last-mail time. Works for every historical commitfest
+  (ids run 1..~62, Dec 2014 -> PG20-Final; ~215-336 patches each), so a
+  patch's path across commitfests is reconstructible from the per-CF rows.
+- **JSON** `/api/v1/patches/<id>/threads` — root message id, subject, latest
+  message id/time, has_attachment per attached thread. The join key.
+- **JSON** `/api/v1/commitfests/needs_ci` — the open / in-progress / draft
+  commitfest ids and dates. (`/api/v1/commitfests` itself 404s; take the id
+  list from `/archive/`.)
+- **HTML only** `/patch/<id>/` — tags (Bugfix, Performance, ...), target
+  version, reviewers, committer, created date, cfbot CI result per platform,
+  patch version count and cumulative +/- lines, and the full timestamped
+  history (status changes, reviewer/committer assignments, moves, cfbot
+  "needs rebase" events). Stable Django template.
+- **HTML** `/activity/?page=N` (~100 rows/page, back through history) and
+  `/activity.rss/` (latest 50): timestamp, user, patch, action.
+- `/<cf>/reports/authorstats/` is the one page behind the community login
+  (the `.env` archive credentials would work there; not needed otherwise).
+
+Analytics this unlocks: review time and reviewer count per committed patch;
+commitfests survived (moves) before commit; committed vs returned vs withdrawn
+per commitfest and the queue size over a decade; reviewer / committer load and
+its concentration; cfbot rebase churn and CI failure rates; the Bugfix-tagged
+population (fixes that went through review, a different population from
+pgsql-bugs); and whether AI-disclosed threads become patches, get committed,
+and how fast, against the rest.
+
+Plan (additive):
+- `python/pg_analysis/commitfest_sync.py` with a `pg-cf-sync` console script
+  (`[project.scripts]`; `refresh_data` calls its `main()` in-process, so fail
+  by raising): pull the patches JSON for every commitfest id and the threads
+  JSON per patch (~6,500 patches; polite pacing) into `data/raw/`
+  `commitfest_patches.csv` (grain patch x commitfest) and
+  `commitfest_patch_threads.csv` (grain patch x root message id). Read them
+  through `sources/`, one raw model per file.
+- Marts: `dim_patch` (surrogate key, name, authors, first/last commitfest,
+  final status), `fct_patch_commitfests` (patch x commitfest, status), and a
+  `bridge_patch_thread` to `fct_threads` by root message id; then a
+  patch -> commit link through `discussion_refs`.
+- Second step, once the JSON slice is in: scrape `/patch/<id>/` for tags,
+  reviewers, committer, cfbot and the status history (same order of
+  requests), giving the review-time and load measures.
+- Boards: a commitfest page (throughput per CF, queue age, reviewer load) and
+  an AI-vs-rest patch-outcome chart on `email_list_analysis`.
+
 ## Next AI-involvement prompt bump (`AI_PROMPT_VERSION`)
 A version bump re-infers all ~32k texts (~17 h), so batch these into one:
 - Add `clang-tidy` (and linters generally) to the prompt's list of non-AI tools --
