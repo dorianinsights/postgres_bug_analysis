@@ -1,0 +1,738 @@
+_schema_version: "0.6.0"  # written automatically by dct migrate
+title: "AI, LLMs, and the Pace of Postgres Bug Fixing"
+notes: >
+  The blog article as a board: the prose is the article text, inline, and
+  every figure is the live chart it was taken from, copied here from the
+  fix-analysis, email-list, bug-reports and git-activity boards so the
+  article stands alone. The text describes the data as of 2026-09-18; the
+  charts re-render from the warehouse on every build, so a figure can drift
+  from the sentence beside it until the text is revised.
+
+# a board with long text rows renders at dct's prose measure (672px), which
+# squeezes the charts; pin the dashboard width instead. The prose is laid out
+# like the published Dorian Insights articles (dorianinsights.com/insights):
+# one column the full width of the page, sans-serif, ~17px on a 1.7 line
+# height. dct only ships Inter as a sans face, so Inter stands in for the
+# site's IBM Plex Sans; max_chars widens the single column to the page
+width: 1100
+
+# same board-wide style the source charts were authored against:
+# 1_fix_analysis pins each release year to a distinct hue and stacks its bars
+# vertically; git_activity pins the churn chart's series so the palette
+# doesn't reseat
+style:
+  text:
+    font: { family: "Inter Variable", size: 17, line_height: 1.7 }
+    column: { max_number: 1, max_chars: 125 }
+  charts:
+    bar: { stack: zero, orientation: vertical }
+    category_colors:
+      release_year:
+        values:
+          CY2020: category[1]
+          CY2021: category[5]
+          CY2022: category[3]
+          CY2023: category[4]
+          CY2024: category[6]
+          CY2025: category[2]
+          CY2026: category[7]
+      series:
+        values:
+          "lines added": category[1]
+          "lines deleted": category[2]
+          "total churn (adds + deletes)": category[3]
+          "12-month average": category[4]
+
+queries:
+  # -- copied from charts/1_fix_analysis.yml
+  fix_count:
+    source: warehouse
+    sql: |
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        'CY' || STRFTIME(release_dt, '%Y') AS release_year,
+        SUM(fix_cnt) AS fix_cnt
+      FROM {{ ref('fct_fix_origins_agg') }}
+      WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
+      GROUP BY 1, 2, 3
+      ORDER BY 2
+
+  # -- copied from charts/1_fix_analysis.yml
+
+  fix_cve_split:
+    notes: >
+      The same documented fixes as fix_count, but each release split into the
+      CVE-bearing subset (security_fix_cnt summed over origins) and the
+      remainder that names no CVE, long-form for the stacked bar. cve_pct rides
+      on both rows (the per-release CVE share) so the support strip can read it.
+      The stacked total equals the "Fixes by release" chart above. Shipped
+      releases only; out-of-band and partial post-GA releases excluded.
+    source: warehouse
+    sql: |
+      WITH per_release AS (
+        SELECT
+          release_dt,
+          SUM(fix_cnt) AS total_fixes,
+          SUM(security_fix_cnt) AS cve_fixes
+        FROM {{ ref('fct_fix_origins_agg') }}
+        WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
+        GROUP BY release_dt
+      )
+
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        'with CVE' AS security_class,
+        cve_fixes AS fix_cnt,
+        cve_fixes::DOUBLE / NULLIF(total_fixes, 0) AS cve_pct
+      FROM per_release
+      UNION ALL
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        'no CVE' AS security_class,
+        total_fixes - cve_fixes AS fix_cnt,
+        cve_fixes::DOUBLE / NULLIF(total_fixes, 0) AS cve_pct
+      FROM per_release
+      ORDER BY 2, 3
+
+  # -- copied from charts/1_fix_analysis.yml
+
+  fix_cve_pct:
+    notes: The per-release CVE share (CVE-bearing fixes / total documented fixes), one row per release for the dual-axis line.
+    source: warehouse
+    sql: |
+      SELECT
+        STRFTIME(release_dt, '%b %y') AS release,
+        EPOCH(release_dt)::BIGINT AS release_seq,
+        SUM(security_fix_cnt)::DOUBLE / NULLIF(SUM(fix_cnt), 0) AS cve_pct
+      FROM {{ ref('fct_fix_origins_agg') }}
+      WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
+      GROUP BY 1, 2
+      ORDER BY 2
+
+  # -- copied from charts/email_list_analysis.yml
+  monthly_traffic:
+    notes: >
+      Monthly messages per list over the whole archive: all traffic and the
+      fix-linked subset (messages whose thread a commit eventually cites) as
+      two measures per list; the chart draws one series per measure x list
+      (dct 0.6 multi-y with color). The last point is the CURRENT month,
+      still filling.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
+        list_name,
+        COUNT(*) AS "all",
+        COUNT(*) FILTER (WHERE is_fix_linked) AS "fix-linked"
+      FROM {{ ref('fct_messages') }}
+      GROUP BY ALL
+      ORDER BY 1, 2
+
+  # -- copied from charts/email_list_analysis.yml
+
+  monthly_linked_share:
+    notes: >
+      Share of each month's messages that belong to commit-cited threads.
+      The sag in recent months is right-censoring, not less fix work --
+      their threads haven't been cited YET. A non-additive ratio, so it is
+      computed from the atomic message grain at the month, never re-aggregated
+      from a stored per-period value. Complete months only.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
+        list_name,
+        COUNT(*) FILTER (WHERE is_fix_linked) / COUNT(*)::DOUBLE AS fix_linked_share
+      FROM {{ ref('fct_messages') }}
+      WHERE sent_dt < DATE_TRUNC('month', CURRENT_DATE)
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+
+  # -- copied from charts/email_list_analysis.yml
+
+  ai_threads_by_list:
+    notes: AI-involved threads per month by list, with the share of all new threads that month.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('month', started_dt)::DATE AS month_dt,
+        list_name,
+        COUNT(*) FILTER (WHERE has_ai_involvement) AS ai_threads,
+        ROUND(COUNT(*) FILTER (WHERE has_ai_involvement) * 1.0 / COUNT(*), 4) AS ai_share
+      FROM {{ ref('fct_threads') }}
+      -- from the first month with a disclosed AI involvement
+      WHERE started_dt >= (SELECT DATE_TRUNC('month', MIN(started_dt)) FROM {{ ref('fct_threads') }} WHERE has_ai_involvement)
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+
+  # -- copied from charts/email_list_analysis.yml
+
+  ai_share_monthly:
+    notes: >
+      The share of all new threads (every list) whose first message discloses
+      AI involvement, per month, one row per month for the dual-axis line on
+      ai_threads_by_list. A FRACTION (0-1): the layer's percent axis format
+      multiplies by 100.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('month', started_dt)::DATE AS month_dt,
+        COUNT(*) FILTER (WHERE has_ai_involvement) * 1.0 / COUNT(*) AS ai_share
+      FROM {{ ref('fct_threads') }}
+      -- from the first month with a disclosed AI involvement
+      WHERE started_dt >= (SELECT DATE_TRUNC('month', MIN(started_dt)) FROM {{ ref('fct_threads') }} WHERE has_ai_involvement)
+      GROUP BY 1
+      ORDER BY 1
+
+  # -- copied from charts/bug_reports.yml
+  monthly_reports:
+    notes: >
+      Bug reports opened per month, where a report is a NEW THREAD on
+      pgsql-bugs (fct_threads: its root has no reply header), split into the
+      BUG #NNNNN web-form submissions and the free-form emails -- about a third
+      of all reports, and cited by fix commits at a similar rate -- which the
+      form-only count (dim_bug / fct_bug_reports_monthly_agg) never sees.
+    source: warehouse
+    sql: |
+      SELECT
+        DATE_TRUNC('month', started_dt)::DATE AS report_month,
+        CASE WHEN is_form_report THEN 'BUG # form reports' ELSE 'free-form reports' END AS series,
+        COUNT(*) AS report_cnt
+      FROM {{ ref('fct_threads') }}
+      WHERE list_name = 'pgsql-bugs' AND is_new_thread
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+
+  # -- copied from charts/bug_reports.yml
+
+  monthly_trend:
+    notes: Six-month centered moving average of ALL reports (form + free-form).
+    source: warehouse
+    sql: |
+      WITH monthly AS (
+        SELECT DATE_TRUNC('month', started_dt)::DATE AS report_month, COUNT(*) AS report_cnt
+        FROM {{ ref('fct_threads') }}
+        WHERE list_name = 'pgsql-bugs' AND is_new_thread
+        GROUP BY 1
+      )
+      SELECT
+        report_month,
+        '6-month average' AS series,
+        AVG(report_cnt) OVER (
+          ORDER BY report_month ROWS BETWEEN 3 PRECEDING AND 2 FOLLOWING
+        ) AS avg_reports
+      FROM monthly
+      ORDER BY 1
+
+  # -- copied from charts/bug_reports.yml
+
+  monthly_acted_data:
+    # AVG over the monthly share is exactly what a rolling average is
+    notes: >
+      Per month, over ALL bug reports (new pgsql-bugs threads, form +
+      free-form, fct_threads): the reports filed (support strip only), the
+      reports acted upon (count, the bars -- the thread was cited by a commit's
+      Discussion: trailer, or a form report was named by a Bug: # trailer),
+      the acted-upon share and its 6-month trailing average (the two
+      right-axis lines). The two share columns are emitted as
+      FRACTIONS (0-1), not percentage points, so the chart's per-layer
+      axis_y.label.format ".1%" renders them as real percentages on the right
+      axis AND in the tooltip (d3's % type multiplies by 100). Wide (one row
+      per month) so a hover shows all three at once. Trailing months sag
+      because their fixes haven't landed yet.
+    source: warehouse
+    sql: |
+      WITH monthly AS (
+        SELECT
+          DATE_TRUNC('month', started_dt)::DATE AS report_month,
+          COUNT(*) AS report_cnt,
+          COUNT(*) FILTER (WHERE is_acted_upon) AS acted_cnt
+        FROM {{ ref('fct_threads') }}
+        WHERE list_name = 'pgsql-bugs' AND is_new_thread
+        GROUP BY 1
+      )
+      -- identifier-safe names: a support_table source: with a space in it
+      -- breaks the strip's Vega expression (dbt-charts #32); the display
+      -- names are set on the chart (y_label) and its layers (label)
+      SELECT
+        report_month,
+        report_cnt AS reports,
+        acted_cnt,
+        acted_cnt / report_cnt AS acted_share,
+        AVG(acted_cnt / report_cnt) OVER (
+          ORDER BY report_month ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
+        ) AS acted_avg_6m
+      FROM monthly
+      ORDER BY 1
+
+  # -- copied from charts/git_activity.yml
+
+  churn_by_quarter:
+    notes: >
+      Lines of code churned per calendar quarter by backpatched fixes, as four
+      series: total churn (adds + deletes), its 12-month (four-quarter) trailing
+      average, additions, and deletions. ONE commit
+      per fix (dim_commit.is_representative_commit: the fix's largest backpatch
+      by churn, since an older branch's version can carry extra
+      conflict-resolution lines), so a fix landed on five majors counts its
+      churn once. Summing every backpatch instead would inflate the series with the
+      corpus, not the work: the number of stable branches inside the corpus
+      grew from one in 2019 to every supported major since mid-2023 (see the backpatch-breadth
+      chart below). Generated file classes (translation catalogs .po,
+      regression fixtures .out) are excluded -- source churn only -- and so are
+      housekeeping commits (the release-notes SGML drafts are the largest single
+      churn items of a cycle and scale with the fix count, not with the work).
+      The current quarter is partial.
+    source: warehouse
+    sql: |
+      WITH q AS (
+        SELECT
+          DATE_TRUNC('quarter', cf.commit_dt)::DATE AS quarter,
+          SUM(COALESCE(cf.lines_added, 0))::BIGINT AS adds,
+          SUM(COALESCE(cf.lines_deleted, 0))::BIGINT AS deletes
+        FROM {{ ref('fct_commit_files') }} AS cf
+        INNER JOIN {{ ref('dim_commit') }} AS dc ON cf.dim_commit_key = dc.dim_commit_key
+        -- churn in the file classes chosen by the per-chart dropdown
+        -- (defaults to hand-written source).
+        WHERE dc.is_representative_commit
+          AND NOT dc.is_housekeeping
+          AND cf.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
+        GROUP BY 1
+      )
+
+      -- the quarter as a label ("Q1 22"), not a date: on a temporal x the
+      -- support strip thins its cells to the axis-label cadence (one a year
+      -- here), while a categorical x shows every quarter. quarter_seq keeps
+      -- the ORDER BY chronological
+      , labeled AS (
+        SELECT
+          'Q' || QUARTER(quarter) || ' ' || STRFTIME(quarter, '%y') AS quarter,
+          EPOCH(quarter)::BIGINT AS quarter_seq,
+          adds,
+          deletes,
+          -- 12-month rolling average of total churn = this quarter and the three before
+          AVG(adds + deletes) OVER (ORDER BY quarter ROWS BETWEEN 3 PRECEDING AND CURRENT ROW)::BIGINT AS churn_12m
+        FROM q
+      )
+
+      SELECT lb.quarter, lb.quarter_seq, 'total churn (adds + deletes)' AS series, lb.adds + lb.deletes AS lines FROM labeled AS lb
+      UNION ALL
+      SELECT lb.quarter, lb.quarter_seq, '12-month average' AS series, lb.churn_12m FROM labeled AS lb
+      UNION ALL
+      SELECT lb.quarter, lb.quarter_seq, 'lines added' AS series, lb.adds FROM labeled AS lb
+      UNION ALL
+      SELECT lb.quarter, lb.quarter_seq, 'lines deleted' AS series, lb.deletes FROM labeled AS lb
+      ORDER BY 2, 3
+
+  # -- copied from charts/git_activity.yml
+
+  churn_vs_average:
+    notes: >
+      Each quarter's total churn divided by the mean quarterly churn over every
+      quarter on the chart (the same population, file classes and housekeeping
+      exclusion as churn_by_quarter, so the ratio's 1.0 is that chart's
+      average; the chart prints it as a percent), one row per quarter for its
+      own chart below it. The mean includes
+      the Q1 2022 ppport.h spike and the partial current quarter as they are.
+    source: warehouse
+    sql: |
+      WITH q AS (
+        SELECT
+          DATE_TRUNC('quarter', cf.commit_dt)::DATE AS quarter,
+          SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS churn
+        FROM {{ ref('fct_commit_files') }} AS cf
+        INNER JOIN {{ ref('dim_commit') }} AS dc ON cf.dim_commit_key = dc.dim_commit_key
+        WHERE dc.is_representative_commit
+          AND NOT dc.is_housekeeping
+          AND cf.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
+        GROUP BY 1
+      )
+
+      SELECT
+        'Q' || QUARTER(quarter) || ' ' || STRFTIME(quarter, '%y') AS quarter,
+        EPOCH(quarter)::BIGINT AS quarter_seq,
+        churn / AVG(churn) OVER () AS churn_ratio
+      FROM q
+      ORDER BY 2
+
+charts:
+
+  # -- copied from charts/1_fix_analysis.yml
+  fix_counts:
+    type: bar
+    query: fix_count
+    title: "Fixes by release"
+    subtitle: "Documented fixes. a fix = one release-notes item, deduplicated across backpatched branches. Shipped releases only; out-of-band and partial post-GA releases excluded"
+    x: release
+    y: fix_cnt
+    # color one bar per calendar year so the year reads at a glance across the
+    # quarterly x labels; release_year is its own category scale (the board's
+    # origin colors don't apply to this single-series chart)
+    color: release_year
+    # pin the legend to chronological order -- the emitter otherwise lists the
+    # color-scale domain in an arbitrary order; values resolve by rendered text
+    style:
+      legend:
+        values: [CY2020, CY2021, CY2022, CY2023, CY2024, CY2025, CY2026]
+      axis_y:
+        mirror: true
+      # print the fix count above each bar. each release is a single year-series,
+      # so the stack total IS that release's count; total_label draws it above
+      # the bar (outside the fill, foreground ink) rather than a white segment
+      # label inside it
+      marks:
+        bar:
+          total_label: { visible: true, font: { size: 10 } }
+
+  # -- copied from charts/1_fix_analysis.yml
+
+  fix_cve_split:
+    type: bar
+    query: fix_cve_split
+    # the layer's own axis carries the percent format; the check reads the
+    # primary axis instead (dbt-charts #30)
+    warnings_ignore: [WARN-LIKELY-CURRENCY-OR-PERCENT-MISSING-FORMATTER]
+    title: "Fixes by release: CVE split and share"
+    subtitle: "Documented fixes split by CVE status (left, same total as above); line = CVE share of the release (right). Out-of-band and partial post-GA excluded"
+    x: release
+    y: fix_cnt
+    color: security_class
+    # dual axis: the stacked bar (counts) on the left, a line for the CVE share
+    # on its own right axis. A layered chart doesn't take part in the board's
+    # category_colors, so the two bar series are colored with an inline palette
+    # (blue = no CVE bulk, category[4] maroon = with CVE, the board's security hue).
+    layers:
+      - type: line
+        query: fix_cve_pct
+        y: cve_pct
+        label: "CVE share"
+        axis_y: { position: right, title: "CVE share", labels: { format: "0%" } }
+        style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
+    # support strip (top to bottom): total fixes, fixes without a CVE, fixes
+    # with one (per series), and the CVE share. The first authored entry sits at
+    # the top. Total = aggregate: sum of the two series; cve_pct is constant per
+    # release, so aggregate: max reads it back as that one value. Font 8 keeps
+    # the three-digit / percent cells legible.
+    support_table:
+      - { aggregate: sum, source: fix_cnt, format: integer, label: "Total" }
+      - { per_series: fix_cnt }
+      - { aggregate: max, source: cve_pct, format: percent_whole, label: "CVE %" }
+    style:
+      color:
+        categorical:
+          palette: ["category[1]", "category[4]"]
+      legend:
+        values: ["with CVE", "no CVE"]
+      support_table: { position: bottom, font: { size: 8 } }
+
+  # -- copied from charts/email_list_analysis.yml
+  monthly_traffic:
+    type: line
+    query: monthly_traffic
+    title: "Monthly list traffic vs fix-linked traffic"
+    subtitle: "Messages per month, whole archive; fix-linked = the thread is eventually cited by a commit (recent months right-censored). The last point is the current month, still filling — a partial count, not a drop"
+    x: month_dt
+    y: [all, fix-linked]
+    color: list_name
+    height: 380
+
+  # -- copied from charts/email_list_analysis.yml
+  monthly_linked_share:
+    type: line
+    query: monthly_linked_share
+    title: "Fix-linked share of monthly traffic"
+    subtitle: "Percent of each month's messages in commit-cited threads; the recent sag is right-censoring, not less fix work"
+    x: month_dt
+    y: fix_linked_share
+    color: list_name
+    style:
+      axis_y:
+        labels:
+          format: ".1%"
+
+  # -- copied from charts/email_list_analysis.yml
+
+  ai_threads_by_list:
+    type: bar
+    query: ai_threads_by_list
+    title: "AI-involved threads per month, by list"
+    subtitle: "Count of new threads whose first message discloses AI involvement (bars, left); line = those threads as a share of all new threads that month, every list (right)"
+    x: month_dt
+    y: ai_threads
+    color: list_name
+    # the layer's own axis carries the percent format; the missing-formatter
+    # check reads the primary (count) axis instead (dbt-charts #30)
+    warnings_ignore: [WARN-LIKELY-CURRENCY-OR-PERCENT-MISSING-FORMATTER]
+    # dual axis: the stacked count on the left, the all-list share on its own
+    # right axis
+    layers:
+      - type: line
+        query: ai_share_monthly
+        x: month_dt
+        y: ai_share
+        label: "AI share of new threads"
+        axis_y: { position: right, title: "share of new threads", labels: { format: ".1%" } }
+        style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
+
+  # -- copied from charts/bug_reports.yml
+  monthly_reports:
+    type: bar
+    query: monthly_reports
+    title: "Bug reports per month"
+    subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails (about a third of reports); line = 6-month average of both"
+    # ~75 months on a temporal x: dct labels it by year, so the "too many x
+    # categories" warning (temporal wording since dct 0.7.0) is a false positive
+    warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
+    x: report_month
+    y: report_cnt
+    color: series
+    # stacked, so the top edge is all reports and the trend line sits on the total
+    style: { stack: zero }
+    height: 380
+    layers:
+      - type: line
+        query: monthly_trend
+        x: report_month
+        y: avg_reports
+        color: series
+
+  # -- copied from charts/bug_reports.yml
+
+  monthly_acted:
+    type: bar
+    query: monthly_acted_data
+    title: "Bug reports acted upon, by month"
+    subtitle: "All reports (form + free-form). Bars: reports later linked to a fix commit (count, left axis). Lines: acted-upon share (right axis) with its 6-month rolling average. Lower bound (exact links only); trailing months right-censored"
+    # ~75 months on a temporal x: dct labels it by year, so the "too many x
+    # categories" warning (temporal wording since dct 0.7.0) is a false positive
+    # the layer's own axis carries the percent format; the check reads the
+    # primary axis instead (dbt-charts #30)
+    warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES, WARN-LIKELY-CURRENCY-OR-PERCENT-MISSING-FORMATTER]
+    x: report_month
+    y: acted_cnt
+    y_label: "reports acted upon"
+    # the two % lines are distinct columns (so a hover reads both, plus the bar);
+    # both share the same right axis, pinned to [0, 0.5] (the data is fractions)
+    # with a per-layer axis_y.labels.format ".1%" -- that scopes the percent
+    # formatting to THIS axis and its tooltip entries only, leaving the left
+    # count axis untouched (dct 0.6 spells the layer key `labels`, the same
+    # as the chart-wide `axis_y.labels.format`).
+    layers:
+      - type: line
+        x: report_month
+        y: acted_share
+        label: "acted upon (%)"
+        axis_y:
+          position: right
+          title: "acted upon (%)"
+          scale: { domain: [0, 0.5] }
+          labels: { format: ".1%" }
+      - type: line
+        x: report_month
+        y: acted_avg_6m
+        label: "6-month average"
+        axis_y:
+          position: right
+          title: "acted upon (%)"
+          scale: { domain: [0, 0.5] }
+          labels: { format: ".1%" }
+        # same ink as the 6-month average on "Bug reports per month": the
+        # theme's third category slot, solid, default width
+        style: { marks: { line: { stroke: { color: "category[3]" } } } }
+    # support strip (top to bottom): reports filed, reports acted upon, the
+    # acted-upon share and its 6-month average. One row per month, so each
+    # entry reads its column's raw value; the shares are whole percents
+    support_table:
+      - { source: reports, format: integer, label: "Reports" }
+      - { source: acted_cnt, format: integer, label: "Acted upon" }
+      - { source: acted_share, format: percent_whole, label: "Acted upon %" }
+      # no hyphen in the label: dct line-breaks "6-month" as "6- month"
+      - { source: acted_avg_6m, format: percent_whole, label: "6 month avg %" }
+    style:
+      support_table: { position: bottom, font: { size: 8 } }
+
+  # -- copied from charts/git_activity.yml
+
+  churn_by_quarter:
+    type: line
+    query: churn_by_quarter
+    title: "Lines of code churned per quarter"
+    subtitle: "One backpatch per fix, its largest (housekeeping excluded); total churn with its 12-month average, additions, and deletions -- work per fix, not per branch; current quarter partial. Q1 2022's spike is one commit, a one-time refresh of PL/Perl's vendored ppport.h header for Perl 5.34 (~18.6k lines), not fix work"
+    x: quarter
+    y: lines
+    y_label: "lines changed"
+    color: series
+    # the four plotted series as a strip under the axis, in thousands: the
+    # `number` preset (.3~s) spells them 24k / 18.1k / 5.89k with the k
+    # declared once per row (dct's house rule for its own presets)
+    support_table:
+      - { per_series: lines, format: number }
+    style:
+      support_table: { position: bottom, font: { size: 9 } }
+
+  # -- copied from charts/git_activity.yml
+
+  churn_vs_average:
+    type: line
+    query: churn_vs_average
+    title: "Churn per quarter relative to the chart average"
+    subtitle: "Each quarter's total churn from the chart above as a percentage of the mean over all its quarters; 100% = an average quarter. The mean includes the Q1 2022 ppport.h spike and the partial current quarter"
+    x: quarter
+    y: churn_ratio
+    y_label: "% of chart average"
+    # churn_ratio is a fraction (0.6, 2.1); the percent format multiplies by
+    # 100 on the axis and in the hover
+    style:
+      axis_y: { labels: { format: ".0%" } }
+    height: 300
+
+rows:
+  - text: |
+      I’m curious about how AI and LLMs are affecting software development, and in particular, how they are speeding up discovery of issues, bugs, and vulnerabilities. I also have at least some concern that this increase in the rate of bugs and vulnerabilities being found will overwhelm the ability of software maintainers to patch their software in a timely manner. If you’re reliant in any way on technology and software, I’d imagine that you have similar concerns!
+
+      Case in point - [Anthropic held off on releasing Mythos](https://www.cnbc.com/2026/04/07/anthropic-claude-mythos-ai-hackers-cyberattacks.html), an LLM which they developed and were going to make available in April 2026. They delayed the release with the stated reasoning being that their latest (at the time) technology and models were so good that they represented a threat to our global software ecosystem. They believed [Mythos](https://en.wikipedia.org/wiki/Claude_Mythos) would enable bad actors to find more new latent bugs and security issues quickly enough that they would overwhelm development teams before they would be able to fix them. There was some skepticism that this was a marketing trick (“Our new technology is so amazing and powerful we can’t actually give it to you because it’s too amazing and powerful!”) but at the time it was hard to be sure.
+
+      As an empirical thinker, and, more specifically, a professional in a field based on rigorous usage of data and numerical analysis to validate or disprove conclusions, I would like to investigate this phenomenon of LLM impact on software development. Can we somehow verify or disprove in a systematic way that:
+
+      1. LLMs/AI are finding more bugs more quickly than was previously happening without AI assistance?
+      1. That these bugs are not just “slop” bug reports and/or very rare corner cases, but actually represent real issues that need to be addressed?
+      1. Can we measure the specific impact of these trends over time? Are the number of bug reports and fixes increasing 50%? 100%? 200%?
+
+      I found an example of this recently (early September 2026). Postgres is an open-source relational database which I use frequently, and the [changelog for the most recent minor patch, 18.6](https://www.postgresql.org/docs/release/18.6/), seemed to be significantly larger than I’ve seen in previous minor changelog releases. I also noticed that it seemed to have a high volume of security issues being fixed.
+
+      Postgres has been running as an open source project for about 20 years. It’s so widely used and so capable that there is a meme called “[Just Use Postgres](https://mccue.dev/pages/8-16-24-just-use-postgres)” to represent that it can, by itself, do at least moderately well what umpteen other more specialized database platforms and analytics tools are created to do. Given its long project history, its open and transparent product approach to coding and project communications, and its wide usage and importance to the overall software ecosystem, I think that it is a great test case for this hypothesis. 
+
+      A few things we need to get clear about Postgres’ [versioning policy](https://www.postgresql.org/support/versioning/) and how they release software in order to understand how to appropriately explore the question.
+
+      1. The Postgres development team releases a new major release every year. New functionality is limited to major releases. 
+         1. The most recent major release is 18. 19 is being worked on, is in beta, and [will be released later this year](https://www.postgresql.org/docs/release/19.0/). 
+         1. Major releases are supported for 5 years. “Supported” means that bugs and vulnerabilities will be backpatched to supported major releases for that period. Therefore, version 14 will have its final minor release on November 12th, 2026 and will not be patched or supported afterwards.
+      1. Minor releases to supported major releases happen every quarter. 
+         1. Minor releases are only for bugfixes and vulnerabilities; new functionality is only added to major releases.
+         1. Minor releases for all supported major releases are coordinated and happen at the same time.
+         1. So, for example, minor releases 18.6, 17.11, 16.15, 15.19, and 14.24 were released on August 13th, 2026. The next minor release will occur on November 12th, 2026.
+         1. There are occasional “out-of-band” minor releases due to an important bugfix or security issue which happen as necessary. There have been a few of these over previous years, but they’ve been infrequent enough and small enough that we’re going to exclude them from our analysis.
+
+      We’re interested in the rate of reported and fixed bugs and vulnerabilities and how that changes over time. Therefore, what we care about are minor releases as they only contain fixes for bugs and vulnerabilities. We’re not going to look at the contents of major releases because it’s more difficult with them to parse out what was new functionality versus what was a bugfix or an addressed vulnerability.
+
+      What data sources are available for analysis purposes? Well, there are a few:
+
+      1. The postgres git repo: [https://github.com/postgres/postgres](https://github.com/postgres/postgres). This is where you can see every commit made to the codebase, every file changed, by whom, when, for what reason.
+         1. This also has within it a more easily machine-readable version of the [Postgres changelog](https://www.postgresql.org/docs/release/) reports so that it’s not necessary to process them as a separate datasource. 
+      1. The postgres mailing lists and their archives. The archives are downloadable. For example, here are the downloadable archives for the pgsql-hackers list: [https://www.postgresql.org/list/pgsql-hackers/](https://www.postgresql.org/list/pgsql-hackers/)
+         1. The project has a very explicit policy that all emails sent are permanently publicly visible and irrevocable, so it seems ethically acceptable to me to use the email archives for analysis.
+      1. Postgres Common Vulnerability and Exposure reports, downloadable here: [https://www.postgresql.org/support/security/?cve=title](https://www.postgresql.org/support/security/?cve=title).
+         1. For those not familiar - one common method to document vulnerabilities in modern, widely used software is via [Common Vulnerabilities and Exposures](https://www.cve.org/), also known as CVEs.
+         1. One reason that this is useful for our purposes is that it deduplicates what might be potentially multiple different bug reports from different sources into one vulnerability.
+         1. It also represents a validation of a bug report - if something has been assigned a CVE, it’s been examined by the developers of a piece of software and determined to be an actual vulnerability. It filters out the potential AI slop and/or lazy “seems to be a vulnerability but really isn’t” cases.
+
+      Using these datasources, let’s count the number of Postgres release changelog entries by year and quarterly release:
+  - fix_counts
+  - text: |
+      As you can see, the number of changelog entries has varied somewhat since February 2020, with some quarters going as low as 49 (May 2021 and again November 2022) and as high as 88 (November 2021). 2025 and 2026 had been relatively constant, moving between 63 and 78, up until the August 2026 release which jumped to 142 changelog entries. So, roughly doubling from the previous quarterly release. This at least validates my observation that the number of changelog entries has increased significantly compared to previous quarterly releases. However, there’s only a loose causal link with the hypothesis that LLMs are the cause of this in the sense that that timeframes coincide in that it’s in the last 3 or 4 months that LLMs really seem to be exploding into the software space. We need some much stronger evidence that LLMs are the cause, or at least a significant contributor.
+
+      One other way to validate the hypothesis would be to look at the number of changelog entries that are associated with a documented security issue. If we see an increase in the number of security issues found in an absolute sense, and also as a proportion of the number of changelog entries reported, it’s likely that LLMs are contributing to the rate of discovery of issues. Let’s use the Postgres reported CVEs to count this. Here is a chart with the same timespan and count of changelog items since Q1 2020, but this time let’s categorize whether the changelog item was related to a CVE or not. Also, let’s look at the % of changelog items over time associated with CVEs.
+  - fix_cve_split
+  - text: |
+      So, we’re clearly seeing an increase in the number of changelog items assigned a CVE for the last two quarters - the May and August 2026 releases. Historically it averaged around 2 or maybe 3 a quarter, then jumped to 14 and then 29 for May and August 2026, respectively. Also, the proportion of changelog entries that are assigned CVEs was historically in the 0 to 6% range, and in the last two quarters it jumped to 19% and then 20%. 
+
+      Of 26 fix commits in the Postgres git repository that disclose AI involvement (all since April 2026), 22 credit an AI tool with finding the bug the commit fixes. The credits name OpenAI Codex Security, Anthropic’s Claude (via Calif.io), and Xint Code. A good share of May’s and August’s CVE fixes trace to these commits. The commits provide fixes like overflow guards, buffer checks, and recursion limits. The majority of these commits which disclose AI involvement land in two batches in the final days before the May and August releases.
+
+      Is there another way we could validate our hypothesis? Well, I would assume that the number of bugs reported would increase, and overall mailing list or discussion thread volume would also increase if LLMs are making it easier to find and report bugs. How does the Postgres project handle communications? 
+
+      1. Postgres has [many email mailing lists](https://wiki.postgresql.org/wiki/Mailing_Lists), but two of the largest and most relevant for our purposes are pgsql-hackers (“The PostgreSQL developers team lives here. Discussion of current development issues, problems and bugs, and proposed new features.”) and pgsql-bugs (for bug discussion).
+      1. The project asks that all bugs be submitted via the bug reporting form here: [https://www.postgresql.org/account/submitbug/](https://www.postgresql.org/account/submitbug/)
+         1. There is an exception for security-related issues, which they ask to be reported to a special email address ([security@postgresql.org](mailto:security@postgresql.org)). Security-related bugs are not publicly discussed and are embargoed until the quarterly release to attempt to reduce the need for more frequent out-of-band patches.
+         1. Bugs submitted via the bug reporting form are then automatically mailed to the pgsql-bugs mailing list and start a discussion thread. However, I have found that there is an ongoing proportion of bugs which are reported by Postgres users and/or developers by directly emailing the pgsql-bugs mailing list without filing a formal bug report. We’ll dig more into this below.
+
+      Let’s then look at two things to see if there is an obvious LLM impact. What does the current and historical volume of a) traffic on these mailing lists and b) the number of reported bugs, look like?
+  - monthly_traffic
+  - text: |
+      This is interesting - there doesn’t seem to be an obvious jump in the number of emails sent on either the pgsql-hackers or the pgsql-bugs lists in the last three to six months when comparing to the trend over the last 8 years or so. While the chart is a bit spiky, what I’m seeing for the last few months seems to be relatively consistent with previous years. As an aside, there does seem to be some interesting seasonality with a spike in email traffic every March, but I’m going to try to be disciplined and not get too distracted by that.
+
+      If we were to dig in and look specifically at the percent of each month’s messages which are mentioned in commit-cited threads, are there any interesting patterns there? 
+  - monthly_linked_share
+  - text: |
+      There does seem to be an uptick in the proportion of messages in commit-cited threads for the pgsql-bugs list starting in May of 2026, but it’s not as striking as the previous charts that we looked at. Pgsql-hackers does appear to drop from May 2026, but there is a confounding factor. It takes time for a thread to be cited by a commit, so the last few months of this chart will always read lower than they eventually will. There also does seem to be a slow long-term growth of the proportion for the pgsql-bugs list but that’s too long of a time horizon to be related to LLMs. So there’s not strong evidence here. 
+
+      Is there a way to actually look at emails/threads and see if there is mention of AI made in them via one way or another? Whether in assistance finding the issue, analyzing it, writing code, or something else? Non-statistical methods like scanning for hardcoded strings or using regular expressions tend to be fragile and arbitrary - e.g. if you were searching for “Claude” in your pattern but not “Codex” you’d miss some of them. What about if we actually used an LLM to classify an email as to whether it had any mention of AI? Following this idea, I went ahead and used a local LLM (Qwen3, running through Ollama) to classify the mailing list messages after tuning the prompt against a hand-labelled sample and then reviewing every positive by hand. More specifically, I looked at the first message which starts a thread on the two mailing lists. I only looked at the first message because we’re mostly concerned about whether AI has had a hand in finding or analyzing a potential bug or vulnerability, or writing the suggested patch to fix it. This is going to come up in the first message. It’s also somewhat computationally expensive (relatively, compared to, say, running a SQL query) to use an LLM to analyze these messages so it helps to reduce the volume of messages that we need to scan.
+  - ai_threads_by_list
+  - text: |
+      The first potential mention of AI in mailing list threads comes in September 2024 on the pgsql-hackers list, in this [message](https://www.postgresql.org/message-id/CAHut+PuvsyA5v8y7rYoY9mkDQzUhwaESM05yCByTMaDoRh30tA@mail.gmail.com). The real volume ramp-up starts in June of 2026, and continues growing into August which had 29 AI-involved threads started, representing 8% of the total threads started that month. September’s share is already at 8% which is consistent with August’s share even though the thread volume is only at half.
+
+      What about bug reports? Do we see a significant increase in numbers of reported bugs, whether via the reporting form or direct mailing to the pgsql-bugs mailing list? 
+  - monthly_reports
+  - text: |
+      There is a recent uptick starting in June 2026, and increasing through August 2026. September 2026 is much less, but that’s because it’s an incomplete month so you can’t really count the last bar. However, if you look at the 6-month rolling average, it’s returning more back to levels that it occupied through much of 2023 through early 2025. And bug reports were significantly higher in 2018 through 2020. So there’s not really a strong argument here for or against LLMs affecting total volume of bug reports - it appears more like there are some other cyclical factors affecting long-term bug reporting volume that I haven’t yet identified.
+
+      This chart also breaks down the number of bug reports filed via the bug reporting form versus a direct email to the pgsql-bugs mailing list, and it’s interesting to see that, based on pure eyeballing of the chart, that in any given month it’s usually ⅔ to ¾ of all bugs are reported via the bug reporting form and ⅓ to ¼ via direct mail to the pgsql-bugs mailing list.
+
+      One objection comes to mind - even if the total volume of bug reports may not have changed that much, is the proportion of bug reports being addressed changing? In a way that would seem related to LLMs?
+  - monthly_acted
+  - text: |
+      This report shows, by month, the number of bug reports acted upon, the % of total acted upon, and the 6-month average of % acted upon. The table at bottom also includes the total number of bug reports made. The table at bottom only shows the numbers every three months as there isn’t enough space to show every month even though the chart itself is showing data every month.
+
+      We are seeing both the monthly % of bug reports acted upon and the 6-month rolling average jump to unprecedented levels, starting in May 2026. The monthly % tended to run between 15 and 30%, and, starting in mid-2021, the 6-month rolling average between 20 and 25%. There was one jump of the 6-month rolling average to almost 30% in mid-2025 but it dropped back down again. Now, we are seeing the % acted upon spike as high as 46% (in May 2026) and the rolling 6-month average meaningfully above the 30% threshold, reaching as high as 34%, in August 2026. Also relevant to note is that the most recent bug reports have had less time for their fixes to land than earlier bug reports, say in 2023 or 2024. So the last one or two months might actually be a bit low. 
+
+      Is this jump in the share of bug reports acted upon because higher-quality, more real bugs are being reported? Or perhaps because it’s easier for Postgres developers who receive the bug reports to triage, examine, and develop fixes with LLM assistance? Or another factor? It’s difficult to be sure based on this evidence, but I do feel reasonably confident in saying that this does show LLM impact on the overall project. 
+
+      One other way we could see if there’s been a meaningful impact to code in the project caused by LLMs is to measure the volume of changes being made to the codebase in terms of lines of code (LoC) added and LoC removed. LoC is a contentious metric in the software world because many companies have attempted to use it as a productivity metric for software development. It’s very unreliable for that purpose because the absolute meaning of one line of code can vary wildly between software projects, teams, languages, purposes, and individual developers. However - I do think that it’s a valid use to measure LoC in a time axis over the same software project because all you’re assuming in that case is that the relative complexity and impact of an average line of code has some consistency over time **in the same software project**. So if you see LoC additions and removals shrink or grow significantly over time, in the same software project, that’s probably an indication that there has been significantly less or more work, respectively, to that same codebase.
+  - churn_by_quarter
+  - text: |
+      What we see here is some level of movement, with one big spike in Q1 2022, but generally staying in the 5 to 7K LoC churn/change per quarter range. I had Claude do some investigation, and the one big spike was caused by a one-time refresh/update of Perl support which caused a large codebase size change. Almost all of that commit’s 18,600 lines are one auto-generated Perl-compatibility header written in C (ppport.h) being refreshed, not manually written code to address a bug. So that’s an outlier that for the purposes of our analysis isn’t relevant. Q1 2020 was also elevated (10.7k) but dropped back the next quarter.
+
+      Q2 2026 does rise to the top of the historical range, and Q3 2026 goes past anything outside the Q1 2022 Perl-related outlier, even with two weeks still to run (I write this as of September 18th, 2026), so that last number will keep growing. Also, Q3 isn’t even complete yet so that last number will continue to grow until September completes. Also notable is that the largest commit in Q3 is a 2,077 line query planner rewrite fixing wrong query answers (Bug #19560) which states in its commit message that Claude wrote it.
+
+      So, if we wanted to understand what the current rate of churn is in LoC versus the historical average, what would that be? Turns out in Q3 2026 it is 212% of the historical average: 
+  - churn_vs_average
+  - text: |
+      This is calculated based on the mean over every quarter in the chart, including the Perl spike in Q1 2022 and the partial Q3 of 2026. So, if anything, the churn per quarter should even be a bit higher than the simpler metric than we are using here. I’m not going to go too much further into that right now though because I think the 212% metric is already persuasive enough.
+
+      Let’s review our findings to this point:
+
+      1. Direct evidence of AI/LLM involvement
+         1. AI-involved mailing list threads, disclosed directly in the content of the threads. The git commits say the same: 22 of the 26 fix commits that disclose AI involvement credit an AI tool with finding the bug (see the CVE section above).
+         1. The Postgres project has no official policy on disclosing AI usage. The PGConf.dev 2026 developer conference [discussed one](https://wiki.postgresql.org/wiki/PGConf.dev_2026_Developer_Unconference), and noted that contributors fear disclosure could get a patch rejected. Therefore, there’s a good possibility that there is additional, undisclosed usage of AI for bug discovery, analysis, and writing code fixes, and thus that the rate of AI usage is higher than we can see through these metrics.
+      1. Indirect evidence of AI/LLM involvement, based on changes in various metrics in Q2 and Q3 of 2026:
+         1. Volume of changelog fixes by quarterly release doubling (the August 2026 release versus the May 2026 release)
+         1. Count and proportion of CVEs by release
+         1. LoC churn
+         1. Share of bug reports acted upon, by month
+
+      We don’t have evidence either way in terms of raw volume of mailing list traffic or raw volume of bug reports.
+
+      One other thing I didn’t get into in this article was the actual content of Postgres mailing list threads and commits I’ve been reading as part of this research. The general trend is that LLMs are definitely having a significant impact on development and are being used as a bug discovery, analysis, and remediation tool by many users and developers. This isn’t as rigorous a finding as the other numeric measurements in this article, but at the least this anecdotal evidence doesn’t give any reason to doubt the analytical conclusions.
+
+      Our original questions, along with answers:
+
+      1. Are LLMs/AI finding more bugs more quickly than was previously happening without AI assistance?
+         1. Yes, it seems very likely.
+      1. Are these bugs not just “slop” bug reports and/or very rare corner cases, but actually representing real issues that need to be addressed?
+         1. The bugs and vulnerabilities being reported are real and significant, and are being addressed and fixed by the project.
+      1. Can we measure the specific impact of these trends over time? Are the number of bug reports and fixes increasing 50%? 100%? 200%?
+         1. There are a lot of metrics through this blog post, and so I’m not going to go back and repeat every one. A few that do pop out:
+            1. The changelog for the latest Postgres minor release, 18.6 in August 2026, has double the entries versus the previous minor release, 18.4, in May 2026.
+            1. By August and September 2026, 8% of new pgsql-hackers and pgsql-bugs mailing list threads disclose AI involvement, up from under 1% before June. Additionally, there’s the potential for more unreported AI usage.
+            1. LoC churn in Q3 2026 at more than 200% of the mean quarter since late 2019.
+
+      So, yes, AI and LLMs are having a significant, documented impact on Postgres development, and it’s likely that the same thing is happening across the entire open source ecosystem. 
+
+      The next question is: “Can we use past trends to predict the future? Will this trend continue, and will greater numbers of bug reports be made, more LoC churn, larger and more security-impacted change logs per quarterly release?” My gut feeling based on our findings is that “Yes, Postgres’ elevated pace of development, code churn, changelog volume, and bug fixes is going to at least continue at this level for at least a year or two, and it might increase even more.” 
+
+      Greg Kroah-Hartman came to a similar conclusion about the impact of LLMs on open source software development in his presentation here: [Linux in the Land of LLMs](https://www.youtube.com/watch?v=_MwMLPmMccs). His points, roughly: 
+
+      1. That the genie is out of the bottle regarding LLMs and their capabilities 
+      1. No, it isn’t the end of the world. We can manage it, but we have to change and use the new tools (LLMs)
+      1. Expect elevated bugfix and security vulnerability rates for a while until we get the codebases up to the new standards
+      1. There are some exciting new possibilities as well, it isn’t all doom and gloom
+
+      Doing a more rigorous statistical trending analysis to back up my intuition about future growth is another significant chunk of work. I feel like this has already been a lengthy blog article, and we’ve arrived at a good stopping point. As time permits, I’ll return to this theme and take up the question of the future.
+
+      All the code for data ingestion, analysis, transformation, and the data visualizations that were used in this article is available in [this repo](https://github.com/dorianinsights/postgres_bug_analysis) that I am making available as open source and that I’ll likely continue developing and extending. You’re welcome to file issues and even submit pull requests!
+
+      If you felt this article was useful, and would like help implementing analytics and AI in your organization to make your decision-making simpler and more reliable, [reach out](https://dorianinsights.com/#contact) to us at Dorian Insights!
+
+      Disclaimer: I wrote this article myself, by hand. “Writing is thinking” to me, and I don’t want to lose my ability to think by delegating it to AI. I did use AI to review and critique my article after I drafted it, and I did incorporate a significant number of its suggestions. Also, a good proportion of the underlying codebase used to ingest the data, do the cleansing and transformations, and create the charts, was written by Claude. I did write a good chunk of the code myself, I architected the solution and designed the data model, I asked the questions, and I read most of the code. This wasn’t “vibe coded.” Part of the point of this coding project was to explore productivity augmentation with AI-assisted development and a properly configured harness while at the same time making sure the developer (me, in this case) ultimately retains control and responsibility.
