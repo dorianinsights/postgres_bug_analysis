@@ -1,0 +1,26 @@
+# Machine-readable licensing per the REUSE specification (reuse.software).
+# Annotations instead of per-file headers: later entries win for the paths
+# they match. `reuse lint` checks that every committed file is covered.
+version = 1
+
+# Code, configuration, models, boards and documentation.
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Dorian Insights, L.L.C."
+SPDX-License-Identifier = "MIT"
+
+# Data: the fetched and LLM-labeled inputs, the hand-labeled seeds, and the
+# derived mart exports.
+[[annotations]]
+path = ["data/**", "seeds/*.csv"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Dorian Insights, L.L.C."
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# The article board mixes both: its prose is CC BY 4.0, its queries MIT.
+[[annotations]]
+path = ["charts/article_llms_postgres.yml"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Dorian Insights, L.L.C."
+SPDX-License-Identifier = "MIT AND CC-BY-4.0"

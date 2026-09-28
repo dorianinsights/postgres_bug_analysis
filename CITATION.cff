@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this analysis or its data, please cite it as below."
+type: software
+title: "PostgreSQL patch analysis"
+abstract: >-
+  Is Postgres fixing more bugs, faster, and is LLM-assisted bug discovery
+  behind it? A dbt + DuckDB pipeline over the PostgreSQL git repository, the
+  pgsql-bugs and pgsql-hackers mailing lists and the published CVE severities,
+  rendered as dbt charts dashboards.
+authors:
+  - family-names: Andrews
+    given-names: Josh
+    affiliation: "Dorian Insights, L.L.C."
+  - name: "Dorian Insights, L.L.C."
+    website: "https://dorianinsights.com/"
+repository-code: "https://github.com/dorianinsights/postgres_bug_analysis"
+license: MIT
+date-released: 2026-09-28
+keywords:
+  - PostgreSQL
+  - bug fixes
+  - release analysis
+  - LLM
+  - dbt
+  - DuckDB

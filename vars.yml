@@ -1,7 +1,3 @@
-# Project variables, split out of dbt_project.yml (dbt >= 1.12 auto-parses
-# vars.yml at the project root before dbt_project.yml; no reference needed).
-# The vars block must live in ONE file only -- dbt errors if both this and
-# dbt_project.yml define `vars`. See CLAUDE.md / README for what each controls.
 vars:
   # -- Analysis parameters (change these and the results MEAN something
   # different — treat edits like corpus.py changes: reviewed commits).

@@ -1,8 +1,8 @@
 # TODO — outstanding work
 
-Work still remaining for this repo. See `CLAUDE.md` for standing
-conventions/gotchas and `README.md` for architecture. Keep this file to open
-items only: when something ships, delete its section rather than annotating it.
+Work still remaining for this repo. See `CLAUDE.md` for the architecture,
+standing conventions and gotchas. Keep this file to open items only: when
+something ships, delete its section rather than annotating it.
 
 ## Capture fix `Reported-by:` credits (`bridge_fix_reporter`)
 
