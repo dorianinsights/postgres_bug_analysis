@@ -399,6 +399,12 @@ charts:
     y: fix_cnt
     color: band
     height: 340
+    # severity order (the default is first-seen); legend.values filters as well
+    # as orders, so the two trend layers' labels are listed too -- a layer
+    # label left out of the list drops out of the legend
+    style:
+      legend:
+        values: [UNSCORED, LOW, MEDIUM, HIGH, "linear trend (full-quarter releases)", "trend excluding Aug '26"]
     layers:
       - type: line
         query: security_trend

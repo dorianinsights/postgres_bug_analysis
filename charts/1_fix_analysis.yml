@@ -317,8 +317,6 @@ charts:
       color:
         categorical:
           palette: ["category[1]", "category[4]"]
-      legend:
-        values: ["with CVE", "no CVE"]
       support_table: { position: bottom, font: { size: 8 } }
 
   fix_hardening_split:
@@ -351,8 +349,6 @@ charts:
       color:
         categorical:
           palette: ["category[1]", "category[4]"]
-      legend:
-        values: ["hardening", "no hardening"]
       support_table: { position: bottom, font: { size: 8 } }
 
   fix_origin_counts:

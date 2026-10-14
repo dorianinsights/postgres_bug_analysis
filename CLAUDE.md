@@ -375,7 +375,9 @@ dct mechanics and quirks that shape the boards:
   `support_table` attached (`bug_reports`' funnel prints each stage's share
   in one). A legend whose color is 1:1 with x follows the x order only on an
   explicitly stacked bar (`stack: zero`); under the default it is
-  alphabetical. The list-traffic charts draw the partial current period as the last point of
+  alphabetical. `style.legend.values` orders AND filters: on a chart with
+  `layers:` it must also list each layer's `label`, or that entry drops out
+  of the legend (`changelog`'s `security` chart lists its two trend lines). The list-traffic charts draw the partial current period as the last point of
   the main series (the subtitle says so).
 - **Board-level `style.charts` cascades like inline** for `min_height` /
   `max_height` (= one height pin per board) and `bar: { stack: ... }` (only

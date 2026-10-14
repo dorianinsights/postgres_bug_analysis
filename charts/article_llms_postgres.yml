@@ -419,8 +419,6 @@ charts:
       color:
         categorical:
           palette: ["category[1]", "category[4]"]
-      legend:
-        values: ["with CVE", "no CVE"]
       support_table: { position: bottom, font: { size: 8 } }
 
   # -- copied from charts/email_list_analysis.yml
