@@ -120,9 +120,7 @@ it onto the same lines would plot the upcoming release ~2x too tall.
 The origins face settled the same question by NOT mixing populations: its
 documented chart stops at the last shipped release, and a separate "Fix commits
 per release" chart carries the committed measure for every release including
-the open one's so-far bar (a dashed-outline bar layer; note dct turns an
-explicit `sort:` on a layered chart into an alphabetical axis, so the query's
-ORDER BY orders the axis). Follow that here: keep this chart documented-only and add a per-major
+the open one's so-far bar (a dashed-outline bar layer). Follow that here: keep this chart documented-only and add a per-major
 committed-fixes-per-release chart with the so-far point
 (`dim_commit.dim_release_key` = the open release gives the committed-so-far
 count per major). `fct_fix_projections`' origin_scaled method (per-origin

@@ -8,12 +8,14 @@ notes: >
   charts re-render from the warehouse on every build, so a figure can drift
   from the sentence beside it until the text is revised.
 
-# a board with long text rows renders at dct's prose measure (672px), which
-# squeezes the charts; pin the dashboard width instead. The prose is laid out
-# like the published Dorian Insights articles (dorianinsights.com/insights):
-# one column the full width of the page, sans-serif, ~17px on a 1.7 line
+# a board with no authored width hugs its charts' preferred width (~670px for
+# one chart per row), which squeezes them and truncates titles; pin the
+# dashboard width instead. The prose is set like the published Dorian Insights
+# articles (dorianinsights.com/insights): sans-serif, ~17px on a 1.7 line
 # height. dct only ships Inter as a sans face, so Inter stands in for the
-# site's IBM Plex Sans; max_chars widens the single column to the page
+# site's IBM Plex Sans. dct flows prose on the board's card grid and a text
+# column is one grid span (at this width, half the board), so each text row
+# flows into two balanced columns rather than one column beside an empty half
 width: 1100
 
 # same board-wide style the source charts were authored against:
@@ -23,7 +25,6 @@ width: 1100
 style:
   text:
     font: { family: "Inter Variable", size: 17, line_height: 1.7 }
-    column: { max_number: 1, max_chars: 125 }
   charts:
     bar: { stack: zero, orientation: vertical }
     category_colors:
@@ -254,9 +255,6 @@ queries:
         WHERE list_name = 'pgsql-bugs' AND is_new_thread
         GROUP BY 1
       )
-      -- identifier-safe names: a support_table source: with a space in it
-      -- breaks the strip's Vega expression (dbt-charts #32); the display
-      -- names are set on the chart (y_label) and its layers (label)
       SELECT
         report_month,
         report_cnt AS reports,
@@ -372,11 +370,8 @@ charts:
     # quarterly x labels; release_year is its own category scale (the board's
     # origin colors don't apply to this single-series chart)
     color: release_year
-    # pin the legend to chronological order -- the emitter otherwise lists the
-    # color-scale domain in an arbitrary order; values resolve by rendered text
+    # the legend lists the years chronologically with no style.legend.values pin
     style:
-      legend:
-        values: [CY2020, CY2021, CY2022, CY2023, CY2024, CY2025, CY2026]
       axis_y:
         mirror: true
       # print the fix count above each bar. each release is a single year-series,
@@ -392,9 +387,9 @@ charts:
   fix_cve_split:
     type: bar
     query: fix_cve_split
-    # the layer's own axis carries the percent format; the check reads the
-    # primary axis instead (dbt-charts #30)
-    warnings_ignore: [WARN-LIKELY-CURRENCY-OR-PERCENT-MISSING-FORMATTER]
+    # a count and its own share on a second axis, read together: both axes
+    # are titled, and the support strip prints the exact values
+    warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]
     title: "Fixes by release: CVE split and share"
     subtitle: "Documented fixes split by CVE status (left, same total as above); line = CVE share of the release (right). Out-of-band and partial post-GA excluded"
     x: release
@@ -463,9 +458,9 @@ charts:
     x: month_dt
     y: ai_threads
     color: list_name
-    # the layer's own axis carries the percent format; the missing-formatter
-    # check reads the primary (count) axis instead (dbt-charts #30)
-    warnings_ignore: [WARN-LIKELY-CURRENCY-OR-PERCENT-MISSING-FORMATTER]
+    # a count and its own share on a second axis, read together: both axes
+    # are titled
+    warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]
     # dual axis: the stacked count on the left, the all-list share on its own
     # right axis
     layers:
@@ -507,10 +502,10 @@ charts:
     title: "Bug reports acted upon, by month"
     subtitle: "All reports (form + free-form). Bars: reports later linked to a fix commit (count, left axis). Lines: acted-upon share (right axis) with its 6-month rolling average. Lower bound (exact links only); trailing months right-censored"
     # ~75 months on a temporal x: dct labels it by year, so the "too many x
-    # categories" warning (temporal wording since dct 0.7.0) is a false positive
-    # the layer's own axis carries the percent format; the check reads the
-    # primary axis instead (dbt-charts #30)
-    warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES, WARN-LIKELY-CURRENCY-OR-PERCENT-MISSING-FORMATTER]
+    # categories" warning (temporal wording since dct 0.7.0) is a false positive.
+    # The counts and their share on a second axis are read together: both axes
+    # are titled, and the support strip prints the exact values
+    warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES, WARN-DUAL-AXIS-COMPETING-SCALES]
     x: report_month
     y: acted_cnt
     y_label: "reports acted upon"
@@ -549,7 +544,8 @@ charts:
       - { source: reports, format: integer, label: "Reports" }
       - { source: acted_cnt, format: integer, label: "Acted upon" }
       - { source: acted_share, format: percent_whole, label: "Acted upon %" }
-      # no hyphen in the label: dct line-breaks "6-month" as "6- month"
+      # no hyphen in the label: the tabular face dct sets strip labels in gives
+      # a hyphen a digit-wide advance, so "6-month" paints as "6- month"
       - { source: acted_avg_6m, format: percent_whole, label: "6 month avg %" }
     style:
       support_table: { position: bottom, font: { size: 8 } }

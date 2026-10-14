@@ -196,7 +196,7 @@ charts:
     label: "List messages accrued toward the next minor"
     support:
       value: fix_linked_cnt
-      label: "in fix-bound threads so far"
+      label: "in threads tied to a fix so far"
 
   kpi_fixes:
     type: kpi

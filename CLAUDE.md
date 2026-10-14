@@ -305,7 +305,7 @@ change.
 
 ### Dashboards (`charts/`) and dbt charts
 The visualization layer is [dbt charts](https://docs.dbtcharts.com/)
-(**`dbt-charts` 0.8.0**, CLI **`dct`**, project config `dbt_charts.yml`
+(**`dbt-charts` 0.9.1**, CLI **`dct`**, project config `dbt_charts.yml`
 beside `dbt_project.yml`). Every face is plain SQL (no MetricFlow) against
 the read-only `warehouse` DuckDB source. Rendered copies land in `out/`
 (gitignored; regenerate with `dct render`). The boards:
@@ -357,7 +357,9 @@ dct mechanics and quirks that shape the boards:
   `dbt parse` after adding or renaming a model or column, and **keep every
   mart's outermost projection explicit** (see the coding conventions). Before
   renaming a mart column, run `dct impact <column>` to list the boards and
-  queries that read it.
+  queries that read it. `dct render <board> --format text --output -` prints
+  each chart's formatted KPI values, value ranges and render warnings: a
+  quick check of a board without rendering a picture.
 - Boards carry an informational `_schema_version` stamp written by
   `dct migrate`; never edit it by hand, and rerun `dct migrate charts/` after
   a dct upgrade. The dct workflow skills live in the gitignored
@@ -369,15 +371,17 @@ dct mechanics and quirks that shape the boards:
   bar by its stacked total, a grouped bar by its SMALLEST series (sort by a
   pre-summed column when you want the group total). A single-series
   HORIZONTAL bar defaults to value-descending order (`projected_fixes`
-  `estimates` keeps its `sort:` for that reason); a `support_table` on such a
-  bar drops that default (dbt-charts issue #8), so keep a single-series
-  horizontal bar's ranking in its axis labels, not a support_table. The
-  list-traffic charts draw the partial current period as the last point of
+  `estimates` keeps its `sort:` for that reason) and keeps it with a
+  `support_table` attached (`bug_reports`' funnel prints each stage's share
+  in one). A legend whose color is 1:1 with x follows the x order only on an
+  explicitly stacked bar (`stack: zero`); under the default it is
+  alphabetical. The list-traffic charts draw the partial current period as the last point of
   the main series (the subtitle says so).
 - **Board-level `style.charts` cascades like inline** for `min_height` /
   `max_height` (= one height pin per board) and `bar: { stack: ... }` (only
-  on boards where EVERY bar chart is stacked -- the four mixed boards keep
-  `stack:` inline; the bar block does not reach area charts) and
+  on boards where every bar chart is stacked or draws one row per x -- the
+  four mixed boards keep `stack:` inline; the bar block does not reach area
+  charts) and
   `bar.orientation` (hoist a board-wide orientation there and drop the
   per-chart `orientation:` where every bar shares it, as `1_fix_analysis` and
   `fix_impact` do; boards that MIX bar orientations keep it inline).
@@ -388,12 +392,32 @@ dct mechanics and quirks that shape the boards:
   (WARN-NORMALIZE-PERCENT-FORMAT-READS-RAW-VALUE), so keep the no-format rule.
 - **KPI `support:`** is a second line under the label (a column, a `format:`
   such as `percent_delta`, an optional static glyph/tone -- static, so no
-  glyph or tone on a signed delta); avoid a hyphenated word in its label (dct
-  rewrites "full-quarter" as "full- quarter", the item 4 family).
+  glyph or tone on a signed delta). Keep hyphens out of KPI labels and
+  support lines and support_table labels: dct sets them in its tabular face,
+  whose hyphen is digit-wide, so "fix-bound" paints as "fix- bound". A KPI
+  support line that outgrows its card runs into the next card, unwarned.
   **`support_table:`** (a per-x strip of extra columns on a bar/line/area
   chart) defaults to ABOVE the plot, touching the subtitle; use
   `style.support_table: { position: bottom }` to sit it under the axis (the
   gap auto-sizes to rotated x labels).
+- **Dual-axis charts** (a count with its share on a right-axis `layers:`
+  line) carry `warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]`: the share
+  is the count's own ratio, both axes are titled, and most print the exact
+  values in a support strip.
+- **Category colors are capped by the palette:** `category_colors` refuses a
+  field with more values than the board's categorical palette has swatches
+  (ERR-CATEGORY-COLOR-PALETTE-EXHAUSTED), even when every value is pinned.
+  The 13-category fix taxonomy therefore extends `style.charts.color.
+  categorical.palette` with three derived variants (`category[n].light` /
+  `.deep`) on `changelog` and `fix_impact`, and pins each category there.
+  A chart with `layers:` ignores those pins (dbt-charts #57) and colors its
+  series alphabetically (`category_mix` with `stack_order: alphabetical`),
+  so `category_mix` and `size_vs_latency` repeat the pinned swatches as a
+  chart palette in alphabetical category order -- edit them with the pins.
+- **Prose sits on the board's card grid:** a `text:` row's column is one
+  span of a halves/thirds grid, never a free measure, so on the 1100px
+  article board each text row flows into two balanced columns
+  (`style.text.column.max_chars` only narrows text inside a span).
 - No native trendlines: the `*_trend` queries compute least-squares fits in
   DuckDB SQL (`REGR_SLOPE`/`REGR_INTERCEPT`) and draw them as dashed line
   layers with explicit stroke colors.

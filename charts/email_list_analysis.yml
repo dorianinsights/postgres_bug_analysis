@@ -342,9 +342,9 @@ charts:
     x: month_dt
     y: ai_threads
     color: list_name
-    # the layer's own axis carries the percent format; the missing-formatter
-    # check reads the primary (count) axis instead (dbt-charts #30)
-    warnings_ignore: [WARN-LIKELY-CURRENCY-OR-PERCENT-MISSING-FORMATTER]
+    # a count and its own share on a second axis, read together: both axes
+    # are titled
+    warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]
     # dual axis: the stacked count on the left, the all-list share on its own
     # right axis
     layers:
@@ -363,13 +363,12 @@ charts:
     # link-blue + underline so the subject reads as a link before hover. A
     # column font's `decoration` never reaches a cell (only its color does):
     # the renderer emits text-decoration from conditional formatting alone,
-    # so an always-on default rule carries it. Literal hex (= category[1]):
-    # a role token here has no theme context and crashes the compiler
+    # so an always-on default rule carries it
     conditional_formatting:
       subject:
         when:
           - default: true
-            font: { color: "#40639c", decoration: underline }
+            font: { color: "category[1]", decoration: underline }
     # short headers: the eight auto headers overflowed the slot by ~35px
     style:
       columns:

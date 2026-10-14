@@ -23,8 +23,35 @@ style:
     min_height: 320
     max_height: 320
     # these categorical-x bars would auto-flip horizontal; keep them vertical
-    # board-wide (0.8.0 cascades style.charts.bar.orientation to every bar)
-    bar: { orientation: vertical }
+    # board-wide. Every bar has one row per x, so stack: zero changes no mark;
+    # it is spelled out because dct orders a severity legend (color 1:1 with
+    # x) by the x order only on an explicitly stacked bar -- by default the
+    # legend reads HIGH, LOW, MEDIUM
+    bar: { orientation: vertical, stack: zero }
+    # the fix taxonomy has 13 categories (seeds/content_categories) and the
+    # categorical palette 10 swatches, so the palette is extended with three
+    # derived variants of hues that sit far from their neighbours, and each
+    # category is pinned to its own swatch so it keeps its color on every chart
+    # of the board (category_colors refuses more values than the palette holds)
+    color:
+      categorical:
+        palette: ["category[1]", "category[2]", "category[3]", "category[4]", "category[5]", "category[6]", "category[7]", "category[8]", "category[9]", "category[10]", "category[3].light", "category[4].light", "category[5].deep"]
+    category_colors:
+      category:
+        values:
+          "Planner & optimizer": category[1]
+          "Execution & correctness": category[2]
+          "Indexes": category[3]
+          "Partitioning & inheritance": category[4]
+          "Replication & recovery": category[5]
+          "Concurrency, locking & crashes": category[6]
+          "Numeric, overflow & limits": category[7]
+          "Data types, text & collation": category[8]
+          "Client tools": category[9]
+          "Client interfaces": category[10]
+          "Extensions & contrib": category[3].light
+          "Build & platform": category[4].light
+          "Storage, vacuum & TOAST": category[5].deep
 
 queries:
 
@@ -172,10 +199,10 @@ charts:
     type: kpi
     query: headline
     value: cve_fix_cnt
-    label: "CVE-bearing fixes (with CVSS severity)"
+    label: "Fixes carrying a CVE (with CVSS severity)"
     support:
       value: cve_latency_cnt
-      label: "of them with a public bug-report latency (the rest embargoed)"
+      label: "of them with a public bug report (rest embargoed)"
 
   kpi_churn:
     type: kpi
@@ -190,7 +217,7 @@ charts:
     type: kpi
     query: headline
     value: latency_cnt
-    label: "Fixes with a linked report-to-fix latency"
+    label: "Fixes with a linked report to fix latency"
 
   severity_distribution:
     type: bar
@@ -234,6 +261,12 @@ charts:
     color: category
     height: 440
     style:
+      # a chart with layers: ignores the board's category_colors pins and colors
+      # its series in alphabetical order (dbt-charts #57), so list the pinned
+      # swatches alphabetically -- keep this palette in step with the pins
+      color:
+        categorical:
+          palette: ["category[4].light", "category[10]", "category[9]", "category[6]", "category[8]", "category[2]", "category[3].light", "category[3]", "category[7]", "category[4]", "category[1]", "category[5]", "category[5].deep"]
       # Both quantities are heavily right-skewed; log x + symlog y spread the
       # cluster into a readable cloud. symlog (not log) keeps the 44 same-day
       # (0-day) fixes, which a log scale would drop.

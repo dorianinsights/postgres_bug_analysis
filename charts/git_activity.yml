@@ -610,13 +610,12 @@ charts:
     title: "AI-involved fix commits"
     # link-blue + underline so the subject reads as a link before hover: a
     # column font's `decoration` never reaches a cell, only conditional
-    # formatting emits it, and a role token there crashes the compiler
-    # (dbt-charts #34), hence the literal hex (= category[1])
+    # formatting emits it
     conditional_formatting:
       subject:
         when:
           - default: true
-            font: { color: "#40639c", decoration: underline }
+            font: { color: "category[1]", decoration: underline }
     # the evidence prose wraps to two or three lines: pin the two text columns'
     # widths (else the sizer wants a 1700px frame) and a row height + page size
     # the slot actually fits (else it pages at 12 and warns)

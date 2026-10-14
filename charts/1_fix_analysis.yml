@@ -20,9 +20,8 @@ style:
       # it). Each year gets a DISTINCT qualitative hue from the categorical
       # palette so the boundary between one year's block of quarters and the
       # next is obvious; the slots are chosen (and checked in the render) so no
-      # two adjacent years read as a similar hue. Legend order is pinned
-      # chronologically on the chart (style.legend.values). Add a free slot for
-      # a new release year.
+      # two adjacent years read as a similar hue. Add a free slot for a new
+      # release year.
       release_year:
         values:
           "CY2020": category[1]
@@ -271,11 +270,8 @@ charts:
     # quarterly x labels; release_year is its own category scale (the board's
     # origin colors don't apply to this single-series chart)
     color: release_year
-    # pin the legend to chronological order -- the emitter otherwise lists the
-    # color-scale domain in an arbitrary order; values resolve by rendered text
+    # the legend lists the years chronologically with no style.legend.values pin
     style:
-      legend:
-        values: [CY2020, CY2021, CY2022, CY2023, CY2024, CY2025, CY2026]
       axis_y:
         mirror: true
       # print the fix count above each bar. each release is a single year-series,
@@ -294,6 +290,9 @@ charts:
     x: release
     y: fix_cnt
     color: security_class
+    # a count and its own share on a second axis, read together: both axes
+    # are titled, and the support strip prints the exact values
+    warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]
     # dual axis: the stacked bar (counts) on the left, a line for the CVE share
     # on its own right axis. A layered chart doesn't take part in the board's
     # category_colors, so the two bar series are colored with an inline palette
@@ -330,6 +329,9 @@ charts:
     x: release
     y: fix_cnt
     color: hardening_class
+    # a count and its own share on a second axis, read together: both axes
+    # are titled, and the support strip prints the exact values
+    warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]
     # mirror of the CVE chart above, counting is_security_hardening instead of
     # CVEs: stacked bar (counts) on the left, hardening-share line on the right.
     # Layered charts opt out of board category_colors, so the two series are
