@@ -64,7 +64,7 @@ pg-mail-sync ──> .cache/mbox/ ───────────────�
   only what changed. A first run cannot skip the mail step: the build reads
   the mbox cache. The mbox sync needs a free postgresql.org community account
   (`POSTGRES_COMM_USERNAME` / `POSTGRES_COMM_PASSWORD` in the gitignored
-  `.env`).
+  `.env`; the committed `.env.example` is its template).
 - The release notes are parsed straight from the clone's SGML at build time
   (`pg_analysis.sources.sgml` -> `raw_release_items` / `raw_item_commits`) —
   no separate extraction step, no HTTP. An archived HTML scraper
@@ -516,6 +516,23 @@ dct mechanics and quirks that shape the boards:
   (`macros/release_dates.sql`). The sentinel `1900-01-01` / `9999-01-01` are
   `var('past_eternity')` / `var('future_eternity')`; a "< N items" or "N days"
   threshold is almost always already a var.
+- **Where a Python constant lives depends on what it is**, not on gathering
+  every constant into one config file:
+  - *Secrets* (the mailing-list credentials) go in the gitignored `.env`,
+    templated by the committed `.env.example`.
+  - *Per-machine settings* are environment variables with a default,
+    resolved once (`OLLAMA_HOST` -> `sources.classify.OLLAMA_BASE`; every
+    Ollama caller imports it).
+  - *Analysis definition* (changing it changes the results) is defined once
+    and imported, never copied: the corpus in `pg_analysis.corpus`, the
+    classifier model in `sources.classify.MODEL_TAG` (shared by the build
+    models and both backfills; it is part of every content hash), each
+    prompt version beside its prompt. dbt-side parameters are `vars.yml`.
+  - *A single module's implementation details* (a fetcher's URL, its
+    refspecs, the regexes that parse that page, timeouts, retry policy)
+    stay as named constants at the top of that module: they are coupled to
+    the code below them (`SECURITY_URL` to the parser of that page's HTML),
+    so moving them to config would make them look tunable when they aren't.
 - **SQL style** (enforced by sqlfluff where a rule exists; the naming ones
   are convention-only — sqlfluff has no column-naming rules):
   - Joins: always an explicit join type with `ON` conditions — `USING` is

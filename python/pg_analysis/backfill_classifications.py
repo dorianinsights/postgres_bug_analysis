@@ -26,6 +26,7 @@ import duckdb
 
 from pg_analysis.paths import DATA_RAW, SEEDS_DIR, WAREHOUSE
 from pg_analysis.sources.classify import (
+    MODEL_TAG,
     PROMPT_VERSION,
     build_schema,
     classify_one,
@@ -36,7 +37,6 @@ from pg_analysis.sources.classify import (
 
 TAXONOMY_SEED = SEEDS_DIR / "content_categories.csv"
 CACHE_CSV = DATA_RAW / "fix_content_categories.csv"
-MODEL_TAG = "qwen3:30b-a3b"
 
 # Column order + line ending match the dbt model's CSV export, so no churn.
 COLS = (

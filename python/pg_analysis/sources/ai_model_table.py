@@ -1,8 +1,8 @@
 # pyright: basic
 # (basic, like the dbt Python models it serves: pyarrow's stubs leave
 # pa.array / pa.table partially unknown under strict)
-"""The parts the two AI-involvement dbt Python models share: the model tag,
-the Ollama availability probe that switches a build into cached-only mode, and
+"""The parts the two AI-involvement dbt Python models share: the Ollama
+availability probe that switches a build into cached-only mode, and
 the typed pyarrow table (NULL-tolerant, for the unclassified rows of
 cached-only mode). No dbt.ref() lives here on purpose: dbt discovers a Python
 model's refs by scanning the model file itself."""
@@ -17,9 +17,7 @@ from typing import Any
 import pyarrow as pa
 
 from pg_analysis.sources.ai_involvement import Classifier, as_bool
-from pg_analysis.sources.classify import ollama_unavailable_reason
-
-MODEL_TAG = "qwen3:30b-a3b"
+from pg_analysis.sources.classify import MODEL_TAG, ollama_unavailable_reason
 
 # every output column's type; key columns are strings
 LABEL_TYPES: dict[str, Any] = {

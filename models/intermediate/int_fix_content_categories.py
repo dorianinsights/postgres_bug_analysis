@@ -25,6 +25,7 @@ from typing import Any
 import pyarrow as pa
 
 from pg_analysis.sources.classify import (
+    MODEL_TAG,
     PROMPT_VERSION,
     build_schema,
     classify_one,
@@ -32,8 +33,6 @@ from pg_analysis.sources.classify import (
     ollama_unavailable_reason,
     taxonomy_prompt,
 )
-
-MODEL_TAG = "qwen3:30b-a3b"
 
 # is_classified: false for a fix that was neither cached nor classifiable
 # (cached-only mode -- Ollama or the model absent, probed at build time); such

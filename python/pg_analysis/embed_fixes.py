@@ -16,7 +16,6 @@ Reads intermediate.int_fix_reps from the warehouse (read-only), so run a
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 import time
 from pathlib import Path
@@ -28,9 +27,10 @@ import pyarrow.parquet as pq
 import requests
 
 from pg_analysis.paths import CACHE_DIR, WAREHOUSE
+from pg_analysis.sources.classify import OLLAMA_BASE
 
 DEFAULT_MODEL = "nomic-embed-text"
-EMBED_URL = os.environ.get("OLLAMA_HOST", "http://localhost:11434").rstrip("/") + "/api/embed"
+EMBED_URL = OLLAMA_BASE + "/api/embed"
 BATCH = 64
 
 

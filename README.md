@@ -69,7 +69,9 @@ pg-mail-sync ──> .cache/mbox/ ───────────────�
 #    dbt-charts). requirements.txt pins every dependency and installs the
 #    repo's own pg_analysis package, which puts the pg-* commands in venv/bin.
 #    The mailing-list sync needs a free postgresql.org community account:
-#    put POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD in .env (gitignored).
+#    copy .env.example to .env (gitignored) and fill in
+#    POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD.
+cp .env.example .env
 python3.12 -m venv venv
 ./venv/bin/pip install -r requirements.txt
 

@@ -26,6 +26,9 @@ from typing import Any, NamedTuple
 import requests
 
 PROMPT_VERSION = "v2"  # bump when the prompt/schema/taxonomy changes -> re-inferences all
+# the one Ollama model every classifier (fix categories and AI involvement, build
+# and backfill alike) uses; it is part of every content hash, so a change re-infers all
+MODEL_TAG = "qwen3:30b-a3b"
 OLLAMA_BASE = os.environ.get("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
 OLLAMA_URL = OLLAMA_BASE + "/api/chat"
 OLLAMA_TAGS_URL = OLLAMA_BASE + "/api/tags"

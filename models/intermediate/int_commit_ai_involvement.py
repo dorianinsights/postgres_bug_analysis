@@ -25,7 +25,8 @@ from pg_analysis.sources.ai_involvement import (
     label_rows,
     roles_prompt,
 )
-from pg_analysis.sources.ai_model_table import MODEL_TAG, involvement_table, resolve_classifier
+from pg_analysis.sources.ai_model_table import involvement_table, resolve_classifier
+from pg_analysis.sources.classify import MODEL_TAG
 
 KEY_COLS = ("fix_key",)
 

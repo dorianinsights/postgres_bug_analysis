@@ -13,7 +13,8 @@ month ends (otherwise it would freeze at the partial snapshot).
 The mbox endpoints sit behind a postgresql.org community-account login
 (Django form with a CSRF token scraped from the login page). Credentials
 come from POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD, read from the
-environment or from the .env file next to this script (never committed).
+environment or from the repo-root .env file (never committed; template in
+.env.example).
 
 Writes are atomic (.tmp then rename) and sanity-checked: a response that
 doesn't start with an mbox "From " separator (e.g. an HTML login bounce)

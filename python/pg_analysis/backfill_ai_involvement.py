@@ -43,10 +43,9 @@ from pg_analysis.sources.ai_involvement import (
     label_to_cells,
     roles_prompt,
 )
-from pg_analysis.sources.classify import ollama_unavailable_reason
+from pg_analysis.sources.classify import MODEL_TAG, ollama_unavailable_reason
 
 ROLES_SEED = SEEDS_DIR / "ai_involvement_roles.csv"
-MODEL_TAG = "qwen3:30b-a3b"
 CHECKPOINT_EVERY = 25
 
 # key columns, source query, and cache file per population
