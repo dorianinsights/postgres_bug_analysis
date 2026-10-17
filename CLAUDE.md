@@ -148,15 +148,16 @@ same directory.
 
 ### Transform layers (`models/`)
 Each layer lives in its own schema — `raw`, `staging`, `intermediate`,
-`marts`, `seeds` (the `generate_schema_name` macro uses the configured names
-verbatim instead of dbt's target-prefixed default), so browsing the .duckdb
-shows the layer in every object's name. The marts are typed tables inside
+`marts`, `seeds`. The marts are typed tables inside
 `transform.duckdb` — the interface the boards query (dct's `warehouse` source
 opens the file read-only) and what dbt tests run against. Two on-run-end
 hooks: `macros/export_marts_csv.sql` writes the `data/derived/*.csv` twins,
 and `macros/drop_orphaned_relations.sql` drops any table or view in a
-dbt-managed schema that no model produces — the residue of a rename or
-delete, which dbt never removes itself. `transform.duckdb` stays gitignored;
+dbt-managed schema or the default `main` that no model produces — the
+residue of a rename or delete, which dbt never removes itself, and the
+`<model>__dbt_tmp<timestamp>` table dbt-duckdb leaves in `main` on every
+incremental Python model build. Nothing hand-made belongs in `main`; the
+hook drops it. `transform.duckdb` stays gitignored;
 `dbt build` regenerates it.
 
 - `models/raw_git/` — Python models (dbt-duckdb) that read
@@ -434,12 +435,10 @@ dct mechanics and quirks that shape the boards:
 
 ## Operational gotchas
 - **DuckDB is single-writer.** `transform.duckdb` (at the repo root) may be held open by
-  an interactive session (Harlequin, `duckdb` CLI); a `dbt build` (read-write)
-  then fails with a lock error. Quit those before building. Harlequin should be
-  opened read-only from its own venv (`~/.venvs/harlequin`, with `duckdb` pinned
-  to the version that wrote the file — currently 1.5.5) and **from the repo
-  root** (`harlequin -r transform.duckdb`) — see the cwd gotcha below.
-  Do **not** kill the user's live Harlequin — ask them to quit it; only
+  an interactive session (the user's VS Code data-browsing extension, the
+  `duckdb` CLI); a `dbt build` (read-write) then fails with a lock error. Close
+  those before building, and open the file read-only — see the cwd gotcha
+  below. Do **not** kill the user's live session — ask them to close it; only
   terminate a leftover process they've confirmed is closed. Note the sqlfluff
   lint uses the **dbt templater** (so package macros like
   `dbt_utils.generate_surrogate_key` expand) — it compiles the project per run, so a
@@ -494,13 +493,14 @@ dct mechanics and quirks that shape the boards:
   wildcard makes the model unresolvable. Not lint-enforced; run
   `dct validate --strict charts/*.yml` now and then to surface
   any `WARN-DBT-MODEL-COLUMNS-UNRESOLVED`.
-- **Interactive DuckDB/Harlequin must be launched from the repo root** (the
+- **Interactive DuckDB sessions must run from the repo root** (the
   dbt project root): the `staging.stg_*` models are *views* that read external
   CSVs by a relative path (`data/raw/*.csv`, resolved against the process cwd,
   which is the repo root when dbt runs). From any other directory they throw
   `IO Error: No files found`; `intermediate`/`marts` are real tables baked into
   the file and query from anywhere. So, from the root,
-  `harlequin -r transform.duckdb` (or `duckdb -readonly transform.duckdb`).
+  `duckdb -readonly transform.duckdb`, or open the repo root as the VS Code
+  workspace folder.
 
 ## Coding conventions
 - **No hardcoded dates or magic numbers** (other than `0` and `1`) in `.sql`

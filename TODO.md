@@ -196,3 +196,15 @@ A version bump re-infers all ~32k texts (~17 h), so batch these into one:
   ("Xint Code") is AI-found with vendor `other` (the review ruled this; the
   model was inconsistent).
 Until then the review seed (`ai_involvement_reviews`) carries the corrections.
+
+## Keep the hyphen in the "fix-linked" series labels (`field_labels:`)
+
+The three multi-measure list-traffic charts (`email_list_analysis`
+`monthly_traffic` and `recent_weekly_traffic`, and the article's copy of
+`monthly_traffic`) plot `y: [all, fix-linked]` with `color: list_name`. dct
+reads an unlabeled column name as a slug, so the series show as
+"pgsql-hackers - fix linked" while every title and subtitle says
+"fix-linked" (dbt-charts #69, closed as intended). The fix is
+`field_labels: { fix-linked: fix-linked }` on each of the three charts, but
+`field_labels:` is only on dbt-charts `main` (unreleased); 0.9.1 rejects it
+with `ERR-EXTRA-FIELD`. Add it on the first release that ships it.

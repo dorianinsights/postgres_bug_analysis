@@ -38,7 +38,7 @@ data. Pass --no-build to refresh the sources without rebuilding.
 to the interpreter running this.
 
 Note: the dbt build takes a read-write lock on transform.duckdb (repo root), so
-quit any interactive DuckDB/Harlequin session first (see CLAUDE.md), or pass
+close any interactive DuckDB session first (see CLAUDE.md), or pass
 --no-build.
 """
 
