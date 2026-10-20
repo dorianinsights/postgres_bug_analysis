@@ -39,8 +39,9 @@ HINT_NET = re.compile(
 HINT_MAX_LINES = 12
 HINT_LINE_CHARS = 200
 
-# the role flags, in output order; the seed ai_involvement_roles defines each
-ROLE_FLAGS = ("ai_found", "ai_analyzed", "ai_authored", "ai_tooling", "mentioned_only")
+# The categories of AI involvement the model can set, and the vendor/disclosure enums.
+WORK_ROLE_FLAGS = ("ai_found", "ai_analyzed", "ai_authored", "ai_tooling")
+ROLE_FLAGS = (*WORK_ROLE_FLAGS, "mentioned_only")
 VENDORS = ("anthropic", "openai", "google", "microsoft", "other", "unspecified", "none")
 DISCLOSURE_FORMS = ("trailer", "prose", "disclaimer", "none")
 # label columns as they land in the cache CSV and the model output, after the
@@ -149,7 +150,7 @@ def build_ai_schema() -> dict[str, Any]:
     # setting the flag -- roles are decided one at a time, so a multi-role text
     # is not collapsed to its most obvious role.
     properties: dict[str, Any] = {"ai_mentions": {"type": "string"}}
-    for flag in ROLE_FLAGS[:4]:
+    for flag in WORK_ROLE_FLAGS:
         properties[evidence_field(flag)] = {"type": "string"}
         properties[flag] = {"type": "boolean"}
     properties["mentioned_only"] = {"type": "boolean"}
@@ -169,7 +170,7 @@ def parse_ai_label(content: dict[str, Any]) -> AiLabel:
     if vendor not in VENDORS or form not in DISCLOSURE_FORMS:
         msg = f"model returned an out-of-enum value: vendor={vendor!r} disclosure_form={form!r}"
         raise ValueError(msg)
-    flags = {flag: bool(content[flag]) for flag in ROLE_FLAGS[:4]}
+    flags = {flag: bool(content[flag]) for flag in WORK_ROLE_FLAGS}
     any_role = any(flags.values())
     parts = [f"mentions: {squash_whitespace(content.get('ai_mentions', ''))}"]
     parts.extend(

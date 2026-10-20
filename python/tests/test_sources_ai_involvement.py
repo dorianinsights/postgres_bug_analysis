@@ -9,8 +9,8 @@ from pg_analysis.sources.ai_involvement import (
     DISCLOSURE_FORMS,
     LABEL_COLS,
     OUTPUT_COLS,
-    ROLE_FLAGS,
     VENDORS,
+    WORK_ROLE_FLAGS,
     AiLabel,
     ai_content_hash,
     as_bool,
@@ -58,7 +58,7 @@ def test_build_ai_schema_lists_mentions_then_evidence_before_each_flag() -> None
     schema = build_ai_schema()
     keys = list(schema["properties"])
     assert keys[0] == "ai_mentions"
-    for flag in ROLE_FLAGS[:4]:  # each work role's evidence comes right before its flag
+    for flag in WORK_ROLE_FLAGS:  # each work role's evidence comes right before its flag
         assert keys.index(flag) == keys.index(evidence_field(flag)) + 1
     assert keys[-4:] == ["mentioned_only", "vendor", "disclosure_form", "confidence"]
     assert schema["properties"]["vendor"]["enum"] == list(VENDORS)
