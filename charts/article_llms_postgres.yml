@@ -4,9 +4,9 @@ notes: >
   The blog article as a board: the prose is the article text, inline, and
   every figure is the live chart it was taken from, copied here from the
   fix-analysis, email-list, bug-reports and git-activity boards so the
-  article stands alone. The text describes the data as of 2026-09-18; the
-  charts re-render from the warehouse on every build, so a figure can drift
-  from the sentence beside it until the text is revised.
+  article stands alone. The text describes the data as of 2026-09-18
+  (article_as_of): the figures it quotes are read live from the warehouse as
+  of that day, while the sentences about "now" stay as written.
 
 # a board with no authored width hugs its charts' preferred width (~670px for
 # one chart per row), which squeezes them and truncates titles; pin the
@@ -21,7 +21,8 @@ width: 1100
 # same board-wide style the source charts were authored against:
 # 1_fix_analysis pins each release year to a distinct hue and stacks its bars
 # vertically; git_activity pins the churn chart's series so the palette
-# doesn't reseat
+# doesn't reseat; 1_fix_analysis pins the CVE split (blue = the bulk, maroon =
+# with CVE, the security hue)
 style:
   text:
     font: { family: "Inter Variable", size: 17, line_height: 1.7 }
@@ -43,6 +44,18 @@ style:
           "lines deleted": category[2]
           "total churn (adds + deletes)": category[3]
           "12-month average": category[4]
+      security_class:
+        values:
+          "no CVE": category[1]
+          "with CVE": category[4]
+
+# the day the prose was written: every figure the text quotes is read as of it
+variables:
+  article_as_of:
+    input: date
+    label: "Article written"
+    default: "2026-09-18"
+    visible: false
 
 queries:
   # -- copied from charts/1_fix_analysis.yml
@@ -141,6 +154,7 @@ queries:
       their threads haven't been cited YET. A non-additive ratio, so it is
       computed from the atomic message grain at the month, never re-aggregated
       from a stored per-period value. Complete months only.
+    formats: { fix_linked_share: percent }
     source: warehouse
     sql: |
       SELECT
@@ -156,6 +170,7 @@ queries:
 
   ai_threads_by_list:
     notes: AI-involved threads per month by list, with the share of all new threads that month.
+    formats: { ai_share: percent }
     source: warehouse
     sql: |
       SELECT
@@ -208,6 +223,14 @@ queries:
       ORDER BY 1, 2
 
   # -- copied from charts/bug_reports.yml
+
+  report_mix:
+    notes: The free-form emails' share of all bug reports, for the monthly chart's subtitle.
+    source: warehouse
+    sql: |
+      SELECT COUNT(*) FILTER (WHERE NOT is_form_report) / COUNT(*) AS free_form_share
+      FROM {{ ref('fct_threads') }}
+      WHERE list_name = 'pgsql-bugs' AND is_new_thread
 
   monthly_trend:
     notes: Six-month centered moving average of ALL reports (form + free-form).
@@ -267,6 +290,22 @@ queries:
       ORDER BY 1
 
   # -- copied from charts/git_activity.yml
+
+  ppport_refresh:
+    notes: >
+      The one-time PL/Perl ppport.h refresh behind churn_by_quarter's churn spike
+      (commit 2d44912c, "plperl: update ppport.h to Perl 5.34.0."): its quarter
+      and its churn in churn_by_quarter's file classes, for the churn chart's subtitle.
+    source: warehouse
+    sql: |
+      SELECT
+        'Q' || QUARTER(dc.commit_dt) || ' ' || YEAR(dc.commit_dt) AS quarter_label,
+        SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS lines
+      FROM {{ ref('fct_commit_files') }} AS cf
+      INNER JOIN {{ ref('dim_commit') }} AS dc ON cf.dim_commit_key = dc.dim_commit_key
+      WHERE dc.commit_hash = '2d44912cf79f1f174a83f587e1c4328315b8a0fa'
+        AND cf.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
+      GROUP BY 1
 
   churn_by_quarter:
     notes: >
@@ -335,6 +374,7 @@ queries:
       average; the chart prints it as a percent), one row per quarter for its
       own chart below it. The mean includes
       the Q1 2022 ppport.h spike and the partial current quarter as they are.
+    formats: { churn_ratio: percent_whole }
     source: warehouse
     sql: |
       WITH q AS (
@@ -355,6 +395,244 @@ queries:
         churn / AVG(churn) OVER () AS churn_ratio
       FROM q
       ORDER BY 2
+
+  # -- the prose's live figures. Each is a settled fact read as of
+  # article_as_of (the day the text was written), so a later release or month
+  # never slides into a sentence; the sentences that speak of "now" stay as
+  # written.
+
+  facts_releases:
+    notes: >
+      The scheduled releases around the article's date: the latest one shipped
+      by article_as_of (the anchor), the one before it and the one after, with
+      long-form dates, the anchor's minor versions, each release's newest
+      version, and the oldest major still supported at the article's date.
+    source: warehouse
+    sql: |
+      WITH sched AS (
+        SELECT
+          release_dt,
+          ROW_NUMBER() OVER (ORDER BY release_dt) AS seq
+        FROM {{ ref('dim_release') }}
+        WHERE NOT is_synthetic_row AND NOT is_out_of_band
+      ),
+
+      anchor AS (
+        SELECT MAX(seq) AS seq FROM sched
+        WHERE release_dt <= CAST('{{ article_as_of }}' AS DATE)
+      ),
+
+      picked AS (
+        SELECT
+          CASE sched.seq - anchor.seq WHEN -1 THEN 'prev' WHEN 0 THEN 'anchor' ELSE 'next' END AS kind,
+          sched.release_dt
+        FROM sched
+        CROSS JOIN anchor
+        WHERE sched.seq BETWEEN anchor.seq - 1 AND anchor.seq + 1
+      ),
+
+      eol AS (
+        SELECT major, eol_dt AS release_dt
+        FROM {{ ref('dim_major') }}
+        WHERE is_released AND eol_dt > CAST('{{ article_as_of }}' AS DATE)
+        ORDER BY major
+        LIMIT 1
+      ),
+
+      days AS (
+        SELECT kind, release_dt FROM picked
+        UNION ALL
+        SELECT 'eol', release_dt FROM eol
+      ),
+
+      -- "August 13th, 2026"
+      long_days AS (
+        SELECT
+          kind,
+          STRFTIME(release_dt, '%B ') || DAY(release_dt)
+          || CASE
+            WHEN DAY(release_dt) IN (11, 12, 13) THEN 'th'
+            WHEN DAY(release_dt) % 10 = 1 THEN 'st'
+            WHEN DAY(release_dt) % 10 = 2 THEN 'nd'
+            WHEN DAY(release_dt) % 10 = 3 THEN 'rd'
+            ELSE 'th'
+          END
+          || STRFTIME(release_dt, ', %Y') AS long_day
+        FROM days
+      ),
+
+      versions AS (
+        SELECT
+          pk.kind,
+          LIST(dv.version ORDER BY dv.major DESC) AS version_list,
+          ARG_MAX(dv.version, dv.major) AS newest_version
+        FROM picked AS pk
+        INNER JOIN {{ ref('dim_version') }} AS dv ON pk.release_dt = dv.release_dt
+        WHERE NOT dv.is_out_of_band
+        GROUP BY pk.kind
+      )
+
+      SELECT
+        MAX(ld.long_day) FILTER (WHERE ld.kind = 'anchor') AS anchor_day,
+        MAX(ld.long_day) FILTER (WHERE ld.kind = 'next') AS next_day,
+        MAX(ld.long_day) FILTER (WHERE ld.kind = 'eol') AS eol_day,
+        (SELECT eol.major FROM eol) AS eol_major,
+        -- "18.6, 17.11, 16.15, 15.19, and 14.24"
+        (
+          SELECT ARRAY_TO_STRING(LIST_SLICE(v.version_list, 1, LEN(v.version_list) - 1), ', ')
+            || ', and ' || v.version_list[LEN(v.version_list)]
+          FROM versions AS v WHERE v.kind = 'anchor'
+        ) AS anchor_versions,
+        (SELECT v.newest_version FROM versions AS v WHERE v.kind = 'anchor') AS anchor_newest,
+        (SELECT v.newest_version FROM versions AS v WHERE v.kind = 'prev') AS prev_newest
+      FROM long_days AS ld
+
+  facts_fix_counts:
+    notes: >
+      The "Fixes by release" and CVE-split figures the prose quotes, over the
+      same population as fix_count (shipped, scheduled, full-window releases):
+      the first release, the lowest and highest count before the anchor
+      release (with every release that hit it), the range over the anchor's
+      year and the one before it, and the anchor's and previous release's
+      totals, CVE counts and CVE shares against the range of every earlier
+      release's share.
+    source: warehouse
+    sql: |
+      WITH per_release AS (
+        SELECT
+          release_dt,
+          SUM(fix_cnt) AS fix_cnt,
+          SUM(security_fix_cnt) AS cve_cnt,
+          SUM(security_fix_cnt)::DOUBLE / NULLIF(SUM(fix_cnt), 0) AS cve_pct
+        FROM {{ ref('fct_fix_origins_agg') }}
+        WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
+          AND release_dt <= CAST('{{ article_as_of }}' AS DATE)
+        GROUP BY release_dt
+      ),
+
+      ranked AS (
+        SELECT
+          release_dt,
+          fix_cnt,
+          cve_cnt,
+          cve_pct,
+          ROW_NUMBER() OVER (ORDER BY release_dt DESC) AS age
+        FROM per_release
+      ),
+
+      before_anchor AS (
+        SELECT release_dt, fix_cnt FROM ranked WHERE age > 1
+      )
+
+      SELECT
+        (SELECT STRFTIME(MIN(release_dt), '%B %Y') FROM ranked) AS first_month,
+        (SELECT MIN(fix_cnt) FROM before_anchor) AS low_cnt,
+        (
+          SELECT STRING_AGG(STRFTIME(release_dt, '%B %Y'), ' and again ' ORDER BY release_dt)
+          FROM before_anchor WHERE fix_cnt = (SELECT MIN(fix_cnt) FROM before_anchor)
+        ) AS low_months,
+        (SELECT MAX(fix_cnt) FROM before_anchor) AS high_cnt,
+        (
+          SELECT STRING_AGG(STRFTIME(release_dt, '%B %Y'), ' and again ' ORDER BY release_dt)
+          FROM before_anchor WHERE fix_cnt = (SELECT MAX(fix_cnt) FROM before_anchor)
+        ) AS high_months,
+        (
+          SELECT MIN(fix_cnt) FROM before_anchor
+          WHERE YEAR(release_dt) >= (SELECT YEAR(release_dt) - 1 FROM ranked WHERE age = 1)
+        ) AS recent_low,
+        (
+          SELECT MAX(fix_cnt) FROM before_anchor
+          WHERE YEAR(release_dt) >= (SELECT YEAR(release_dt) - 1 FROM ranked WHERE age = 1)
+        ) AS recent_high,
+        (SELECT fix_cnt FROM ranked WHERE age = 1) AS anchor_cnt,
+        (SELECT cve_cnt FROM ranked WHERE age = 2) AS prev_cve_cnt,
+        (SELECT cve_cnt FROM ranked WHERE age = 1) AS anchor_cve_cnt,
+        (SELECT cve_pct FROM ranked WHERE age = 2) AS prev_cve_pct,
+        (SELECT cve_pct FROM ranked WHERE age = 1) AS anchor_cve_pct,
+        (SELECT MIN(cve_pct) FROM ranked WHERE age > 2) AS hist_low_cve_pct,
+        (SELECT MAX(cve_pct) FROM ranked WHERE age > 2) AS hist_high_cve_pct
+
+  facts_ai:
+    notes: >
+      The AI-involvement figures the prose quotes: the distinct fix commits
+      disclosing AI involvement by article_as_of, how many credit an AI with
+      finding the bug, the month of the first; and the AI-involved new
+      threads (every list) in the last complete month before the article,
+      with their share of that month's new threads.
+    source: warehouse
+    sql: |
+      WITH commits AS (
+        SELECT
+          COUNT(DISTINCT fix_key) AS ai_commit_cnt,
+          COUNT(DISTINCT fix_key) FILTER (WHERE ai_found) AS ai_found_cnt,
+          STRFTIME(MIN(commit_dt), '%B %Y') AS first_ai_commit_month
+        FROM {{ ref('dim_commit') }}
+        WHERE has_ai_involvement AND NOT is_housekeeping
+          AND commit_dt <= CAST('{{ article_as_of }}' AS DATE)
+      ),
+
+      threads AS (
+        SELECT
+          COUNT(*) FILTER (WHERE has_ai_involvement) AS ai_thread_cnt,
+          COUNT(*) FILTER (WHERE has_ai_involvement) / COUNT(*) AS ai_thread_share
+        FROM {{ ref('fct_threads') }}
+        WHERE DATE_TRUNC('month', started_dt) = DATE_TRUNC('month', CAST('{{ article_as_of }}' AS DATE)) - INTERVAL 1 MONTH
+      )
+
+      SELECT
+        commits.ai_commit_cnt,
+        commits.ai_found_cnt,
+        commits.first_ai_commit_month,
+        threads.ai_thread_cnt,
+        threads.ai_thread_share
+      FROM commits
+      CROSS JOIN threads
+
+  facts_acted:
+    notes: >
+      The highest monthly acted-upon share and the highest 6-month average of
+      it (monthly_acted_data's measures) up to the article's month, each with
+      its month.
+    source: warehouse
+    sql: |
+      WITH monthly AS (
+        SELECT
+          DATE_TRUNC('month', started_dt)::DATE AS report_month,
+          COUNT(*) FILTER (WHERE is_acted_upon) / COUNT(*) AS acted_share
+        FROM {{ ref('fct_threads') }}
+        WHERE list_name = 'pgsql-bugs' AND is_new_thread
+        GROUP BY 1
+      ),
+
+      averaged AS (
+        SELECT
+          report_month,
+          acted_share,
+          AVG(acted_share) OVER (ORDER BY report_month ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) AS acted_avg_6m
+        FROM monthly
+      )
+
+      SELECT
+        MAX(acted_share) AS max_share,
+        STRFTIME(ARG_MAX(report_month, acted_share), '%B %Y') AS max_share_month,
+        MAX(acted_avg_6m) AS max_avg,
+        STRFTIME(ARG_MAX(report_month, acted_avg_6m), '%B %Y') AS max_avg_month
+      FROM averaged
+      WHERE report_month <= CAST('{{ article_as_of }}' AS DATE)
+
+  facts_churn:
+    notes: >
+      Q1 2020's total churn (the quarter the prose calls elevated), over
+      churn_by_quarter's population and file classes.
+    source: warehouse
+    sql: |
+      SELECT SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS q1_2020_lines
+      FROM {{ ref('fct_commit_files') }} AS cf
+      INNER JOIN {{ ref('dim_commit') }} AS dc ON cf.dim_commit_key = dc.dim_commit_key
+      WHERE dc.is_representative_commit
+        AND NOT dc.is_housekeeping
+        AND cf.file_class IN ('source_c', 'header', 'sql', 'perl', 'python', 'grammar', 'docs', 'embedded_sql')
+        AND DATE_TRUNC('quarter', cf.commit_dt) = CAST('2020-01-01' AS DATE)
 
 charts:
 
@@ -396,9 +674,7 @@ charts:
     y: fix_cnt
     color: security_class
     # dual axis: the stacked bar (counts) on the left, a line for the CVE share
-    # on its own right axis. A layered chart doesn't take part in the board's
-    # category_colors, so the two bar series are colored with an inline palette
-    # (blue = no CVE bulk, category[4] maroon = with CVE, the board's security hue).
+    # on its own right axis.
     layers:
       - type: line
         query: fix_cve_pct
@@ -416,9 +692,6 @@ charts:
       - { per_series: fix_cnt }
       - { aggregate: max, source: cve_pct, format: percent_whole, label: "CVE %" }
     style:
-      color:
-        categorical:
-          palette: ["category[1]", "category[4]"]
       support_table: { position: bottom, font: { size: 8 } }
 
   # -- copied from charts/email_list_analysis.yml
@@ -430,6 +703,8 @@ charts:
     x: month_dt
     y: [all, fix-linked]
     color: list_name
+    # an unlabeled column name reads as a slug ("fix linked")
+    field_labels: { fix-linked: fix-linked }
     height: 380
 
   # -- copied from charts/email_list_analysis.yml
@@ -441,10 +716,6 @@ charts:
     x: month_dt
     y: fix_linked_share
     color: list_name
-    style:
-      axis_y:
-        labels:
-          format: ".1%"
 
   # -- copied from charts/email_list_analysis.yml
 
@@ -475,7 +746,7 @@ charts:
     type: bar
     query: monthly_reports
     title: "Bug reports per month"
-    subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails (about a third of reports); line = 6-month average of both"
+    subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails ({{ queries.report_mix.one.free_form_share | format('.0%') }} of reports); line = 6-month average of both"
     # ~75 months on a temporal x: dct labels it by year, so the "too many x
     # categories" warning (temporal wording since dct 0.7.0) is a false positive
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
@@ -542,9 +813,7 @@ charts:
       - { source: reports, format: integer, label: "Reports" }
       - { source: acted_cnt, format: integer, label: "Acted upon" }
       - { source: acted_share, format: percent_whole, label: "Acted upon %" }
-      # no hyphen in the label: the tabular face dct sets strip labels in gives
-      # a hyphen a digit-wide advance, so "6-month" paints as "6- month"
-      - { source: acted_avg_6m, format: percent_whole, label: "6 month avg %" }
+      - { source: acted_avg_6m, format: percent_whole, label: "6-month avg %" }
     style:
       support_table: { position: bottom, font: { size: 8 } }
 
@@ -554,7 +823,7 @@ charts:
     type: line
     query: churn_by_quarter
     title: "Lines of code churned per quarter"
-    subtitle: "One backpatch per fix, its largest (housekeeping excluded); total churn with its 12-month average, additions, and deletions -- work per fix, not per branch; current quarter partial. Q1 2022's spike is one commit, a one-time refresh of PL/Perl's vendored ppport.h header for Perl 5.34 (~18.6k lines), not fix work"
+    subtitle: "One backpatch per fix, its largest (housekeeping excluded); total churn with its 12-month average, additions, and deletions -- work per fix, not per branch; current quarter partial. {{ queries.ppport_refresh.one.quarter_label }}'s spike is one commit, a one-time refresh of PL/Perl's vendored ppport.h header for Perl 5.34 (~{{ queries.ppport_refresh.one.lines | format('.3~s') }} lines), not fix work"
     x: quarter
     y: lines
     y_label: "lines changed"
@@ -577,10 +846,6 @@ charts:
     x: quarter
     y: churn_ratio
     y_label: "% of chart average"
-    # churn_ratio is a fraction (0.6, 2.1); the percent format multiplies by
-    # 100 on the axis and in the hover
-    style:
-      axis_y: { labels: { format: ".0%" } }
     height: 300
 
 rows:
@@ -603,11 +868,11 @@ rows:
 
       1. The Postgres development team releases a new major release every year. New functionality is limited to major releases. 
          1. The most recent major release is 18. 19 is being worked on, is in beta, and [will be released later this year](https://www.postgresql.org/docs/release/19.0/). 
-         1. Major releases are supported for 5 years. “Supported” means that bugs and vulnerabilities will be backpatched to supported major releases for that period. Therefore, version 14 will have its final minor release on November 12th, 2026 and will not be patched or supported afterwards.
+         1. Major releases are supported for 5 years. “Supported” means that bugs and vulnerabilities will be backpatched to supported major releases for that period. Therefore, version {{ queries.facts_releases.one.eol_major }} will have its final minor release on {{ queries.facts_releases.one.eol_day }} and will not be patched or supported afterwards.
       1. Minor releases to supported major releases happen every quarter. 
          1. Minor releases are only for bugfixes and vulnerabilities; new functionality is only added to major releases.
          1. Minor releases for all supported major releases are coordinated and happen at the same time.
-         1. So, for example, minor releases 18.6, 17.11, 16.15, 15.19, and 14.24 were released on August 13th, 2026. The next minor release will occur on November 12th, 2026.
+         1. So, for example, minor releases {{ queries.facts_releases.one.anchor_versions }} were released on {{ queries.facts_releases.one.anchor_day }}. The next minor release will occur on {{ queries.facts_releases.one.next_day }}.
          1. There are occasional “out-of-band” minor releases due to an important bugfix or security issue which happen as necessary. There have been a few of these over previous years, but they’ve been infrequent enough and small enough that we’re going to exclude them from our analysis.
 
       We’re interested in the rate of reported and fixed bugs and vulnerabilities and how that changes over time. Therefore, what we care about are minor releases as they only contain fixes for bugs and vulnerabilities. We’re not going to look at the contents of major releases because it’s more difficult with them to parse out what was new functionality versus what was a bugfix or an addressed vulnerability.
@@ -626,14 +891,14 @@ rows:
       Using these datasources, let’s count the number of Postgres release changelog entries by year and quarterly release:
   - fix_counts
   - text: |
-      As you can see, the number of changelog entries has varied somewhat since February 2020, with some quarters going as low as 49 (May 2021 and again November 2022) and as high as 88 (November 2021). 2025 and 2026 had been relatively constant, moving between 63 and 78, up until the August 2026 release which jumped to 142 changelog entries. So, roughly doubling from the previous quarterly release. This at least validates my observation that the number of changelog entries has increased significantly compared to previous quarterly releases. However, there’s only a loose causal link with the hypothesis that LLMs are the cause of this in the sense that that timeframes coincide in that it’s in the last 3 or 4 months that LLMs really seem to be exploding into the software space. We need some much stronger evidence that LLMs are the cause, or at least a significant contributor.
+      As you can see, the number of changelog entries has varied somewhat since {{ queries.facts_fix_counts.one.first_month }}, with some quarters going as low as {{ queries.facts_fix_counts.one.low_cnt }} ({{ queries.facts_fix_counts.one.low_months }}) and as high as {{ queries.facts_fix_counts.one.high_cnt }} ({{ queries.facts_fix_counts.one.high_months }}). 2025 and 2026 had been relatively constant, moving between {{ queries.facts_fix_counts.one.recent_low }} and {{ queries.facts_fix_counts.one.recent_high }}, up until the August 2026 release which jumped to {{ queries.facts_fix_counts.one.anchor_cnt }} changelog entries. So, roughly doubling from the previous quarterly release. This at least validates my observation that the number of changelog entries has increased significantly compared to previous quarterly releases. However, there’s only a loose causal link with the hypothesis that LLMs are the cause of this in the sense that that timeframes coincide in that it’s in the last 3 or 4 months that LLMs really seem to be exploding into the software space. We need some much stronger evidence that LLMs are the cause, or at least a significant contributor.
 
       One other way to validate the hypothesis would be to look at the number of changelog entries that are associated with a documented security issue. If we see an increase in the number of security issues found in an absolute sense, and also as a proportion of the number of changelog entries reported, it’s likely that LLMs are contributing to the rate of discovery of issues. Let’s use the Postgres reported CVEs to count this. Here is a chart with the same timespan and count of changelog items since Q1 2020, but this time let’s categorize whether the changelog item was related to a CVE or not. Also, let’s look at the % of changelog items over time associated with CVEs.
   - fix_cve_split
   - text: |
-      So, we’re clearly seeing an increase in the number of changelog items assigned a CVE for the last two quarters - the May and August 2026 releases. Historically it averaged around 2 or maybe 3 a quarter, then jumped to 14 and then 29 for May and August 2026, respectively. Also, the proportion of changelog entries that are assigned CVEs was historically in the 0 to 6% range, and in the last two quarters it jumped to 19% and then 20%. 
+      So, we’re clearly seeing an increase in the number of changelog items assigned a CVE for the last two quarters - the May and August 2026 releases. Historically it averaged around 2 or maybe 3 a quarter, then jumped to {{ queries.facts_fix_counts.one.prev_cve_cnt }} and then {{ queries.facts_fix_counts.one.anchor_cve_cnt }} for May and August 2026, respectively. Also, the proportion of changelog entries that are assigned CVEs was historically in the {{ queries.facts_fix_counts.one.hist_low_cve_pct | format('.0%') }} to {{ queries.facts_fix_counts.one.hist_high_cve_pct | format('.0%') }} range, and in the last two quarters it jumped to {{ queries.facts_fix_counts.one.prev_cve_pct | format('.0%') }} and then {{ queries.facts_fix_counts.one.anchor_cve_pct | format('.0%') }}. 
 
-      Of 26 fix commits in the Postgres git repository that disclose AI involvement (all since April 2026), 22 credit an AI tool with finding the bug the commit fixes. The credits name OpenAI Codex Security, Anthropic’s Claude (via Calif.io), and Xint Code. A good share of May’s and August’s CVE fixes trace to these commits. The commits provide fixes like overflow guards, buffer checks, and recursion limits. The majority of these commits which disclose AI involvement land in two batches in the final days before the May and August releases.
+      Of {{ queries.facts_ai.one.ai_commit_cnt }} fix commits in the Postgres git repository that disclose AI involvement (all since {{ queries.facts_ai.one.first_ai_commit_month }}), {{ queries.facts_ai.one.ai_found_cnt }} credit an AI tool with finding the bug the commit fixes. The credits name OpenAI Codex Security, Anthropic’s Claude (via Calif.io), and Xint Code. A good share of May’s and August’s CVE fixes trace to these commits. The commits provide fixes like overflow guards, buffer checks, and recursion limits. The majority of these commits which disclose AI involvement land in two batches in the final days before the May and August releases.
 
       Is there another way we could validate our hypothesis? Well, I would assume that the number of bugs reported would increase, and overall mailing list or discussion thread volume would also increase if LLMs are making it easier to find and report bugs. How does the Postgres project handle communications? 
 
@@ -655,7 +920,7 @@ rows:
       Is there a way to actually look at emails/threads and see if there is mention of AI made in them via one way or another? Whether in assistance finding the issue, analyzing it, writing code, or something else? Non-statistical methods like scanning for hardcoded strings or using regular expressions tend to be fragile and arbitrary - e.g. if you were searching for “Claude” in your pattern but not “Codex” you’d miss some of them. What about if we actually used an LLM to classify an email as to whether it had any mention of AI? Following this idea, I went ahead and used a local LLM (Qwen3, running through Ollama) to classify the mailing list messages after tuning the prompt against a hand-labelled sample and then reviewing every positive by hand. More specifically, I looked at the first message which starts a thread on the two mailing lists. I only looked at the first message because we’re mostly concerned about whether AI has had a hand in finding or analyzing a potential bug or vulnerability, or writing the suggested patch to fix it. This is going to come up in the first message. It’s also somewhat computationally expensive (relatively, compared to, say, running a SQL query) to use an LLM to analyze these messages so it helps to reduce the volume of messages that we need to scan.
   - ai_threads_by_list
   - text: |
-      The first potential mention of AI in mailing list threads comes in September 2024 on the pgsql-hackers list, in this [message](https://www.postgresql.org/message-id/CAHut+PuvsyA5v8y7rYoY9mkDQzUhwaESM05yCByTMaDoRh30tA@mail.gmail.com). The real volume ramp-up starts in June of 2026, and continues growing into August which had 29 AI-involved threads started, representing 8% of the total threads started that month. September’s share is already at 8% which is consistent with August’s share even though the thread volume is only at half.
+      The first potential mention of AI in mailing list threads comes in September 2024 on the pgsql-hackers list, in this [message](https://www.postgresql.org/message-id/CAHut+PuvsyA5v8y7rYoY9mkDQzUhwaESM05yCByTMaDoRh30tA@mail.gmail.com). The real volume ramp-up starts in June of 2026, and continues growing into August which had {{ queries.facts_ai.one.ai_thread_cnt }} AI-involved threads started, representing {{ queries.facts_ai.one.ai_thread_share | format('.0%') }} of the total threads started that month. September’s share is already at 8% which is consistent with August’s share even though the thread volume is only at half.
 
       What about bug reports? Do we see a significant increase in numbers of reported bugs, whether via the reporting form or direct mailing to the pgsql-bugs mailing list? 
   - monthly_reports
@@ -669,14 +934,14 @@ rows:
   - text: |
       This report shows, by month, the number of bug reports acted upon, the % of total acted upon, and the 6-month average of % acted upon. The table at bottom also includes the total number of bug reports made. The table at bottom only shows the numbers every three months as there isn’t enough space to show every month even though the chart itself is showing data every month.
 
-      We are seeing both the monthly % of bug reports acted upon and the 6-month rolling average jump to unprecedented levels, starting in May 2026. The monthly % tended to run between 15 and 30%, and, starting in mid-2021, the 6-month rolling average between 20 and 25%. There was one jump of the 6-month rolling average to almost 30% in mid-2025 but it dropped back down again. Now, we are seeing the % acted upon spike as high as 46% (in May 2026) and the rolling 6-month average meaningfully above the 30% threshold, reaching as high as 34%, in August 2026. Also relevant to note is that the most recent bug reports have had less time for their fixes to land than earlier bug reports, say in 2023 or 2024. So the last one or two months might actually be a bit low. 
+      We are seeing both the monthly % of bug reports acted upon and the 6-month rolling average jump to unprecedented levels, starting in May 2026. The monthly % tended to run between 15 and 30%, and, starting in mid-2021, the 6-month rolling average between 20 and 25%. There was one jump of the 6-month rolling average to almost 30% in mid-2025 but it dropped back down again. Now, we are seeing the % acted upon spike as high as {{ queries.facts_acted.one.max_share | format('.0%') }} (in {{ queries.facts_acted.one.max_share_month }}) and the rolling 6-month average meaningfully above the 30% threshold, reaching as high as {{ queries.facts_acted.one.max_avg | format('.0%') }}, in {{ queries.facts_acted.one.max_avg_month }}. Also relevant to note is that the most recent bug reports have had less time for their fixes to land than earlier bug reports, say in 2023 or 2024. So the last one or two months might actually be a bit low. 
 
       Is this jump in the share of bug reports acted upon because higher-quality, more real bugs are being reported? Or perhaps because it’s easier for Postgres developers who receive the bug reports to triage, examine, and develop fixes with LLM assistance? Or another factor? It’s difficult to be sure based on this evidence, but I do feel reasonably confident in saying that this does show LLM impact on the overall project. 
 
       One other way we could see if there’s been a meaningful impact to code in the project caused by LLMs is to measure the volume of changes being made to the codebase in terms of lines of code (LoC) added and LoC removed. LoC is a contentious metric in the software world because many companies have attempted to use it as a productivity metric for software development. It’s very unreliable for that purpose because the absolute meaning of one line of code can vary wildly between software projects, teams, languages, purposes, and individual developers. However - I do think that it’s a valid use to measure LoC in a time axis over the same software project because all you’re assuming in that case is that the relative complexity and impact of an average line of code has some consistency over time **in the same software project**. So if you see LoC additions and removals shrink or grow significantly over time, in the same software project, that’s probably an indication that there has been significantly less or more work, respectively, to that same codebase.
   - churn_by_quarter
   - text: |
-      What we see here is some level of movement, with one big spike in Q1 2022, but generally staying in the 5 to 7K LoC churn/change per quarter range. I had Claude do some investigation, and the one big spike was caused by a one-time refresh/update of Perl support which caused a large codebase size change. Almost all of that commit’s 18,600 lines are one auto-generated Perl-compatibility header written in C (ppport.h) being refreshed, not manually written code to address a bug. So that’s an outlier that for the purposes of our analysis isn’t relevant. Q1 2020 was also elevated (10.7k) but dropped back the next quarter.
+      What we see here is some level of movement, with one big spike in Q1 2022, but generally staying in the 5 to 7K LoC churn/change per quarter range. I had Claude do some investigation, and the one big spike was caused by a one-time refresh/update of Perl support which caused a large codebase size change. Almost all of that commit’s {{ queries.ppport_refresh.one.lines | format(',.3r') }} lines are one auto-generated Perl-compatibility header written in C (ppport.h) being refreshed, not manually written code to address a bug. So that’s an outlier that for the purposes of our analysis isn’t relevant. Q1 2020 was also elevated ({{ queries.facts_churn.one.q1_2020_lines | format('.3~s') }}) but dropped back the next quarter.
 
       Q2 2026 does rise to the top of the historical range, and Q3 2026 goes past anything outside the Q1 2022 Perl-related outlier, even with two weeks still to run (I write this as of September 18th, 2026), so that last number will keep growing. Also, Q3 isn’t even complete yet so that last number will continue to grow until September completes. Also notable is that the largest commit in Q3 is a 2,077 line query planner rewrite fixing wrong query answers (Bug #19560) which states in its commit message that Claude wrote it.
 
@@ -688,7 +953,7 @@ rows:
       Let’s review our findings to this point:
 
       1. Direct evidence of AI/LLM involvement
-         1. AI-involved mailing list threads, disclosed directly in the content of the threads. The git commits say the same: 22 of the 26 fix commits that disclose AI involvement credit an AI tool with finding the bug (see the CVE section above).
+         1. AI-involved mailing list threads, disclosed directly in the content of the threads. The git commits say the same: {{ queries.facts_ai.one.ai_found_cnt }} of the {{ queries.facts_ai.one.ai_commit_cnt }} fix commits that disclose AI involvement credit an AI tool with finding the bug (see the CVE section above).
          1. The Postgres project has no official policy on disclosing AI usage. The PGConf.dev 2026 developer conference [discussed one](https://wiki.postgresql.org/wiki/PGConf.dev_2026_Developer_Unconference), and noted that contributors fear disclosure could get a patch rejected. Therefore, there’s a good possibility that there is additional, undisclosed usage of AI for bug discovery, analysis, and writing code fixes, and thus that the rate of AI usage is higher than we can see through these metrics.
       1. Indirect evidence of AI/LLM involvement, based on changes in various metrics in Q2 and Q3 of 2026:
          1. Volume of changelog fixes by quarterly release doubling (the August 2026 release versus the May 2026 release)
@@ -708,7 +973,7 @@ rows:
          1. The bugs and vulnerabilities being reported are real and significant, and are being addressed and fixed by the project.
       1. Can we measure the specific impact of these trends over time? Are the number of bug reports and fixes increasing 50%? 100%? 200%?
          1. There are a lot of metrics through this blog post, and so I’m not going to go back and repeat every one. A few that do pop out:
-            1. The changelog for the latest Postgres minor release, 18.6 in August 2026, has double the entries versus the previous minor release, 18.4, in May 2026.
+            1. The changelog for the latest Postgres minor release, {{ queries.facts_releases.one.anchor_newest }} in August 2026, has double the entries versus the previous minor release, {{ queries.facts_releases.one.prev_newest }}, in May 2026.
             1. By August and September 2026, 8% of new pgsql-hackers and pgsql-bugs mailing list threads disclose AI involvement, up from under 1% before June. Additionally, there’s the potential for more unreported AI usage.
             1. LoC churn in Q3 2026 at more than 200% of the mean quarter since late 2019.
 

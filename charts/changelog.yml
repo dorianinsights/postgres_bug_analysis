@@ -1,4 +1,4 @@
-_schema_version: "0.6.0"  # written automatically by dct migrate
+_schema_version: "0.10.0"  # written automatically by dct migrate
 title: "PostgreSQL Fix Velocity — Changelog"
 notes: >
   Every minor release of the corpus majors (PG12 onward, the upper bound
@@ -15,9 +15,10 @@ style:
     bar: { stack: zero }
     # the fix taxonomy has 13 categories (seeds/content_categories) and the
     # categorical palette 10 swatches, so the palette is extended with three
-    # derived variants of hues that sit far from their neighbours, and each
+    # derived variants of hues that sit far from their neighbours (dct warns
+    # when a chart has more series than the palette has swatches), and each
     # category is pinned to its own swatch so it keeps its color on every chart
-    # of the board (category_colors refuses more values than the palette holds)
+    # of the board, layered ones included
     color:
       categorical:
         palette: ["category[1]", "category[2]", "category[3]", "category[4]", "category[5]", "category[6]", "category[7]", "category[8]", "category[9]", "category[10]", "category[3].light", "category[4].light", "category[5].deep"]
@@ -153,6 +154,13 @@ queries:
       GROUP BY 1, 2
       ORDER BY 1, 2 DESC
 
+  contributors_since:
+    notes: The year of the corpus's first credited release, for the contributors subtitle.
+    source: warehouse
+    sql: |
+      SELECT YEAR(MIN(release_dt)) AS first_year
+      FROM {{ ref('fct_release_contributors_agg') }}
+
   release_trend:
     notes: >
       Least-squares trendlines over full-quarter release totals (the partial
@@ -274,7 +282,9 @@ charts:
     support:
       value: fix_delta
       label: "vs the previous scheduled release"
-      format: percent_delta
+    style:
+      support:
+        format: percent_delta
 
   kpi_security:
     type: kpi
@@ -284,7 +294,9 @@ charts:
     support:
       value: security_delta
       label: "vs the previous scheduled release"
-      format: percent_delta
+    style:
+      support:
+        format: percent_delta
 
   kpi_cves:
     type: kpi
@@ -294,7 +306,9 @@ charts:
     support:
       value: cve_delta
       label: "vs the previous scheduled release"
-      format: percent_delta
+    style:
+      support:
+        format: percent_delta
 
   kpi_upcoming_fixes:
     type: kpi
@@ -345,15 +359,6 @@ charts:
     x: release_dt
     y: fix_cnt
     color: category
-    # a chart with layers: ignores the board's category_colors pins and colors
-    # its series in stack order (dbt-charts #57), so stack alphabetically and
-    # list the pinned swatches in that same order -- keep this palette in step
-    # with the board's category pins
-    style:
-      stack_order: alphabetical
-      color:
-        categorical:
-          palette: ["category[4].light", "category[10]", "category[9]", "category[6]", "category[8]", "category[2]", "category[3].light", "category[3]", "category[7]", "category[4]", "category[1]", "category[5]", "category[5].deep"]
     layers:
       - type: line
         query: release_trend
@@ -365,7 +370,7 @@ charts:
         query: release_trend
         x: release_dt
         y: trend_excl_latest
-        label: "trend excluding Aug '26"
+        label: "trend excluding latest release"
         style: { marks: { line: { stroke: { color: "#c0392b", dasharray: "3 5", width: 1.5 } } } }
 
   category_share:
@@ -404,7 +409,7 @@ charts:
     # label left out of the list drops out of the legend
     style:
       legend:
-        values: [UNSCORED, LOW, MEDIUM, HIGH, "linear trend (full-quarter releases)", "trend excluding Aug '26"]
+        values: [UNSCORED, LOW, MEDIUM, HIGH, "linear trend (full-quarter releases)", "trend excluding latest release"]
     layers:
       - type: line
         query: security_trend
@@ -416,14 +421,14 @@ charts:
         query: security_trend
         x: release_dt
         y: trend_excl_latest
-        label: "trend excluding Aug '26"
+        label: "trend excluding latest release"
         style: { marks: { line: { stroke: { color: "#c0392b", dasharray: "3 5", width: 1.5 } } } }
 
   contributors:
     type: bar
     query: contributors_by_release
     title: "Contributors per release: first-time vs returning"
-    subtitle: "Names credited in the release notes; first-time = new to this 2019+ corpus"
+    subtitle: "Names credited in the release notes; first-time = new to this {{ queries.contributors_since.one.first_year }}+ corpus"
     x: release_dt
     y: contributors
     color: cohort

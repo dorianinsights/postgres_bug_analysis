@@ -1,8 +1,6 @@
 _schema_version: "0.6.0"  # written automatically by dct migrate
-# one color per origin on every chart of this board: dct 0.6 shares a
-# category scale across charts that bind the same color: field, but a chart
-# with layers: (fix_commit_origins) does not take part, so without the pin the
-# layered chart assigned unsourced/embargoed the opposite colors
+# one color per origin on every chart of this board, pinned so a series keeps
+# its hue whichever subset of origins a chart's query returns
 style:
   charts:
     min_height: 360
@@ -16,8 +14,8 @@ style:
           unsourced: category[3]
           embargoed security: category[4]
       # fix_counts colors bars by calendar year (query labels them CYYYYY; dct
-      # disqualifies a bare "2020" as a temporal value and won't seat a pin on
-      # it). Each year gets a DISTINCT qualitative hue from the categorical
+      # disqualifies a bare "2020" as a temporal value and silently drops its
+      # pins, dbt-charts #75). Each year gets a DISTINCT qualitative hue from the categorical
       # palette so the boundary between one year's block of quarters and the
       # next is obvious; the slots are chosen (and checked in the render) so no
       # two adjacent years read as a similar hue. Add a free slot for a new
@@ -31,6 +29,16 @@ style:
           "CY2024": category[6]
           "CY2025": category[2]
           "CY2026": category[7]
+      # the CVE and hardening splits: blue = the bulk, category[4] maroon =
+      # the security share (the board's security hue)
+      security_class:
+        values:
+          "no CVE": category[1]
+          "with CVE": category[4]
+      hardening_class:
+        values:
+          "no hardening": category[1]
+          "hardening": category[4]
 title: "PostgreSQL Fix Analysis"
 notes: >
   Source attribution for fixes and development activity: each fix and
@@ -66,6 +74,7 @@ queries:
       on both rows (the per-release CVE share) so the support strip can read it.
       The stacked total equals the "Fixes by release" chart above. Shipped
       releases only; out-of-band and partial post-GA releases excluded.
+    formats: { fix_cnt: integer, cve_pct: percent_whole }
     source: warehouse
     sql: |
       WITH per_release AS (
@@ -97,6 +106,7 @@ queries:
 
   fix_cve_pct:
     notes: The per-release CVE share (CVE-bearing fixes / total documented fixes), one row per release for the dual-axis line.
+    formats: { cve_pct: percent_whole }
     source: warehouse
     sql: |
       SELECT
@@ -115,6 +125,7 @@ queries:
       vs the rest, long-form for the stacked bar, with hardening_pct riding on
       both rows for the support strip. Same total as the "Fixes by release"
       chart. Shipped releases only; out-of-band and partial post-GA excluded.
+    formats: { fix_cnt: integer, hardening_pct: percent_whole }
     source: warehouse
     sql: |
       WITH per_release AS (
@@ -146,6 +157,7 @@ queries:
 
   fix_hardening_pct:
     notes: The per-release security-hardening share (hardening fixes / total documented fixes), one row per release for the dual-axis line.
+    formats: { hardening_pct: percent_whole }
     source: warehouse
     sql: |
       SELECT
@@ -168,6 +180,7 @@ queries:
       the commits behind each bar and the share of them the notes documented.
       security_fix_cnt (the CVE-bearing subset of fix_cnt, all origins) totals
       per release into the Security support strip below the axis.
+    formats: { security_fix_cnt: integer, fix_cnt: integer, committed_fix_cnt: integer, rate: percent_whole }
     source: warehouse
     sql: |
       SELECT
@@ -198,6 +211,7 @@ queries:
       Roughly twice the documented chart above: the notes fold several commits
       into one item and document only 40-60% of subjects. release_seq is the
       chart's sort key (the x-axis order).
+    formats: { fix_commits: integer, so_far: integer, documented_fix_cnt: integer, rate: percent_whole }
     source: warehouse
     sql: |
       SELECT
@@ -294,15 +308,13 @@ charts:
     # are titled, and the support strip prints the exact values
     warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]
     # dual axis: the stacked bar (counts) on the left, a line for the CVE share
-    # on its own right axis. A layered chart doesn't take part in the board's
-    # category_colors, so the two bar series are colored with an inline palette
-    # (blue = no CVE bulk, category[4] maroon = with CVE, the board's security hue).
+    # on its own right axis.
     layers:
       - type: line
         query: fix_cve_pct
         y: cve_pct
         label: "CVE share"
-        axis_y: { position: right, title: "CVE share", labels: { format: "0%" } }
+        axis_y: { position: right, title: "CVE share", labels: { format: percent_whole } }
         style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
     # support strip (top to bottom): total fixes, fixes without a CVE, fixes
     # with one (per series), and the CVE share. The first authored entry sits at
@@ -314,9 +326,6 @@ charts:
       - { per_series: fix_cnt }
       - { aggregate: max, source: cve_pct, format: percent_whole, label: "CVE %" }
     style:
-      color:
-        categorical:
-          palette: ["category[1]", "category[4]"]
       support_table: { position: bottom, font: { size: 8 } }
 
   fix_hardening_split:
@@ -332,23 +341,18 @@ charts:
     warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]
     # mirror of the CVE chart above, counting is_security_hardening instead of
     # CVEs: stacked bar (counts) on the left, hardening-share line on the right.
-    # Layered charts opt out of board category_colors, so the two series are
-    # coloured inline (blue = the non-hardening bulk, category[4] maroon = hardening).
     layers:
       - type: line
         query: fix_hardening_pct
         y: hardening_pct
         label: "hardening share"
-        axis_y: { position: right, title: "hardening share", labels: { format: ".0%" } }
+        axis_y: { position: right, title: "hardening share", labels: { format: percent_whole } }
         style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
     support_table:
       - { aggregate: sum, source: fix_cnt, format: integer, label: "Total" }
       - { per_series: fix_cnt }
       - { aggregate: max, source: hardening_pct, format: percent, label: "Hardening %" }
     style:
-      color:
-        categorical:
-          palette: ["category[1]", "category[4]"]
       support_table: { position: bottom, font: { size: 8 } }
 
   fix_origin_counts:

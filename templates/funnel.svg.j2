@@ -1,0 +1,67 @@
+{#---
+description: >
+  Funnel of ordered stages, one row per stage in query order. Each bar is
+  centered and sized by its count; the right-hand column prints the count and
+  the stage's share of the first stage, and the band between two bars prints
+  the share of the stage above that reached this one.
+channels:
+  x:
+    description: Stage name.
+  y:
+    description: Count that reached the stage.
+options:
+  share:
+    type: column
+    description: The stage's fraction of the first stage (0-1).
+  step_share:
+    type: column
+    description: The stage's fraction of the stage above it (0-1; ignored on the first row).
+  share_label:
+    type: string
+    default: "of first stage"
+  step_label:
+    type: string
+    default: "of the stage above"
+  value_format:
+    type: string
+    default: ",.0f"
+  share_format:
+    type: string
+    default: ".0%"
+---#}
+{% if not rows %}{{ raise_error("A funnel needs at least one stage.") }}{% endif %}
+{% set o = options %}
+{% set size = style.font.size %}
+{% set small = style.charts.axis.labels.font.size %}
+{% set fill = style.charts.color.categorical.single_series_palette[0] %}
+{% set gap = 12 %}
+{# the stage names on the left and the count + share column on the right are
+   measured, so the bars get every pixel the text does not need #}
+{% set ns = namespace(left=0, right=0, peak=0) %}
+{% for r in rows %}
+  {% set ns.left = [ns.left, text_width(r[channels.x], size)] | max %}
+  {% set ns.right = [ns.right, gap + text_width(r[channels.y] | format(o.value_format), size, 600) + text_width((r[o.share] | format(o.share_format)) ~ " " ~ o.share_label, size)] | max %}
+  {% set ns.peak = [ns.peak, r[channels.y] | float] | max %}
+{% endfor %}
+{% set plot_x = ns.left + gap %}
+{% set plot_w = width - plot_x - ns.right - 2 * gap %}
+{% set cx = plot_x + plot_w / 2 %}
+{% set band = height / (rows | length) %}
+{% set bar_h = band * 0.6 %}
+<g font-family="{{ style.font.family }}" font-size="{{ size }}">
+{% for r in rows %}
+  {% set w = [plot_w * (r[channels.y] | float) / ns.peak, 1] | max %}
+  {% set y = loop.index0 * band + (band - bar_h) / 2 %}
+  {% set mid = y + bar_h / 2 %}
+  {% if not loop.first %}
+    {% set prev = rows[loop.index0 - 1] %}
+    {% set pw = [plot_w * (prev[channels.y] | float) / ns.peak, 1] | max %}
+    {% set top = y - band + bar_h %}
+    <path d="M{{ (cx - pw / 2) | round(1) }},{{ top | round(1) }}H{{ (cx + pw / 2) | round(1) }}L{{ (cx + w / 2) | round(1) }},{{ y | round(1) }}H{{ (cx - w / 2) | round(1) }}Z" fill="{{ fill }}" fill-opacity="0.15"/>
+    <text x="{{ cx | round(1) }}" y="{{ ((top + y) / 2) | round(1) }}" dy="0.35em" text-anchor="middle" fill="{{ style.muted }}" font-size="{{ small }}">{{ r[o.step_share] | format(o.share_format) }} {{ o.step_label }}</text>
+  {% endif %}
+  <rect x="{{ (cx - w / 2) | round(1) }}" y="{{ y | round(1) }}" width="{{ w | round(1) }}" height="{{ bar_h | round(1) }}" rx="2" fill="{{ fill }}"><title>{{ r[channels.x] }}: {{ r[channels.y] | format(o.value_format) }} ({{ r[o.share] | format(o.share_format) }} {{ o.share_label }})</title></rect>
+  <text x="{{ ns.left }}" y="{{ mid | round(1) }}" dy="0.35em" text-anchor="end" fill="{{ style.font.color }}">{{ r[channels.x] }}</text>
+  <text x="{{ (width - ns.right) | round(1) }}" y="{{ mid | round(1) }}" dy="0.35em" fill="{{ style.font.color }}"><tspan font-weight="600">{{ r[channels.y] | format(o.value_format) }}</tspan><tspan dx="{{ gap }}" fill="{{ style.muted }}">{{ r[o.share] | format(o.share_format) }} {{ o.share_label }}</tspan></text>
+{% endfor %}
+</g>

@@ -30,9 +30,10 @@ style:
     bar: { orientation: vertical, stack: zero }
     # the fix taxonomy has 13 categories (seeds/content_categories) and the
     # categorical palette 10 swatches, so the palette is extended with three
-    # derived variants of hues that sit far from their neighbours, and each
+    # derived variants of hues that sit far from their neighbours (dct warns
+    # when a chart has more series than the palette has swatches), and each
     # category is pinned to its own swatch so it keeps its color on every chart
-    # of the board (category_colors refuses more values than the palette holds)
+    # of the board, layered ones included
     color:
       categorical:
         palette: ["category[1]", "category[2]", "category[3]", "category[4]", "category[5]", "category[6]", "category[7]", "category[8]", "category[9]", "category[10]", "category[3].light", "category[4].light", "category[5].deep"]
@@ -133,8 +134,8 @@ queries:
   size_latency_trend:
     notes: >
       Power-law (log-log OLS) trend of report-to-fix days on fix size, as a
-      fitted curve over the churn range. The fit is essentially flat
-      (R^2 ~ 0.007): size explains almost none of the latency. days = churn+1
+      fitted curve over the churn range. The fit is essentially flat: size
+      explains almost none of the latency (its R² is size_latency_fit). days + 1
       shifts avoid log(0).
     source: warehouse
     sql: |
@@ -162,6 +163,18 @@ queries:
       FROM pts
       CROSS JOIN fit
       ORDER BY 1
+
+  size_latency_fit:
+    notes: >
+      The R² of size_latency_trend's power-law fit (the same log-log points),
+      printed in the scatter's subtitle.
+    source: warehouse
+    sql: |
+      SELECT REGR_R2(LOG10(days_to_fix_min + 1), LOG10(churn_sum)) AS r2
+      FROM {{ ref('fct_fixes') }}
+      WHERE days_to_fix_min IS NOT null
+        AND days_to_fix_min >= 0
+        AND churn_sum IS NOT null
 
   latency_by_size:
     notes: >
@@ -199,10 +212,10 @@ charts:
     type: kpi
     query: headline
     value: cve_fix_cnt
-    label: "Fixes carrying a CVE (with CVSS severity)"
+    label: "CVE-bearing fixes (with CVSS severity)"
     support:
       value: cve_latency_cnt
-      label: "of them with a public bug report (rest embargoed)"
+      label: "with a public bug report (rest embargoed)"
 
   kpi_churn:
     type: kpi
@@ -217,7 +230,7 @@ charts:
     type: kpi
     query: headline
     value: latency_cnt
-    label: "Fixes with a linked report to fix latency"
+    label: "Fixes with a linked report-to-fix latency"
 
   severity_distribution:
     type: bar
@@ -253,20 +266,15 @@ charts:
     subtitle: >
       Each bug-linked fix: line churn (x, log) vs report-to-fix days (y, symlog
       so same-day fixes still show). The power-law fit is nearly flat — size
-      explains ~0.7% of the variance (R² = 0.007), so bigger changes don't take
-      longer to land.
+      explains {{ queries.size_latency_fit.one.r2 | format('.1%') }} of the
+      variance (R² = {{ queries.size_latency_fit.one.r2 | format('.3f') }}), so
+      bigger changes don't take longer to land.
     x: churn_sum
     y: days_to_fix_min
     y_label: "days, report → commit"
     color: category
     height: 440
     style:
-      # a chart with layers: ignores the board's category_colors pins and colors
-      # its series in alphabetical order (dbt-charts #57), so list the pinned
-      # swatches alphabetically -- keep this palette in step with the pins
-      color:
-        categorical:
-          palette: ["category[4].light", "category[10]", "category[9]", "category[6]", "category[8]", "category[2]", "category[3].light", "category[3]", "category[7]", "category[4]", "category[1]", "category[5]", "category[5].deep"]
       # Both quantities are heavily right-skewed; log x + symlog y spread the
       # cluster into a readable cloud. symlog (not log) keeps the 44 same-day
       # (0-day) fixes, which a log scale would drop.
@@ -279,7 +287,7 @@ charts:
         query: size_latency_trend
         x: churn_sum
         y: days_trend
-        label: "power-law fit (R² = 0.007)"
+        label: "power-law fit"
         style: { marks: { line: { stroke: { color: "#8a8a8a", dasharray: "6 5", width: 1.5 } } } }
 
   latency_by_size:

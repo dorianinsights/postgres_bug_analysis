@@ -197,14 +197,21 @@ A version bump re-infers all ~32k texts (~17 h), so batch these into one:
   model was inconsistent).
 Until then the review seed (`ai_involvement_reviews`) carries the corrections.
 
-## Keep the hyphen in the "fix-linked" series labels (`field_labels:`)
+## Support strips whose cells run together (WARN-SUPPORT-TABLE-CELL-OVERFLOW)
 
-The three multi-measure list-traffic charts (`email_list_analysis`
-`monthly_traffic` and `recent_weekly_traffic`, and the article's copy of
-`monthly_traffic`) plot `y: [all, fix-linked]` with `color: list_name`. dct
-reads an unlabeled column name as a slug, so the series show as
-"pgsql-hackers - fix linked" while every title and subtitle says
-"fix-linked" (dbt-charts #69, closed as intended). The fix is
-`field_labels: { fix-linked: fix-linked }` on each of the three charts, but
-`field_labels:` is only on dbt-charts `main` (unreleased); 0.9.1 rejects it
-with `ERR-EXTRA-FIELD`. Add it on the first release that ships it.
+Five per-release / per-quarter support strips print cells wider than their
+category band, so neighbouring values touch (e.g. `fix_hardening_split`'s
+"Hardening %" row reads "5.012.210.4"): `1_fix_analysis` `fix_cve_split`,
+`fix_hardening_split` and `fix_origin_counts`, and `churn_by_quarter` on
+`git_activity` and the article. Options per chart: a whole-percent or compact
+format, a smaller strip font, fewer categories, or a wider card.
+
+## Drop the remaining slot formats once dct reads query `formats:` everywhere
+
+dct 0.10.0 applies a query's `formats:` to primary axes, hovers, tables and
+KPI values, but not to `support_table` rows, a layer's own y axis (which
+takes the BASE query's format instead), or a KPI `support:` line. Those slots
+keep their own `format:` (the support strips on `1_fix_analysis`,
+`bug_reports`, `git_activity` and the article; the dual-axis share layers;
+`changelog`'s `percent_delta` KPI lines). Reported as dbt-charts #74; once a
+release fixes it, delete those slot formats and let the queries carry them.

@@ -49,6 +49,7 @@ queries:
       their threads haven't been cited YET. A non-additive ratio, so it is
       computed from the atomic message grain at the month, never re-aggregated
       from a stored per-period value. Complete months only.
+    formats: { fix_linked_share: percent }
     source: warehouse
     sql: |
       SELECT
@@ -98,6 +99,7 @@ queries:
       Of the new pgsql-hackers threads started in the last complete calendar
       year (old enough to be settled), the share cited by any commit, and by a
       backpatched fix.
+    formats: { cited_share: percent_whole, fix_share: percent_whole, threads: integer }
     source: warehouse
     sql: |
       SELECT
@@ -132,6 +134,7 @@ queries:
       Heavily right-censored -- these threads have had little time to be
       cited by commits. Computed from the atomic message grain at the week,
       like monthly_linked_share. Complete weeks only.
+    formats: { fix_linked_share: percent }
     source: warehouse
     sql: |
       SELECT
@@ -187,6 +190,7 @@ queries:
 
   ai_threads_by_list:
     notes: AI-involved threads per month by list, with the share of all new threads that month.
+    formats: { ai_share: percent }
     source: warehouse
     sql: |
       SELECT
@@ -251,6 +255,8 @@ charts:
     x: month_dt
     y: [all, fix-linked]
     color: list_name
+    # an unlabeled column name reads as a slug ("fix linked")
+    field_labels: { fix-linked: fix-linked }
     height: 380
   monthly_linked_share:
     type: line
@@ -260,10 +266,6 @@ charts:
     x: month_dt
     y: fix_linked_share
     color: list_name
-    style:
-      axis_y:
-        labels:
-          format: ".1%"
 
   hackers_threads:
     type: area
@@ -286,14 +288,12 @@ charts:
     query: hackers_cited_share
     label: "Last year's new threads cited by a commit"
     value: cited_share
-    style: { value: { format: ".0%" } }
 
   hackers_fix_share:
     type: kpi
     query: hackers_cited_share
     label: "Last year's new threads cited by a backpatched fix"
     value: fix_share
-    style: { value: { format: ".0%" } }
 
   recent_weekly_traffic:
     type: line
@@ -303,6 +303,8 @@ charts:
     x: week_dt
     y: [all, fix-linked]
     color: list_name
+    # an unlabeled column name reads as a slug ("fix linked")
+    field_labels: { fix-linked: fix-linked }
   recent_weekly_share:
     type: line
     query: recent_weekly_share
@@ -311,10 +313,6 @@ charts:
     x: week_dt
     y: fix_linked_share
     color: list_name
-    style:
-      axis_y:
-        labels:
-          format: ".1%"
 
   cited_threads:
     type: area

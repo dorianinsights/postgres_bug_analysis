@@ -9,7 +9,7 @@ description = "PostgreSQL patch analysis: fetchers, corpus definition, and dbt b
 authors = [{ name = "Dorian Insights, L.L.C." }]
 license = "MIT"
 license-files = ["LICENSE"]
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.11,<3.14"
 dependencies = []  # pinned in requirements.txt; install that, not this, for a working env
 
 [project.scripts]

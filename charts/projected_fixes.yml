@@ -23,6 +23,10 @@ notes: >
   done at this point in the cycle", not as a fixed ranking.
 
 style:
+  # a query's formats: takes names only, so the scorecard's one-decimal errors
+  # (the query rounds them to one place) get a name here
+  formats:
+    one_decimal: ".1f"
   charts:
     min_height: 340
     max_height: 340
@@ -116,6 +120,7 @@ queries:
       for: mean error (bias, negative = under-called) and mean absolute error.
       The signal methods are replayed at today's cycle age, so their rows
       re-rank as the cycle ages; the series and seasonal rows are stable.
+    formats: { releases: integer, bias: one_decimal, mean_abs_error: one_decimal }
     source: warehouse
     sql: |
       SELECT
@@ -196,7 +201,7 @@ charts:
     label: "List messages accrued toward the next minor"
     support:
       value: fix_linked_cnt
-      label: "in threads tied to a fix so far"
+      label: "in fix-bound threads so far"
 
   kpi_fixes:
     type: kpi
@@ -254,12 +259,9 @@ charts:
     type: table
     query: method_scorecard
     title: "Method scorecard over the shipped releases"
-    # bias can be a fraction (0.7): the default compact format renders it "700m"
     style:
       columns:
-        releases: { format: integer }
-        bias: { format: number_full }
-        mean_abs_error: { label: "mean abs error", format: number_full }
+        mean_abs_error: { label: "mean abs error" }
 
 rows:
   - cols: [kpi_wrap, kpi_reports, kpi_messages, kpi_fixes]

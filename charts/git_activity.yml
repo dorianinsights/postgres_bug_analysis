@@ -184,6 +184,62 @@ queries:
       GROUP BY dm.major_label, bsz.subsystem
       ORDER BY dm.major_label, bsz.subsystem
 
+  ppport_refresh:
+    notes: >
+      The one-time PL/Perl ppport.h refresh behind the churn spike
+      (commit 2d44912c, "plperl: update ppport.h to Perl 5.34.0."): its quarter
+      and its churn in the file classes the stable-churn dropdown selects, for the churn chart's subtitle.
+    source: warehouse
+    sql: |
+      SELECT
+        'Q' || QUARTER(dc.commit_dt) || ' ' || YEAR(dc.commit_dt) AS quarter_label,
+        SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS lines
+      FROM {{ ref('fct_commit_files') }} AS cf
+      INNER JOIN {{ ref('dim_commit') }} AS dc ON cf.dim_commit_key = dc.dim_commit_key
+      WHERE dc.commit_hash = '2d44912cf79f1f174a83f587e1c4328315b8a0fa'
+        AND {{ filter('cf.file_class', stable_churn_classes) }}
+      GROUP BY 1
+
+  composition_shift:
+    notes: >
+      Three subsystems' shares of the oldest and the newest major's latest tree
+      (the same snapshot and file-class dropdown as codebase_composition), for
+      the share chart's subtitle.
+    source: warehouse
+    sql: |
+      WITH latest AS (
+        SELECT
+          dim_major_key,
+          MAX(week_start) AS week_start
+        FROM {{ ref('fct_branch_size_weekly') }}
+        GROUP BY dim_major_key
+      ),
+
+      shares AS (
+        SELECT
+          dm.major,
+          dm.major_label,
+          bsz.subsystem,
+          SUM(bsz.code_lines) / SUM(SUM(bsz.code_lines)) OVER (PARTITION BY dm.major) AS line_share
+        FROM {{ ref('fct_branch_size_weekly') }} AS bsz
+        INNER JOIN latest AS lst
+          ON bsz.dim_major_key = lst.dim_major_key AND bsz.week_start = lst.week_start
+        INNER JOIN {{ ref('dim_major') }} AS dm ON bsz.dim_major_key = dm.dim_major_key
+        WHERE {{ filter('bsz.file_class', composition_classes) }}
+        GROUP BY dm.major, dm.major_label, bsz.subsystem
+      )
+
+      SELECT
+        ARG_MIN(major_label, major) AS first_major,
+        ARG_MAX(major_label, major) AS last_major,
+        ARG_MIN(line_share, major) FILTER (WHERE subsystem = 'core_server') AS core_first,
+        ARG_MAX(line_share, major) FILTER (WHERE subsystem = 'core_server') AS core_last,
+        ARG_MIN(line_share, major) FILTER (WHERE subsystem = 'tests') AS tests_first,
+        ARG_MAX(line_share, major) FILTER (WHERE subsystem = 'tests') AS tests_last,
+        ARG_MIN(line_share, major) FILTER (WHERE subsystem = 'docs') AS docs_first,
+        ARG_MAX(line_share, major) FILTER (WHERE subsystem = 'docs') AS docs_last
+      FROM shares
+
   churn_by_quarter:
     notes: >
       Lines of code churned per calendar quarter by backpatched fixes, as four
@@ -249,6 +305,7 @@ queries:
       average; the chart prints it as a percent), one row per quarter for its
       own chart below it. The mean includes
       the Q1 2022 ppport.h spike and the partial current quarter as they are.
+    formats: { churn_ratio: percent_whole }
     source: warehouse
     sql: |
       WITH q AS (
@@ -509,7 +566,12 @@ charts:
     # is the core server" beside the bars that show how big PG19 is
     query: codebase_composition
     title: "Codebase composition by subsystem, as shares"
-    subtitle: "The same snapshot as shares of each major's tree; the core server holds at about half while tests grow from under 6% to nearly 9% and docs slip from 16% to 14%"
+    subtitle: >
+      The same snapshot as shares of each major's tree; from {{ queries.composition_shift.one.first_major }}
+      to {{ queries.composition_shift.one.last_major }} the core server goes
+      {{ queries.composition_shift.one.core_first | format('.0%') }} → {{ queries.composition_shift.one.core_last | format('.0%') }},
+      tests {{ queries.composition_shift.one.tests_first | format('.0%') }} → {{ queries.composition_shift.one.tests_last | format('.0%') }}
+      and docs {{ queries.composition_shift.one.docs_first | format('.0%') }} → {{ queries.composition_shift.one.docs_last | format('.0%') }}
     x: major
     y: code_lines
     y_label: "share of source lines"
@@ -522,7 +584,7 @@ charts:
     type: line
     query: churn_by_quarter
     title: "Lines of code churned per quarter"
-    subtitle: "One backpatch per fix, its largest (housekeeping excluded); total churn with its 12-month average, additions, and deletions -- work per fix, not per branch; current quarter partial. Q1 2022's spike is one commit, a one-time refresh of PL/Perl's vendored ppport.h header for Perl 5.34 (~18.6k lines), not fix work"
+    subtitle: "One backpatch per fix, its largest (housekeeping excluded); total churn with its 12-month average, additions, and deletions -- work per fix, not per branch; current quarter partial. {{ queries.ppport_refresh.one.quarter_label }}'s spike is one commit, a one-time refresh of PL/Perl's vendored ppport.h header for Perl 5.34 (~{{ queries.ppport_refresh.one.lines | format('.3~s') }} lines), not fix work"
     x: quarter
     y: lines
     y_label: "lines changed"
@@ -543,10 +605,6 @@ charts:
     x: quarter
     y: churn_ratio
     y_label: "% of chart average"
-    # churn_ratio is a fraction (0.6, 2.1); the percent format multiplies by
-    # 100 on the axis and in the hover
-    style:
-      axis_y: { labels: { format: ".0%" } }
     height: 300
 
   backpatch_breadth:

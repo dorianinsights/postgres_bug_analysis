@@ -1,4 +1,4 @@
-_schema_version: "0.6.0"  # written automatically by dct migrate
+_schema_version: "0.10.0"  # written automatically by dct migrate
 # pgsql-bugs report volume and outcomes.
 #
 # The monthly volume chart is an area, not a bar: bars on a temporal axis
@@ -39,6 +39,14 @@ queries:
       WHERE list_name = 'pgsql-bugs' AND is_new_thread
       GROUP BY 1, 2
       ORDER BY 1, 2
+
+  report_mix:
+    notes: The free-form emails' share of all bug reports, for the monthly chart's subtitle.
+    source: warehouse
+    sql: |
+      SELECT COUNT(*) FILTER (WHERE NOT is_form_report) / COUNT(*) AS free_form_share
+      FROM {{ ref('fct_threads') }}
+      WHERE list_name = 'pgsql-bugs' AND is_new_thread
 
   monthly_trend:
     notes: Six-month centered moving average of ALL reports (form + free-form).
@@ -120,18 +128,18 @@ queries:
       ORDER BY 1
 
   report_funnel:
-    # single-series horizontal bar: dct's value-descending default already puts
-    # the widest stage on top, so this needs no sort: -- the counts descend by
-    # construction (each stage is a subset of the one above, bar the ~20
-    # acted-upon reports that never drew a reply). filed_share is each stage's
-    # fraction of the reports-filed total, printed by the chart's support strip.
+    # one row per stage in funnel order (stage_seq; templates/funnel draws the
+    # rows as they come). Each stage is a subset of the one above, bar the ~20
+    # acted-upon reports that never drew a reply. filed_share is each stage's
+    # fraction of the reports-filed total, step_share its fraction of the stage
+    # above (NULL on the first)
     notes: >
       The report-to-fix pipeline as a funnel, corpus-wide: every new pgsql-bugs
       thread (form + free-form, fct_threads), then those that drew at least one
       reply (message_cnt > 1), then those linked to a fix commit (is_acted_upon
       -- the thread cited by a Discussion: trailer or a form report named by a
-      Bug: # trailer). The support strip shows each stage's share of the
-      reports-filed total. A LOWER BOUND on the linked stage (exact links
+      Bug: # trailer). Each stage carries its share of the reports-filed total
+      and of the stage before it. A LOWER BOUND on the linked stage (exact links
       only), and fresh reports are right-censored -- their fixes haven't landed yet. Deliberately
       stops at the fix commit: a further "shipped in a release" stage would
       miscount fixes already committed to an unreleased upcoming version as not
@@ -147,16 +155,19 @@ queries:
         WHERE list_name = 'pgsql-bugs' AND is_new_thread
       ),
       stages AS (
-        SELECT 'Reports filed' AS stage, filed AS report_cnt FROM stage_counts
+        SELECT 1 AS stage_seq, 'Reports filed' AS stage, filed AS report_cnt FROM stage_counts
         UNION ALL
-        SELECT 'Drew discussion', discussed FROM stage_counts
+        SELECT 2, 'Drew discussion', discussed FROM stage_counts
         UNION ALL
-        SELECT 'Linked to a fix commit', linked FROM stage_counts
+        SELECT 3, 'Linked to a fix commit', linked FROM stage_counts
       )
-      -- the reports-filed stage is the largest by construction
-      SELECT stage, report_cnt, report_cnt / MAX(report_cnt) OVER () AS filed_share
+      SELECT
+        stage,
+        report_cnt,
+        report_cnt / FIRST(report_cnt) OVER (ORDER BY stage_seq) AS filed_share,
+        report_cnt / LAG(report_cnt) OVER (ORDER BY stage_seq) AS step_share
       FROM stages
-      ORDER BY report_cnt DESC
+      ORDER BY stage_seq
 
   monthly_acted_data:
     # AVG over the monthly share is exactly what a rolling average is
@@ -220,6 +231,7 @@ queries:
     notes: >
       Front-loading by release quarter: the share of a cycle's backpatched fixes
       that land in the first N days after the wrap.
+    formats: { early_share: percent }
     source: warehouse
     sql: |
       SELECT STRFTIME(release_dt, '%b') AS release_month, QUARTER(release_dt) AS release_quarter,
@@ -311,7 +323,7 @@ charts:
     type: bar
     query: monthly_reports
     title: "Bug reports per month"
-    subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails (about a third of reports); line = 6-month average of both"
+    subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails ({{ queries.report_mix.one.free_form_share | format('.0%') }} of reports); line = 6-month average of both"
     # ~75 months on a temporal x: dct labels it by year, so the "too many x
     # categories" warning (temporal wording since dct 0.7.0) is a false positive
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
@@ -346,21 +358,20 @@ charts:
         color: series
 
   report_funnel:
-    type: bar
+    type: custom
+    template: funnel
     query: report_funnel
     title: "From bug report to fix commit"
-    subtitle: "Corpus-wide; each stage shows its share of all reports filed. Lower bound (exact links only); recent reports right-censored"
+    subtitle: "Corpus-wide; each stage shows its share of all reports filed, and each band the share of the stage above. Lower bound (exact links only); recent reports right-censored"
     x: stage
     y: report_cnt
-    # single-series horizontal bar -> value-descending by default, so the widest
-    # stage sits on top and the funnel narrows downward with no sort: (the
-    # support strip keeps that order)
-    support_table:
-      - { source: filed_share, format: percent_whole, label: "of filed" }
+    options:
+      share: filed_share
+      step_share: step_share
+      share_label: "of filed"
     style:
-      orientation: horizontal
-      number_format: integer
-    height: 300
+      min_height: 300
+      max_height: 300
 
   monthly_acted:
     type: bar
@@ -410,9 +421,7 @@ charts:
       - { source: reports, format: integer, label: "Reports" }
       - { source: acted_cnt, format: integer, label: "Acted upon" }
       - { source: acted_share, format: percent_whole, label: "Acted upon %" }
-      # no hyphen in the label: the tabular face dct sets strip labels in gives
-      # a hyphen a digit-wide advance, so "6-month" paints as "6- month"
-      - { source: acted_avg_6m, format: percent_whole, label: "6 month avg %" }
+      - { source: acted_avg_6m, format: percent_whole, label: "6-month avg %" }
     style:
       support_table: { position: bottom, font: { size: 8 } }
 
@@ -434,7 +443,7 @@ charts:
     subtitle: "Share of the cycle's fixes committed in the first 20 days — Feb/May front-load, Aug/Nov back-load"
     x: release_month
     y: early_share
-    style: { orientation: vertical, axis_y: { labels: { format: ".1%" } } }
+    style: { orientation: vertical }
     height: 320
 
   yearly_outcomes:
