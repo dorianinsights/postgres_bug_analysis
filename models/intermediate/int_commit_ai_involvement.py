@@ -20,7 +20,6 @@ import pyarrow as pa
 from pg_analysis.sources.ai_involvement import (
     LABEL_COLS,
     OUTPUT_COLS,
-    build_ai_schema,
     classify_ai_one,
     label_rows,
     roles_prompt,
@@ -38,8 +37,7 @@ def model(dbt: Any, session: Any) -> pa.Table:
     # dbt discovers refs by scanning THIS file: keep the ref literal here
     roles = dbt.ref("ai_involvement_roles").project("role_order, role, definition").fetchall()
     prompt_block = roles_prompt([(int(r[0]), str(r[1]), str(r[2])) for r in roles])
-    schema = build_ai_schema()
-    classify = resolve_classifier(lambda text: classify_ai_one(text, MODEL_TAG, prompt_block, schema))
+    classify = resolve_classifier(lambda text: classify_ai_one(text, MODEL_TAG, prompt_block))
 
     texts = dbt.ref("int_commit_ai_texts").project("fix_key, ai_text").fetchall()
     cache: dict[str, tuple[Any, ...]] = {}

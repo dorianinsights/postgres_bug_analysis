@@ -9,6 +9,9 @@ dbt-duckdb==1.11.0
 # The engine itself: dbt-duckdb and dbt-charts only floor it (>=1.0.0), and the
 # backfills import it directly, so pin it like any direct dependency.
 duckdb==1.5.6
+# The AI-involvement classifier's answer model (sources.ai_involvement.AiAnswer);
+# dbt-core and dbt-charts already require it, so the pin only makes it direct.
+pydantic==2.13.5
 # The raw_git dbt Python models return pyarrow tables, and nothing else in the
 # tree requires pyarrow, so pin it directly; the stubs keep pyright strict happy.
 pyarrow==25.0.1

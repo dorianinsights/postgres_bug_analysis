@@ -184,19 +184,6 @@ Plan (additive):
 - Boards: a commitfest page (throughput per CF, queue age, reviewer load) and
   an AI-vs-rest patch-outcome chart on `email_list_analysis`.
 
-## Next AI-involvement prompt bump (`AI_PROMPT_VERSION`)
-A version bump re-infers all ~32k texts (~17 h), so batch these into one:
-- Add `clang-tidy` (and linters generally) to the prompt's list of non-AI tools --
-  the Sept 2026 scan flagged four "harmonize parameter names" commits as
-  AI-authored because "written with help from clang-tidy".
-- Drop `machine learning` from `HINT_NET` -- it only pulled in pre-LLM ML
-  mentions (a 2020 planner-forecasting thread). Anything before late 2022 cannot
-  be an LLM disclosure.
-- Teach it that a vendor's AI security platform credited in Reported-by
-  ("Xint Code") is AI-found with vendor `other` (the review ruled this; the
-  model was inconsistent).
-Until then the review seed (`ai_involvement_reviews`) carries the corrections.
-
 ## Support strips whose cells run together (WARN-SUPPORT-TABLE-CELL-OVERFLOW)
 
 Five per-release / per-quarter support strips print cells wider than their

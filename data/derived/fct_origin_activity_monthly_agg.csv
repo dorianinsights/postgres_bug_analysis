@@ -296,7 +296,7 @@ month_dt,origin,commit_cnt,ai_commit_cnt,cited_thread_cnt
 2026-02-01,pgsql-bugs,9,0,9
 2026-02-01,pgsql-hackers,162,0,129
 2026-02-01,unknown_or_internal_not_security,14,0,4
-2026-02-01,unknown_or_internal_security,12,0,0
+2026-02-01,unknown_or_internal_security,12,1,0
 2026-03-01,pgsql-bugs,15,0,14
 2026-03-01,pgsql-hackers,349,0,257
 2026-03-01,unknown_or_internal_not_security,52,0,19
@@ -306,7 +306,7 @@ month_dt,origin,commit_cnt,ai_commit_cnt,cited_thread_cnt
 2026-05-01,pgsql-bugs,8,0,8
 2026-05-01,pgsql-hackers,148,0,127
 2026-05-01,unknown_or_internal_not_security,23,0,2
-2026-05-01,unknown_or_internal_security,23,9,0
+2026-05-01,unknown_or_internal_security,23,12,0
 2026-06-01,pgsql-bugs,24,0,23
 2026-06-01,pgsql-hackers,148,1,133
 2026-06-01,unknown_or_internal_not_security,36,0,5
@@ -315,11 +315,11 @@ month_dt,origin,commit_cnt,ai_commit_cnt,cited_thread_cnt
 2026-07-01,unknown_or_internal_not_security,28,0,18
 2026-08-01,pgsql-bugs,31,2,28
 2026-08-01,pgsql-hackers,220,6,167
-2026-08-01,unknown_or_internal_not_security,32,0,4
+2026-08-01,unknown_or_internal_not_security,32,1,4
 2026-08-01,unknown_or_internal_security,33,7,0
 2026-09-01,pgsql-bugs,20,0,20
 2026-09-01,pgsql-hackers,236,6,193
 2026-09-01,unknown_or_internal_not_security,28,0,7
-2026-10-01,pgsql-bugs,18,0,19
-2026-10-01,pgsql-hackers,112,2,92
-2026-10-01,unknown_or_internal_not_security,7,0,3
+2026-10-01,pgsql-bugs,21,0,22
+2026-10-01,pgsql-hackers,154,3,133
+2026-10-01,unknown_or_internal_not_security,11,0,3

@@ -123,7 +123,7 @@ thread,,pgsql-hackers,CAGJgb9vmBZRWi-8+=62U-BoPvGrUS4uMk=gjGbAfp3Rro2CAJg@mail.g
 thread,,pgsql-hackers,CAGjGUAK4Xn_owW1dECxVPmCkTykYPfjabG1KmUnDLyWX5rY2Ng@mail.gmail.com,false,false,true,false,false,unspecified,prose,ok,
 thread,,pgsql-hackers,CAH2-Wz=4CJK9ysZzbzxBGGTkgAg9ib8cJyCx=9q_d1r8tf0ang@mail.gmail.com,true,true,true,false,false,anthropic,prose,wrong roles,
 thread,,pgsql-hackers,CAH2-Wz=RBpJTQgvOxr6C=J04dExmFSt1E3F-r+cRTQ56hEotkg@mail.gmail.com,true,false,true,false,false,anthropic,prose,ok,
-thread,,pgsql-hackers,CAH2-Wz=sKJcn+OtfVN9rdg+Ps9e4cuQWNP-9t12UE2d8nEG90Q@mail.gmail.com,true,false,false,false,false,other,prose,ok,
+thread,,pgsql-hackers,CAH2-Wz=sKJcn+OtfVN9rdg+Ps9e4cuQWNP-9t12UE2d8nEG90Q@mail.gmail.com,true,false,false,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,CAH2-Wzkro678xEDOrsxrq-YDVP4w7nXybhVJV2MxrzTj-5OU4w@mail.gmail.com,false,false,true,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,CAH2-Wzm1GpQ9qixP=Xs2TYdfnLM88OZ=yUFHNuajS_W7U90-tQ@mail.gmail.com,false,false,true,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,CAH2-WzmHVeYY=pjz9x8DhhxVjXHX0pvoQ-MdiB1Tt6=o2GTiKg@mail.gmail.com,false,true,true,false,false,anthropic,prose,wrong roles,
@@ -170,7 +170,7 @@ thread,,pgsql-hackers,CO1PR11MB506011C3052AE779750D9789EDA02@CO1PR11MB5060.nampr
 thread,,pgsql-hackers,CO6PR11MB5620E3878444C023A7C8CA9C95222@CO6PR11MB5620.namprd11.prod.outlook.com,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,DJ3ZPD8STUW0.2IOZ8UCAOGQ8B@gmail.com,false,false,false,true,false,anthropic,prose,ok,
 thread,,pgsql-hackers,DKSSP47Y857Z.1FUU91WMDZWPZ@jeltef.nl,false,false,true,false,false,unspecified,prose,wrong roles,"The issue mentions ""converting ~half of the Perl tests using an LLM"" which means an LLM rewrote the tests"
-thread,,pgsql-hackers,MRWPR09MB8357932120A9FE5B897AF23CCCA82@MRWPR09MB8357.eurprd09.prod.outlook.com,false,true,false,false,false,unspecified,prose,ok,
+thread,,pgsql-hackers,MRWPR09MB8357932120A9FE5B897AF23CCCA82@MRWPR09MB8357.eurprd09.prod.outlook.com,false,true,false,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,OSZPR01MB631087C65BA81E1FEE5A60D2FDF59@OSZPR01MB6310.jpnprd01.prod.outlook.com,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,TY4PR01MB177182F547A62FC2666EC04EC94B72@TY4PR01MB17718.jpnprd01.prod.outlook.com,true,true,false,false,false,anthropic,prose,wrong roles,
 thread,,pgsql-hackers,a40b19da-9a02-47b4-8afd-2bbbde8db1e8@dunslane.net,false,true,false,false,false,anthropic,prose,wrong roles,

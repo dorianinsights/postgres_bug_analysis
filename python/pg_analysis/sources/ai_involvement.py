@@ -18,13 +18,15 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from typing import Any, NamedTuple
+from typing import Any, Literal, NamedTuple
+
+from pydantic import BaseModel
 
 from pg_analysis.sources.classify import chat_json, clamp_confidence, content_hash, squash_whitespace
 
 # bump when the prompt/schema/roles change -> re-inferences all. Namespaced so
 # it can never collide with sources.classify.PROMPT_VERSION in the hash space.
-AI_PROMPT_VERSION = "ai-v4"
+AI_PROMPT_VERSION = "ai-v5"
 
 # the mention hint (see hint_lines): AI vendor/product names and the generic
 # terms, deliberately WITHOUT the noisy ordinary words (cursor, model, agent,
@@ -33,7 +35,7 @@ AI_PROMPT_VERSION = "ai-v4"
 HINT_NET = re.compile(
     r"\b(AI|LLMs?|GPT\S*|Chat-?GPT|Claude|Anthropic|OpenAI|Codex|Gemini|Copilot|Devin|Big Sleep|Opus|Sonnet|"
     r"Haiku|Fable|Mythos|Gemma|Llama|DeepSeek|Mistral|Grok|Aider|Windsurf|Cline|language models?|"
-    r"machine learning|agentic|vibe\S*|hallucinat\S*|artificial intelligence|AI-\w+)\b",
+    r"agentic|vibe\S*|hallucinat\S*|artificial intelligence|AI-\w+)\b",
     re.IGNORECASE,
 )
 HINT_MAX_LINES = 12
@@ -42,8 +44,8 @@ HINT_LINE_CHARS = 200
 # The categories of AI involvement the model can set, and the vendor/disclosure enums.
 WORK_ROLE_FLAGS = ("ai_found", "ai_analyzed", "ai_authored", "ai_tooling")
 ROLE_FLAGS = (*WORK_ROLE_FLAGS, "mentioned_only")
-VENDORS = ("anthropic", "openai", "google", "microsoft", "other", "unspecified", "none")
-DISCLOSURE_FORMS = ("trailer", "prose", "disclaimer", "none")
+Vendor = Literal["anthropic", "openai", "google", "microsoft", "other", "unspecified", "none"]
+DisclosureForm = Literal["trailer", "prose", "disclaimer", "none"]
 # label columns as they land in the cache CSV and the model output, after the
 # grain's key column(s)
 LABEL_COLS = (
@@ -68,8 +70,10 @@ SYSTEM_PROMPT = (
     "(-> google); Copilot (-> microsoft); any other named AI product (-> other); a bare 'AI', "
     "'LLM', 'my AI tool', 'AI harness', 'AI coding assistant' (-> unspecified). A vendor's AI "
     "security research team is an AI tool: 'OpenAI Codex Security', 'in collaboration with Claude "
-    "and Anthropic Research', 'Calif.io in collaboration with Claude'. A human hacking team or "
-    "contest ('Team X as part of zeroday.cloud'), a fuzzer, Coverity, a static analyzer, a bot "
+    "and Anthropic Research', 'Calif.io in collaboration with Claude'. So is a vendor's AI "
+    "vulnerability-analysis platform such as Xint Code (-> other); credited in Reported-by, it is "
+    "ai_found. A human hacking team or contest ('Team X as part of zeroday.cloud'), a fuzzer, "
+    "Coverity, clang-tidy or another linter, a static analyzer, a bot "
     "account, a database cursor, a planner or cost model, an authentication agent, or generated "
     "columns are NOT AI tools.\n"
     "\n"
@@ -114,6 +118,33 @@ SYSTEM_PROMPT = (
 )
 
 
+# The JSON object the model must answer with: classify_ai_one sends
+# AiAnswer.model_json_schema() to Ollama as the schema, and parse_ai_label
+# validates the reply against it. Besides the label fields, the model fills
+# free-text fields on the way: ai_mentions and each work role's evidence.
+# Field order is the chain of thought: the constrained decoder first lists
+# every AI mention (so a casual one deep in a long message is not skipped),
+# then for EACH work role quotes its evidence (or 'none') before setting the
+# flag -- roles are decided one at a time, so a multi-role text is not
+# collapsed to its most obvious role. Changing a field changes the schema:
+# bump AI_PROMPT_VERSION. (Comments, not a docstring: pydantic would send a
+# docstring to Ollama as the schema's description.)
+class AiAnswer(BaseModel):
+    ai_mentions: str
+    found_evidence: str
+    ai_found: bool
+    analyzed_evidence: str
+    ai_analyzed: bool
+    authored_evidence: str
+    ai_authored: bool
+    tooling_evidence: str
+    ai_tooling: bool
+    mentioned_only: bool
+    vendor: Vendor
+    disclosure_form: DisclosureForm
+    confidence: float
+
+
 class AiLabel(NamedTuple):
     ai_found: bool
     ai_analyzed: bool
@@ -138,55 +169,32 @@ def roles_prompt(rows: Iterable[tuple[int, str, str]]) -> str:
     return "\n".join(f"{order}. {role} — {definition}" for order, role, definition in ordered)
 
 
-def evidence_field(flag: str) -> str:
-    """The per-role evidence field name the model fills before each work-role flag."""
-    return flag.removeprefix("ai_") + "_evidence"
-
-
-def build_ai_schema() -> dict[str, Any]:
-    # Property order is the chain of thought: the constrained decoder first
-    # lists every AI mention (so a casual one deep in a long message is not
-    # skipped), then for EACH work role quotes its evidence (or 'none') before
-    # setting the flag -- roles are decided one at a time, so a multi-role text
-    # is not collapsed to its most obvious role.
-    properties: dict[str, Any] = {"ai_mentions": {"type": "string"}}
-    for flag in WORK_ROLE_FLAGS:
-        properties[evidence_field(flag)] = {"type": "string"}
-        properties[flag] = {"type": "boolean"}
-    properties["mentioned_only"] = {"type": "boolean"}
-    properties["vendor"] = {"type": "string", "enum": list(VENDORS)}
-    properties["disclosure_form"] = {"type": "string", "enum": list(DISCLOSURE_FORMS)}
-    properties["confidence"] = {"type": "number"}
-    return {"type": "object", "properties": properties, "required": list(properties)}
-
-
 def parse_ai_label(content: dict[str, Any]) -> AiLabel:
-    """A model answer -> AiLabel. Raises ValueError on an out-of-enum vendor or
-    disclosure form (so chat_json retries). A work role wins over mentioned_only:
-    the model sometimes sets both, and the roles carry the evidence. The
-    rationale is the mention list plus each set role's evidence."""
-    vendor = str(content["vendor"])
-    form = str(content["disclosure_form"])
-    if vendor not in VENDORS or form not in DISCLOSURE_FORMS:
-        msg = f"model returned an out-of-enum value: vendor={vendor!r} disclosure_form={form!r}"
-        raise ValueError(msg)
-    flags = {flag: bool(content[flag]) for flag in WORK_ROLE_FLAGS}
-    any_role = any(flags.values())
-    parts = [f"mentions: {squash_whitespace(content.get('ai_mentions', ''))}"]
-    parts.extend(
-        f"{flag.removeprefix('ai_')}: {squash_whitespace(content.get(evidence_field(flag), ''))}"
-        for flag, on in flags.items()
-        if on
-    )
+    """A model answer -> AiLabel. The answer is validated against AiAnswer
+    first: a missing field, a wrong type or an out-of-enum vendor or disclosure
+    form raises pydantic's ValidationError (a ValueError, so chat_json
+    retries). A work role wins over mentioned_only: the model sometimes sets
+    both, and the roles carry the evidence. The rationale is the mention list
+    plus each set role's evidence."""
+    answer = AiAnswer.model_validate(content)
+    roles = {
+        "found": (answer.ai_found, answer.found_evidence),
+        "analyzed": (answer.ai_analyzed, answer.analyzed_evidence),
+        "authored": (answer.ai_authored, answer.authored_evidence),
+        "tooling": (answer.ai_tooling, answer.tooling_evidence),
+    }
+    any_role = any(on for on, _ in roles.values())
+    parts = [f"mentions: {squash_whitespace(answer.ai_mentions)}"]
+    parts.extend(f"{role}: {squash_whitespace(evidence)}" for role, (on, evidence) in roles.items() if on)
     return AiLabel(
-        ai_found=flags["ai_found"],
-        ai_analyzed=flags["ai_analyzed"],
-        ai_authored=flags["ai_authored"],
-        ai_tooling=flags["ai_tooling"],
-        mentioned_only=bool(content["mentioned_only"]) and not any_role,
-        vendor=vendor,
-        disclosure_form=form,
-        confidence=clamp_confidence(content["confidence"]),
+        ai_found=answer.ai_found,
+        ai_analyzed=answer.ai_analyzed,
+        ai_authored=answer.ai_authored,
+        ai_tooling=answer.ai_tooling,
+        mentioned_only=answer.mentioned_only and not any_role,
+        vendor=answer.vendor,
+        disclosure_form=answer.disclosure_form,
+        confidence=clamp_confidence(answer.confidence),
         rationale=" | ".join(parts),
     )
 
@@ -201,7 +209,7 @@ def hint_lines(text: str) -> list[str]:
     return [line[:HINT_LINE_CHARS] for line in lines[:HINT_MAX_LINES]]
 
 
-def classify_ai_one(text: str, model: str, prompt_block: str, schema: dict[str, Any]) -> AiLabel:
+def classify_ai_one(text: str, model: str, prompt_block: str) -> AiLabel:
     """One Ollama call -> an AiLabel."""
     hints = hint_lines(text)
     hint_block = (
@@ -211,7 +219,7 @@ def classify_ai_one(text: str, model: str, prompt_block: str, schema: dict[str, 
         else ""
     )
     user = f'Roles:\n{prompt_block}\n\nArtifact:\n"""\n{text}\n"""{hint_block}'
-    return chat_json(SYSTEM_PROMPT, user, model, schema, parse_ai_label)
+    return chat_json(SYSTEM_PROMPT, user, model, AiAnswer.model_json_schema(), parse_ai_label)
 
 
 def label_to_cells(label: AiLabel) -> list[str]:

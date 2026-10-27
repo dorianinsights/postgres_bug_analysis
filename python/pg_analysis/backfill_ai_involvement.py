@@ -38,7 +38,6 @@ from pg_analysis.sources.ai_involvement import (
     AI_PROMPT_VERSION,
     LABEL_COLS,
     ai_content_hash,
-    build_ai_schema,
     classify_ai_one,
     label_to_cells,
     roles_prompt,
@@ -101,9 +100,7 @@ def fetch_texts(query: str) -> list[tuple[Any, ...]]:
         con.close()
 
 
-def run_population(
-    name: str, prompt_block: str, schema: dict[str, Any], limit: int | None, candidates_first: bool
-) -> int:
+def run_population(name: str, prompt_block: str, limit: int | None, candidates_first: bool) -> int:
     key_cols, query, cache_csv = POPULATIONS[name]
     header = [*key_cols, *LABEL_COLS]
     texts = fetch_texts(query)
@@ -127,7 +124,7 @@ def run_population(
 
     started = time.monotonic()
     for done, (keys, text, digest) in enumerate(todo, start=1):
-        label = classify_ai_one(text, MODEL_TAG, prompt_block, schema)
+        label = classify_ai_one(text, MODEL_TAG, prompt_block)
         rows[keys] = [*keys, digest, MODEL_TAG, AI_PROMPT_VERSION, *label_to_cells(label)]
         if done % CHECKPOINT_EVERY == 0:
             write_cache(cache_csv, header, rows)  # resumable checkpoint
@@ -154,11 +151,10 @@ def main() -> int:
     with ROLES_SEED.open(newline="") as handle:
         roles = [(int(r["role_order"]), r["role"], r["definition"]) for r in csv.DictReader(handle)]
     prompt_block = roles_prompt(roles)
-    schema = build_ai_schema()
 
     names = list(POPULATIONS) if args.population == "all" else [args.population]
     for name in names:
-        run_population(name, prompt_block, schema, args.max, args.candidates_first)
+        run_population(name, prompt_block, args.max, args.candidates_first)
     return 0
 
 

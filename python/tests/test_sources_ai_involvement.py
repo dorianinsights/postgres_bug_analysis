@@ -3,19 +3,17 @@
 models (the Ollama call itself is network I/O and isn't unit-tested here)."""
 
 import pytest
+from pydantic import ValidationError
 
 from pg_analysis.sources.ai_involvement import (
     AI_PROMPT_VERSION,
-    DISCLOSURE_FORMS,
     LABEL_COLS,
     OUTPUT_COLS,
-    VENDORS,
     WORK_ROLE_FLAGS,
+    AiAnswer,
     AiLabel,
     ai_content_hash,
     as_bool,
-    build_ai_schema,
-    evidence_field,
     hint_lines,
     label_rows,
     label_to_cells,
@@ -54,16 +52,15 @@ def test_roles_prompt_orders_by_role_order() -> None:
     assert block == "1. a — first\n2. b — second"
 
 
-def test_build_ai_schema_lists_mentions_then_evidence_before_each_flag() -> None:
-    schema = build_ai_schema()
+def test_ai_answer_schema_lists_mentions_then_evidence_before_each_flag() -> None:
+    schema = AiAnswer.model_json_schema()
     keys = list(schema["properties"])
     assert keys[0] == "ai_mentions"
     for flag in WORK_ROLE_FLAGS:  # each work role's evidence comes right before its flag
-        assert keys.index(flag) == keys.index(evidence_field(flag)) + 1
+        assert keys.index(flag) == keys.index(flag.removeprefix("ai_") + "_evidence") + 1
     assert keys[-4:] == ["mentioned_only", "vendor", "disclosure_form", "confidence"]
-    assert schema["properties"]["vendor"]["enum"] == list(VENDORS)
-    assert schema["properties"]["disclosure_form"]["enum"] == list(DISCLOSURE_FORMS)
     assert schema["required"] == keys
+    assert "description" not in schema  # a docstring on AiAnswer would be sent to Ollama
 
 
 def test_parse_ai_label_reads_flags_and_builds_the_rationale_from_set_roles() -> None:
@@ -85,11 +82,16 @@ def test_parse_ai_label_lets_a_work_role_win_over_mentioned_only() -> None:
     assert only.mentioned_only is True
 
 
-def test_parse_ai_label_rejects_out_of_enum_values() -> None:
-    with pytest.raises(ValueError, match="out-of-enum"):
+def test_parse_ai_label_rejects_a_malformed_answer() -> None:
+    assert issubclass(ValidationError, ValueError)  # what chat_json catches to retry
+    with pytest.raises(ValidationError, match="vendor"):
         parse_ai_label(_answer(vendor="acme"))
-    with pytest.raises(ValueError, match="out-of-enum"):
+    with pytest.raises(ValidationError, match="disclosure_form"):
         parse_ai_label(_answer(disclosure_form="footnote"))
+    missing = _answer()
+    del missing["confidence"]
+    with pytest.raises(ValidationError, match="confidence"):
+        parse_ai_label(missing)
 
 
 def test_label_to_cells_matches_label_cols_layout() -> None:
