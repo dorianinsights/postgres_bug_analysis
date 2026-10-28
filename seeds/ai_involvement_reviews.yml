@@ -3,10 +3,13 @@ version: 2
 seeds:
   - name: ai_involvement_reviews
     description: >
-      The human review of the AI-involvement classifier's output (245 rows):
+      The human review of the AI-involvement classifier's output (260 rows):
       every text the ai-v4 scan (Sept 2026) tied to an AI in any way plus every
       rejected text containing an AI-related word, and every text the ai-v5
-      scan (Oct 2026) labels AI-involved that the first pass did not cover. Each row
+      scan (Oct 2026) labels AI-involved or answered self-contradictorily that
+      the first pass did not cover.
+      Review is not ongoing: a text classified later keeps the model's labels
+      (ai_label_source = 'model') unless someone chooses to review it. Each row
       carries the FINAL label (the reviewer's verdict applied to the model's
       answer: ok / wrong roles / not AI / missed AI) and overrides the model in
       int_commit_ai_labels / int_thread_ai_labels. Population commit is keyed

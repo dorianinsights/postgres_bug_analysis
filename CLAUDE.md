@@ -215,9 +215,8 @@ hook drops it. `transform.duckdb` stays gitignored;
   fix taxonomy + definitions; fixes are assigned to it by
   `int_fix_content_categories`), `ai_involvement_roles` (the disclosed-AI
   role definitions the `int_*_ai_involvement` prompts are built from),
-  `ai_involvement_reviews` (the hand review of every text the model tied to
-  an AI plus every rejected keyword hit, whose final labels override the
-  model), `subsystem_rules` (path patterns; the directory area) and
+  `ai_involvement_reviews` (the hand review of the scans through Oct 2026,
+  whose final labels override the model), `subsystem_rules` (path patterns; the directory area) and
   `file_class_rules` (extension -> file kind; the orthogonal what-kind-of-file
   taxonomy — both applied per file in `int_commit_files` and per weekly tree
   in `fct_branch_size_weekly`), and the range-bucket tables
@@ -740,9 +739,15 @@ dct mechanics and quirks that shape the boards:
   "cached" as unclassified forever).
   **The charts never read the model tables directly:** `int_commit_ai_labels` /
   `int_thread_ai_labels` apply the hand-review seed `ai_involvement_reviews`
-  (every model positive + every rejected keyword hit was read by a person) on
-  top of the model, with `ai_label_source` = review / model / unclassified,
-  and `dim_commit` / `fct_threads` carry those. The
+  on top of the model, with `ai_label_source` = review / model / unclassified,
+  and `dim_commit` / `fct_threads` carry those. **Review is a one-time
+  calibration, not an ongoing duty:** every model positive (and, in the first
+  scan, every rejected keyword hit) through Oct 2026 was read by a person;
+  texts classified since keep the model's labels. Don't add review-queue
+  tests. Model quality is watched instead by the contradiction alarm
+  (`assert_ai_contradiction_share_below_alarm`, threshold
+  `var('ai_involvement_contradiction_alarm_share')`) and by scoring a prompt
+  change against the reviewed texts before a full scan. The
   chart-facing flag is `has_ai_involvement` (a vendor AND a work role;
   `ai_mentioned_only` is a reference, not involvement); the roles are
   independent, so a role breakdown counts role-mentions, not fixes. A prompt

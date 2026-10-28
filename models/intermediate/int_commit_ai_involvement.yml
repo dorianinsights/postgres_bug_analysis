@@ -34,17 +34,8 @@ models:
           arguments:
             expression: "NOT (mentioned_only AND (ai_found OR ai_analyzed OR ai_authored OR ai_tooling))"
       # vendor and the flags SHOULD agree, but the raw model answer is kept as
-      # is (the cache is a faithful record): a flag with vendor 'none' is
-      # usually noise (clang-tidy as an author, a human Analyzed-by credit,
-      # spam about "AI bots"), and vendor set with every flag false is "AI
-      # referenced, role undetermined". Both are WARNed, not failed; vendor
-      # <> 'none' is the gate downstream and the post-scan review resolves them
-      - dbt_utils.expression_is_true:
-          config:
-            severity: warn
-            where: "is_classified"
-          arguments:
-            expression: "(vendor = 'none') = NOT (ai_found OR ai_analyzed OR ai_authored OR ai_tooling OR mentioned_only)"
+      # is (the cache is a faithful record); the share of contradictions is
+      # watched by tests/assert_ai_contradiction_share_below_alarm.sql
       # labels are NULL exactly for the unclassified rows
       - dbt_utils.expression_is_true:
           arguments:

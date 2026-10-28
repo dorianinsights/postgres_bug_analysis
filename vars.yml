@@ -45,6 +45,12 @@ vars:
   # prompt-version bump, a new major) and the build fails fast with a pointer
   # to the resumable backfill_ai_involvement.py instead of running for hours.
   ai_involvement_max_inline_classifications: 300
+  # The share of a population's classified texts whose answer contradicts itself
+  # (vendor 'none' with a flag set, or a vendor with no flag) above which
+  # assert_ai_contradiction_share_below_alarm warns. A few contradictions are
+  # normal model noise (~0.1% of threads under ai-v5); a share this high means
+  # a model or prompt change has degraded the output.
+  ai_involvement_contradiction_alarm_share: 0.01
   # -- The build's "today" (macros/as_of_date.sql): null = CURRENT_DATE. Set it
   # (a bare ISO date) to pin the clock -- dbt unit tests do, to replay the
   # wrap-Monday-to-Thursday window; never set it for a real build.

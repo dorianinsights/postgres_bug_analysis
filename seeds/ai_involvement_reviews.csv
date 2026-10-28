@@ -16,6 +16,7 @@ commit,doc: update or remove dead external links.,,,false,false,false,false,fals
 commit,don't clear pendingrecoveryconflicts at end of transaction,,,false,false,false,false,false,none,none,not AI,
 commit,don't log page zeroing when checksum failures are ignored,,,true,false,false,false,false,openai,prose,ok,
 commit,export subxip[] for snapshots taken during recovery.,,,true,true,false,false,false,anthropic,prose,wrong roles,
+commit,fix a compiler warning in initstringinfo().,,,false,false,false,false,false,none,none,not AI,"Cfbot is a tool that acts as a bridge between traditional mailing list-based open source software development and modern continuous integration systems, specifically for PostgreSQL development. It's not AI nor an LLM."
 commit,fix abort and launcher state resets in data checksums launcher,,,true,false,false,false,false,anthropic,prose,ok,
 commit,fix assorted places that need to use palloc_array().,,,true,false,false,false,false,other,trailer,ok,"We're inconsistent about how we categorize model-vendor with xint. I think it should be ""other"", not ""unspecified""."
 commit,fix calculating length of match to localized month/weekday names,,,true,false,false,false,false,other,trailer,ok,
@@ -78,6 +79,7 @@ thread,,pgsql-bugs,19553-4561747f93f368a7@postgresql.org,false,true,false,false,
 thread,,pgsql-bugs,19560-54cd7ede78d5e355@postgresql.org,false,true,false,false,false,anthropic,prose,ok,
 thread,,pgsql-bugs,19562-9d41f689d05188c3@postgresql.org,false,false,false,false,false,none,none,ok,
 thread,,pgsql-bugs,19688-e90025dc375a22a3@postgresql.org,false,false,true,false,false,unspecified,prose,ok,
+thread,,pgsql-bugs,19712-6b44bbf7f67d98e5@postgresql.org,true,false,false,false,false,unspecified,prose,wrong roles,"""IA"" is Spanish language for AI, it means ""inteligencia artificial""."
 thread,,pgsql-bugs,19742-dc403ca277cad1d3@postgresql.org,false,true,false,false,false,unspecified,prose,ok,
 thread,,pgsql-bugs,2701c83e33f3fe66320291fb5d1b74ca2cb90bd7.camel@j-davis.com,true,false,false,false,false,unspecified,prose,ok,
 thread,,pgsql-bugs,638232.1776790821@sss.pgh.pa.us,true,false,false,false,false,other,trailer,ok,
@@ -111,6 +113,7 @@ thread,,pgsql-hackers,20260827231757.78.noahmisch@microsoft.com,true,true,false,
 thread,,pgsql-hackers,28b67c58-bb49-42cd-9014-d4ef2601f946@gmail.com,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,427b5a91-5233-4f2f-b7c3-a3c7790135f8@bushwhackers.ru,false,true,false,false,false,unspecified,prose,ok,
 thread,,pgsql-hackers,492c6247-43d3-477b-8981-fb0c56767b38@app.fastmail.com,true,true,false,false,false,anthropic,prose,wrong roles,
+thread,,pgsql-hackers,53a437ee-db2b-4de4-b11e-d967fdc77052@gmail.com,false,false,false,true,false,anthropic,prose,wrong roles,"The start says ""what follows is an Opus and Grammarly cleaned-up text based on my ramblings and PoC patches."" which means that Opus was used for tooling."
 thread,,pgsql-hackers,569769.1786901901@sss.pgh.pa.us,false,false,false,true,false,anthropic,prose,ok,
 thread,,pgsql-hackers,667f7dcf-404b-4898-a426-57ca6e0617f6@gmail.com,false,true,false,false,false,unspecified,prose,ok,
 thread,,pgsql-hackers,79629577-3ad8-4b1c-a469-ebc2cb4c5104@app.fastmail.com,false,true,false,false,false,unspecified,prose,wrong roles,
@@ -133,6 +136,10 @@ thread,,pgsql-hackers,CAA-aLv5CMiStrGv2NFN79v3BHvBGu4-U1kuiVOYb87XgL0T=NQ@mail.g
 thread,,pgsql-hackers,CAA-aLv5MF6BLL+BWvix2Yw+CBardtH43AofPReQunhDZPNBtuA@mail.gmail.com,false,true,false,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,CAA-aLv7L_-dOuHXjLh0Di66dExdOb=uTOzR=jtrqCmV0Wxyd2Q@mail.gmail.com,false,true,false,false,false,anthropic,prose,wrong roles,
 thread,,pgsql-hackers,CAA-aLv7oRYS7eC6dJH6DHQ2vNMtjj=oCx7FjP8NSkstXvyKMUA@mail.gmail.com,false,true,true,false,false,anthropic,prose,wrong roles,
+thread,,pgsql-hackers,CAAAe_zAppw9B_PjFepFkUf9F1_hs1SpS+yizJuRPDRSyw3RkHQ@mail.gmail.com,true,false,false,false,false,unspecified,prose,wrong roles,"""This came out of an AI-assisted audit of ruleutils.c."""
+thread,,pgsql-hackers,CAAAe_zCy+D45Qd_br484F+V34y0BVA=hp_7cb=u6HysyMkE3UQ@mail.gmail.com,true,false,false,false,false,unspecified,prose,wrong roles,
+thread,,pgsql-hackers,CAAAe_zDqXin5NeB5atRCbZqUdcMOeyXRqhan+tVp0F30OCURnw@mail.gmail.com,true,false,false,false,false,unspecified,prose,wrong roles,
+thread,,pgsql-hackers,CAAAe_zDuPSkc8ihCctV67Lxbqock+S4wqCHHo8xxZ1t4teXo0g@mail.gmail.com,true,false,false,false,false,unspecified,prose,wrong roles,
 thread,,pgsql-hackers,CAAjvh2Q6MVRip0AJuWe0TyHjhujmpJHFAmWtXZMefCVnZDJ17w@mail.gmail.com,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,CAApHDvoUWCms-b27MpDKd5_RUFtAnVrxPgN9u3QoQbBihk+S6g@mail.gmail.com,false,false,true,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,CAApHDvp5ne9AWaH-tG1Lke-USLz3NwWLWTUdP5NT7ypKtcFqcg@mail.gmail.com,true,false,false,false,false,anthropic,prose,ok,
@@ -142,10 +149,12 @@ thread,,pgsql-hackers,CABUevEyAuf6DG3dm0icnE1HMcS+EuF8AtaCpdEfnqwma1ib3Sg@mail.g
 thread,,pgsql-hackers,CABdArM7xjMova7EU1XT_RQbuTN8A28=eoTmQ_2uicSvOgLBq2Q@mail.gmail.com,true,false,true,false,false,anthropic,prose,wrong roles,"The message also says ""As part of the AI-assisted review of the update_deleted conflict...."" so the problem was also found by AI as well as the patch being written by it"
 thread,,pgsql-hackers,CACJufxGWVB6dwPaQz25eXm-sdcxOWNfbfTHUd5wG41-zDcG6OA@mail.gmail.com,true,false,false,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,CACJufxHnEu9UfoZsVN2v8FrKopDG+PKCfAGU6fpx7GhGcOa3xg@mail.gmail.com,false,true,false,false,false,anthropic,prose,ok,
+thread,,pgsql-hackers,CACzdQB4Ojc0dC7-USnr5Ga8BA8WjZRswz=8cKAqCUPmrdzutWQ@mail.gmail.com,false,false,false,false,true,unspecified,prose,ok,
 thread,,pgsql-hackers,CAD5tBcJXAX8bz5q9ngE4znvVLiXaPO89D0yTFhJgEPrPyT-Erw@mail.gmail.com,false,true,false,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,CADsUR0Aauim-HULPsks0PGAW6jJ=-VYfFOahvqGQxk6zBak7Vg@mail.gmail.com,false,false,false,false,true,openai,prose,ok,
 thread,,pgsql-hackers,CADsUR0B9bcJQKYHyUMnWcODGzF5+AdeToawULkkTKfrq32Z-8w@mail.gmail.com,false,false,false,false,true,unspecified,prose,ok,Is just talking about enhancing security roles to allow a role to be marked as read-only for the purposes of using it with an AI agent. AI wasn't involving in finding the issue or fixing it.
 thread,,pgsql-hackers,CADsUR0DvVgnZYWwnmKRK65MZg7YLUSTDLV61qdnrwtrAJgU6xw@mail.gmail.com,false,false,false,false,false,none,none,ok,
+thread,,pgsql-hackers,CAEEBa3U7QDChb=PjzQGHoie-tOnfr7dumhO12Tp=5o2iT4t_ug@mail.gmail.com,true,false,true,false,false,unspecified,prose,missed AI,
 thread,,pgsql-hackers,CAEfwbXMQnPzy=Od+Kr+nUT_YWcxr_u0acOVXb7eZFqbBtcSF_w@mail.gmail.com,false,false,false,false,false,none,none,not AI,
 thread,,pgsql-hackers,CAExHW5s=bCLMMq8n_bN6iU+Pjau0DS3z_6Dn6iLE69ESmsPMJQ@mail.gmail.com,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,CAF239vqdA5sOBr5j-AYhjvztzKwKBzUSGDpUo6QVBuEwcK_mOw@mail.gmail.com,false,false,false,false,true,unspecified,prose,ok,
@@ -153,6 +162,7 @@ thread,,pgsql-hackers,CAFcOn28TpR4oydF1NdMEuKFVVRiRwAwG4dGunu2kVxHZw3ViEA@mail.g
 thread,,pgsql-hackers,CAGECzQR8oAaA2dFbE76-0s3f-Dgb4BJ4h1piux99QkHcmYqdTQ@mail.gmail.com,false,true,false,true,false,unspecified,prose,wrong roles,"Should be both ""model_ai_analysis"" and ""model_al_tooling"""
 thread,,pgsql-hackers,CAGECzQTG4vSr_1goeWVrw2EGsjfGD-DCDqvCMqZSr2JtKoRqRA@mail.gmail.com,false,false,true,false,false,anthropic,prose,wrong roles,
 thread,,pgsql-hackers,CAGJgb9vmBZRWi-8+=62U-BoPvGrUS4uMk=gjGbAfp3Rro2CAJg@mail.gmail.com,false,false,false,false,true,unspecified,prose,ok,
+thread,,pgsql-hackers,CAGRkXqQ7d+B+XDCNR0oUmG55EJ421HPj3saWONU2Uc0VKqARWg@mail.gmail.com,false,false,false,true,false,anthropic,prose,wrong roles,
 thread,,pgsql-hackers,CAGRkXqQB_aqWU9OeVPGvATBVZ7c9EYrNXJyHG0jKXW0FGAy2-g@mail.gmail.com,true,false,false,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,CAGRkXqQHjxgufHPz86+dxGaQZt37hikduUArYtfbn2_3mryZAw@mail.gmail.com,true,true,false,false,false,anthropic,prose,wrong roles,"This is arguable, but I think this is also AI finding the bug even though the text says ""I used Claude to analyze..."" in this case it means that Claude analyzed the code to find the bug, not only that Claude also analyzed the problem after a human found the bug"
 thread,,pgsql-hackers,CAGRkXqQQ311Lg=62x5UdZtPuRFgpT6XpPMw4X9E3tgbTu162Mw@mail.gmail.com,true,false,true,false,false,anthropic,prose,ok,
@@ -177,6 +187,7 @@ thread,,pgsql-hackers,CAH5HC94+4teDZvuWkBiAikcK1pM2DH9W6iCNDoGpHxUdPGTNPw@mail.g
 thread,,pgsql-hackers,CAH7T-arxDuVCSkorO=k7+M-_JV0JFzMpN_EtKMyD2K0RDqZ2OA@mail.gmail.com,false,true,false,false,false,unspecified,prose,ok,
 thread,,pgsql-hackers,CAHGQGwG757QfokcU1ysE7ZgmedPp3_ivKJ7+qCR2NQhocj0W2g@mail.gmail.com,true,false,false,false,false,openai,prose,ok,
 thread,,pgsql-hackers,CAHKojA-YN7V+5z4DMusnBh5es0S9dVHh97W8C-igvkh8BWCaxw@mail.gmail.com,false,false,false,false,false,none,none,not AI,
+thread,,pgsql-hackers,CAHYEV2s-5Vn6aPWrtkOGu7MMrwaido-wVeAZg-gqE9LSYj+hjw@mail.gmail.com,false,false,false,false,false,none,none,not AI,"I don't see ""Claude"" anywhere in the text"
 thread,,pgsql-hackers,CAHewXNmwYrp0DTuisCyfXXjVa_irUdDFApUzLVDg3J4MAR6gEg@mail.gmail.com,true,false,false,true,false,unspecified,prose,wrong roles,"The fuzz test cases written by the LLM also identified this issue in particular so it should also have the role ""ai_found"""
 thread,,pgsql-hackers,CAHg+QDfU7rOebrLDESPpHSgdiadKbpCOmBokcbmM6Gr+A5VobQ@mail.gmail.com,false,false,true,false,false,unspecified,prose,ok,
 thread,,pgsql-hackers,CAHut+PtKp7OFkrvg8kJxH00MKCDEJRBpAzrzWE8oz84rq5AKbg@mail.gmail.com,false,true,false,false,false,unspecified,prose,ok,
@@ -186,6 +197,7 @@ thread,,pgsql-hackers,CAHut+PvQ5BqnawCQd6r1tqqd+iAJC-CuRY8wscuXSrpHGUzofA@mail.g
 thread,,pgsql-hackers,CAHut+Pvtf24r+bdPgBind84dBLPvgNL7aB+=HxAUupdPuo2gRg@mail.gmail.com,false,false,false,true,false,unspecified,prose,wrong roles,
 thread,,pgsql-hackers,CAJSLCQ2MbCgG3tjQamWiy3wQWztvvUF9F1FzGmUp1VJ8kvdVrg@mail.gmail.com,false,true,false,false,false,openai,prose,ok,
 thread,,pgsql-hackers,CAJTYsWWJfq=M5U9h7sJFcQ+LPwq76CzLTzQbkRQPTJJ47SGxWw@mail.gmail.com,false,true,false,false,false,unspecified,prose,ok,
+thread,,pgsql-hackers,CAJgoLk+dodrwuwCuXERGYwgjQzSwrKd+xgitYrL32oWDt39zvA@mail.gmail.com,false,false,false,true,false,unspecified,disclaimer,wrong roles,
 thread,,pgsql-hackers,CAKAnmmKVwP=yr8t8p8_QtrBFjyENLZyPxscJh4UrkCeqMQuhrw@mail.gmail.com,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,CAKZiRmw6jbShG+LJe0pY5G4w0ktoGwzPozsA=LhH_mN9wC+bhg@mail.gmail.com,false,true,false,false,false,google,prose,ok,
 thread,,pgsql-hackers,CAKmOUTms2nkxEZDdcrsjq5P3b2L_PR266Hv8kW5pANwmVaRJJQ@mail.gmail.com,false,false,true,false,false,anthropic,prose,ok,
@@ -227,6 +239,7 @@ thread,,pgsql-hackers,CAN55FZ1nB1p_mqnzVY1_CA-OXgQD1yTEJdHXX4E1hDZxVHQRQA@mail.g
 thread,,pgsql-hackers,CANNMO+K7m=k=T3kVtMQKwr1nC-7QpoEhH3_-DtwnuMqMMHdGVA@mail.gmail.com,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,CANeLGgQUc8t0-hSoEh0-OvkmkJ2xjprkSS1aD2qF_WoiZC+w+g@mail.gmail.com,false,true,false,false,false,unspecified,prose,ok,
 thread,,pgsql-hackers,CAOYmi+=KTLd+XsEP=TDiZ48iVf-CEc7JrZd5uhWPYWKEfOgyyQ@mail.gmail.com,false,false,false,false,false,none,none,ok,
+thread,,pgsql-hackers,CAOh5eDXutES2cg0D2rXvF8J=XTHWs2GBaY7zk15W9CgruZLCjw@mail.gmail.com,false,false,false,false,false,none,none,not AI,
 thread,,pgsql-hackers,CAPWzH1cJW69Bcqi8+V8D8SJBbn-ndMszwGE6GH_87=dmp2vCyw@mail.gmail.com,false,false,true,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,CO1PR11MB506011C3052AE779750D9789EDA02@CO1PR11MB5060.namprd11.prod.outlook.com,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,CO6PR11MB5620E3878444C023A7C8CA9C95222@CO6PR11MB5620.namprd11.prod.outlook.com,false,false,false,false,false,none,none,ok,
@@ -236,6 +249,7 @@ thread,,pgsql-hackers,E15AC050-C4B5-488D-BB2D-3C7AC9F89EA8@yesql.se,false,true,f
 thread,,pgsql-hackers,MRWPR09MB8357932120A9FE5B897AF23CCCA82@MRWPR09MB8357.eurprd09.prod.outlook.com,false,true,false,false,false,anthropic,prose,ok,
 thread,,pgsql-hackers,OSZPR01MB631087C65BA81E1FEE5A60D2FDF59@OSZPR01MB6310.jpnprd01.prod.outlook.com,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,TY4PR01MB177182F547A62FC2666EC04EC94B72@TY4PR01MB17718.jpnprd01.prod.outlook.com,true,true,false,false,false,anthropic,prose,wrong roles,
+thread,,pgsql-hackers,TYAPR01MB2990A644A121452820B27FC9FE430@TYAPR01MB2990.jpnprd01.prod.outlook.com,false,false,false,false,false,none,none,not AI,
 thread,,pgsql-hackers,a40b19da-9a02-47b4-8afd-2bbbde8db1e8@dunslane.net,false,true,false,false,false,anthropic,prose,wrong roles,
 thread,,pgsql-hackers,b0900d21-594a-57a7-d345-9f8e3987e068@garret.ru,false,false,false,false,false,none,none,ok,
 thread,,pgsql-hackers,baf3e5f5-6788-437c-8e79-51ead2af7365@CatProSystems.com,false,false,false,true,false,anthropic,prose,wrong roles,
@@ -243,4 +257,5 @@ thread,,pgsql-hackers,c51b6de8-41fe-4751-b94c-605a19e00dc4@app.fastmail.com,fals
 thread,,pgsql-hackers,e2b7a0a88aaadded7e2d19f42d5ab03c9e182ad8.camel@j-davis.com,true,false,false,false,false,unspecified,prose,wrong roles,
 thread,,pgsql-hackers,e9f24286-068e-40cb-a6a9-25a4f938672a@dunslane.net,false,false,false,true,false,anthropic,prose,ok,
 thread,,pgsql-hackers,f071e691-5930-4738-9dbd-43ed2da367fe@gmail.com,false,true,false,false,false,unspecified,prose,ok,
+thread,,pgsql-hackers,sesqxzfcujkcnrwpir5xvhy7iamhsbjiqt6r2xqmb7hqkulte6@bbuc42qzanzs,true,false,false,false,false,unspecified,prose,wrong roles,
 thread,,pgsql-hackers,xzflwwjtwxin3dxziyblrnygy3gfygo5dsuw6ltcoha73ecmnf@nh6nonzta7kw,false,false,false,false,false,none,none,ok,
