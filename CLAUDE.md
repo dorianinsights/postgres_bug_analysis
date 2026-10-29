@@ -432,6 +432,12 @@ dct mechanics and quirks that shape the boards:
   layers with explicit stroke colors.
 - Layer labels are appended to the y-axis title; keep them short or a chart
   can collapse to a sliver.
+- **A bar over more than 60 month/quarter/year buckets switches to a
+  continuous time x**, where each bar spans its period but a line layer's
+  point sits on the period's first day -- half a bar left of its bar. Pin
+  `style.axis_x.type: ordinal` on any such layered bar (`bug_reports`' and
+  the article's `monthly_reports` / `monthly_acted` do); the axis still
+  labels by year (dbt-charts #80).
 - **A figure in a title, subtitle or `text:` is a live query value, never a
   typed number:** `{{ queries.<name>.one.<col> | format('.0%') }}` (a
   one-row query; `.rows` for several), so the sentence and the chart beside

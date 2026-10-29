@@ -747,14 +747,17 @@ charts:
     query: monthly_reports
     title: "Bug reports per month"
     subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails ({{ queries.report_mix.one.free_form_share | format('.0%') }} of reports); line = 6-month average of both"
-    # ~75 months on a temporal x: dct labels it by year, so the "too many x
-    # categories" warning (temporal wording since dct 0.7.0) is a false positive
+    # 100+ months: past 60 buckets dct turns a bar's x into a continuous time
+    # scale, where each bar spans its month and the line's point sits on the
+    # 1st, half a bar left. axis_x.type: ordinal keeps one band per month so
+    # the line runs through the bar centers; dct still labels the axis by year,
+    # so the "too many x categories" warning is a false positive
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
     x: report_month
     y: report_cnt
     color: series
     # stacked, so the top edge is all reports and the trend line sits on the total
-    style: { stack: zero }
+    style: { stack: zero, axis_x: { type: ordinal } }
     height: 380
     layers:
       - type: line
@@ -770,9 +773,10 @@ charts:
     query: monthly_acted_data
     title: "Bug reports acted upon, by month"
     subtitle: "All reports (form + free-form). Bars: reports later linked to a fix commit (count, left axis). Lines: acted-upon share (right axis) with its 6-month rolling average. Lower bound (exact links only); trailing months right-censored"
-    # ~75 months on a temporal x: dct labels it by year, so the "too many x
-    # categories" warning (temporal wording since dct 0.7.0) is a false positive.
-    # The counts and their share on a second axis are read together: both axes
+    # 100+ months, forced onto one band per month (axis_x.type: ordinal) so the
+    # lines and the support strip sit on the bar centers, as on "Bug reports per
+    # month"; dct labels the axis by year, so the "too many x categories"
+    # warning is a false positive. The counts and their share on a second axis are read together: both axes
     # are titled, and the support strip prints the exact values
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES, WARN-DUAL-AXIS-COMPETING-SCALES]
     x: report_month
@@ -815,6 +819,7 @@ charts:
       - { source: acted_share, format: percent_whole, label: "Acted upon %" }
       - { source: acted_avg_6m, format: percent_whole, label: "6-month avg %" }
     style:
+      axis_x: { type: ordinal }
       support_table: { position: bottom, font: { size: 8 } }
 
   # -- copied from charts/git_activity.yml
