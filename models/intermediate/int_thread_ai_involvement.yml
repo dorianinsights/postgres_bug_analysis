@@ -13,7 +13,8 @@ models:
       by the post_hook); bulk changes go through backfill_ai_involvement.py.
       Measures DISCLOSED involvement only. Grain = (list_name, root_message_id).
     config:
-      max_inline_classifications: "{{ var('ai_involvement_max_inline_classifications') }}"
+      meta:
+        max_inline_classifications: "{{ var('ai_involvement_max_inline_classifications') }}"
       post_hook: >
         COPY (SELECT list_name, root_message_id, content_hash, model, prompt_version, ai_found, ai_analyzed,
         ai_authored, ai_tooling, mentioned_only, vendor, disclosure_form, confidence, rationale

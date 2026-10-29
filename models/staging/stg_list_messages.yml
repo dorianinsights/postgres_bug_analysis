@@ -25,7 +25,6 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: (bug_number IS NULL OR list_name = 'pgsql-bugs') AND (NOT has_bug_report_subject OR bug_number IS NOT NULL)
-    tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [list_name, message_id]

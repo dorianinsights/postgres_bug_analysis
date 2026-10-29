@@ -202,3 +202,49 @@ keep their own `format:` (the support strips on `1_fix_analysis`,
 `bug_reports`, `git_activity` and the article; the dual-axis share layers;
 `changelog`'s `percent_delta` KPI lines). Reported as dbt-charts #74; once a
 release fixes it, delete those slot formats and let the queries carry them.
+
+## Re-evaluate dbt 2.x (not urgent; revisit ~Dec 2026 – Jan 2027)
+
+dbt 2.x is developed in `dbt-labs/dbt-core` itself (`main` is the Rust engine;
+the `dbt-fusion` repo is archived). The project runs on dbt-core 1.12.x, which
+bundles the 2.x parser (`dbt-core-experimental-parser`, 2.0.0-beta.2 in
+1.12.6) behind `--use-v2-parser`. The project parses cleanly with it and both
+parsers produce matching manifests, but nothing can build on 2.x yet.
+
+**Blocker: Python models on DuckDB.** The 2.x engine fails every Python model
+with "Python models are not supported for duckdb adapter", and 11 of the 70
+models are Python (the whole `raw_git` / `raw_mail` layer and the three LLM
+classifiers), so 69 of 70 models are blocked. Known and confirmed by dbt Labs
+in dbt-core #14514 ("DuckDB bugbash: Python model parity", Apr 2026), but
+unassigned, no milestone, and a Sept 2026 "still on the roadmap?" question is
+unanswered. The docs list Python models in v2 for Snowflake, BigQuery and
+Databricks only. Nothing else here is worth doing until #14514 moves.
+
+Other 2.x issues that touch this project:
+- dbt-core #16448: a unit test's `overrides.vars` hides the project's
+  `vars.yml` vars (breaks the `int_releases` unit test). Fixed Oct 2026,
+  awaiting release.
+- dbt-core #16627: DuckDB source schema download ignores `external_location`,
+  so `--static-analysis strict` turns static analysis off for everything
+  downstream of the CSV sources (the sources themselves build fine).
+- dbt-core #14512: the `external_location` parity check from the same DuckDB
+  bugbash, still open.
+
+Not yet reported upstream (`--use-v2-parser` handoff bugs in 1.12.6):
+- A unit test whose `overrides` sets only `vars` is written with
+  `"macros": null`, which dbt 1.12.6 rejects when loading the manifest.
+  `int_releases.yml` declares `macros: {}` to work around it.
+- `dbt.config.meta_get()` in a Python model returns nothing: the model's
+  `meta_keys_used` doesn't survive the handoff, so the two AI-involvement
+  models fail with the flag (2.x run directly compiles them correctly).
+- The bundled beta rejects a source's top-level `meta:` (dbt1060); #14351
+  fixed this for models and columns only. The sources use `config: meta:`.
+
+To re-evaluate: upgrade to the newest 1.x and run
+`dbt parse --use-v2-parser`, then `dbt build --use-v2-parser`; for 2.x itself,
+install the current `dbt-core` 2.x release in a separate venv and build
+against a COPY of `transform.duckdb` through a scratch `--profiles-dir` (the
+on-run-end `drop_orphaned_relations` hook drops whatever that engine doesn't
+see as a model, and the CSV hooks write into `data/`, so snapshot it first).
+The 2.x binary also writes `.user.yml` into the repo root and appends
+`dbt_internal_packages/` to `.gitignore`; revert those after a trial.

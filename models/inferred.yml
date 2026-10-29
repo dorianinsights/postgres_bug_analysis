@@ -17,8 +17,9 @@ sources:
       at fix_key grain, int_thread_ai_involvement at thread-root grain): the
       committed label cache each model reads by content hash and re-exports.
       Bulk-populated by backfill_ai_involvement.py.
-    meta:
-      external_location: "read_csv('data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'VARCHAR'])"
+    config:
+      meta:
+        external_location: "read_csv('data/raw/{name}.csv', header=true, auto_type_candidates=['BIGINT', 'VARCHAR'])"
     tables:
       - name: fix_content_categories
       - name: commit_ai_involvement

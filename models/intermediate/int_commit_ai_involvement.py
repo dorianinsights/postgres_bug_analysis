@@ -32,7 +32,7 @@ KEY_COLS = ("fix_key",)
 
 def model(dbt: Any, session: Any) -> pa.Table:
     dbt.config(materialized="table")
-    max_inline = int(dbt.config.get("max_inline_classifications"))
+    max_inline = int(dbt.config.meta_get("max_inline_classifications"))
 
     # dbt discovers refs by scanning THIS file: keep the ref literal here
     roles = dbt.ref("ai_involvement_roles").project("role_order, role, definition").fetchall()

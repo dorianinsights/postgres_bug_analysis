@@ -76,6 +76,7 @@ unit_tests:
       keying "open" on CURRENT_DATE produced a duplicate release_dt.
     model: int_releases
     overrides:
+      macros: {}
       vars:
         as_of_date: "2026-08-11"
         scheduled_release_min_items: 1
