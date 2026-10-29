@@ -4,7 +4,7 @@ requests==2.34.2
 beautifulsoup4==4.15.0
 lxml==6.1.3
 dbt-charts==0.10.0
-dbt-core==1.12.4
+dbt-core==1.12.6
 dbt-duckdb==1.11.0
 # The engine itself: dbt-duckdb and dbt-charts only floor it (>=1.0.0), and the
 # backfills import it directly, so pin it like any direct dependency.
