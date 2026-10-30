@@ -40,7 +40,7 @@ extraPaths = ["python"]
 target-version = "py312"
 # First-party roots (import sorting + first-party classification).
 src = ["python"]
-extend-exclude = ["venv", "**/.cache", "**/out", "**/target", "**/dbt_packages"]
+extend-exclude = ["venv", "**/.cache", "**/out", "**/target", "**/dbt_packages", "*.md"]
 # Apply excludes even to explicitly-passed paths (the post-edit hook passes
 # single files, which would otherwise bypass the exclusion).
 force-exclude = true
