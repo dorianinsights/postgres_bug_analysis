@@ -38,6 +38,8 @@ CVE_RE = re.compile(r"CVE-\d{4}-\d+")
 VECTOR_RE = re.compile(r"AV:[NALP]/AC:[LH]/PR:[NLH]/UI:[NR]/S:[UC]/C:[NLH]/I:[NLH]/A:[NLH]")
 # The base score is the only decimal in the Component & CVSS cell.
 SCORE_RE = re.compile(r"\b(\d{1,2}\.\d)\b")
+# Index of the "Component <base score> <vector>" cell in a CVE table row.
+CVSS_CELL = 3
 
 
 class CveRow(TypedDict):
@@ -66,15 +68,14 @@ def parse_rows(html: str) -> list[CveRow]:
     body_rows = tables[0].find_all("tr")[1:]
     for tr in body_rows:
         cells = tr.find_all(["td", "th"])
-        if len(cells) < 4:
+        if len(cells) <= CVSS_CELL:
             continue
         cve_match = CVE_RE.search(_cell_text(cells[0]))
         if cve_match is None:
             continue
 
-        # Cell 3 is "Component <base score> <vector>", e.g.
-        # "core server 8.8 AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H".
-        cvss_cell = cells[3]
+        # e.g. "core server 8.8 AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H".
+        cvss_cell = cells[CVSS_CELL]
         text = _cell_text(cvss_cell)
         link = cvss_cell.find("a", href=True)
         raw_href = link["href"] if isinstance(link, Tag) else ""

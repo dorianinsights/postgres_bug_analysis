@@ -40,6 +40,7 @@ MBOX_URL = "https://www.postgresql.org/list/{list_name}/mbox/{list_name}.{year}{
 USER_AGENT = "postgres-patch-analysis (personal research)"
 CSRF_RE = re.compile(r'name="csrfmiddlewaretoken" value="([^"]+)"')
 MBOX_FETCH_WAIT = 0.5  # seconds between back-to-back downloads to avoid server overload, be nice to people!
+DECEMBER = 12
 
 
 def credentials() -> tuple[str, str]:
@@ -71,7 +72,7 @@ def month_range() -> list[tuple[int, int]]:
     year, month = start.year, start.month
     while (year, month) <= (now.year, now.month):
         months.append((year, month))
-        year, month = (year + 1, 1) if month == 12 else (year, month + 1)
+        year, month = (year + 1, 1) if month == DECEMBER else (year, month + 1)
     return months
 
 

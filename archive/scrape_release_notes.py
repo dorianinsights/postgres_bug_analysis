@@ -12,6 +12,7 @@ import csv
 import re
 import sys
 import time
+from http import HTTPStatus
 from pathlib import Path
 from typing import TypedDict
 
@@ -91,7 +92,7 @@ def parse_page(version: str) -> Page | None:
     it was wrapped but never shipped).
     """
     resp = requests.get(BASE_URL.format(version), timeout=30, allow_redirects=False)
-    if resp.status_code != 200:
+    if resp.status_code != HTTPStatus.OK:
         return None
     soup = BeautifulSoup(resp.text, "lxml")
     m = re.search(r"Release date:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})", soup.get_text())

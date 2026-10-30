@@ -299,7 +299,11 @@ change.
   selection and the in-process step runner's failure mapping) and its
   `sources` readers live in `python/tests/` — pure parse/logic coverage, no
   network, clone, or warehouse; they import the editable-installed package
-  like everything else. `./venv/bin/pytest` (~0.1s). The DuckDB Python models
+  like everything else. `./venv/bin/pytest` (~0.1s), in pytest's `strict`
+  mode (unknown markers or config keys, duplicate parametrize ids and a
+  passing xfail are errors). `AiAnswer`'s JSON schema -- Ollama's output
+  format, so part of the prompt -- is pinned by a test, which a pydantic
+  upgrade that changes the generated schema fails. The DuckDB Python models
   (`models/raw_*`) are thin wrappers over the tested readers, so they carry
   no separate unit tests.
 
@@ -504,8 +508,9 @@ dct mechanics and quirks that shape the boards:
   a join `ON` condition to lead with the earlier table (or an expression), not
   the joined table's bare column; RF02 wants every column qualified once a
   statement (incl. a scalar subquery) references more than one table; reserved
-  words (`out`, `map`, `year`, `month`, `quarter`) can't be bare aliases/columns;
-  `GROUP BY ALL` can't combine with `QUALIFY` (enumerate the columns there).
+  words (`out`, `map`, `year`, `month`, `quarter`) can't be bare aliases/columns.
+  DuckDB itself (not sqlfluff) rejects `GROUP BY ALL` combined with `QUALIFY`
+  ("not supported yet"): enumerate the columns there.
   **Lateral column aliases** (reusing a SELECT alias in a later expression,
   a `WHERE`, or a window's `PARTITION BY`) are used throughout, but a bare
   name that also exists as a column of any table in the FROM resolves to the
@@ -544,7 +549,9 @@ dct mechanics and quirks that shape the boards:
   spine and a major's EOL all derive from the corpus's tags
   (`macros/release_dates.sql`). The sentinel `1900-01-01` / `9999-01-01` are
   `var('past_eternity')` / `var('future_eternity')`; a "< N items" or "N days"
-  threshold is almost always already a var.
+  threshold is almost always already a var. In Python, ruff's `PLR2004`
+  enforces the numeric half in comparisons (tests are exempt: expected values
+  are literals by design).
 - **Where a Python constant lives depends on what it is**, not on gathering
   every constant into one config file:
   - *Secrets* (the mailing-list credentials) go in the gitignored `.env`,
