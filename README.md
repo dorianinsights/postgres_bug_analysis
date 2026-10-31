@@ -65,14 +65,14 @@ pg-mail-sync ──> .cache/mbox/ ───────────────�
 ## Quickstart
 
 ```bash
-# 1. One-time setup. Python 3.11-3.13 (3.14 is not yet supported by
+# 1. One-time setup. Python 3.13 (3.14 is not yet supported by
 #    dbt-charts). requirements.txt pins every dependency and installs the
 #    repo's own pg_analysis package, which puts the pg-* commands in venv/bin.
 #    The mailing-list sync needs a free postgresql.org community account:
 #    copy .env.example to .env (gitignored) and fill in
 #    POSTGRES_COMM_USERNAME / POSTGRES_COMM_PASSWORD.
 cp .env.example .env
-python3.12 -m venv venv
+python3.13 -m venv venv
 ./venv/bin/pip install -r requirements.txt
 
 # 2. Fetch the sources and build the marts. The first run is slow: the bare

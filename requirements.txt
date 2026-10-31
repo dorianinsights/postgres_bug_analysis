@@ -1,4 +1,4 @@
-# Requires Python 3.11-3.13.
+# Requires Python 3.13.
 python-dotenv==1.2.4
 requests==2.34.2
 # requests' CA bundle: a floor, not a pin, so it keeps tracking root-store removals;
@@ -19,6 +19,9 @@ pydantic==2.14.2
 # tree requires pyarrow, so pin it directly; the stubs keep pyright strict happy.
 pyarrow==25.0.1
 pyarrow-stubs==20.0.0.20260819
+# Type-check only: pyarrow-stubs' pa.array overloads are written against numpy's
+# types, so without it pyright strict sees them as partially unknown.
+numpy==2.5.2
 ruff==0.17.3
 pyright==1.1.414
 pre_commit==4.7.0

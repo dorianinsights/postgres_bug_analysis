@@ -4395,7 +4395,6 @@ pgsql-bugs,4baeccb.80f0.17b81651c54.Coremail.const_sunny@126.com,65896908062dd66
 pgsql-bugs,4bdc6250-03c6-0090-df77-580f998c4547@postgrespro.ru,4dccb614d94c760a,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,5038b33a6dc639009f4b3d43fa6ae0c5ba9e04f7.camel@j-davis.com,c5399ed393f1b3c4,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,506f7ad1400b4c7d991dd0fa2a2e234e@pingan.com.cn,bc2fd2ff760faef1,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-bugs,50D52121-30FF-4A2D-9230-0EFD953A2C36@yandex-team.ru,3c16ca5f89df8570,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,52138028-7246-421c-9161-4fa108b88070@postgrespro.ru,bc01d854554cdaa2,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,52E6E0843B9D774C8C73D6CF64402F05621EC58D@G08CNEXMBPEKD02.g08.fujitsu.local,6227a33ffb9029f5,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,52E6E0843B9D774C8C73D6CF64402F05621EF537@G08CNEXMBPEKD02.g08.fujitsu.local,ac8226aa4e6d5f5f,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -6869,7 +6868,6 @@ pgsql-hackers,17557e4dd97.fa5aae1a161459.7726916839177387693@highgo.ca,8babe4940
 pgsql-hackers,1756041.1754616558@sss.pgh.pa.us,87ddb49f8defc85e,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,175693782874.7.4977774421995743377.886547785@passmail.net,df4d82bed2a7b11f,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,1760969.lJVCjits1C@thinkpad-pgpro,c2915300279d0888,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,176282677490.2081919.14769189141245328542.pgcf@coridan.postgresql.org,53acfca8df1d4c0e,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,1762890.8ARNpCrDLI@peanuts2,06783dbe48af832e,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,176c5286.3c0f.183c66d1d77.Coremail.jiye_sw@126.com,7b2654b88e7a6d8b,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,17717-6c50eb1c7d23a886@postgresql.org,767abf87fa4e3cf6,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -6925,7 +6923,6 @@ pgsql-hackers,181A6DA8-3B7F-4B71-82D5-363FF0146820@yesql.se,211dfffffef3c879,qwe
 pgsql-hackers,181b4c6fa9c.b8b725681941212.7547232617810891479@viggy28.dev,2ef2c921f47b6ac5,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,181ca352dfd.123fe936c382.7542457510138476487@zohocorp.com,8ea45252c00eb90c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,1820191605175217@mail.yandex.ru,b734d51cecd61e08,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,1820938.rQZk8KEl4X@peanuts2,77f48e743a9c0073,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,1822da87-b862-041a-9fc2-d0310c3da173@2ndquadrant.com,c2c928b30b06d99a,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,182311743703924@mail.yandex.ru,df405aa9701a02dc,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,18232791560320444@sas2-2074c606c35d.qloud-c.yandex.net,f25cf2b230672437,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -7059,7 +7056,6 @@ pgsql-hackers,19fc710f63a.70d6b0a511214.8421857940215010334@zohocorp.com,a994ba0
 pgsql-hackers,1A1A6EDC-D0EC-47B0-BD21-C2ACBAEA65E4@alibaba-inc.com,879e74dea3a3ce54,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,1A36620E-CAD8-4267-9067-FB31385E7C0D@yandex-team.ru,a7f7cdda35b62ee9,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,1A7CBF99-628F-4A75-A897-135BC410C6F0@gmail.com,4cf9aafdedee8d53,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,1ACA4B4B-BDE4-477B-B242-BBA871E2DB79@yesql.se,d0d5e97e976a2f9a,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,1AEEB240-9B68-44D5-8A29-8F9FDB22C801@yandex-team.ru,a50383963e1d4d56,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,1AEF5FB1-21FF-4545-92EE-4129A3D348C3@yesql.se,f4a6a82214032383,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,1B616360-396A-4482-AA28-375566C86160@amazon.com,adc75a90915b3143,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -8957,7 +8953,6 @@ pgsql-hackers,202511131446.uzn4c25ljmd4@alvherre.pgsql,a42a0d4a29fed991,qwen3:30
 pgsql-hackers,20251114104753.GY10642@caipicrew.dd-dns.de,3b954130342b578c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,20251114165040.62cfe3e5520ca8d9b6ca2d6c@sraoss.co.jp,c5db9d03b2a70001,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,20251118162801.27cb13408cb3c9dd3a72cf7d@sraoss.co.jp,98f0ea5865799b4f,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,202511240955.vt3fjrb4ksrs@alvherre.pgsql,1eedf8876abddbe4,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,202511251218.zfs4nu2qnh2m@alvherre.pgsql,950497d70704a271,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,202511271516.oiefpvn3z27m@alvherre.pgsql,a365ee907c61ecc8,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,202512081537.ahw5gwoencou@alvherre.pgsql,bfc854774c347487,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -8971,7 +8966,6 @@ pgsql-hackers,20251231183953.95132e171e43abd5e9b78084@sraoss.co.jp,510537da2c35e
 pgsql-hackers,2026010719201902382410@163.com,6810a7ea21e89e4d,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,20260109202241.6d881ed0@ardentperf.com,fdf1280d78c5ba9b,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,20260117051406.sx6pss4ryirn2x4v@pgs,672554dd5953b03f,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,202601231423.4522ubhwkcwj@alvherre.pgsql,04c324512fb2b9bb,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,202601241015.y5uvxd7oxnfs@alvherre.pgsql,e476d7292ddf3dc6,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,20260128120056.b2a3e8184712ab5a537879eb@sraoss.co.jp,315c4169ee28d06a,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,202601281204.sdxbr5qvpunk@alvherre.pgsql,d3638d8c19853eca,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -9233,7 +9227,6 @@ pgsql-hackers,240D05EC-8B28-4112-BEAB-85ECBAF3F871@amazon.com,ac7dec6667619f21,q
 pgsql-hackers,241b1de1-b029-433a-a8ce-37cff582ec9e@manitou-mail.org,b348869974b26846,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,2423164.1767991263@sss.pgh.pa.us,c41dda7a1e433790,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,24250.1566500938@sss.pgh.pa.us,5a85f1daf7fa7a14,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,2430115.1767994942@sss.pgh.pa.us,7545b7ad7c76760c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,2433221.W0iyAOnYEr@x200m,48e243283719e712,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,24348.1587444160@sss.pgh.pa.us,7d940362bd1d381b,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,2439c2d6cee13d611e23ba651e5eb4ab0469bf99.camel@credativ.de,50a4621c66d4981c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -9859,7 +9852,6 @@ pgsql-hackers,391592.1783187986@sss.pgh.pa.us,6284695a94e2cd8e,qwen3:30b-a3b,ai-
 pgsql-hackers,392271.1681238924@sss.pgh.pa.us,92a953931a53a7b6,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,3928703.1665345117@sss.pgh.pa.us,ebaab21094a87500,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,3935719.1675967430@sss.pgh.pa.us,c13eaae65c9e62fd,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,3936259.1768230347@sss.pgh.pa.us,fe075644246ec2e8,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,3943600.1731102134@sss.pgh.pa.us,7b73619df0830708,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,3950D56A-4E47-48E7-BF9B-F5F22E268BE7@amazon.com,06f41026ffd8c21e,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,3951.1549403812@sss.pgh.pa.us,226c2a675c6b8088,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -10348,7 +10340,6 @@ pgsql-hackers,508fdfea6bd1a548574c2a81aded973d@planin.com.br,236ad900ff99e2d4,qw
 pgsql-hackers,509177C1-00E1-4F38-9ACA-88D40B1C4EBB@mac.com,669ef817fbc69994,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,509ac42f-5c2c-e67b-6503-a19fc88adc6f@postgresql.org,a7691a93b405da38,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,50CCC519-6F51-470A-872B-8002F54AB92E@jlr-photo.com,3382c62a5337bda4,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,50D52121-30FF-4A2D-9230-0EFD953A2C36@yandex-team.ru,3c16ca5f89df8570,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,50a828cc-0a00-7791-7883-2ed06dfb2dbb@enterprisedb.com,03a9b8bf8ac32410,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,50a97009-8ff9-ca4d-a0f6-6086a6775a5b@enterprisedb.com,aa198fcfa125957d,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,50b505e0-009e-4b0e-a4ac-b60fb3786519@alvarezp.org,0b0da6080f5c908e,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -11150,7 +11141,6 @@ pgsql-hackers,77734732-44A4-4209-8C2F-3AF36C9D4D18@amazon.com,bb48332ec82121e4,q
 pgsql-hackers,777bd201-6e3a-4da0-a922-4ea9de46a3ee@gmail.com,12c1dc3f3a91993c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,77956427-F0BC-4B2C-9114-81859CDA8E06@gmail.com,8e51a3b816162e0f,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,779790c7-45d7-4010-9305-c3f9e6a60323@postgresql.org,056211fdd37cb548,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,77C63690-BC92-4350-9E38-C5B0DF324967@yesql.se,ab4303f36da76674,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,77a86b3a-c4a8-5f5d-69b9-d70bbf2e9b98@gmail.com,ea221ae6e394e2bc,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,77d94649-e00c-4d56-b2e2-e9d1843131d7@postgrespro.ru,db0b90593346d34c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,77def86b27e41f0efcba411460e929ae@postgrespro.ru,ba14d41a796d846f,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -11222,7 +11212,6 @@ pgsql-hackers,7BD1ABDB-B03A-464A-9BA9-A73B55AD8A1F@getmailspring.com,2d4b1e98669
 pgsql-hackers,7BNP_kRdfRAWyq4swht7lEjtTjEyIPgbDLkR7PXvp9qgNPfXb_fbg4k8ceAd6j-4genQldy9CY9j9KthZUI0SducvaQsxSDoa51e0GdEtQo=@burd.me,cb37e5d074d92827,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,7C1703E7-F3F3-43FA-86EB-177C671BF33C@vmware.com,5251883197d0d877,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,7C36C6F5-233C-4A97-BD21-0E701831F9A7@gmail.com,01f0b1ad6eb658d2,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,7DA91781-AA47-447A-BA6F-99FE7E83954E@yesql.se,f4a36b07fdaaba6d,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,7DD65D03-3B5A-43B2-99AD-8E6AF5372BAB@gmail.com,66faba998f6ae2ed,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,7DDBEFC5-09B6-4325-B942-B563D1A24BDC@amazon.com,177ce2429321fb49,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,7DE080CE-6D8C-4794-9BD1-7D9699172FAB@justatheory.com,54c688b824d3b74c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -11535,7 +11524,6 @@ pgsql-hackers,87k0curq0w.fsf@wibble.ilmari.org,a2cbe707579ceabc,qwen3:30b-a3b,ai
 pgsql-hackers,87k0usfdxg.fsf@news-spur.riddles.org.uk,e0561a1d9fb07dca,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,87k0ynj35y.fsf@wibble.ilmari.org,f054dabe0b074e5c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,87k1r7v328.fsf@news-spur.riddles.org.uk,4e334903eaa357ef,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,87ld8qq464.fsf@wibble.ilmari.org,03efe16bf26e258e,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,87ldbuc3ik.fsf@gmail.com,1214bca06105e262,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,87ldew2yqu.fsf@wibble.ilmari.org,187ce0e9f1f75513,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,87le9fmi01.fsf@wibble.ilmari.org,81b4fd40003228cc,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -11854,7 +11842,6 @@ pgsql-hackers,951335.1612910077@sss.pgh.pa.us,64141b2f682e004b,qwen3:30b-a3b,ai-
 pgsql-hackers,952AFDA4-7723-4E88-8263-D0E7792D462C@justatheory.com,0523dc48d394a855,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,95339420-7F09-4F8C-ACC0-8F1CFAAD9CD7@endpoint.com,eae7540a7d922b96,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,953bceb7-340d-4717-9682-0ebe65c4b57e@eisentraut.org,8841e73608a5a3e4,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,9541545c-2154-4fb8-9365-b789b3e10bae@vondra.me,d877a7993a5f33ad,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,95471763-27bc-56b7-69d7-9fc4780038ba@postgresfriends.org,3de9aacfc59a3d8c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,9550c76535404a83156252b25a11babb4792ea1e.camel@j-davis.com,23afaf35bbf72973,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,955250df-3abd-4b2b-9779-01e6afc60a4b@googlemail.com,4845b9b65760705f,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -20771,7 +20758,6 @@ pgsql-hackers,E3ABE75D-AC6F-4D02-B6F9-5F948DC0E1C3@enterprisedb.com,3d178178c500
 pgsql-hackers,E40E8C2C-EFDC-4896-9CA9-AC35F507F184@amazon.com,912fe9b9d6c2876b,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,E4A49A6B-621B-4830-A374-970EBB7D1328@hintbits.com,e5a0ba07f4d20fc0,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,E621393D-A213-41B0-8C9D-584F8EC9287F@hintbits.com,af827108c6e75fae,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,E6E0577D-7143-46AE-8A47-90762BDE0CC2@yesql.se,d6f871dd414dd4a8,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,E72DD5C3-2268-48A5-A907-ED4B34BEC223@yesql.se,8537ed0a9d116a39,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,E72EAA49-354D-4C2E-8EB9-255197F55330@enterprisedb.com,57759708026dd632,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,E74C57FA-1DD0-4C8E-8FB1-538034752592@gmail.com,7591494a27f7926e,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -21750,7 +21736,6 @@ pgsql-hackers,ZWIXZbRlKUBGsXSA@momjian.us,b9ed9e3780ec8121,qwen3:30b-a3b,ai-v5,f
 pgsql-hackers,ZWQuHltp2KS_0Cct@paquier.xyz,798868e1f3c10a68,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,ZWlohtKAs0uVVpZ3@paquier.xyz,e4a69685ec489556,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,ZWlrdQarrZvLsgIk@pryzbyj2023,0d0e7724366ea2cc,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,ZY3xrLuhRVMTdHLl@momjian.us,589f04a199504040,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,ZYBdnGW0gKxXL5I_@msg.df7cb.de,21321432a076697e,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,ZYOE8IguqTbp-seF@paquier.xyz,d17f1d4d237eea77,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,ZYQZ1hNfLd_4rzkn@msg.df7cb.de,51a2896fce814ede,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -22057,7 +22042,6 @@ pgsql-hackers,aRE7zhu6wOA29gFf@paquier.xyz,0d0d685420e6ad71,qwen3:30b-a3b,ai-v5,
 pgsql-hackers,aRJFDxKJLFE_1Iai@nathan,2918f588abc70dca,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aRdhSSFb9zZH_0zc@nathan,bac0fdc43134f0c7,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aReNUKdMgKxLqmq7@nathan,50440e67e15d47c1,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,aRuwX88mdP8tfuvi@end,9e5de2722748a276,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aS2b3LoUypW1/Gdz@ip-10-97-1-34.eu-west-3.compute.internal,8b9f1aa12f6b29df,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aS3PeXHLe7ir_gPc@nathan,597b9d4ced57907c,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aS77DTpl0fOkIKSZ@ip-10-97-1-34.eu-west-3.compute.internal,130198dce799b4b9,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -22092,7 +22076,6 @@ pgsql-hackers,aY2oKlSpikgO9m+X@ip-10-97-1-34.eu-west-3.compute.internal,f47bca21
 pgsql-hackers,aYAf8qDHbpBZ3Rml@paquier.xyz,be05de1373c48cba,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aYDhK6pP33vTHiVu@nathan,a2e3b71d045d0b31,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aYHEtSK44CcZxTLG@ip-10-97-1-34.eu-west-3.compute.internal,ed07f4dd5c07fc7a,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,aYRWXNqB35y6v8bb@end,16f4713dad13777a,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aYzeAYEbodkkg5e-@nathan,f18341e6bd1c18df,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aZ3a+V82uSfEjDmD@ip-10-97-1-34.eu-west-3.compute.internal,8044ff6aeeceff31,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aZTqurNQG-cDzJcL@nathan,775618fa030086c6,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
@@ -22182,7 +22165,6 @@ pgsql-hackers,ae523163-6d2a-4b81-a875-832e48dec502@eisentraut.org,e2a8596e4ef093
 pgsql-hackers,ae52a416bbbf459c96bab30b3038e06c@G08CNEXMBPEKD06.g08.fujitsu.local,d2969c9a1c4d2003,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,ae572e76-043b-1398-fbde-f1132a09ef9a@2ndquadrant.com,93848767d1184ff1,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,ae576cac3f451d318374f2a2e494aab1@postgrespro.ru,bbea6630ea4ab1e9,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-hackers,aeD8ryt2uX8flDP8@momjian.us,7de59ff5caf050aa,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aeb9e99a-f296-d81b-8e44-ff96c68473b7@2ndquadrant.com,35aea4e3a7f811dc,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aec091ee-2838-0845-2681-d41b0b2cbc75@postgrespro.ru,a28600fa3e09ec71,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-hackers,aed6cc9f-98f3-2693-ac81-52bb0052307e@2ndquadrant.com,1efd9db7c816a389,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none

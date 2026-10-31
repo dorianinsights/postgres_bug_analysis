@@ -55,7 +55,11 @@ pg-mail-sync ──> .cache/mbox/ ───────────────�
   (so no `~/.dbt` setup), `vars.yml`, `dbt_charts.yml`, `models/`, `seeds/`,
   `macros/`, `tests/`, `charts/` and the warehouse sit beside `python/` and
   `data/`, so every dbt, dct and DuckDB command runs from the root with no
-  `cd`. Python 3.11-3.13 (dbt-charts' range).
+  `cd`. Python 3.13 exactly: dbt-charts caps the range at 3.13, and the
+  floor is part of the analysis definition -- the stdlib `email` parser
+  decides how a malformed `In-Reply-To`/`References` id reads, so it decides
+  which reply joins which thread (`int_message_threads`). 3.12 reads those
+  headers differently from `Message-ID` and splits a few threads in two.
 - **`pg-refresh`** runs the three fetches in order, then `dbt deps` + `dbt
   build`; the build runs only if every fetch succeeded. `--list` shows the
   steps, `--only <step>` / `--skip <step>` select them, `--no-build` refreshes
