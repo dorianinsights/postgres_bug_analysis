@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: raw_tree_sizes
+    description: >
+      The size of each (subsystem, extension) slice of the tree at every commit
+      int_branch_week_heads names (each stable branch's head at each week's
+      end), read verbatim from the postgres.git clone at build time: one
+      `git grep -I -c '^'` per distinct commit (binary files excluded), fanned
+      out across a process pool by sources.git.tree_size_records. subsystem is
+      the subsystem_rules bucket (classified in Python, since it needs the whole
+      path); extension is the raw lower-cased file extension, mapped to a
+      file_class in stg_tree_sizes. The one raw model with an upstream ref --
+      which commits to measure is decided in the transform. Rebuilt in full
+      every run. All strings; typing happens in stg_tree_sizes.
+      Grain = (commit_hash, subsystem, extension).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [commit_hash, subsystem, extension]
+    columns:
+      - name: commit_hash
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_branch_week_heads')
+                field: commit_hash

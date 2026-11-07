@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: int_branch_week_heads
+    description: >
+      Each stable branch's head commit at the end of every week (the next
+      Monday, 00:00 UTC), from its first week through the current one: the
+      commits raw_tree_sizes measures, one point per branch per week on
+      git_activity's "codebase size over time" charts (via
+      fct_branch_size_weekly). A branch's first week is the week of its GA
+      release (the .0, int_versions), or, for the in-progress major with no GA
+      yet, the week of its first own commit, so every week holds at least one
+      of the branch's commits. The head is found over stg_git_commits' parent
+      edges, not by the latest commit time: on a linear branch each commit is
+      the head from the moment it lands until its child lands, so a week's head
+      is the commit whose span holds the week's end. That keeps commits pushed
+      in the same second in their true order (a commit whose child lands in the
+      same second has an empty span). Quiet weeks share a head. Rebuilt in full every
+      run, so the week in progress is re-resolved as commits land and a past
+      week can never stay frozen at a midweek head.
+      Grain = (branch, week_start).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [branch, week_start]
+    columns:
+      - name: branch
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^REL_\d+_STABLE$'
+      - name: week_start
+        description: The week's Monday (UTC); conforms to dim_date.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: commit_hash
+        description: The branch's head at the week's end, one of its own commits.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_git_commits')
+                field: commit_hash

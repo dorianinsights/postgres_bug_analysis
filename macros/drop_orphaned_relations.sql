@@ -5,7 +5,7 @@
      model's relation). Compares the live catalog against every model / seed /
      snapshot relation PLUS every source, and drops the difference, restricted to
      the schemas the project actually manages plus the target's default schema
-     (main), where dbt-duckdb leaves each incremental Python model build's
+     (main), where dbt-duckdb would leave an incremental Python model build's
      <model>__dbt_tmp<timestamp> table behind. Nothing hand-made belongs in
      main: it is dropped too. Only the warehouse's own catalog is swept, never
      temp or an attached database.

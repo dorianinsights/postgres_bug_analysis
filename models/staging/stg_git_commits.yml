@@ -27,6 +27,35 @@ models:
           - dbt_expectations.expect_column_values_to_match_regex:
               arguments:
                 regex: '^[0-9a-f]{40}$'
+      - name: parent_hash
+        description: >
+          The commit's one parent (git %P): the history edge int_branch_week_heads
+          walks to find a branch's head at a point in time. git allows several
+          (a merge) and none (a root); PostgreSQL never merges, and no corpus
+          range reaches a root, so exactly one hash is asserted here -- a merge
+          would fail the build rather than reach a model that assumes a line.
+          The parent is another row of this table, so the history is a
+          self-join: a stable branch's commits chain back along the branch to
+          its first, whose parent is the fork point (a master row). Master's
+          first in-range commit is the one exception: its parent is the
+          previous major's fork point, behind the corpus floor
+          (corpus.HISTORY_FLOOR_TAG), so the link is tested on stable branches.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              arguments:
+                regex: '^[0-9a-f]{40}$'
+          # every stable-branch commit's parent is in the table: the branch's
+          # history is one unbroken chain back to its fork, so
+          # int_branch_week_heads finds exactly one head per week (a missing
+          # link would leave a commit with no child, whose open-ended span
+          # would give later weeks two heads)
+          - relationships:
+              config:
+                where: "branch != 'master'"
+              arguments:
+                to: ref('stg_git_commits')
+                field: commit_hash
       - name: commit_ts
         tests:
           - not_null

@@ -17,10 +17,11 @@ from pg_analysis.sources.git import commit_range
 
 # git log --format uses \x00 between fields and \x01 to terminate each record.
 _COMMIT_LOG = (
-    "abc123\x002023-02-01T10:00:00-05:00\x00Alice\x00alice@x\x00"
+    # a merge: %P lists both parents, space-separated
+    "abc123\x00def456 0ff1ce\x002023-02-01T10:00:00-05:00\x00Alice\x00alice@x\x00"
     "Carol\x00carol@x\x00Fix bug in planner\x00Body line one.\x01\n"
-    # second commit has an EMPTY body — exercises the field-padding
-    "def456\x002023-01-31T09:00:00-05:00\x00Bob\x00bob@x\x00Bob\x00bob@x\x00Doc fix\x00\x01\n"
+    # second commit is a root (no parents) with an EMPTY body — exercises the field-padding
+    "def456\x00\x002023-01-31T09:00:00-05:00\x00Bob\x00bob@x\x00Bob\x00bob@x\x00Doc fix\x00\x01\n"
 )
 
 # git for-each-ref, tab-separated, given out of order to check the sort.
@@ -63,6 +64,9 @@ def test_commit_records_split_fields_and_pad_empty_body(monkeypatch: pytest.Monk
     assert [r.hash for r in records] == ["abc123", "def456"]
     first = records[0]
     assert first.branch == "master"
+    # verbatim, as git prints it; stg_git_commits asserts the corpus has one parent each
+    assert first.parent_hashes == "def456 0ff1ce"
+    assert records[1].parent_hashes == ""
     assert first.commit_ts == "2023-02-01T10:00:00-05:00"
     assert (first.author_name, first.author_email) == ("Alice", "alice@x")
     assert (first.committer_name, first.committer_email) == ("Carol", "carol@x")
@@ -88,14 +92,14 @@ def test_file_records_parse_numstat_and_binary_markers(monkeypatch: pytest.Monke
     ]
 
 
-# subsystem rules as (subsystem, compiled-pattern) in match_order precedence,
-# mirroring a slice of the subsystem_rules seed — enough to pin the precedence
-# and the 'other' fallback without reading the seed from disk.
+# subsystem rules in match_order precedence, mirroring a slice of the
+# subsystem_rules seed — enough to pin the precedence and the 'other' fallback
+# without reading the seed from disk.
 _RULES = [
-    ("tests", re.compile(r"^src/test/")),
-    ("docs", re.compile(r"^doc/")),
-    ("client_tools", re.compile(r"^src/bin/|^src/interfaces/")),
-    ("core_server", re.compile(r"^src/backend/|^src/include/")),
+    gitmod.SubsystemRule(subsystem="tests", pattern=re.compile(r"^src/test/")),
+    gitmod.SubsystemRule(subsystem="docs", pattern=re.compile(r"^doc/")),
+    gitmod.SubsystemRule(subsystem="client_tools", pattern=re.compile(r"^src/bin/|^src/interfaces/")),
+    gitmod.SubsystemRule(subsystem="core_server", pattern=re.compile(r"^src/backend/|^src/include/")),
 ]
 
 
@@ -132,9 +136,27 @@ def test_tree_size_by_area_buckets_by_subsystem_and_raw_extension(monkeypatch: p
     )
     _patch_git(monkeypatch, grep_out)
     sizes = gitmod._tree_size_by_area("HEAD", _RULES)
-    assert sizes[("core_server", "c")] == (100, 1)  # a.c
-    assert sizes[("core_server", "h")] == (20, 1)  # x.h -- distinct extension, same subsystem
-    assert sizes[("tests", "sql")] == (40, 1)
-    assert sizes[("docs", "sgml")] == (5, 1)
-    assert sizes[("core_server", "po")] == (1000, 1)  # the .po, kept separate for SQL to classify
-    assert sum(code for code, _ in sizes.values()) == 1165  # slices sum to the tree
+    area, size = gitmod.AreaKey, gitmod.AreaSize
+    assert sizes[area("core_server", "c")] == size(code_lines=100, file_cnt=1)  # a.c
+    # x.h -- distinct extension, same subsystem
+    assert sizes[area("core_server", "h")] == size(code_lines=20, file_cnt=1)
+    assert sizes[area("tests", "sql")] == size(code_lines=40, file_cnt=1)
+    assert sizes[area("docs", "sgml")] == size(code_lines=5, file_cnt=1)
+    # the .po, kept separate for SQL to classify
+    assert sizes[area("core_server", "po")] == size(code_lines=1000, file_cnt=1)
+    assert sum(s.code_lines for s in sizes.values()) == 1165  # slices sum to the tree
+
+
+def test_tree_size_records_for_head_emits_one_verbatim_row_per_slice(monkeypatch: pytest.MonkeyPatch) -> None:
+    # the pool worker: one record per slice, keyed by the commit, counts as strings
+    # (the raw layer is verbatim; stg_tree_sizes types them)
+    _patch_git(monkeypatch, "abc123:src/backend/a.c:7\nabc123:src/backend/b.c:3\nabc123:doc/c.sgml:2\n")
+    records = sorted(gitmod._tree_size_records_for_head(_RULES, "abc123"))
+    assert records == [
+        gitmod.TreeSizeRecord("abc123", "core_server", "c", code_lines="10", file_cnt="2"),
+        gitmod.TreeSizeRecord("abc123", "docs", "sgml", code_lines="2", file_cnt="1"),
+    ]
+
+
+def test_tree_size_records_measures_nothing_for_no_commits() -> None:
+    assert gitmod.tree_size_records([]) == []

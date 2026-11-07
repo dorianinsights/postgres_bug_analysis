@@ -13,11 +13,11 @@ seeds) comes from pg_analysis.paths, so nothing here depends on the cwd.
 """
 
 import csv
+import functools
 import multiprocessing as mp
 import os
 import re
 import subprocess
-from datetime import UTC, date, datetime, timedelta
 from typing import NamedTuple
 
 from pg_analysis.corpus import FIRST_MAJOR, HISTORY_FLOOR_TAG
@@ -35,6 +35,7 @@ class CommitRecord(NamedTuple):
 
     branch: str
     hash: str
+    parent_hashes: str  # %P: the parents' hashes, space-separated ("" for a root commit)
     commit_ts: str
     author_name: str
     author_email: str
@@ -141,23 +142,24 @@ def commit_records() -> list[CommitRecord]:
     for branch in all_branches():
         log = git(
             "log",
-            # author (%an/%ae) and committer (%cn/%ce) identities land before
-            # the subject; the multi-line body stays last so it can't be
-            # confused with a delimited field.
-            "--format=%H%x00%cI%x00%an%x00%ae%x00%cn%x00%ce%x00%s%x00%b%x01",
+            # the parents (%P), then author (%an/%ae) and committer (%cn/%ce)
+            # identities land before the subject; the multi-line body stays
+            # last so it can't be confused with a delimited field.
+            "--format=%H%x00%P%x00%cI%x00%an%x00%ae%x00%cn%x00%ce%x00%s%x00%b%x01",
             commit_range(branch),
         )
         for record in log.split("\x01"):
             record = record.strip("\n")
             if not record.strip():
                 continue
-            fields = (record.split("\x00") + [""] * 8)[:8]
-            commit_hash, date_iso, author_name, author_email = fields[:4]
-            committer_name, committer_email, subject, body = fields[4:]
+            fields = (record.split("\x00") + [""] * 9)[:9]
+            commit_hash, parent_hashes, date_iso, author_name, author_email = fields[:5]
+            committer_name, committer_email, subject, body = fields[5:]
             records.append(
                 CommitRecord(
                     branch=branch,
                     hash=commit_hash,
+                    parent_hashes=parent_hashes,
                     commit_ts=date_iso,
                     author_name=author_name,
                     author_email=author_email,
@@ -210,28 +212,47 @@ def tag_records() -> list[TagRecord]:
     return records
 
 
-# Source file types counted as the codebase (the tree is otherwise mostly docs,
-# test data, and build scaffolding). Verbatim line totals; typing in staging.
-class BranchSizeRecord(NamedTuple):
-    """One weekly snapshot of ONE (subsystem, extension) slice of a stable
-    branch's tree (a stock, not a flow). Long form: a week has one row per
-    (subsystem, extension) present, so the slices sum to the branch's total size
-    that week. The raw file extension is carried verbatim; stg_branch_size_weekly
-    maps it to a file_class (file_class_rules) so a size chart can filter the
-    generated classes (translations, test_fixtures) like the churn charts do.
-    subsystem is the only classification kept here -- it needs the whole path,
-    which the per-file grep output has and the aggregated record does not."""
+class TreeSizeRecord(NamedTuple):
+    """The size of ONE (subsystem, extension) slice of the tree at one commit (a
+    stock, not a flow). Long form: a commit has one row per (subsystem, extension)
+    present, so the slices sum to the tree's total size. Which commits to measure
+    (each stable branch's head at each week's end) is decided in the transform
+    (int_branch_week_heads); this only measures them. The raw file extension is
+    carried verbatim; stg_tree_sizes maps it to a file_class (file_class_rules) so
+    a size chart can filter the generated classes (translations, test_fixtures)
+    like the churn charts do. subsystem is the only classification kept here -- it
+    needs the whole path, which the per-file grep output has and the aggregated
+    record does not."""
 
-    branch: str
-    week_start: str  # ISO date of the week's Monday
-    commit_hash: str  # branch HEAD as of that week's end
+    commit_hash: str
     subsystem: str  # the subsystem_rules bucket (single taxonomy; see _subsystem_of)
     extension: str  # the file's lower-cased extension (raw; classified in SQL)
     code_lines: str  # source lines in this slice's files
     file_cnt: str  # number of files in this slice
 
 
-def _subsystem_rules() -> list[tuple[str, re.Pattern[str]]]:
+class SubsystemRule(NamedTuple):
+    "One subsystem_rules seed row: the bucket a path matching `pattern` lands in."
+
+    subsystem: str
+    pattern: re.Pattern[str]
+
+
+class AreaKey(NamedTuple):
+    "One slice of a tree: its subsystem_rules bucket and raw file extension."
+
+    subsystem: str
+    extension: str
+
+
+class AreaSize(NamedTuple):
+    "One slice's size: its text lines and its files."
+
+    code_lines: int
+    file_cnt: int
+
+
+def _subsystem_rules() -> list[SubsystemRule]:
     """The (subsystem, compiled-pattern) rules from the subsystem_rules seed, in
     match_order precedence. Read from the SAME seed the SQL side uses
     (int_commit_files), so the path -> subsystem taxonomy has one source of truth.
@@ -241,14 +262,14 @@ def _subsystem_rules() -> list[tuple[str, re.Pattern[str]]]:
     with path.open(encoding="utf-8") as handle:
         rows = [(int(r["match_order"]), r["subsystem"], re.compile(r["pattern"])) for r in csv.DictReader(handle)]
     rows.sort(key=lambda r: r[0])
-    return [(subsystem, pattern) for _, subsystem, pattern in rows]
+    return [SubsystemRule(subsystem=subsystem, pattern=pattern) for _, subsystem, pattern in rows]
 
 
-def _subsystem_of(path: str, rules: list[tuple[str, re.Pattern[str]]]) -> str:
+def _subsystem_of(path: str, rules: list[SubsystemRule]) -> str:
     "The first rule (by match_order) whose pattern matches the path; else 'other'."
-    for subsystem, pattern in rules:
-        if pattern.search(path):
-            return subsystem
+    for rule in rules:
+        if rule.pattern.search(path):
+            return rule.subsystem
     return "other"
 
 
@@ -258,96 +279,58 @@ def _extension_of(path: str) -> str:
     return name.rpartition(".")[2].lower() if "." in name else ""
 
 
-def _tree_size_by_area(
-    rev: str, sub_rules: list[tuple[str, re.Pattern[str]]]
-) -> dict[tuple[str, str], tuple[int, int]]:
-    """{(subsystem, extension): (line_cnt, file_cnt)} for the tree at `rev`.
+def _tree_size_by_area(rev: str, sub_rules: list[SubsystemRule]) -> dict[AreaKey, AreaSize]:
+    """Each (subsystem, extension) slice's size (text lines, files) for the tree at `rev`.
     subsystem is classified here (it needs the whole path); the raw extension is
-    carried for stg_branch_size_weekly to map to a file_class in SQL. The whole
+    carried for stg_tree_sizes to map to a file_class in SQL. The whole
     tree is measured -- NO extension filter -- so every file type flows through
     the raw layer and the "what counts as codebase" decision lives downstream. One
     `git grep -I -c '^'` emits `<rev>:<path>:<count>` per matched TEXT file; -I
     keeps binary files out, so no binary size is ever counted.
     """
     out = git("grep", "-I", "-c", "^", rev)
-    sizes: dict[tuple[str, str], tuple[int, int]] = {}
+    sizes: dict[AreaKey, AreaSize] = {}
     for line in out.splitlines():
         if not line:
             continue
         prefix, _, count = line.rpartition(":")
         path = prefix.partition(":")[2]  # strip the "<rev>:" prefix
-        key = (_subsystem_of(path, sub_rules), _extension_of(path))
-        code, files = sizes.get(key, (0, 0))
-        sizes[key] = (code + int(count), files + 1)
+        key = AreaKey(subsystem=_subsystem_of(path, sub_rules), extension=_extension_of(path))
+        prev = sizes.get(key, AreaSize(code_lines=0, file_cnt=0))
+        sizes[key] = AreaSize(code_lines=prev.code_lines + int(count), file_cnt=prev.file_cnt + 1)
     return sizes
 
 
-def _branch_size_start(branch: str, major: int) -> date | None:
-    """The first day of a stable branch's size curve. Released majors anchor at GA
-    (REL_M_0); the in-progress major has no GA tag yet, so it anchors at its fork
-    from master (the beta-1 branch point) -- the moment its tree became a distinct
-    line. None when neither anchor resolves."""
-    if git("tag", "-l", f"REL_{major}_0").strip():
-        start_iso = git("log", "-1", "--format=%cI", f"REL_{major}_0").strip()
-    else:
-        fork = git("merge-base", "master", branch).strip()
-        start_iso = git("log", "-1", "--format=%cI", fork).strip()
-    return date.fromisoformat(start_iso[:10]) if start_iso else None
+def _tree_size_records_for_head(sub_rules: list[SubsystemRule], commit_hash: str) -> list[TreeSizeRecord]:
+    """One record per (subsystem, extension) slice of the tree at one commit.
+    Module-level so a worker process can run it."""
+    return [
+        TreeSizeRecord(
+            commit_hash=commit_hash,
+            subsystem=area.subsystem,
+            extension=area.extension,
+            code_lines=str(size.code_lines),
+            file_cnt=str(size.file_cnt),
+        )
+        for area, size in _tree_size_by_area(commit_hash, sub_rules).items()
+    ]
 
 
-def branch_size_weekly_records(
-    known: frozenset[tuple[str, str]] = frozenset(),
-) -> list[BranchSizeRecord]:
-    """Weekly (branch, week) codebase-size snapshots for every stable branch,
-    from the branch's .0 release (or, for the in-progress major, its fork from
-    master) to today. A STOCK -- the state of the tree -- sampled at each
-    week's end. Only DISTINCT resolved commits are grepped (quiet weeks share a
-    HEAD, so a branch frozen at its EOL costs one grep), and any (branch, week) in
-    `known` is skipped without grepping: the incremental model passes what it
-    already has, so a normal build measures only the new weeks. Past weeks are
-    immutable, so caching them is safe.
-    """
-    today = datetime.now(UTC).date()
+def tree_size_records(commit_hashes: list[str]) -> list[TreeSizeRecord]:
+    """The tree size, by (subsystem, extension) slice, at each of `commit_hashes`:
+    one `git grep` per commit, fanned out across a process Pool since each is an
+    independent, CPU-bound read of the clone (spawn -- the parent is multithreaded
+    via DuckDB, so fork is unsafe). `map` keeps the input order, so the output is
+    deterministic. Leave one core free for the user."""
+    if not commit_hashes:
+        return []
     sub_rules = _subsystem_rules()
-    records: list[BranchSizeRecord] = []
-    for branch in all_stable_branches():
-        matched = re.match(r"REL_(\d+)_STABLE$", branch)
-        if not matched:
-            continue
-        major = int(matched.group(1))
-        start = _branch_size_start(branch, major)
-        if start is None:
-            continue
-        # weekly Mondays covering [branch .0 release, today]
-        monday = start - timedelta(days=start.weekday())
-        todo: list[date] = []
-        while monday <= today:
-            if (branch, monday.isoformat()) not in known:
-                todo.append(monday)
-            monday += timedelta(days=7)
-        # resolve each new week's HEAD (as of the week's end); grep each distinct
-        # commit once
-        week_head: dict[date, str] = {}
-        for week in todo:
-            asof = (week + timedelta(days=7)).isoformat()
-            head = git("rev-list", "-1", f"--before={asof}T00:00:00Z", branch).strip()
-            if head:
-                week_head[week] = head
-        sizes = {head: _tree_size_by_area(head, sub_rules) for head in set(week_head.values())}
-        for week, head in week_head.items():
-            for (subsystem, extension), (code, files) in sizes[head].items():
-                records.append(
-                    BranchSizeRecord(
-                        branch=branch,
-                        week_start=week.isoformat(),
-                        commit_hash=head,
-                        subsystem=subsystem,
-                        extension=extension,
-                        code_lines=str(code),
-                        file_cnt=str(files),
-                    )
-                )
-    return records
+    workers = min(len(commit_hashes), max((os.cpu_count() or 2) - 1, 1))
+    with mp.Pool(processes=workers) as pool:
+        per_commit: list[list[TreeSizeRecord]] = pool.map(
+            functools.partial(_tree_size_records_for_head, sub_rules), commit_hashes
+        )
+    return [record for commit_records_ in per_commit for record in commit_records_]
 
 
 class CommitVersionRecord(NamedTuple):

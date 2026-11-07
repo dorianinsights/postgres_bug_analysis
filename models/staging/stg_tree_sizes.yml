@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: stg_tree_sizes
+    description: >
+      Typed tree sizes per measured commit, split by subsystem and file_class
+      (from raw_tree_sizes). The extension -> file_class classification happens
+      here (join file_class_rules, the same seed the churn side uses), keeping it
+      in SQL rather than the Python source; extensions that share a file_class
+      roll up. code_lines / file_cnt are this slice's share of the tree; the
+      slices of a commit sum to its tree's total. fct_branch_size_weekly joins
+      them to each week's head (int_branch_week_heads).
+      Grain = (commit_hash, subsystem, file_class).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [commit_hash, subsystem, file_class]
+    columns:
+      - name: commit_hash
+        tests: [not_null]
+      - name: subsystem
+        tests: [not_null]
+      - name: file_class
+        tests: [not_null]
+      - name: code_lines
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: file_cnt
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1

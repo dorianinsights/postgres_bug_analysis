@@ -170,10 +170,10 @@ opens the file read-only) and what dbt tests run against. Two on-run-end
 hooks: `macros/export_marts_csv.sql` writes the `data/derived/*.csv` twins,
 and `macros/drop_orphaned_relations.sql` drops any table or view in a
 dbt-managed schema or the default `main` that no model produces — the
-residue of a rename or delete, which dbt never removes itself, and the
-`<model>__dbt_tmp<timestamp>` table dbt-duckdb leaves in `main` on every
-incremental Python model build. Nothing hand-made belongs in `main`; the
-hook drops it. `transform.duckdb` stays gitignored;
+residue of a rename or delete, which dbt never removes itself (and the
+`<model>__dbt_tmp<timestamp>` table dbt-duckdb would leave in `main` on an
+incremental Python model build; no model is incremental). Nothing
+hand-made belongs in `main`; the hook drops it. `transform.duckdb` stays gitignored;
 `dbt build` regenerates it.
 
 - `models/raw_git/` — Python models (dbt-duckdb) that read
@@ -182,10 +182,16 @@ hook drops it. `transform.duckdb` stays gitignored;
   per-commit `--numstat` file rows, every `REL_1x_*` ref, the release-notes
   items and their commit annotations, the commit → version map by exact tag
   ancestry (`raw_commit_versions`, one `rev-list` per tag, rebuilt in full),
-  and the weekly per-branch tree-size snapshots (`raw_branch_size_weekly`,
-  one `git grep -c` per branch HEAD — the one **incremental** model, since a
-  past week's snapshot is immutable) — verbatim strings, one consistent clone
-  snapshot per build. Requires the clone. The readers take the clone path and
+  and the tree sizes behind `git_activity`'s codebase-size charts (`raw_tree_sizes`: one
+  `git grep -c` per commit `int_branch_week_heads` names) — verbatim
+  strings, one consistent clone snapshot per build, every model rebuilt in
+  full. Requires the clone. `raw_tree_sizes` is the one raw model with an
+  upstream ref: which commits to measure (each stable branch's head at each
+  week's end) is a derivation over the history, so `int_branch_week_heads`
+  computes it in SQL from `stg_git_commits`' parent edges, and the raw
+  model only measures those commits; `fct_branch_size_weekly` joins each
+  week's head to its tree's size, so a tree shared by quiet weeks is
+  measured once. The readers take the clone path and
   the corpus bounds from `pg_analysis.paths` / `pg_analysis.corpus`.
 - `models/raw_mail/` — Python model decoding the `.cache/mbox/` archives
   via `pg_analysis.sources.mail`: per message, the bare headers (RFC 2047
@@ -215,7 +221,9 @@ hook drops it. `transform.duckdb` stays gitignored;
   file/line counts, churn and the dominant-subsystem vote over
   `int_commit_files`, carried by `dim_commit` and read for a fix's
   representative commit by `int_fix_profile`, the per-fix rollup of its
-  commits: coverage, change profile and origin), `int_message_threads` /
+  commits: coverage, change profile and origin), `int_branch_week_heads`
+  (each stable branch's head at each week's end, walked over the parent
+  edges -- what `raw_tree_sizes` measures), `int_message_threads` /
   `int_person_map` (thread and identity resolution, see the design notes),
   and the AI-involvement chain `int_*_ai_texts` -> `int_*_ai_involvement` ->
   `int_*_ai_labels` (see the AI-involvement design note).
@@ -549,9 +557,14 @@ dct mechanics and quirks that shape the boards:
 - A full `dbt build` re-reads the git clone + mbox cache each run. The mbox
   parse (`raw_list_messages` via `pg_analysis.sources.mail`) is the dominant cost and
   fans out across a process `Pool` (spawn — the parent is multithreaded, so fork
-  is unsafe), ~43s; `raw_commit_files` (git side) is the
-  next-slowest and serial. Use `dbt build --select <models>` while
-  iterating; do one full build to confirm.
+  is unsafe); `raw_tree_sizes` (~1,400 tree greps, also a process `Pool`)
+  and `raw_commit_files` are the git side's slow ones. dbt runs them
+  concurrently (`threads: 4`), so they share the machine: a full build is
+  ~3½ min, `raw_tree_sizes` ~2½ min of it alone. Its parallel speedup tops
+  out near 2x whatever the pool size or `grep.threads` (each grep inflates
+  every blob of a ~6k-file tree), so the lever left is measuring each
+  distinct blob once across trees instead of each tree whole. Use `dbt build
+  --select <models>` while iterating; do one full build to confirm.
 - **Edit `.sql`/`.py` files with the Edit/Write tools — never `sed -i`, a `>`
   redirect, or a `cat >` heredoc through Bash** (even in "auto mode", which
   otherwise nudges toward `sed`). The per-edit linters below are `PostToolUse`
