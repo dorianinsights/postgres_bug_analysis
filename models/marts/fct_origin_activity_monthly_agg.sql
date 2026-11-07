@@ -4,7 +4,7 @@ WITH master_commits AS (
     -- no public trail splits into embargoed security work and the unsourceable
     CASE
       WHEN fcm.origin != 'unknown_or_internal' THEN fcm.origin
-      WHEN fcm.is_documented_security THEN 'unknown_or_internal_security'
+      WHEN fcm.is_security_fix THEN 'unknown_or_internal_security'
       ELSE 'unknown_or_internal_not_security'
     END AS origin,
     fcm.has_ai_involvement

@@ -9,7 +9,8 @@ models:
       or embargoed security work) — and the release-notes item that documents
       it (documented_item_ord, the lowest item when a combined commit is
       annotated under several; is_documented_security when any of them cites a
-      CVE). dim_commit, int_committed_fixes, int_fix_profile and
+      CVE), and is_security_fix, which also carries a security fix to its
+      master commit. dim_commit, int_committed_fixes, int_fix_profile and
       fct_origin_activity_monthly_agg read it. Grain = commit_hash.
     columns:
       - name: commit_hash
@@ -34,3 +35,18 @@ models:
           - dbt_utils.expression_is_true:
               arguments:
                 expression: "= false OR documented_item_ord IS NOT NULL"
+      - name: is_security_fix
+        description: >
+          The commit is part of a documented security fix: is_documented_security,
+          or a master commit whose fix_key matches a documented-security commit
+          on another branch that shipped in the release this master commit's
+          backpatches ship in (the first shipped release wrapped on or after it).
+          The minor-release notes annotate a fix's stable-branch commits but not
+          always its master commit; the release match keeps out an older master
+          commit backpatched cycles later as groundwork for a security fix.
+        tests:
+          - not_null
+          # the hash-annotated flag is the narrower one
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "OR NOT is_documented_security"

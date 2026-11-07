@@ -747,7 +747,15 @@ dct mechanics and quirks that shape the boards:
   Stable-branch commit series count only post-`.0` commits (the backpatch
   stream); shared pre-branch history belongs to `master`. Security fixes are
   embargoed and reach public git only on wrap day, so mid-cycle security
-  volume is structurally invisible.
+  volume is structurally invisible. The minor-release notes annotate a
+  security fix's stable-branch commits but not always its master commit, so
+  `is_documented_security` (a CVE item cites this hash) misses some master
+  commits; `is_security_fix` (on `int_commit_origins` / `dim_commit`) also
+  flags a master commit whose `fix_key` was flagged on another branch in the
+  release its backpatches ship in, and is what splits master's no-trail
+  origin into embargoed security and unsourced. The release match matters: a
+  master commit backpatched cycles later as groundwork for a security fix
+  shares its `fix_key` but was ordinary development when it landed.
   **Never SUM anything per stable-branch commit across branches** (churn, file
   counts): a fix is one commit per branch it was backpatched to, and the number
   of branches inside the corpus grew from one (2019) to every supported major

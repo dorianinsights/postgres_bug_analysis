@@ -202,17 +202,6 @@ Surfaced by the 0.11.1 upgrade; each is a board edit or an upstream report.
   `meta.yml` (folder-wide pins are bound to name values some boards never
   draw), with no board-level way to suppress it.
 
-## Flag master security commits through `fix_key`
-
-`int_commit_origins.is_documented_security` is set per commit hash from the
-release notes' commit annotations, which do not always list the master
-commit of a fix: 12 master commits of security fixes miss the flag (133 are
-caught), e.g. CVE-2006-2313's `42f94f56b` (June 2021, flagged on REL_12 and
-REL_13). Three of them have no public trail and so count as "unsourced"
-instead of "embargoed security" in `fct_origin_activity_monthly_agg` (one in
-2021, two in 2024). Also flag a master commit whose `fix_key` matches a
-flagged commit on another branch, then rebuild and check the origin marts.
-
 ## Board color consistency
 
 - **The article's "Bug reports per month" draws orange and red** where

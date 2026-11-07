@@ -71,6 +71,8 @@ SELECT
   -- this commit -- an attribute, not an FK, so no special member stands in
   org.documented_item_ord,
   org.is_documented_security,
+  -- also true on a security fix's master commit, which the notes may not cite
+  org.is_security_fix,
   -- no Kimball special members here (built from the commit spine), so every
   -- row is real; the flag exists for uniformity across all dimensions
   false AS is_synthetic_row
