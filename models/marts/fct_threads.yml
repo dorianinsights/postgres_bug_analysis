@@ -77,6 +77,12 @@ models:
               arguments:
                 to: ref('dim_bug')
                 field: dim_bug_key
+          # a bug is one new thread: replies naming it, with no reply header or
+          # replying off-list, join its report's thread (int_message_threads)
+          # instead of counting as reports of their own
+          - unique:
+              config:
+                where: "is_new_thread AND is_form_report"
       - name: started_dt
         tests:
           - not_null

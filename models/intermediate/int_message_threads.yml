@@ -4,17 +4,23 @@ models:
   - name: int_message_threads
     description: >
       The message-grain model: every archived message with its sender, its
-      thread resolved TRANSITIVELY (the direct parent -- In-Reply-To, else the
-      last References id -- and the thread root, the topmost archived ancestor
-      reached by climbing the parent chain within the list), whether it starts
-      a thread (no parent header), whether it is its thread's root (the
-      earliest archived message), whether its thread was eventually cited by a
-      commit Discussion: trailer, plus the pgsql-bugs report tag parsed in
-      staging (bug_number) and is_bug_report, the report itself: the earliest
-      bare "BUG #NNNNN:" message of its bug number that starts a thread, at most
-      one per bug (a re-post, or a reply that dropped the "Re:", repeats the
-      subject; a bug whose report predates the archive has none). The body
-      stays in stg_list_messages.
+      thread resolved TRANSITIVELY, whether it starts a thread, whether it is
+      its thread's root, whether its thread was eventually cited by a commit
+      Discussion: trailer, plus the pgsql-bugs report tag parsed in staging
+      (bug_number) and is_bug_report. A message is threaded onto its
+      thread_parent_id: the nearest id its headers name that is archived on
+      the same list (In-Reply-To, then the References chain newest to oldest,
+      as JWZ threading links the whole chain), so a reply to an off-list or
+      pre-archive message still joins its thread through an earlier ancestor;
+      else, for a pgsql-bugs message naming a bug, that bug's report (a reply
+      sent with no reply header, or replying off-list); else its header parent
+      as is. The root is the topmost archived ancestor reached by climbing
+      thread parents within the list. is_bug_report marks the report itself:
+      the earliest bare "BUG #NNNNN:" message of its bug number with no reply
+      header, at most one per bug (a re-post, or a reply that dropped the
+      "Re:", repeats the subject; a bug whose report predates the archive has
+      none). There is no subject-based grouping: recurring titles ("typos")
+      would merge unrelated threads. The body stays in stg_list_messages.
       Grain = (list_name, message_id).
     tests:
       - dbt_utils.unique_combination_of_columns:
@@ -34,7 +40,18 @@ models:
       - name: sent_dt
         tests: [not_null]
       - name: parent_id
-        description: The direct parent's message id (in_reply_to, else the last References id); NULL when the message carries no reply header.
+        description: The direct parent the headers give (in_reply_to, else the last References id), archived or not; NULL when the message carries no reply header.
+      - name: thread_parent_id
+        description: >
+          The parent the thread is built on: the nearest archived id the headers
+          name (In-Reply-To, then References newest to oldest), else the report
+          of the bug a pgsql-bugs message names, else parent_id. NULL exactly
+          for a thread start. An unarchived id (no archived message to join)
+          makes the message its thread's root.
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "IS NULL = is_thread_start"
       - name: root_id
         description: The thread root's message id -- always an archived message on the same list.
         tests:
@@ -44,6 +61,7 @@ models:
                 to: ref('int_message_threads')
                 field: message_id
       - name: is_thread_start
+        description: A new thread -- nothing to attach the message to (no reply header, and no bug report to join). A reply whose parent is unarchived roots its thread but is not a start.
         tests: [not_null]
       - name: is_thread_root
         tests: [not_null]
@@ -76,3 +94,52 @@ models:
           date — the earliest release a fix for this message could ship
           in.
         tests: [not_null]
+
+unit_tests:
+  - name: int_message_threads_joins_replies_through_the_chain_and_the_bug_number
+    description: >
+      A bug report and five follow-ups: a reply; a reply to an off-list
+      message whose References carry the report (joins through the chain); a
+      header-less "Re: BUG #100" (joins by bug number); a reply whose headers
+      name only unarchived messages but whose subject names the bug (joins by
+      bug number); and a reply to an unarchived message with no bug number
+      (roots its own thread but is not a new one). A commit citing the
+      off-list reply links the whole bug thread. Two hackers messages
+      replying to each other (a cycle) terminate, rooted at the earliest.
+    model: int_message_threads
+    given:
+      - input: ref('stg_list_messages')
+        format: sql
+        rows: |
+          SELECT
+            list_name, message_id, CAST(sent_ts AS TIMESTAMPTZ) AS sent_ts, CAST(sent_ts AS DATE) AS sent_dt,
+            'A' AS author_name, 'a@x' AS author_email, subject, in_reply_to,
+            CAST(reference_ids AS VARCHAR[]) AS reference_ids, NULL::VARCHAR AS body_text,
+            CAST(bug_number AS INTEGER) AS bug_number, has_bug_report_subject,
+            NULL::VARCHAR AS form_reporter_name, NULL::VARCHAR AS form_reporter_email
+          FROM (VALUES
+            ('pgsql-bugs', 'b_report', '2025-01-01 00:00:00+00', 'BUG #100: crash', NULL, NULL, 100, true),
+            ('pgsql-bugs', 'b_reply', '2025-01-02 00:00:00+00', 'Re: BUG #100: crash', 'b_report', ['b_report'], 100, false),
+            ('pgsql-bugs', 'b_offlist', '2025-01-03 00:00:00+00', 'Re: BUG #100: crash', 'offlist', ['b_report', 'offlist'], 100, false),
+            ('pgsql-bugs', 'b_noheader', '2025-01-04 00:00:00+00', 'Re: BUG #100: crash', NULL, NULL, 100, false),
+            ('pgsql-bugs', 'b_bugwide', '2025-01-05 00:00:00+00', 'Re: BUG #100: crash', 'gone2', ['gone2'], 100, false),
+            ('pgsql-bugs', 'b_orphan', '2025-01-06 00:00:00+00', 'Re: a question', 'gone', ['gone'], NULL, false),
+            ('pgsql-hackers', 'h_c1', '2025-01-01 00:00:00+00', 'Re: loop', 'h_c2', NULL, NULL, false),
+            ('pgsql-hackers', 'h_c2', '2025-01-02 00:00:00+00', 'Re: loop', 'h_c1', NULL, NULL, false)
+          ) AS fixture (list_name, message_id, sent_ts, subject, in_reply_to, reference_ids, bug_number, has_bug_report_subject)
+      - input: ref('int_commit_discussions')
+        rows:
+          - {commit_hash: c1, message_id: b_offlist, source_list: pgsql-bugs}
+      - input: ref('int_release_calendar')
+        rows:
+          - {scheduled_release_dt: 2025-02-13, wrap_dt: 2025-02-10}
+    expect:
+      rows:
+        - {message_id: b_report, thread_parent_id: null, root_id: b_report, is_thread_start: true, is_thread_root: true, is_fix_linked: true, is_bug_report: true}
+        - {message_id: b_reply, thread_parent_id: b_report, root_id: b_report, is_thread_start: false, is_thread_root: false, is_fix_linked: true, is_bug_report: false}
+        - {message_id: b_offlist, thread_parent_id: b_report, root_id: b_report, is_thread_start: false, is_thread_root: false, is_fix_linked: true, is_bug_report: false}
+        - {message_id: b_noheader, thread_parent_id: b_report, root_id: b_report, is_thread_start: false, is_thread_root: false, is_fix_linked: true, is_bug_report: false}
+        - {message_id: b_bugwide, thread_parent_id: b_report, root_id: b_report, is_thread_start: false, is_thread_root: false, is_fix_linked: true, is_bug_report: false}
+        - {message_id: b_orphan, thread_parent_id: gone, root_id: b_orphan, is_thread_start: false, is_thread_root: true, is_fix_linked: false, is_bug_report: false}
+        - {message_id: h_c1, thread_parent_id: h_c2, root_id: h_c1, is_thread_start: false, is_thread_root: true, is_fix_linked: false, is_bug_report: false}
+        - {message_id: h_c2, thread_parent_id: h_c1, root_id: h_c1, is_thread_start: false, is_thread_root: false, is_fix_linked: false, is_bug_report: false}

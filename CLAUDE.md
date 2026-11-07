@@ -868,13 +868,23 @@ dct mechanics and quirks that shape the boards:
   model cannot see undisclosed AI use: a rising line partly measures
   disclosure norms (PostgreSQL had no AI policy as of mid-2026), which is why
   `disclosure_form` is recorded.
-- **Thread identity is transitive** (`int_message_threads`): parent = In-Reply-To
-  else the last References id; root = the topmost archived ancestor, climbed
-  with a recursive CTE per list. Never take "the first References id" as the
-  root (clients send partial chains; it fragments threads). `is_thread_start`
-  = no reply header (a genuinely new thread); `is_thread_root` = the earliest
-  archived message of its thread (the grain of `fct_threads`, which is also
-  where "bug reports" incl. free-form ones and thread outcomes live). A *bug
+- **Thread identity is transitive** (`int_message_threads`): `parent_id` =
+  In-Reply-To else the last References id (the header parent); the thread is
+  built on `thread_parent_id` = the NEAREST ARCHIVED id the headers name
+  (In-Reply-To, then References newest to oldest -- JWZ threading's whole-chain
+  link), so a reply to an off-list or pre-archive message still joins its
+  thread through an earlier ancestor; else, on pgsql-bugs, the report of the
+  bug the subject names (a "Re: BUG #N" sent with no reply header, or replying
+  off-list); else the header parent. Root = the topmost archived ancestor,
+  climbed with a recursive CTE per list. Never take "the first References id"
+  as the root (clients send partial chains; it fragments threads), and never
+  group by subject (JWZ's last step): recurring titles ("typos", "draft
+  back-branch release notes are up") would merge unrelated threads across
+  years. `is_thread_start` = nothing to attach to (a genuinely new thread);
+  `is_thread_root` = the earliest archived message of its thread (the grain of
+  `fct_threads`, which is also where "bug reports" incl. free-form ones and
+  thread outcomes live); a reply whose headers name nothing archived roots its
+  own thread without being a start. A *bug
   report* is a new pgsql-bugs thread (`fct_threads.is_new_thread`), form or
   free-form; the BUG # form reports alone (`dim_bug`) are about two thirds of
   them.
