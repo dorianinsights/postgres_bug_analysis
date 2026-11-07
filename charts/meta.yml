@@ -1,0 +1,73 @@
+# Folder defaults: every board in charts/ inherits these. A board's own keys
+# override them; its own style.charts.category_colors adds columns beside the
+# ones pinned here (column by column). Only settings that mean the same thing
+# on every board belong here: a pin on a generic column name (`series`)
+# stays on its board, since folder-wide pins for a column shift the colors of
+# that column's unpinned values on every other board.
+
+# every query reads the one warehouse source, the read-only transform.duckdb
+source: warehouse
+
+style:
+  charts:
+    # the fix taxonomy has 13 categories (seeds/content_categories) and the
+    # categorical palette 10 swatches, so the palette is extended with three
+    # derived variants of hues that sit far from their neighbours (dct warns
+    # when a chart has more series than the palette has swatches). The first
+    # ten are the default palette, so boards with fewer series are unchanged.
+    color:
+      categorical:
+        palette: ["category[1]", "category[2]", "category[3]", "category[4]", "category[5]", "category[6]", "category[7]", "category[8]", "category[9]", "category[10]", "category[3].light", "category[4].light", "category[5].deep"]
+    # one color per value of each shared column, on every board, layered charts
+    # included, so a series keeps its hue whichever subset a chart's query
+    # returns and whichever board draws it
+    category_colors:
+      # the 13 fix categories (changelog, fix_impact)
+      category:
+        values:
+          "Planner & optimizer": category[1]
+          "Execution & correctness": category[2]
+          "Indexes": category[3]
+          "Partitioning & inheritance": category[4]
+          "Replication & recovery": category[5]
+          "Concurrency, locking & crashes": category[6]
+          "Numeric, overflow & limits": category[7]
+          "Data types, text & collation": category[8]
+          "Client tools": category[9]
+          "Client interfaces": category[10]
+          "Extensions & contrib": category[3].light
+          "Build & platform": category[4].light
+          "Storage, vacuum & TOAST": category[5].deep
+      # where a fix or a cited thread came from (1_fix_analysis,
+      # email_list_analysis)
+      origin:
+        values:
+          pgsql-hackers: category[1]
+          pgsql-bugs: category[2]
+          unsourced: category[3]
+          embargoed security: category[4]
+      # fix_counts colors bars by calendar year (query labels them "2020", ...;
+      # quoted here so YAML keeps them strings). Each year gets a DISTINCT
+      # qualitative hue from the categorical palette so the boundary between
+      # one year's block of quarters and the next is obvious; the slots are
+      # chosen (and checked in the render) so no two adjacent years read as a
+      # similar hue. Add a free slot for a new release year.
+      release_year:
+        values:
+          "2020": category[1]
+          "2021": category[5]
+          "2022": category[3]
+          "2023": category[4]
+          "2024": category[6]
+          "2025": category[2]
+          "2026": category[7]
+      # the CVE and hardening splits: blue = the bulk, category[4] maroon =
+      # the security share (the security hue)
+      security_class:
+        values:
+          "no CVE": category[1]
+          "with CVE": category[4]
+      hardening_class:
+        values:
+          "no hardening": category[1]
+          "hardening": category[4]

@@ -1,43 +1,11 @@
 _schema_version: "0.6.0"  # written automatically by dct migrate
-# one color per origin on every chart of this board, pinned so a series keeps
-# its hue whichever subset of origins a chart's query returns
+# the origin, release_year, security_class and hardening_class colors are
+# pinned folder-wide in charts/meta.yml
 style:
   charts:
     min_height: 360
     max_height: 360
     bar: { stack: zero, orientation: vertical }
-    category_colors:
-      origin:
-        values:
-          pgsql-hackers: category[1]
-          pgsql-bugs: category[2]
-          unsourced: category[3]
-          embargoed security: category[4]
-      # fix_counts colors bars by calendar year (query labels them "2020", ...;
-      # quoted here so YAML keeps them strings). Each year gets a DISTINCT
-      # qualitative hue from the categorical palette so the boundary between
-      # one year's block of quarters and the next is obvious; the slots are
-      # chosen (and checked in the render) so no two adjacent years read as a
-      # similar hue. Add a free slot for a new release year.
-      release_year:
-        values:
-          "2020": category[1]
-          "2021": category[5]
-          "2022": category[3]
-          "2023": category[4]
-          "2024": category[6]
-          "2025": category[2]
-          "2026": category[7]
-      # the CVE and hardening splits: blue = the bulk, category[4] maroon =
-      # the security share (the board's security hue)
-      security_class:
-        values:
-          "no CVE": category[1]
-          "with CVE": category[4]
-      hardening_class:
-        values:
-          "no hardening": category[1]
-          "hardening": category[4]
 title: "PostgreSQL Fix Analysis"
 # one column of default-size charts would hug the board to ~670px, too narrow
 # for the per-release support strips (dct hides a strip whose cells collide)
@@ -56,7 +24,6 @@ notes: >
 queries:
 
   fix_count:
-    source: warehouse
     sql: |
       SELECT
         STRFTIME(release_dt, '%b %y') AS release,
@@ -77,7 +44,6 @@ queries:
       The stacked total equals the "Fixes by release" chart above. Shipped
       releases only; out-of-band and partial post-GA releases excluded.
     formats: { fix_cnt: integer, cve_pct: percent_whole }
-    source: warehouse
     sql: |
       WITH per_release AS (
         SELECT
@@ -109,7 +75,6 @@ queries:
   fix_cve_pct:
     notes: The per-release CVE share (CVE-bearing fixes / total documented fixes), one row per release for the dual-axis line.
     formats: { cve_pct: percent_whole }
-    source: warehouse
     sql: |
       SELECT
         STRFTIME(release_dt, '%b %y') AS release,
@@ -128,7 +93,6 @@ queries:
       both rows for the support strip. Same total as the "Fixes by release"
       chart. Shipped releases only; out-of-band and partial post-GA excluded.
     formats: { fix_cnt: integer, hardening_pct: percent }
-    source: warehouse
     sql: |
       WITH per_release AS (
         SELECT
@@ -160,7 +124,6 @@ queries:
   fix_hardening_pct:
     notes: The per-release security-hardening share (hardening fixes / total documented fixes), one row per release for the dual-axis line.
     formats: { hardening_pct: percent_whole }
-    source: warehouse
     sql: |
       SELECT
         STRFTIME(release_dt, '%b %y') AS release,
@@ -183,7 +146,6 @@ queries:
       security_fix_cnt (the CVE-bearing subset of fix_cnt, all origins) totals
       per release into the Security support strip below the axis.
     formats: { security_fix_cnt: integer, fix_cnt: integer, committed_fix_cnt: integer, rate: percent_whole }
-    source: warehouse
     sql: |
       SELECT
         STRFTIME(release_dt, '%b %y') AS release,
@@ -214,7 +176,6 @@ queries:
       into one item and document only 40-60% of subjects. release_seq is the
       chart's sort key (the x-axis order).
     formats: { fix_commits: integer, so_far: integer, documented_fix_cnt: integer, rate: percent_whole }
-    source: warehouse
     sql: |
       SELECT
         STRFTIME(release_dt, '%b %y') || CASE WHEN status = 'open' THEN ' (so far)' ELSE '' END AS release,
@@ -241,7 +202,6 @@ queries:
       origin's share AND its count, with the release total. Shipped releases
       only, like fix_origins_count, but without the commit columns that would
       crowd the hover.
-    source: warehouse
     sql: |
       SELECT
         STRFTIME(release_dt, '%b %y') AS release,
@@ -258,7 +218,6 @@ queries:
 
   ai_commits:
     notes: Master commits disclosing AI involvement (reviewed labels) per month by origin.
-    source: warehouse
     sql: |
       SELECT
         month_dt,

@@ -34,7 +34,6 @@ style:
 queries:
   next_wrap:
     notes: Days until the next scheduled wrap (the content cutoff).
-    source: warehouse
     sql: |
       SELECT
         MIN(wrap_dt) - CURRENT_DATE AS days_to_wrap,
@@ -44,7 +43,6 @@ queries:
 
   next_minor_reports:
     notes: Bug reports that can only ship in the next minor.
-    source: warehouse
     sql: |
       SELECT
         COUNT(*) AS report_cnt,
@@ -54,7 +52,6 @@ queries:
 
   next_minor_messages:
     notes: List messages accrued toward the next minor (both lists).
-    source: warehouse
     sql: |
       SELECT
         COUNT(*) AS message_cnt,
@@ -64,7 +61,6 @@ queries:
 
   next_minor_fixes:
     notes: Distinct fixes already committed in the open cycle.
-    source: warehouse
     sql: |
       SELECT early_fix_cnt AS fix_cnt
       FROM {{ ref('dim_release') }}
@@ -72,7 +68,6 @@ queries:
 
   blended_estimate:
     notes: The equal-weight blend of the three single-signal estimates, for the open release.
-    source: warehouse
     sql: |
       SELECT prj.projected_fix_cnt
       FROM {{ ref('fct_fix_projections') }} AS prj
@@ -84,7 +79,6 @@ queries:
       The open release's signal estimates (each early signal times its
       ratio, plus the per-origin scaling) and the reference points (blend,
       seasonal baseline); the label carries the ratio applied.
-    source: warehouse
     sql: |
       SELECT
         CASE
@@ -106,7 +100,6 @@ queries:
       every shipped full-quarter release from the releases before it
       (fct_fix_projections), against what the release actually shipped
       (dim_release): projected minus actual, so zero is a perfect call.
-    source: warehouse
     sql: |
       SELECT prj.release_dt, prj.method_label AS method, prj.projected_fix_cnt - rel.distinct_fix_cnt AS error
       FROM {{ ref('fct_fix_projections') }} AS prj
@@ -121,7 +114,6 @@ queries:
       The signal methods are replayed at today's cycle age, so their rows
       re-rank as the cycle ages; the series and seasonal rows are stable.
     formats: { bias: one_decimal, mean_abs_error: one_decimal }
-    source: warehouse
     sql: |
       SELECT
         prj.method_label AS method,
@@ -139,7 +131,6 @@ queries:
     notes: >
       Each closed cycle's shipped-per-early-signal ratios at today's
       cycle age — how stable each estimator's scaling factor has been.
-    source: warehouse
     sql: |
       SELECT release_dt AS ships_at_dt, 'per bug report' AS estimator, ROUND(fix_per_early_report, 2) AS ratio
       FROM {{ ref('dim_release') }}
@@ -159,7 +150,6 @@ queries:
       Early committed fixes (at today's cycle age) vs the release's final
       shipped count, per cycle — the open cycle's early bar is the one
       being projected.
-    source: warehouse
     sql: |
       SELECT STRFTIME(release_dt, '%b %y') AS release, EPOCH(release_dt)::BIGINT AS release_seq, 'early committed (at this cycle age)' AS series, early_fix_cnt AS fixes
       FROM {{ ref('dim_release') }}

@@ -31,7 +31,6 @@ queries:
       two measures per list; the chart draws one series per measure x list
       (dct 0.6 multi-y with color). The last point is the CURRENT month,
       still filling.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
@@ -50,7 +49,6 @@ queries:
       computed from the atomic message grain at the month, never re-aggregated
       from a stored per-period value. Complete months only.
     formats: { fix_linked_share: percent }
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
@@ -69,7 +67,6 @@ queries:
       One outcome per thread, ranked stable > beta > trunk. Complete months
       only. Recent months are right-censored: threads take a while to be
       cited, see the median latency KPI beside the chart.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', started_dt)::DATE AS month_dt,
@@ -86,7 +83,6 @@ queries:
       Median days from a new pgsql-hackers thread's start to the first commit
       citing it, over cited threads -- the horizon within which the outcome
       split above is roughly settled.
-    source: warehouse
     sql: |
       SELECT
         MEDIAN(days_to_first_cite)::INTEGER AS median_days,
@@ -100,7 +96,6 @@ queries:
       year (old enough to be settled), the share cited by any commit, and by a
       backpatched fix.
     formats: { cited_share: percent_whole, fix_share: percent_whole, threads: integer }
-    source: warehouse
     sql: |
       SELECT
         ROUND(AVG(is_cited::INTEGER), 3) AS cited_share,
@@ -116,7 +111,6 @@ queries:
       The same two measures per list per week over the last three rolling
       months -- the near-term zoom of monthly_traffic. The last point is the
       CURRENT week, still filling.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
@@ -135,7 +129,6 @@ queries:
       cited by commits. Computed from the atomic message grain at the week,
       like monthly_linked_share. Complete weeks only.
     formats: { fix_linked_share: percent }
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('week', sent_dt)::DATE AS week_dt,
@@ -149,7 +142,6 @@ queries:
 
   cited_threads:
     notes: Distinct discussion threads cited by master commits, per month by source.
-    source: warehouse
     sql: |
       SELECT
         month_dt,
@@ -167,7 +159,6 @@ queries:
       Threads whose first message discloses AI involvement (a vendor and a work
       role; reviewed local-LLM labels on fct_threads), per month, split by what
       the AI did. A thread with two roles counts in both.
-    source: warehouse
     sql: |
       WITH roles AS (
         SELECT started_dt, list_name, root_message_id, 'found the bug' AS role FROM {{ ref('fct_threads') }} WHERE has_ai_involvement AND ai_found
@@ -191,7 +182,6 @@ queries:
   ai_threads_by_list:
     notes: AI-involved threads per month by list, with the share of all new threads that month.
     formats: { ai_share: percent }
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', started_dt)::DATE AS month_dt,
@@ -211,7 +201,6 @@ queries:
       ai_threads_by_list. A FRACTION (0-1): its percent format
       multiplies by 100.
     formats: { ai_share: percent }
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', started_dt)::DATE AS month_dt,
@@ -224,7 +213,6 @@ queries:
 
   ai_thread_lines:
     notes: The AI-involved threads with their roles, vendor and the model's evidence, newest first.
-    source: warehouse
     sql: |
       SELECT
         started_dt,

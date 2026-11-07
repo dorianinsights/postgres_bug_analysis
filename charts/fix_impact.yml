@@ -28,37 +28,13 @@ style:
     # x) by the x order only on an explicitly stacked bar -- by default the
     # legend reads HIGH, LOW, MEDIUM
     bar: { orientation: vertical, stack: zero }
-    # the fix taxonomy has 13 categories (seeds/content_categories) and the
-    # categorical palette 10 swatches, so the palette is extended with three
-    # derived variants of hues that sit far from their neighbours (dct warns
-    # when a chart has more series than the palette has swatches), and each
-    # category is pinned to its own swatch so it keeps its color on every chart
-    # of the board, layered ones included
-    color:
-      categorical:
-        palette: ["category[1]", "category[2]", "category[3]", "category[4]", "category[5]", "category[6]", "category[7]", "category[8]", "category[9]", "category[10]", "category[3].light", "category[4].light", "category[5].deep"]
-    category_colors:
-      category:
-        values:
-          "Planner & optimizer": category[1]
-          "Execution & correctness": category[2]
-          "Indexes": category[3]
-          "Partitioning & inheritance": category[4]
-          "Replication & recovery": category[5]
-          "Concurrency, locking & crashes": category[6]
-          "Numeric, overflow & limits": category[7]
-          "Data types, text & collation": category[8]
-          "Client tools": category[9]
-          "Client interfaces": category[10]
-          "Extensions & contrib": category[3].light
-          "Build & platform": category[4].light
-          "Storage, vacuum & TOAST": category[5].deep
+    # the 13-swatch palette and the fix-category colors come from
+    # charts/meta.yml
 
 queries:
 
   headline:
     notes: Corpus-wide impact counts, including the embargo gap in CVE latency coverage.
-    source: warehouse
     sql: |
       SELECT
         COUNT(*)::BIGINT AS fix_cnt,
@@ -73,7 +49,6 @@ queries:
 
   severity_distribution:
     notes: CVE-bearing fixes by CVSS v3 severity band.
-    source: warehouse
     sql: |
       SELECT
         severity_band,
@@ -86,7 +61,6 @@ queries:
 
   churn_by_severity:
     notes: Median line churn (added + deleted) of the representative commit, by severity band.
-    source: warehouse
     sql: |
       SELECT
         severity_band,
@@ -102,7 +76,6 @@ queries:
     notes: >
       Median backpatch breadth (how many stable branches the fix landed on)
       by severity band — do more severe fixes get carried to more releases?
-    source: warehouse
     sql: |
       SELECT
         severity_band,
@@ -119,7 +92,6 @@ queries:
       Every bug-linked fix: change size (line churn) vs report-to-fix days,
       colored by category. The cloud is mostly non-security work — security
       fixes rarely have a public report to measure latency from.
-    source: warehouse
     sql: |
       SELECT
         churn_sum,
@@ -137,7 +109,6 @@ queries:
       fitted curve over the churn range. The fit is essentially flat: size
       explains almost none of the latency (its R² is size_latency_fit). days + 1
       shifts avoid log(0).
-    source: warehouse
     sql: |
       WITH pts AS (
         SELECT
@@ -168,7 +139,6 @@ queries:
     notes: >
       The R² of size_latency_trend's power-law fit (the same log-log points),
       printed in the scatter's subtitle.
-    source: warehouse
     sql: |
       SELECT REGR_R2(LOG10(days_to_fix_min + 1), LOG10(churn_sum)) AS r2
       FROM {{ ref('fct_fixes') }}
@@ -180,7 +150,6 @@ queries:
     notes: >
       Median report-to-fix latency by fix-size bucket (line churn) — does a
       bigger change take longer to land? Bug-linked fixes only.
-    source: warehouse
     sql: |
       SELECT
         CASE

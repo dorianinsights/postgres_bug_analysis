@@ -29,7 +29,6 @@ queries:
       BUG #NNNNN web-form submissions and the free-form emails -- about a third
       of all reports, and cited by fix commits at a similar rate -- which the
       form-only count (dim_bug / fct_bug_reports_monthly_agg) never sees.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', started_dt)::DATE AS report_month,
@@ -42,7 +41,6 @@ queries:
 
   report_mix:
     notes: The free-form emails' share of all bug reports, for the monthly chart's subtitle.
-    source: warehouse
     sql: |
       SELECT COUNT(*) FILTER (WHERE NOT is_form_report) / COUNT(*) AS free_form_share
       FROM {{ ref('fct_threads') }}
@@ -50,7 +48,6 @@ queries:
 
   monthly_trend:
     notes: Six-month centered moving average of ALL reports (form + free-form).
-    source: warehouse
     sql: |
       WITH monthly AS (
         SELECT DATE_TRUNC('month', started_dt)::DATE AS report_month, COUNT(*) AS report_cnt
@@ -75,7 +72,6 @@ queries:
       starts at the first full week on or after (today - 3 months) and ends
       with the last finished week, so no partial week distorts the series.
       The week spine is generated so a zero-report week still plots as 0.
-    source: warehouse
     sql: |
       SELECT
         gsr.wk::DATE AS report_week,
@@ -100,7 +96,6 @@ queries:
       form + free-form). The underlying series starts two weeks before the
       displayed window so every displayed point averages three real complete
       weeks.
-    source: warehouse
     sql: |
       WITH weekly AS (
         SELECT
@@ -144,7 +139,6 @@ queries:
       stops at the fix commit: a further "shipped in a release" stage would
       miscount fixes already committed to an unreleased upcoming version as not
       shipped, skewing recent periods.
-    source: warehouse
     sql: |
       WITH stage_counts AS (
         SELECT
@@ -183,7 +177,6 @@ queries:
       the support strip. Wide (one row per month) so a hover shows all three
       at once. Trailing months sag because their fixes haven't landed yet.
     formats: { acted_share: percent_whole, acted_avg_6m: percent_whole }
-    source: warehouse
     sql: |
       WITH monthly AS (
         SELECT
@@ -209,7 +202,6 @@ queries:
     notes: >
       Distinct backpatched fixes per release cycle, averaged by release quarter:
       the fixed first-N-day window after the wrap vs the full cycle.
-    source: warehouse
     sql: |
       WITH cyc AS (
         SELECT STRFTIME(release_dt, '%b') AS release_month, QUARTER(release_dt) AS release_quarter,
@@ -232,7 +224,6 @@ queries:
       Front-loading by release quarter: the share of a cycle's backpatched fixes
       that land in the first N days after the wrap.
     formats: { early_share: percent }
-    source: warehouse
     sql: |
       SELECT STRFTIME(release_dt, '%b') AS release_month, QUARTER(release_dt) AS release_quarter,
              ROUND(AVG(early_fix_share), 4) AS early_share
@@ -246,7 +237,6 @@ queries:
     notes: >
       Bug reports (new pgsql-bugs threads, form + free-form, fct_threads) vs
       those later linked to a fix commit, per calendar year.
-    source: warehouse
     sql: |
       SELECT
         CAST(YEAR(started_dt) AS VARCHAR) AS report_year,
@@ -261,7 +251,6 @@ queries:
     notes: >
       Report-to-first-linked-commit latency for acted-upon reports (all bug
       reports, fct_threads), in the latency_windows seed's buckets.
-    source: warehouse
     sql: |
       SELECT
         days_to_action_window AS days_to_commit_window,
@@ -274,7 +263,6 @@ queries:
 
   yearly_latency:
     notes: Median days from report to first linked commit, per year (all bug reports).
-    source: warehouse
     sql: |
       SELECT
         CAST(YEAR(started_dt) AS VARCHAR) AS report_year,
@@ -290,7 +278,6 @@ queries:
       How much discussion a report draws, split by outcome — acted-upon
       reports have longer threads. All bug reports (fct_threads), in the
       thread_size_windows seed's buckets.
-    source: warehouse
     sql: |
       SELECT
         thread_size_window,
@@ -303,7 +290,6 @@ queries:
 
   most_discussed:
     notes: The 15 most-discussed bug reports in the corpus, form or free-form.
-    source: warehouse
     sql: |
       SELECT
         started_dt AS reported,

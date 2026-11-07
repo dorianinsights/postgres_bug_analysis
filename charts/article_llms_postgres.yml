@@ -19,35 +19,21 @@ notes: >
 width: 1100
 
 # same board-wide style the source charts were authored against:
-# 1_fix_analysis pins each release year to a distinct hue and stacks its bars
-# vertically; git_activity pins the churn chart's series so the palette
-# doesn't reseat; 1_fix_analysis pins the CVE split (blue = the bulk, maroon =
-# with CVE, the security hue)
+# 1_fix_analysis stacks its bars vertically; git_activity pins the churn
+# chart's series so the palette doesn't reseat (the release-year and CVE-split
+# colors come from charts/meta.yml)
 style:
   text:
     font: { family: "Inter Variable", size: 17, line_height: 1.7 }
   charts:
     bar: { stack: zero, orientation: vertical }
     category_colors:
-      release_year:
-        values:
-          "2020": category[1]
-          "2021": category[5]
-          "2022": category[3]
-          "2023": category[4]
-          "2024": category[6]
-          "2025": category[2]
-          "2026": category[7]
       series:
         values:
           "lines added": category[1]
           "lines deleted": category[2]
           "total churn (adds + deletes)": category[3]
           "12-month average": category[4]
-      security_class:
-        values:
-          "no CVE": category[1]
-          "with CVE": category[4]
 
 # the day the prose was written: every figure the text quotes is read as of it
 variables:
@@ -60,7 +46,6 @@ variables:
 queries:
   # -- copied from charts/1_fix_analysis.yml
   fix_count:
-    source: warehouse
     sql: |
       SELECT
         STRFTIME(release_dt, '%b %y') AS release,
@@ -83,7 +68,6 @@ queries:
       The stacked total equals the "Fixes by release" chart above. Shipped
       releases only; out-of-band and partial post-GA releases excluded.
     formats: { fix_cnt: integer, cve_pct: percent_whole }
-    source: warehouse
     sql: |
       WITH per_release AS (
         SELECT
@@ -117,7 +101,6 @@ queries:
   fix_cve_pct:
     notes: The per-release CVE share (CVE-bearing fixes / total documented fixes), one row per release for the dual-axis line.
     formats: { cve_pct: percent_whole }
-    source: warehouse
     sql: |
       SELECT
         STRFTIME(release_dt, '%b %y') AS release,
@@ -136,7 +119,6 @@ queries:
       two measures per list; the chart draws one series per measure x list
       (dct 0.6 multi-y with color). The last point is the CURRENT month,
       still filling.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
@@ -157,7 +139,6 @@ queries:
       computed from the atomic message grain at the month, never re-aggregated
       from a stored per-period value. Complete months only.
     formats: { fix_linked_share: percent }
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', sent_dt)::DATE AS month_dt,
@@ -173,7 +154,6 @@ queries:
   ai_threads_by_list:
     notes: AI-involved threads per month by list, with the share of all new threads that month.
     formats: { ai_share: percent }
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', started_dt)::DATE AS month_dt,
@@ -195,7 +175,6 @@ queries:
       ai_threads_by_list. A FRACTION (0-1): its percent format
       multiplies by 100.
     formats: { ai_share: percent }
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', started_dt)::DATE AS month_dt,
@@ -214,7 +193,6 @@ queries:
       BUG #NNNNN web-form submissions and the free-form emails -- about a third
       of all reports, and cited by fix commits at a similar rate -- which the
       form-only count (dim_bug / fct_bug_reports_monthly_agg) never sees.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('month', started_dt)::DATE AS report_month,
@@ -229,7 +207,6 @@ queries:
 
   report_mix:
     notes: The free-form emails' share of all bug reports, for the monthly chart's subtitle.
-    source: warehouse
     sql: |
       SELECT COUNT(*) FILTER (WHERE NOT is_form_report) / COUNT(*) AS free_form_share
       FROM {{ ref('fct_threads') }}
@@ -237,7 +214,6 @@ queries:
 
   monthly_trend:
     notes: Six-month centered moving average of ALL reports (form + free-form).
-    source: warehouse
     sql: |
       WITH monthly AS (
         SELECT DATE_TRUNC('month', started_dt)::DATE AS report_month, COUNT(*) AS report_cnt
@@ -270,7 +246,6 @@ queries:
       the support strip. Wide (one row per month) so a hover shows all three
       at once. Trailing months sag because their fixes haven't landed yet.
     formats: { acted_share: percent_whole, acted_avg_6m: percent_whole }
-    source: warehouse
     sql: |
       WITH monthly AS (
         SELECT
@@ -299,7 +274,6 @@ queries:
       The one-time PL/Perl ppport.h refresh behind churn_by_quarter's churn spike
       (commit 2d44912c, "plperl: update ppport.h to Perl 5.34.0."): its quarter
       and its churn in churn_by_quarter's file classes, for the churn chart's subtitle.
-    source: warehouse
     sql: |
       SELECT
         'Q' || QUARTER(dc.commit_dt) || ' ' || YEAR(dc.commit_dt) AS quarter_label,
@@ -326,7 +300,6 @@ queries:
       housekeeping commits (the release-notes SGML drafts are the largest single
       churn items of a cycle and scale with the fix count, not with the work).
       The current quarter is partial.
-    source: warehouse
     sql: |
       WITH q AS (
         SELECT
@@ -378,7 +351,6 @@ queries:
       own chart below it. The mean includes
       the Q1 2022 ppport.h spike and the partial current quarter as they are.
     formats: { churn_ratio: percent_whole }
-    source: warehouse
     sql: |
       WITH q AS (
         SELECT
@@ -410,7 +382,6 @@ queries:
       by article_as_of (the anchor), the one before it and the one after, with
       long-form dates, the anchor's minor versions, each release's newest
       version, and the oldest major still supported at the article's date.
-    source: warehouse
     sql: |
       WITH sched AS (
         SELECT
@@ -499,7 +470,6 @@ queries:
       year and the one before it, and the anchor's and previous release's
       totals, CVE counts and CVE shares against the range of every earlier
       release's share.
-    source: warehouse
     sql: |
       WITH per_release AS (
         SELECT
@@ -562,7 +532,6 @@ queries:
       finding the bug, the month of the first; and the AI-involved new
       threads (every list) in the last complete month before the article,
       with their share of that month's new threads.
-    source: warehouse
     sql: |
       WITH commits AS (
         SELECT
@@ -596,7 +565,6 @@ queries:
       The highest monthly acted-upon share and the highest 6-month average of
       it (monthly_acted_data's measures) up to the article's month, each with
       its month.
-    source: warehouse
     sql: |
       WITH monthly AS (
         SELECT
@@ -627,7 +595,6 @@ queries:
     notes: >
       Q1 2020's total churn (the quarter the prose calls elevated), over
       churn_by_quarter's population and file classes.
-    source: warehouse
     sql: |
       SELECT SUM(COALESCE(cf.lines_added, 0) + COALESCE(cf.lines_deleted, 0))::BIGINT AS q1_2020_lines
       FROM {{ ref('fct_commit_files') }} AS cf

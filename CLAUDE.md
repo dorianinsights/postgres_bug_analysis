@@ -317,7 +317,13 @@ The visualization layer is [dbt charts](https://docs.dbtcharts.com/)
 (**`dbt-charts` 0.11.1**, CLI **`dct`**, project config `dbt_charts.yml`
 beside `dbt_project.yml`). Every face is plain SQL (no MetricFlow) against
 the read-only `warehouse` DuckDB source. Rendered copies land in `out/`
-(gitignored; regenerate with `dct render`). The boards:
+(gitignored; regenerate with `dct render`). `charts/meta.yml` holds the
+folder defaults every board inherits: `source: warehouse` (so no query
+names its source), the 13-swatch palette, and the color pins of the columns
+that mean the same thing on every board (`category`, `origin`,
+`release_year`, `security_class`, `hardening_class`). A board's own keys
+override it, and its own `category_colors` columns sit beside the
+folder's. The boards:
 
 - `1_fix_analysis.yml` (the leading `1_` orders it first in `dct serve`) —
   source attribution: documented fixes per release by origin (counts and
@@ -450,15 +456,25 @@ dct mechanics and quirks that shape the boards:
   line) carry `warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]`: the share
   is the count's own ratio, both axes are titled, and most print the exact
   values in a support strip.
-- **Category colors are pinned on the board** (`style.charts.category_colors`),
-  and every chart binding that `color:` field takes the pins, layered charts
-  included -- so a series' color lives in one place, never as a chart-level
-  palette. The 13-category fix taxonomy extends `style.charts.color.
-  categorical.palette` with three derived variants (`category[n].light` /
-  `.deep`) on `changelog` and `fix_impact` and pins each category to its
-  swatch: dct warns (WARN-TOO-MANY-COLOR-CATEGORIES) when a chart has more
-  series than the palette has swatches, so the palette length is what states
-  the taxonomy's 13 colors.
+- **Category colors are pinned, never a chart-level palette**
+  (`style.charts.category_colors`), and every chart binding that `color:`
+  field takes the pins, layered charts included -- so a series' color lives
+  in one place. A column whose values mean the same thing everywhere is
+  pinned once in `charts/meta.yml`; a pin on a generic column name
+  (`series`, which names churn measures on `git_activity` and report kinds
+  on `bug_reports`) stays on its board, because pinning a column also moves
+  that column's UNPINNED values past the pinned swatches on every board, and
+  one column cannot pin two values to the same swatch
+  (ERR-CATEGORY-COLOR-PIN-DUPLICATE). That is why the article's copy of
+  "Bug reports per month" draws its unpinned report kinds orange and red:
+  the article's `series` pins hold the first four swatches. Give a chart's
+  series column a specific name when it needs its own pins. The 13-category
+  fix taxonomy extends `style.charts.color.categorical.palette` with three
+  derived variants (`category[n].light` / `.deep`) in `charts/meta.yml`: dct
+  warns (WARN-TOO-MANY-COLOR-CATEGORIES) when a chart has more series than
+  the palette has swatches, so the palette length is what states the
+  taxonomy's 13 colors; its first ten are the default palette, so a board
+  with fewer series draws in the default colors.
 - **Prose sits on the board's card grid:** a `text:` row's column is one
   span of a halves/thirds grid, never a free measure, so on the 1100px
   article board each text row flows into two balanced columns

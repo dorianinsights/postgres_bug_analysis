@@ -200,6 +200,19 @@ Surfaced by the 0.11.1 upgrade; each is a board edit or an upstream report.
   migrate` failing on flow-style mappings; the shared-y-axis scale warning on
   `category_mix` / `size_vs_latency`, whose fits draw legibly.
 
+## Board color consistency
+
+- **The article's "Bug reports per month" draws orange and red** where
+  `bug_reports` draws blues: both color by the generic `series` column, and
+  the article's `series` pins (the churn chart's) hold the first four
+  swatches. Rename the report-kind column (`report_kind`) on both boards and
+  pin it in `charts/meta.yml`.
+- **Shared columns still unpinned:** `list_name` (`email_list_analysis`, the
+  article), `role` (`email_list_analysis`, `git_activity`; three of its four
+  values are shared) and `outcome` (`bug_reports`, `email_list_analysis`,
+  two disjoint value sets). Pinning them in `charts/meta.yml` fixes their
+  colors across boards; check each render, since a new pin recolors.
+
 ## Re-evaluate dbt 2.x (not urgent; revisit ~Dec 2026 – Jan 2027)
 
 dbt 2.x is developed in `dbt-labs/dbt-core` itself (`main` is the Rust engine;

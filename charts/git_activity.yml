@@ -68,7 +68,6 @@ queries:
       git-history count — roughly 2x the Changelog's documented per-release
       fixes, since only ~half of fix commits become a release-note item. The
       current quarter is partial.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
@@ -90,7 +89,6 @@ queries:
       branch counts its beta stabilization, so the newest line starts at its fork.
       (Every released major has its own beta period on its branch too -- drop the
       branch_scope condition to include those.)
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
@@ -113,7 +111,6 @@ queries:
       its month's scheduled bar. Shipped releases only; a fix backpatched to
       several majors shows once under each. The release-binned counterpart of the
       per-quarter commit chart above.
-    source: warehouse
     sql: |
       SELECT
         STRFTIME(dv.release_dt, '%b %y') AS release,
@@ -139,7 +136,6 @@ queries:
       within a major and stepped across majors, never added. Hand-written source
       only: the generated classes (translation catalogs .po, regression fixtures
       .out) and non-code files are excluded.
-    source: warehouse
     sql: |
       SELECT
         bsz.week_start AS week_dt,
@@ -161,7 +157,6 @@ queries:
       visible at once. The step up from one major to the next (e.g. PG18 -> PG19's
       ~112k lines) resolves into which areas grew: core server, tests, new contrib
       extensions, docs. Absolute lines, so taller bars are genuinely bigger trees.
-    source: warehouse
     sql: |
       WITH latest AS (
         SELECT
@@ -188,7 +183,6 @@ queries:
       The one-time PL/Perl ppport.h refresh behind the churn spike
       (commit 2d44912c, "plperl: update ppport.h to Perl 5.34.0."): its quarter
       and its churn in the file classes the stable-churn dropdown selects, for the churn chart's subtitle.
-    source: warehouse
     sql: |
       SELECT
         'Q' || QUARTER(dc.commit_dt) || ' ' || YEAR(dc.commit_dt) AS quarter_label,
@@ -204,7 +198,6 @@ queries:
       Three subsystems' shares of the oldest and the newest major's latest tree
       (the same snapshot and file-class dropdown as codebase_composition), for
       the share chart's subtitle.
-    source: warehouse
     sql: |
       WITH latest AS (
         SELECT
@@ -255,7 +248,6 @@ queries:
       housekeeping commits (the release-notes SGML drafts are the largest single
       churn items of a cycle and scale with the fix count, not with the work).
       The current quarter is partial.
-    source: warehouse
     sql: |
       WITH q AS (
         SELECT
@@ -305,7 +297,6 @@ queries:
       own chart below it. The mean includes
       the Q1 2022 ppport.h spike and the partial current quarter as they are.
     formats: { churn_ratio: percent_whole }
-    source: warehouse
     sql: |
       WITH q AS (
         SELECT
@@ -336,7 +327,6 @@ queries:
       summed per fix above and why the per-branch charts are comparable only
       from Q3 2023 on.
       The current quarter is partial.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('quarter', fc.commit_dt)::DATE AS quarter,
@@ -356,7 +346,6 @@ queries:
       released-branch backpatch churn is the chart above). Generated file classes
       (.po, .out) are excluded -- source churn only -- as are housekeeping commits.
       The current quarter is partial.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('quarter', cf.commit_dt)::DATE AS quarter,
@@ -377,7 +366,6 @@ queries:
       Distinct fix commits whose message discloses AI involvement (a vendor and
       a work role, reviewed local-LLM labels on dim_commit), per quarter, across
       stable branches and master.
-    source: warehouse
     sql: |
       SELECT
         DATE_TRUNC('quarter', commit_dt)::DATE AS quarter,
@@ -392,7 +380,6 @@ queries:
     notes: >
       The same commits split by what the AI did; a fix with two roles counts in
       both, so the stack's top edge is role-mentions, not fixes.
-    source: warehouse
     sql: |
       WITH roles AS (
         SELECT commit_dt, fix_key, 'found the bug' AS role FROM {{ ref('dim_commit') }} WHERE has_ai_involvement AND ai_found
@@ -413,7 +400,6 @@ queries:
 
   ai_involved_lines:
     notes: The AI-involved fix commits with their roles, vendor and the model's evidence, newest first.
-    source: warehouse
     sql: |
       SELECT
         MIN(commit_dt) AS commit_dt,
@@ -443,7 +429,6 @@ queries:
       open cycle) next to each closed cycle's full-cycle commit total. Binned per
       release cycle (not calendar quarter) — this full-cycle total is the
       commit-level counterpart of the Changelog's documented per-release fix count.
-    source: warehouse
     sql: |
       -- compact "Aug 22" label + numeric cycle_seq for the chart's sort. dct
       -- SUMS the sort key per label, so every cycle needs the SAME row count --
@@ -469,7 +454,6 @@ queries:
       timestamp -- when in the day commits actually land. All commits in
       dim_commit. A round-the-clock shape from a global contributor base with a
       broad afternoon-UTC peak (US morning + Europe afternoon).
-    source: warehouse
     sql: |
       SELECT
         EXTRACT(year FROM commit_ts AT TIME ZONE 'UTC')::INTEGER AS year_utc,
@@ -481,7 +465,6 @@ queries:
 
   commit_hour_stats:
     notes: The mean and median commit time of day (UTC), as HH:MM, over all commits.
-    source: warehouse
     sql: |
       WITH minutes AS (
         SELECT EXTRACT(hour FROM commit_ts AT TIME ZONE 'UTC') * 60

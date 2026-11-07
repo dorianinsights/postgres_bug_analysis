@@ -18,31 +18,8 @@ style:
     min_height: 380
     max_height: 380
     bar: { stack: zero }
-    # the fix taxonomy has 13 categories (seeds/content_categories) and the
-    # categorical palette 10 swatches, so the palette is extended with three
-    # derived variants of hues that sit far from their neighbours (dct warns
-    # when a chart has more series than the palette has swatches), and each
-    # category is pinned to its own swatch so it keeps its color on every chart
-    # of the board, layered ones included
-    color:
-      categorical:
-        palette: ["category[1]", "category[2]", "category[3]", "category[4]", "category[5]", "category[6]", "category[7]", "category[8]", "category[9]", "category[10]", "category[3].light", "category[4].light", "category[5].deep"]
-    category_colors:
-      category:
-        values:
-          "Planner & optimizer": category[1]
-          "Execution & correctness": category[2]
-          "Indexes": category[3]
-          "Partitioning & inheritance": category[4]
-          "Replication & recovery": category[5]
-          "Concurrency, locking & crashes": category[6]
-          "Numeric, overflow & limits": category[7]
-          "Data types, text & collation": category[8]
-          "Client tools": category[9]
-          "Client interfaces": category[10]
-          "Extensions & contrib": category[3].light
-          "Build & platform": category[4].light
-          "Storage, vacuum & TOAST": category[5].deep
+    # the 13-swatch palette and the fix-category colors come from
+    # charts/meta.yml
 
 queries:
   latest_release:
@@ -52,7 +29,6 @@ queries:
       as a signed percent). Out-of-band releases are skipped on both sides of
       the comparison.
     formats: { fix_delta: signed_percent, security_delta: signed_percent, cve_delta: signed_percent }
-    source: warehouse
     sql: |
       SELECT
         release_dt,
@@ -75,7 +51,6 @@ queries:
       fixes already committed to the stable branches this cycle. Security fixes and
       CVEs arrive embargoed on wrap day (they only reach public git then), so they
       are 0 by construction until the release wraps.
-    source: warehouse
     sql: |
       SELECT
         release_dt AS release_dt,
@@ -93,7 +68,6 @@ queries:
       (a release-group property, not a per-version item-count threshold). Shipped
       releases only -- item_cnt is the release-notes item count, which does not
       exist for the still-accumulating upcoming release.
-    source: warehouse
     sql: |
       SELECT
         dv.release_dt AS date,
@@ -108,7 +82,6 @@ queries:
     notes: >
       Distinct fixes per full-quarter release by category (backpatched
       duplicates collapsed across branches; out-of-band releases excluded).
-    source: warehouse
     sql: |
       SELECT release_dt AS release_dt, category, category_order, fix_cnt
       FROM {{ ref('fct_release_categories_agg') }}
@@ -117,7 +90,6 @@ queries:
 
   oob_categories:
     notes: The out-of-band emergency releases' fixes by category.
-    source: warehouse
     sql: |
       -- categorical x: an ISO-prefixed label sorts chronologically, and the
       -- suffix keeps dct from date-parsing it onto a (sparse) temporal axis —
@@ -133,7 +105,6 @@ queries:
       Security is CVE-anchored now that it is a flag rather than a category
       (is_security_hardening is tracked separately on fct_fixes). Fixes whose CVE
       has no published score (long-EOL majors) fall in the UNSCORED band.
-    source: warehouse
     sql: |
       SELECT
         release_dt AS release_dt,
@@ -149,7 +120,6 @@ queries:
     notes: >
       Distinct credited contributors per scheduled release, split into names
       appearing for the first time in this corpus vs returning names.
-    source: warehouse
     sql: |
       SELECT
         wc.release_dt AS release_dt,
@@ -162,7 +132,6 @@ queries:
 
   contributors_since:
     notes: The year of the corpus's first credited release, for the contributors subtitle.
-    source: warehouse
     sql: |
       SELECT YEAR(MIN(release_dt)) AS first_year
       FROM {{ ref('fct_release_contributors_agg') }}
@@ -172,7 +141,6 @@ queries:
       Least-squares trendlines over full-quarter release totals (the partial
       first release excluded): one fit over all releases, one excluding the latest
       release as a sensitivity check.
-    source: warehouse
     sql: |
       WITH fullq AS (
         SELECT release_dt AS release_dt,
@@ -196,7 +164,6 @@ queries:
 
   security_trend:
     notes: Same two trendlines fitted to the security-fix totals per release.
-    source: warehouse
     sql: |
       WITH fullq AS (
         SELECT release_dt AS release_dt,
@@ -225,7 +192,6 @@ queries:
       dim_release.is_partial_window, not by name), against calendar time. The
       regression's day index counts from the earliest included release, so
       there is no epoch literal to drift when the corpus floor moves.
-    source: warehouse
     sql: |
       WITH sched AS (
         SELECT
@@ -249,7 +215,6 @@ queries:
 
   release_totals:
     notes: Distinct fixes per full-quarter release (the projection base series).
-    source: warehouse
     sql: |
       SELECT release_dt AS release_dt, distinct_fix_cnt
       FROM {{ ref('dim_release') }}
@@ -260,7 +225,6 @@ queries:
     notes: >
       The four series scenarios for the open release (fct_fix_projections,
       method_family = series: reversion / trend / regime repeat / escalation).
-    source: warehouse
     sql: |
       SELECT prj.release_dt AS projected_dt, prj.method_label AS scenario, prj.projected_fix_cnt AS distinct_fix_cnt, prj.assumption
       FROM {{ ref('fct_fix_projections') }} AS prj
@@ -271,7 +235,6 @@ queries:
 
   release_table:
     notes: All releases with headline numbers, newest first.
-    source: warehouse
     sql: |
       SELECT release_dt AS release_dt, versions, distinct_fix_cnt, security_fix_cnt, distinct_cve_cnt,
              CASE WHEN is_out_of_band THEN 'yes' ELSE '' END AS is_out_of_band
