@@ -18,33 +18,32 @@ notes: >
 # board-level strip, so per-chart control = one variable each). Every dropdown
 # lists the file classes and defaults to the hand-written source set; add
 # translation catalogs / regression fixtures on a chart to include them, remove a
-# class to drop it -- each chart is independent. multiselect (not single select)
-# because a chart sums several source classes at once.
+# class to drop it -- each chart is independent. A list default makes each a
+# multiselect (not a single select): a chart sums several source classes at once.
+# The option list and the default are written once, on size_classes, as YAML
+# anchors (&file_classes, &source_classes); the other three reuse them with
+# *aliases. To give one chart a different default, write its list out there.
 variables:
   size_classes:
-    input: multiselect
     label: "Codebase size — file classes"
     options:
-      static: [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
-    default: [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
+      static: &file_classes [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
+    default: &source_classes [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
   composition_classes:
-    input: multiselect
     label: "Composition — file classes"
     options:
-      static: [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
-    default: [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
+      static: *file_classes
+    default: *source_classes
   stable_churn_classes:
-    input: multiselect
     label: "Stable churn — file classes"
     options:
-      static: [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
-    default: [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
+      static: *file_classes
+    default: *source_classes
   trunk_churn_classes:
-    input: multiselect
     label: "Trunk churn — file classes"
     options:
-      static: [source_c, header, sql, perl, python, grammar, docs, embedded_sql, translations, test_fixtures]
-    default: [source_c, header, sql, perl, python, grammar, docs, embedded_sql]
+      static: *file_classes
+    default: *source_classes
 
 style:
   charts:
@@ -589,13 +588,13 @@ charts:
     y: lines
     y_label: "lines changed"
     color: series
-    # the four plotted series as a strip under the axis, in thousands: the
-    # `number` preset (.3~s) spells them 24k / 18.1k / 5.89k with the k
-    # declared once per row (dct's house rule for its own presets)
+    # the four plotted series as a strip under the axis, compacted like the
+    # value axis (24k / 18.1k / 5.89k); font 8 so a cell fits its quarter's
+    # band (dct hides a strip whose cells collide)
     support_table:
-      - { per_series: lines, format: number }
+      - { per_series: lines }
     style:
-      support_table: { position: bottom, font: { size: 9 } }
+      support_table: { position: bottom, font: { size: 8 } }
 
   churn_vs_average:
     type: line
@@ -682,11 +681,11 @@ charts:
       pagination: { page_rows: 10 }
       columns:
         commit_dt: { label: "committed" }
-        # opens the commit on the GitHub mirror, keyed by the hidden hash
-        # (same tab: dct has no new-tab option for a cell link, dbt-charts #33)
+        # opens the commit on the GitHub mirror in a new tab, keyed by the
+        # hidden hash
         subject:
           width: "26%"
-          link: "https://github.com/postgres/postgres/commit/{{ commit_hash }}"
+          link: { url: "https://github.com/postgres/postgres/commit/{{ commit_hash }}", open: new_tab }
         commit_hash: { visible: false }
         label_source: { label: "source" }
         evidence: { width: "38%" }

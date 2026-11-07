@@ -13,22 +13,21 @@ style:
           pgsql-bugs: category[2]
           unsourced: category[3]
           embargoed security: category[4]
-      # fix_counts colors bars by calendar year (query labels them CYYYYY; dct
-      # disqualifies a bare "2020" as a temporal value and silently drops its
-      # pins, dbt-charts #75). Each year gets a DISTINCT qualitative hue from the categorical
-      # palette so the boundary between one year's block of quarters and the
-      # next is obvious; the slots are chosen (and checked in the render) so no
-      # two adjacent years read as a similar hue. Add a free slot for a new
-      # release year.
+      # fix_counts colors bars by calendar year (query labels them "2020", ...;
+      # quoted here so YAML keeps them strings). Each year gets a DISTINCT
+      # qualitative hue from the categorical palette so the boundary between
+      # one year's block of quarters and the next is obvious; the slots are
+      # chosen (and checked in the render) so no two adjacent years read as a
+      # similar hue. Add a free slot for a new release year.
       release_year:
         values:
-          "CY2020": category[1]
-          "CY2021": category[5]
-          "CY2022": category[3]
-          "CY2023": category[4]
-          "CY2024": category[6]
-          "CY2025": category[2]
-          "CY2026": category[7]
+          "2020": category[1]
+          "2021": category[5]
+          "2022": category[3]
+          "2023": category[4]
+          "2024": category[6]
+          "2025": category[2]
+          "2026": category[7]
       # the CVE and hardening splits: blue = the bulk, category[4] maroon =
       # the security share (the board's security hue)
       security_class:
@@ -40,6 +39,9 @@ style:
           "no hardening": category[1]
           "hardening": category[4]
 title: "PostgreSQL Fix Analysis"
+# one column of default-size charts would hug the board to ~670px, too narrow
+# for the per-release support strips (dct hides a strip whose cells collide)
+width: 1200
 notes: >
   Source attribution for fixes and development activity: each fix and
   master-branch commit is traced through its Discussion: trailers to
@@ -59,7 +61,7 @@ queries:
       SELECT
         STRFTIME(release_dt, '%b %y') AS release,
         EPOCH(release_dt)::BIGINT AS release_seq,
-        'CY' || STRFTIME(release_dt, '%Y') AS release_year,
+        STRFTIME(release_dt, '%Y') AS release_year,
         SUM(fix_cnt) AS fix_cnt
       FROM {{ ref('fct_fix_origins_agg') }}
       WHERE status = 'shipped' AND NOT is_out_of_band AND NOT is_partial_window
@@ -125,7 +127,7 @@ queries:
       vs the rest, long-form for the stacked bar, with hardening_pct riding on
       both rows for the support strip. Same total as the "Fixes by release"
       chart. Shipped releases only; out-of-band and partial post-GA excluded.
-    formats: { fix_cnt: integer, hardening_pct: percent_whole }
+    formats: { fix_cnt: integer, hardening_pct: percent }
     source: warehouse
     sql: |
       WITH per_release AS (
@@ -284,8 +286,10 @@ charts:
     # quarterly x labels; release_year is its own category scale (the board's
     # origin colors don't apply to this single-series chart)
     color: release_year
-    # the legend lists the years chronologically with no style.legend.values pin
+    # stacked series (and so this legend) order by series total unless
+    # stack_order says otherwise; data lists the years newest first
     style:
+      stack_order: data
       axis_y:
         mirror: true
       # print the fix count above each bar. each release is a single year-series,
@@ -314,17 +318,17 @@ charts:
         query: fix_cve_pct
         y: cve_pct
         label: "CVE share"
-        axis_y: { position: right, title: "CVE share", labels: { format: percent_whole } }
-        style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
+        axis_y: { position: right, title: "CVE share" }
+        style: { marks: { line: { stroke: { color: "dbt-grays.11", width: 2 } } } }
     # support strip (top to bottom): total fixes, fixes without a CVE, fixes
     # with one (per series), and the CVE share. The first authored entry sits at
     # the top. Total = aggregate: sum of the two series; cve_pct is constant per
     # release, so aggregate: max reads it back as that one value. Font 8 keeps
     # the three-digit / percent cells legible.
     support_table:
-      - { aggregate: sum, source: fix_cnt, format: integer, label: "Total" }
+      - { aggregate: sum, source: fix_cnt, label: "Total" }
       - { per_series: fix_cnt }
-      - { aggregate: max, source: cve_pct, format: percent_whole, label: "CVE %" }
+      - { aggregate: max, source: cve_pct, label: "CVE %" }
     style:
       support_table: { position: bottom, font: { size: 8 } }
 
@@ -346,12 +350,12 @@ charts:
         query: fix_hardening_pct
         y: hardening_pct
         label: "hardening share"
-        axis_y: { position: right, title: "hardening share", labels: { format: percent_whole } }
-        style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
+        axis_y: { position: right, title: "hardening share" }
+        style: { marks: { line: { stroke: { color: "dbt-grays.11", width: 2 } } } }
     support_table:
-      - { aggregate: sum, source: fix_cnt, format: integer, label: "Total" }
+      - { aggregate: sum, source: fix_cnt, label: "Total" }
       - { per_series: fix_cnt }
-      - { aggregate: max, source: hardening_pct, format: percent, label: "Hardening %" }
+      - { aggregate: max, source: hardening_pct, label: "Hardening %" }
     style:
       support_table: { position: bottom, font: { size: 8 } }
 
@@ -369,13 +373,11 @@ charts:
     support_table:
       - aggregate: sum
         source: security_fix_cnt
-        format: integer
         label: "Security"
     # smaller strip font so the two-digit counts (e.g. 14, 29) don't collide in
-    # the narrow per-release bands; a 1px divider rule separates the strip from
-    # the axis above it
+    # the narrow per-release bands
     style:
-      support_table: { position: bottom, font: { size: 10 }, divider: { width: 1 } }
+      support_table: { position: bottom, font: { size: 10 } }
 
   fix_commit_origins:
     type: bar

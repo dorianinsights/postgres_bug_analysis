@@ -55,11 +55,12 @@ pg-mail-sync ──> .cache/mbox/ ───────────────�
   (so no `~/.dbt` setup), `vars.yml`, `dbt_charts.yml`, `models/`, `seeds/`,
   `macros/`, `tests/`, `charts/` and the warehouse sit beside `python/` and
   `data/`, so every dbt, dct and DuckDB command runs from the root with no
-  `cd`. Python 3.13 exactly: dbt-charts caps the range at 3.13, and the
-  floor is part of the analysis definition -- the stdlib `email` parser
-  decides how a malformed `In-Reply-To`/`References` id reads, so it decides
-  which reply joins which thread (`int_message_threads`). 3.12 reads those
-  headers differently from `Message-ID` and splits a few threads in two.
+  `cd`. Python 3.13 exactly: the version is part of the analysis definition
+  -- the stdlib `email` parser decides how a malformed
+  `In-Reply-To`/`References` id reads, so it decides which reply joins which
+  thread (`int_message_threads`). 3.12 reads those headers differently from
+  `Message-ID` and splits a few threads in two; moving to 3.14 (dbt-charts
+  supports it) means re-checking the thread split first.
 - **`pg-refresh`** runs the three fetches in order, then `dbt deps` + `dbt
   build`; the build runs only if every fetch succeeded. `--list` shows the
   steps, `--only <step>` / `--skip <step>` select them, `--no-build` refreshes
@@ -313,7 +314,7 @@ change.
 
 ### Dashboards (`charts/`) and dbt charts
 The visualization layer is [dbt charts](https://docs.dbtcharts.com/)
-(**`dbt-charts` 0.10.0**, CLI **`dct`**, project config `dbt_charts.yml`
+(**`dbt-charts` 0.11.1**, CLI **`dct`**, project config `dbt_charts.yml`
 beside `dbt_project.yml`). Every face is plain SQL (no MetricFlow) against
 the read-only `warehouse` DuckDB source. Rendered copies land in `out/`
 (gitignored; regenerate with `dct render`). The boards:
@@ -364,8 +365,12 @@ the read-only `warehouse` DuckDB source. Rendered copies land in `out/`
 `templates/` holds the project's `type: custom` chart templates
 (`templates/<name>.svg.j2`, named by a chart's `template:`): `funnel` draws
 `bug_reports`' report-to-fix funnel. A template reads its colors and fonts
-from the board's `style`, so it follows every theme; keep the math in the
-query and pass computed columns in through `options:`.
+from the board's `style` (`style.font.color`, the secondary ink
+`style.fonts.secondary.color`), so it follows every theme; keep the math in
+the query and pass computed columns in through `options:`. `dct migrate`
+rewrites boards, never templates, so a style rename in a dct upgrade has to
+be applied to `templates/` by hand (an undefined name fails the chart with
+ERR-CUSTOM-RENDER).
 
 dct mechanics and quirks that shape the boards:
 
@@ -380,9 +385,13 @@ dct mechanics and quirks that shape the boards:
   quick check of a board without rendering a picture.
 - Boards carry an informational `_schema_version` stamp written by
   `dct migrate`; never edit it by hand, and rerun `dct migrate charts/` after
-  a dct upgrade. The dct workflow skills live in the gitignored
-  `.claude/skills/dct-*/` (`dct init skills claude`; rerun after an upgrade --
-  it overwrites the skills and removes any no longer shipped; no `-f` flag).
+  a dct upgrade. `dct migrate` can only rewrite block-style YAML: a key it
+  must change inside a flow mapping (`style: { marks: { ... } }`) fails that
+  board with "only block-style mappings are supported" -- respell that key by
+  hand, or expand the mapping to block style and rerun. The dct agent skill
+  is the single versionless `.claude/skills/dct/` (gitignored here), written
+  by `dct init skills claude`, which also removes retired skills; it points
+  agents at `dct skills chart` for the current field reference.
 - **The query's ORDER BY orders a categorical axis** -- the simplest way to
   order one, and every board renders pixel-identical relying on it. An
   authored `sort:` orders a bar by the sort column's own value -- a stacked
@@ -390,12 +399,19 @@ dct mechanics and quirks that shape the boards:
   pre-summed column when you want the group total). A single-series
   HORIZONTAL bar defaults to value-descending order (`projected_fixes`
   `estimates` keeps its `sort:` for that reason) and keeps it with a
-  `support_table` attached. A legend whose color is 1:1 with x follows the x order only on an
-  explicitly stacked bar (`stack: zero`); under the default it is
-  alphabetical. `style.legend.values` orders AND filters: on a chart with
-  `layers:` it must also list each layer's `label`, or that entry drops out
-  of the legend (`changelog`'s `security` chart lists its two trend lines). The list-traffic charts draw the partial current period as the last point of
-  the main series (the subtitle says so).
+  `support_table` attached. A stacked bar orders its series, and so its
+  legend, by series total; `style.stack_order: data` (query order) or
+  `alphabetical` changes that. `1_fix_analysis`' and the article's
+  `fix_counts` (color 1:1 with x, one year per bar) set `data`, which lists
+  the years newest first; `style.legend.values` does not reorder that
+  legend. Line and area legends and end labels order by each series' last
+  value.
+  `style.legend.values` orders AND filters: on a chart with `layers:` it
+  must also list each layer's `label`, or that entry drops out of the legend
+  (`changelog`'s `security` chart lists its two trend lines). The
+  list-traffic charts draw the partial current period as the last point of
+  the main series (the subtitle says so), and their end labels print that
+  partial value before the series name.
 - **Board-level `style.charts` cascades like inline** for `min_height` /
   `max_height` (= one height pin per board) and `bar: { stack: ... }` (only
   on boards where every bar chart is stacked or draws one row per x -- the
@@ -410,14 +426,26 @@ dct mechanics and quirks that shape the boards:
   percent-formats the hover's raw count column ("2000%") and dct warns
   (WARN-NORMALIZE-PERCENT-FORMAT-READS-RAW-VALUE), so keep the no-format rule.
 - **KPI `support:`** is a second line under the label (a column and its
-  label; its format, such as `percent_delta`, goes in `style.support.format`,
-  and an optional glyph/tone is static, so no glyph or tone on a signed
-  delta). A support line that outgrows its card is cut with an ellipsis
+  label; its format comes from the query's `formats:`). A support value in
+  one of dct's delta formats (`delta`, `percent_delta`, ...) is colored by
+  its sign, up = good by default (`style.support.tone: negative` or
+  `good: down` flips it). `changelog`'s release-over-release KPIs report
+  change without judging it, so they use the board alias `signed_percent`
+  (`"+.1%"`, not a delta format), which prints the sign in the label's gray
+  ink. A support line
+  that outgrows its card is cut with an ellipsis
   (WARN-KPI-SUPPORT-TRUNCATED): shorten the label.
   **`support_table:`** (a per-x strip of extra columns on a bar/line/area
   chart) defaults to ABOVE the plot, touching the subtitle; use
   `style.support_table: { position: bottom }` to sit it under the axis (the
-  gap auto-sizes to rotated x labels).
+  gap auto-sizes to rotated x labels). Cells are compacted like the value
+  axis (`24k`), and a percent row prints its `%` on the first cell only. A
+  strip whose cells don't fit their x bands is HIDDEN, not drawn cramped
+  (WARN-SUPPORT-TABLE-CELL-OVERFLOW): widen the board (`1_fix_analysis` sets
+  `width: 1200`, since a column of default-size charts would hug it to
+  ~670px) or shrink the strip font (`churn_by_quarter`). On a date axis the
+  strip keeps one cell per axis LABEL, so a quarterly-labeled monthly chart
+  (`monthly_acted`) prints every third month and can drop the latest.
 - **Dual-axis charts** (a count with its share on a right-axis `layers:`
   line) carry `warnings_ignore: [WARN-DUAL-AXIS-COMPETING-SCALES]`: the share
   is the count's own ratio, both axes are titled, and most print the exact
@@ -435,17 +463,20 @@ dct mechanics and quirks that shape the boards:
   span of a halves/thirds grid, never a free measure, so on the 1100px
   article board each text row flows into two balanced columns
   (`style.text.column.max_chars` only narrows text inside a span).
-- No native trendlines: the `*_trend` queries compute least-squares fits in
+- Trend lines are SQL: the `*_trend` queries compute least-squares fits in
   DuckDB SQL (`REGR_SLOPE`/`REGR_INTERCEPT`) and draw them as dashed line
-  layers with explicit stroke colors.
+  layers with explicit stroke colors. dct's native `annotations: - type:
+  trend` refuses a time-axis bar (ERR-ANNOTATION-UNSUPPORTED), where most of
+  ours sit, and can't fit "every release but the latest". dct flags
+  `category_mix` and `size_vs_latency` with
+  WARN-LAYERED-CHART-SHARED-Y-AXIS-SCALE-MISMATCH although both fits draw
+  legibly.
 - Layer labels are appended to the y-axis title; keep them short or a chart
   can collapse to a sliver.
 - **A bar over more than 60 month/quarter/year buckets switches to a
-  continuous time x**, where each bar spans its period but a line layer's
-  point sits on the period's first day -- half a bar left of its bar. Pin
-  `style.axis_x.type: ordinal` on any such layered bar (`bug_reports`' and
-  the article's `monthly_reports` / `monthly_acted` do); the axis still
-  labels by year (dbt-charts #80).
+  continuous time x** labeled by quarter and year; its line layers sit on
+  the bar centers. WARN-TOO-MANY-X-CATEGORIES still fires there, so those
+  charts (`monthly_reports`, `monthly_acted`) ignore it.
 - **A figure in a title, subtitle or `text:` is a live query value, never a
   typed number:** `{{ queries.<name>.one.<col> | format('.0%') }}` (a
   one-row query; `.rows` for several), so the sentence and the chart beside
@@ -456,16 +487,19 @@ dct mechanics and quirks that shape the boards:
   `CAST('{{ var }}' AS DATE)`, never `DATE '{{ var }}'`.
 - **A column's format lives once, on its query** (`formats: { col: name }`,
   engine names or a board `style.formats` alias such as projected_fixes'
-  `one_decimal` -- no d3 specs): primary axes, hovers, table columns and KPI
-  values read it. dct 0.10.0 does not apply it to `support_table` rows, a
-  layer's own y axis, or a KPI `support:` line, so those keep their slot
-  `format:`; a layer axis left without one inherits the base query's
-  format, not its own query's.
+  `one_decimal` or changelog's `signed_percent` -- a d3 spec goes in the
+  alias, never on the query): axes (a layer's own y axis reads its
+  layer query's format), hovers, table columns, `support_table` rows, KPI
+  values and KPI `support:` lines all read it, so no slot repeats a
+  `format:`. An integer column's `integer` format is inferred; stating it
+  warns (WARN-RESTATED-FORMAT).
+- Table cell links open in a new tab with `link: { url: ..., open: new_tab }`
+  (the AI-involvement tables on `git_activity` and `email_list_analysis`).
 - Multi-series `y: [a, b]` with `color:` draws one series per measure x
   category, named "<category> - <measure>"; the list-traffic charts use it
-  instead of unpivoting in SQL. dct reads an unlabeled column name as a slug
-  ("fix linked"), so those charts name the measure with
-  `field_labels: { fix-linked: fix-linked }`.
+  instead of unpivoting in SQL. dct reads an unlabeled column name as a
+  sentence-cased slug ("Fix linked", "All"), so those charts name the
+  hyphenated measure with `field_labels: { fix-linked: fix-linked }`.
 - Hover emphasis dims the other marks and drops a guide line on every chart
   family by default; switch it off per board with
   `style.charts.hover_emphasis.visible: false`.

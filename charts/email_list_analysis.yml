@@ -208,8 +208,9 @@ queries:
     notes: >
       The share of all new threads (every list) whose first message discloses
       AI involvement, per month, one row per month for the dual-axis line on
-      ai_threads_by_list. A FRACTION (0-1): the layer's percent axis format
+      ai_threads_by_list. A FRACTION (0-1): its percent format
       multiplies by 100.
+    formats: { ai_share: percent }
     source: warehouse
     sql: |
       SELECT
@@ -351,8 +352,8 @@ charts:
         x: month_dt
         y: ai_share
         label: "AI share of new threads"
-        axis_y: { position: right, title: "share of new threads", labels: { format: ".1%" } }
-        style: { marks: { line: { stroke: { color: "dbt-grays.ink", width: 2 } } } }
+        axis_y: { position: right, title: "share of new threads" }
+        style: { marks: { line: { stroke: { color: "dbt-grays.11", width: 2 } } } }
 
   ai_thread_table:
     type: table
@@ -372,10 +373,10 @@ charts:
       columns:
         started_dt: { label: "started" }
         list_name: { label: "list" }
-        # the subject opens the thread in the postgresql.org archive, keyed by
-        # the root message id (a hidden column, still usable in the template).
-        # Same tab: dct has no new-tab option for a cell link (dbt-charts #33)
-        subject: { link: "https://www.postgresql.org/message-id/{{ root_message_id }}" }
+        # the subject opens the thread in the postgresql.org archive in a new
+        # tab, keyed by the root message id (a hidden column, still usable in
+        # the template)
+        subject: { link: { url: "https://www.postgresql.org/message-id/{{ root_message_id }}", open: new_tab } }
         root_message_id: { visible: false }
         label_source: { label: "source" }
         is_acted_upon: { label: "acted" }

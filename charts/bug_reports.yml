@@ -178,11 +178,11 @@ queries:
       Discussion: trailer, or a form report was named by a Bug: # trailer),
       the acted-upon share and its 6-month trailing average (the two
       right-axis lines). The two share columns are emitted as
-      FRACTIONS (0-1), not percentage points, so the chart's per-layer
-      axis_y.label.format ".1%" renders them as real percentages on the right
-      axis AND in the tooltip (d3's % type multiplies by 100). Wide (one row
-      per month) so a hover shows all three at once. Trailing months sag
-      because their fixes haven't landed yet.
+      FRACTIONS (0-1), not percentage points; their percent_whole format
+      prints them as whole percents on the right axis, in the tooltip and in
+      the support strip. Wide (one row per month) so a hover shows all three
+      at once. Trailing months sag because their fixes haven't landed yet.
+    formats: { acted_share: percent_whole, acted_avg_6m: percent_whole }
     source: warehouse
     sql: |
       WITH monthly AS (
@@ -324,17 +324,15 @@ charts:
     query: monthly_reports
     title: "Bug reports per month"
     subtitle: "One new pgsql-bugs thread per report: BUG # web-form submissions stacked with free-form emails ({{ queries.report_mix.one.free_form_share | format('.0%') }} of reports); line = 6-month average of both"
-    # 100+ months: past 60 buckets dct turns a bar's x into a continuous time
-    # scale, where each bar spans its month and the line's point sits on the
-    # 1st, half a bar left. axis_x.type: ordinal keeps one band per month so
-    # the line runs through the bar centers; dct still labels the axis by year,
-    # so the "too many x categories" warning is a false positive
+    # 100+ months: past 60 buckets dct draws the x as a continuous time axis
+    # labeled by quarter and year, so the "too many x categories" warning is a
+    # false positive
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES]
     x: report_month
     y: report_cnt
     color: series
     # stacked, so the top edge is all reports and the trend line sits on the total
-    style: { stack: zero, axis_x: { type: ordinal } }
+    style: { stack: zero }
     height: 380
     layers:
       - type: line
@@ -381,21 +379,18 @@ charts:
     query: monthly_acted_data
     title: "Bug reports acted upon, by month"
     subtitle: "All reports (form + free-form). Bars: reports later linked to a fix commit (count, left axis). Lines: acted-upon share (right axis) with its 6-month rolling average. Lower bound (exact links only); trailing months right-censored"
-    # 100+ months, forced onto one band per month (axis_x.type: ordinal) so the
-    # lines and the support strip sit on the bar centers, as on "Bug reports per
-    # month"; dct labels the axis by year, so the "too many x categories"
-    # warning is a false positive. The counts and their share on a second axis are read together: both axes
-    # are titled, and the support strip prints the exact values
+    # 100+ months on a continuous time axis labeled by quarter and year, so the
+    # "too many x categories" warning is a false positive. The counts and their
+    # share on a second axis are read together: both axes are titled, and the
+    # support strip prints the exact values
     warnings_ignore: [WARN-TOO-MANY-X-CATEGORIES, WARN-DUAL-AXIS-COMPETING-SCALES]
     x: report_month
     y: acted_cnt
     y_label: "reports acted upon"
     # the two % lines are distinct columns (so a hover reads both, plus the bar);
-    # both share the same right axis, pinned to [0, 0.5] (the data is fractions)
-    # with a per-layer axis_y.labels.format ".1%" -- that scopes the percent
-    # formatting to THIS axis and its tooltip entries only, leaving the left
-    # count axis untouched (dct 0.6 spells the layer key `labels`, the same
-    # as the chart-wide `axis_y.labels.format`).
+    # both share the same right axis, pinned to [0, 0.5] (the data is fractions).
+    # The layer axis takes the share columns' query format; the left count axis
+    # keeps the integer default
     layers:
       - type: line
         x: report_month
@@ -405,7 +400,6 @@ charts:
           position: right
           title: "acted upon (%)"
           scale: { domain: [0, 0.5] }
-          labels: { format: ".1%" }
       - type: line
         x: report_month
         y: acted_avg_6m
@@ -414,20 +408,18 @@ charts:
           position: right
           title: "acted upon (%)"
           scale: { domain: [0, 0.5] }
-          labels: { format: ".1%" }
         # same ink as the 6-month average on "Bug reports per month": the
         # theme's third category slot, solid, default width
         style: { marks: { line: { stroke: { color: "category[3]" } } } }
     # support strip (top to bottom): reports filed, reports acted upon, the
     # acted-upon share and its 6-month average. One row per month, so each
-    # entry reads its column's raw value; the shares are whole percents
+    # entry reads its column's raw value in the column's query format
     support_table:
-      - { source: reports, format: integer, label: "Reports" }
-      - { source: acted_cnt, format: integer, label: "Acted upon" }
-      - { source: acted_share, format: percent_whole, label: "Acted upon %" }
-      - { source: acted_avg_6m, format: percent_whole, label: "6-month avg %" }
+      - { source: reports, label: "Reports" }
+      - { source: acted_cnt, label: "Acted upon" }
+      - { source: acted_share, label: "Acted upon %" }
+      - { source: acted_avg_6m, label: "6-month avg %" }
     style:
-      axis_x: { type: ordinal }
       support_table: { position: bottom, font: { size: 8 } }
 
   seasonality_counts:

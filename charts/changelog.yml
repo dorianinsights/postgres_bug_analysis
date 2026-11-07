@@ -9,6 +9,11 @@ notes: >
   the clone's SGML at build time).
 
 style:
+  # a signed percent that is NOT one of dct's delta formats: dct colors a
+  # delta-formatted KPI support value by its sign (green up, red down), and
+  # these release-over-release changes are reported, not judged
+  formats:
+    signed_percent: "+.1%"
   charts:
     min_height: 380
     max_height: 380
@@ -46,6 +51,7 @@ queries:
       the previous scheduled release (a ratio; the KPI support line prints it
       as a signed percent). Out-of-band releases are skipped on both sides of
       the comparison.
+    formats: { fix_delta: signed_percent, security_delta: signed_percent, cve_delta: signed_percent }
     source: warehouse
     sql: |
       SELECT
@@ -282,9 +288,6 @@ charts:
     support:
       value: fix_delta
       label: "vs the previous scheduled release"
-    style:
-      support:
-        format: percent_delta
 
   kpi_security:
     type: kpi
@@ -294,9 +297,6 @@ charts:
     support:
       value: security_delta
       label: "vs the previous scheduled release"
-    style:
-      support:
-        format: percent_delta
 
   kpi_cves:
     type: kpi
@@ -306,9 +306,6 @@ charts:
     support:
       value: cve_delta
       label: "vs the previous scheduled release"
-    style:
-      support:
-        format: percent_delta
 
   kpi_upcoming_fixes:
     type: kpi

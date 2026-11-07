@@ -184,24 +184,21 @@ Plan (additive):
 - Boards: a commitfest page (throughput per CF, queue age, reviewer load) and
   an AI-vs-rest patch-outcome chart on `email_list_analysis`.
 
-## Support strips whose cells run together (WARN-SUPPORT-TABLE-CELL-OVERFLOW)
+## dct 0.11.1 leftovers on the boards
 
-Five per-release / per-quarter support strips print cells wider than their
-category band, so neighbouring values touch (e.g. `fix_hardening_split`'s
-"Hardening %" row reads "5.012.210.4"): `1_fix_analysis` `fix_cve_split`,
-`fix_hardening_split` and `fix_origin_counts`, and `churn_by_quarter` on
-`git_activity` and the article. Options per chart: a whole-percent or compact
-format, a smaller strip font, fewer categories, or a wider card.
-
-## Drop the remaining slot formats once dct reads query `formats:` everywhere
-
-dct 0.10.0 applies a query's `formats:` to primary axes, hovers, tables and
-KPI values, but not to `support_table` rows, a layer's own y axis (which
-takes the BASE query's format instead), or a KPI `support:` line. Those slots
-keep their own `format:` (the support strips on `1_fix_analysis`,
-`bug_reports`, `git_activity` and the article; the dual-axis share layers;
-`changelog`'s `percent_delta` KPI lines). Reported as dbt-charts #74; once a
-release fixes it, delete those slot formats and let the queries carry them.
+Surfaced by the 0.11.1 upgrade; each is a board edit or an upstream report.
+- **Lines joined across missing periods** (WARN-LINE-JOINS-MISSING-PERIODS):
+  `email_list_analysis` `cited_threads` draws "embargoed security" straight
+  across 4 empty quarters, and `git_activity` `quarterly_by_branch` joins
+  REL_13_STABLE across 1 empty quarter. Spine the query over every period x
+  series (LEFT JOIN, 0 or NULL as the chart means it).
+- **`monthly_acted`'s strip drops the latest month**: on a date axis the
+  strip keeps one cell per quarterly axis label, so Oct 2026 (the spike) has
+  no cell. Not yet reported upstream.
+- **Not yet reported upstream:** `per_series:` strip rows refused
+  (ERR-ENGINE-REFUSED) on a grouped (unstacked) color-split bar; `dct
+  migrate` failing on flow-style mappings; the shared-y-axis scale warning on
+  `category_mix` / `size_vs_latency`, whose fits draw legibly.
 
 ## Re-evaluate dbt 2.x (not urgent; revisit ~Dec 2026 – Jan 2027)
 

@@ -58,10 +58,10 @@ options:
     {% set pw = [plot_w * (prev[channels.y] | float) / ns.peak, 1] | max %}
     {% set top = y - band + bar_h %}
     <path d="M{{ (cx - pw / 2) | round(1) }},{{ top | round(1) }}H{{ (cx + pw / 2) | round(1) }}L{{ (cx + w / 2) | round(1) }},{{ y | round(1) }}H{{ (cx - w / 2) | round(1) }}Z" fill="{{ fill }}" fill-opacity="0.15"/>
-    <text x="{{ cx | round(1) }}" y="{{ ((top + y) / 2) | round(1) }}" dy="0.35em" text-anchor="middle" fill="{{ style.muted }}" font-size="{{ small }}">{{ r[o.step_share] | format(o.share_format) }} {{ o.step_label }}</text>
+    <text x="{{ cx | round(1) }}" y="{{ ((top + y) / 2) | round(1) }}" dy="0.35em" text-anchor="middle" fill="{{ style.fonts.secondary.color }}" font-size="{{ small }}">{{ r[o.step_share] | format(o.share_format) }} {{ o.step_label }}</text>
   {% endif %}
   <rect x="{{ (cx - w / 2) | round(1) }}" y="{{ y | round(1) }}" width="{{ w | round(1) }}" height="{{ bar_h | round(1) }}" rx="2" fill="{{ fill }}"><title>{{ r[channels.x] }}: {{ r[channels.y] | format(o.value_format) }} ({{ r[o.share] | format(o.share_format) }} {{ o.share_label }})</title></rect>
   <text x="{{ ns.left }}" y="{{ mid | round(1) }}" dy="0.35em" text-anchor="end" fill="{{ style.font.color }}">{{ r[channels.x] }}</text>
-  <text x="{{ (width - ns.right) | round(1) }}" y="{{ mid | round(1) }}" dy="0.35em" fill="{{ style.font.color }}"><tspan font-weight="600">{{ r[channels.y] | format(o.value_format) }}</tspan><tspan dx="{{ gap }}" fill="{{ style.muted }}">{{ r[o.share] | format(o.share_format) }} {{ o.share_label }}</tspan></text>
+  <text x="{{ (width - ns.right) | round(1) }}" y="{{ mid | round(1) }}" dy="0.35em" fill="{{ style.font.color }}"><tspan font-weight="600">{{ r[channels.y] | format(o.value_format) }}</tspan><tspan dx="{{ gap }}" fill="{{ style.fonts.secondary.color }}">{{ r[o.share] | format(o.share_format) }} {{ o.share_label }}</tspan></text>
 {% endfor %}
 </g>
