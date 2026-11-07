@@ -738,7 +738,11 @@ dct mechanics and quirks that shape the boards:
   exact git tag ancestry gives a shipped minor (`release_status = 'shipped'`) or
   a major's `.0` (`'development'`: master between two fork points plus the
   branch's pre-GA stabilization), and a released major's stable-branch commits
-  after its latest tag are pending for the OPEN release (`'open'`). Every
+  after its latest tag are pending for the OPEN release (`'open'`) while that
+  release still ships the major (`major_eol_dt`, the same rule that decides
+  which minors `int_releases` lists for a release day); a commit landed on a
+  branch past its end of support (a build fix on a retired branch) counts
+  toward no release. Every
   branch's corpus range is tag-bounded too (`pg_analysis.sources.git.commit_range`: a
   stable branch from its fork, master from `corpus.HISTORY_FLOOR_TAG`) -- there
   is no history date anywhere. Never re-derive any of this with date windows.

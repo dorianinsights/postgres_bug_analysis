@@ -187,10 +187,6 @@ Plan (additive):
 ## dct 0.11.1 leftovers on the boards
 
 Surfaced by the 0.11.1 upgrade; each is a board edit or an upstream report.
-- **Line joined across a missing period** (WARN-LINE-JOINS-MISSING-PERIODS):
-  `git_activity` `quarterly_by_branch` joins REL_13_STABLE across 1 empty
-  quarter. Spine the query over every quarter x branch (LEFT JOIN, 0 or
-  NULL as the chart means it).
 - **`monthly_acted`'s strip drops the latest month**: on a date axis the
   strip keeps one cell per quarterly axis label, so Oct 2026 (the spike) has
   no cell. Not yet reported upstream.
