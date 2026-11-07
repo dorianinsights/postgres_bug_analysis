@@ -12,3 +12,8 @@ sources:
     type: duckdb
     path: transform.duckdb
     schema: marts
+
+exposures:
+  owner:
+    name: Josh Andrews
+    email: josh.andrews@dorianinsights.com
