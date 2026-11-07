@@ -187,18 +187,31 @@ Plan (additive):
 ## dct 0.11.1 leftovers on the boards
 
 Surfaced by the 0.11.1 upgrade; each is a board edit or an upstream report.
-- **Lines joined across missing periods** (WARN-LINE-JOINS-MISSING-PERIODS):
-  `email_list_analysis` `cited_threads` draws "embargoed security" straight
-  across 4 empty quarters, and `git_activity` `quarterly_by_branch` joins
-  REL_13_STABLE across 1 empty quarter. Spine the query over every period x
-  series (LEFT JOIN, 0 or NULL as the chart means it).
+- **Line joined across a missing period** (WARN-LINE-JOINS-MISSING-PERIODS):
+  `git_activity` `quarterly_by_branch` joins REL_13_STABLE across 1 empty
+  quarter. Spine the query over every quarter x branch (LEFT JOIN, 0 or
+  NULL as the chart means it).
 - **`monthly_acted`'s strip drops the latest month**: on a date axis the
   strip keeps one cell per quarterly axis label, so Oct 2026 (the spike) has
   no cell. Not yet reported upstream.
 - **Not yet reported upstream:** `per_series:` strip rows refused
   (ERR-ENGINE-REFUSED) on a grouped (unstacked) color-split bar; `dct
   migrate` failing on flow-style mappings; the shared-y-axis scale warning on
-  `category_mix` / `size_vs_latency`, whose fits draw legibly.
+  `category_mix` / `size_vs_latency`, whose fits draw legibly;
+  WARN-CATEGORY-COLOR-PIN-UNSEEN firing for a pin a board inherits from
+  `meta.yml` (folder-wide pins are bound to name values some boards never
+  draw), with no board-level way to suppress it.
+
+## Flag master security commits through `fix_key`
+
+`int_commit_origins.is_documented_security` is set per commit hash from the
+release notes' commit annotations, which do not always list the master
+commit of a fix: 12 master commits of security fixes miss the flag (133 are
+caught), e.g. CVE-2006-2313's `42f94f56b` (June 2021, flagged on REL_12 and
+REL_13). Three of them have no public trail and so count as "unsourced"
+instead of "embargoed security" in `fct_origin_activity_monthly_agg` (one in
+2021, two in 2024). Also flag a master commit whose `fix_key` matches a
+flagged commit on another branch, then rebuild and check the origin marts.
 
 ## Board color consistency
 

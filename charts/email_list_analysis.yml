@@ -141,17 +141,21 @@ queries:
       ORDER BY 1, 2
 
   cited_threads:
-    notes: Distinct discussion threads cited by master commits, per month by source.
+    notes: >
+      Distinct discussion threads cited by master commits, per month by source.
+      A cited thread is public by definition, so the mart files every one under
+      a list or as unsourced (an unresolved thread); its embargoed-security rows
+      carry commits only (cited_thread_cnt always 0) and are left out.
     sql: |
       SELECT
         month_dt,
         CASE origin
-          WHEN 'unknown_or_internal_security' THEN 'embargoed security'
           WHEN 'unknown_or_internal_not_security' THEN 'unsourced'
           ELSE origin
         END AS origin,
         cited_thread_cnt
       FROM {{ ref('fct_origin_activity_monthly_agg') }}
+      WHERE origin != 'unknown_or_internal_security'
       ORDER BY 1, 2
 
   ai_threads:

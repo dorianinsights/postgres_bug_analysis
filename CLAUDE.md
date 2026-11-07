@@ -323,7 +323,11 @@ names its source), the 13-swatch palette, and the color pins of the columns
 that mean the same thing on every board (`category`, `origin`,
 `release_year`, `security_class`, `hardening_class`). A board's own keys
 override it, and its own `category_colors` columns sit beside the
-folder's. The boards:
+folder's. A board that draws only some of a folder-pinned column's values
+warns WARN-CATEGORY-COLOR-PIN-UNSEEN: `email_list_analysis` draws three of
+the four `origin` values ("embargoed security" cites no thread). It is a
+board-level warning that neither a chart's `warnings_ignore` nor
+`meta.yml`'s `lint: ignore:` suppresses, so it stays. The boards:
 
 - `1_fix_analysis.yml` (the leading `1_` orders it first in `dct serve`) —
   source attribution: documented fixes per release by origin (counts and
