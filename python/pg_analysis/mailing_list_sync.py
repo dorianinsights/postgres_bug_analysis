@@ -117,7 +117,7 @@ def get_with_retry(session: requests.Session, url: str) -> requests.Response:
         try:
             resp = session.get(url, timeout=120)
             resp.raise_for_status()
-        except (requests.ConnectionError, requests.Timeout):
+        except requests.ConnectionError, requests.Timeout:
             time.sleep(10 * (attempt + 1))
         else:
             return resp

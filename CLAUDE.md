@@ -55,12 +55,16 @@ pg-mail-sync ──> .cache/mbox/ ───────────────�
   (so no `~/.dbt` setup), `vars.yml`, `dbt_charts.yml`, `models/`, `seeds/`,
   `macros/`, `tests/`, `charts/` and the warehouse sit beside `python/` and
   `data/`, so every dbt, dct and DuckDB command runs from the root with no
-  `cd`. Python 3.13 exactly: the version is part of the analysis definition
+  `cd`. Python 3.14 exactly: the version is part of the analysis definition
   -- the stdlib `email` parser decides how a malformed
   `In-Reply-To`/`References` id reads, so it decides which reply joins which
   thread (`int_message_threads`). 3.12 reads those headers differently from
-  `Message-ID` and splits a few threads in two; moving to 3.14 (dbt-charts
-  supports it) means re-checking the thread split first.
+  `Message-ID` and splits a few threads in two, so a version change starts
+  by parsing the whole mbox cache under both versions and diffing every
+  record's headers, then fingerprinting the warehouse tables before and
+  after a full build. `ruff`'s `py314` target
+  formats multi-exception handlers without parentheses (`except A, B:`, new
+  in 3.14), so the code no longer parses on an older Python.
 - **`pg-refresh`** runs the three fetches in order, then `dbt deps` + `dbt
   build`; the build runs only if every fetch succeeded. `--list` shows the
   steps, `--only <step>` / `--skip <step>` select them, `--no-build` refreshes
@@ -84,9 +88,16 @@ pg-mail-sync ──> .cache/mbox/ ───────────────�
   (`python/pg_analysis/`: `corpus`, `paths`, the three fetchers,
   `refresh_data`, the two LLM backfills, `embed_fixes`, and `sources/` — the
   build-time readers the dbt Python models import: `git`, `sgml`, `mail`,
-  `classify`, `ai_involvement`). `requirements.txt` (the one lockfile;
-  `pyproject.toml` pins nothing) ends with `-e .`, so a fresh venv gets it
-  from `pip install -r requirements.txt`; the `pg-*` console scripts
+  `classify`, `ai_involvement`). Dependencies are pinned in two files
+  (`pyproject.toml` pins nothing): `requirements.in` holds the direct pins,
+  edited by hand with a comment per non-obvious pin, and `requirements.txt`
+  is the full lock compiled from it by `uv pip compile requirements.in -o
+  requirements.txt` -- every transitive package pinned, each annotated with
+  what pulls it in. Never edit the lock by hand; recompile, which keeps
+  every other locked version (`--upgrade-package <name>` moves one).
+  `requirements.in` ends with `-e .`, so a fresh venv gets the package
+  from `pip install -r requirements.txt` (pip alone; uv is only the
+  compiler); the `pg-*` console scripts
   (`pg-refresh`, `pg-clone`, `pg-mail-sync`, `pg-cve-scrape`,
   `pg-backfill-ai`, `pg-backfill-categories`, `pg-embed-fixes`) land in
   `venv/bin` from `[project.scripts]`. **Every import is an ordinary
@@ -533,7 +544,7 @@ dct mechanics and quirks that shape the boards:
   terminate a leftover process they've confirmed is closed. Note the sqlfluff
   lint uses the **dbt templater** (so package macros like
   `dbt_utils.generate_surrogate_key` expand) — it compiles the project per run, so a
-  write-locked DuckDB breaks *linting* too, not just builds. `requirements.txt`
+  write-locked DuckDB breaks *linting* too, not just builds. `requirements.in`
   pins `sqlfluff-templater-dbt` in lockstep with `sqlfluff`.
 - A full `dbt build` re-reads the git clone + mbox cache each run. The mbox
   parse (`raw_list_messages` via `pg_analysis.sources.mail`) is the dominant cost and

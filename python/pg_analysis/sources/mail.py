@@ -75,7 +75,7 @@ def _body_text(message: EmailMessage) -> str | None:
         return None
     try:
         content = body.get_content()
-    except (LookupError, UnicodeDecodeError, KeyError):
+    except LookupError, UnicodeDecodeError, KeyError:
         payload = body.get_payload(decode=True)
         if not isinstance(payload, bytes):
             return None
@@ -86,7 +86,7 @@ def _body_text(message: EmailMessage) -> str | None:
 def _sent_ts(message: EmailMessage) -> str | None:
     try:
         parsed = email.utils.parsedate_to_datetime(message.get("Date", ""))
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
     return parsed.isoformat()
 

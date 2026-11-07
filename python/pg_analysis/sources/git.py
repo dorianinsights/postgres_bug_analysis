@@ -231,7 +231,7 @@ class BranchSizeRecord(NamedTuple):
     file_cnt: str  # number of files in this slice
 
 
-def _subsystem_rules() -> list[tuple[str, "re.Pattern[str]"]]:
+def _subsystem_rules() -> list[tuple[str, re.Pattern[str]]]:
     """The (subsystem, compiled-pattern) rules from the subsystem_rules seed, in
     match_order precedence. Read from the SAME seed the SQL side uses
     (int_commit_files), so the path -> subsystem taxonomy has one source of truth.
@@ -244,7 +244,7 @@ def _subsystem_rules() -> list[tuple[str, "re.Pattern[str]"]]:
     return [(subsystem, pattern) for _, subsystem, pattern in rows]
 
 
-def _subsystem_of(path: str, rules: list[tuple[str, "re.Pattern[str]"]]) -> str:
+def _subsystem_of(path: str, rules: list[tuple[str, re.Pattern[str]]]) -> str:
     "The first rule (by match_order) whose pattern matches the path; else 'other'."
     for subsystem, pattern in rules:
         if pattern.search(path):
@@ -259,7 +259,7 @@ def _extension_of(path: str) -> str:
 
 
 def _tree_size_by_area(
-    rev: str, sub_rules: list[tuple[str, "re.Pattern[str]"]]
+    rev: str, sub_rules: list[tuple[str, re.Pattern[str]]]
 ) -> dict[tuple[str, str], tuple[int, int]]:
     """{(subsystem, extension): (line_cnt, file_cnt)} for the tree at `rev`.
     subsystem is classified here (it needs the whole path); the raw extension is

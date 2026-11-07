@@ -117,7 +117,7 @@ def ollama_unavailable_reason(model: str) -> str | None:
         resp = requests.get(OLLAMA_TAGS_URL, timeout=OLLAMA_CHECK_TIMEOUT_SECONDS)
         resp.raise_for_status()
         names = installed_models(resp.json())
-    except (requests.RequestException, ValueError):
+    except requests.RequestException, ValueError:
         return (
             f"Ollama is not reachable at {OLLAMA_BASE} (install it from https://ollama.com, "
             f"then `ollama pull {model}`; set OLLAMA_HOST if it runs elsewhere)"

@@ -5616,7 +5616,7 @@ pgsql-bugs,IA0PR11MB7935925E44D2A1E814617EF7A9F32@IA0PR11MB7935.namprd11.prod.ou
 pgsql-bugs,JN3P275MB230332409437F8A412BA938DF71AA@JN3P275MB2303.ZAFP275.PROD.OUTLOOK.COM,56feeb76330025e3,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,JNZP275MB0737BDCCB3792619F1DF04128A8C9@JNZP275MB0737.ZAFP275.PROD.OUTLOOK.COM,52e6c6aca6ad7c04,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,K9Qpnt34zosrh-Ihn8gvA90qoOhDWIb_XcC3i1_FE0dZ2mKiC9hfhtyRJZWzr7EJzHAKy9dqhXNJiyoZxDS2moNCL3PzU018V7jeTPG_1Bg=@protonmail.com,0f2a631e93808740,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
-pgsql-bugs,KL1PR0401MB51326DEE3C1BA7DE89488B92D8FB2@KL1PR0401MB5132.apcprd04.prod.outlook.com,c87b522ff8442108,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
+pgsql-bugs,KL1PR0401MB51326DEE3C1BA7DE89488B92D8FB2@KL1PR0401MB5132.apcprd04.prod.outlook.com,2de1ef730fa607c7,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,KL1PR0601MB4340077D6B92EF37D78277C4F2959@KL1PR0601MB4340.apcprd06.prod.outlook.com,a01b7bcbeb9698af,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,KL1PR0601MB4433AA4BDC279E39281A4F55F0942@KL1PR0601MB4433.apcprd06.prod.outlook.com,cd3504c904f22b12,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
 pgsql-bugs,KL1PR0601MB4433B8ECEA8D65B8D17FCA19F0C89@KL1PR0601MB4433.apcprd06.prod.outlook.com,c2ca51094cc2d202,qwen3:30b-a3b,ai-v5,false,false,false,false,false,none,none,0.95,mentions: none
