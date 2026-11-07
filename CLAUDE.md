@@ -182,8 +182,11 @@ hand-made belongs in `main`; the hook drops it. `transform.duckdb` stays gitigno
   per-commit `--numstat` file rows, every `REL_1x_*` ref, the release-notes
   items and their commit annotations, the commit → version map by exact tag
   ancestry (`raw_commit_versions`, one `rev-list` per tag, rebuilt in full),
-  and the tree sizes behind `git_activity`'s codebase-size charts (`raw_tree_sizes`: one
-  `git grep -c` per commit `int_branch_week_heads` names) — verbatim
+  and the tree sizes behind `git_activity`'s codebase-size charts
+  (`raw_tree_sizes`: the trees of the commits `int_branch_week_heads` names,
+  read through one `git cat-file --batch` with each subtree and file version
+  counted once; a file's lines are `git grep -I -c '^'`'s count, byte for
+  byte, so no locale can change them) — verbatim
   strings, one consistent clone snapshot per build, every model rebuilt in
   full. Requires the clone. `raw_tree_sizes` is the one raw model with an
   upstream ref: which commits to measure (each stable branch's head at each
@@ -557,14 +560,15 @@ dct mechanics and quirks that shape the boards:
 - A full `dbt build` re-reads the git clone + mbox cache each run. The mbox
   parse (`raw_list_messages` via `pg_analysis.sources.mail`) is the dominant cost and
   fans out across a process `Pool` (spawn — the parent is multithreaded, so fork
-  is unsafe); `raw_tree_sizes` (~1,400 tree greps, also a process `Pool`)
-  and `raw_commit_files` are the git side's slow ones. dbt runs them
-  concurrently (`threads: 4`), so they share the machine: a full build is
-  ~3½ min, `raw_tree_sizes` ~2½ min of it alone. Its parallel speedup tops
-  out near 2x whatever the pool size or `grep.threads` (each grep inflates
-  every blob of a ~6k-file tree), so the lever left is measuring each
-  distinct blob once across trees instead of each tree whole. Use `dbt build
-  --select <models>` while iterating; do one full build to confirm.
+  is unsafe); `raw_commit_files` and `raw_tree_sizes` are the git side's
+  slow ones. dbt runs them concurrently (`threads: 4`), so they share the
+  machine: a full build is ~1½ min. `raw_tree_sizes` is ~17 s alone because
+  it never measures anything twice: ~1,400 weekly trees hold ~8.4M file
+  entries but only ~59k distinct file versions, and it reads each subtree
+  and file version once, so never measure a tree whole per commit (a `git
+  grep` per tree took minutes and its parallel speedup topped out near 2x).
+  Use `dbt build --select <models>` while iterating; do one full build to
+  confirm.
 - **Edit `.sql`/`.py` files with the Edit/Write tools — never `sed -i`, a `>`
   redirect, or a `cat >` heredoc through Bash** (even in "auto mode", which
   otherwise nudges toward `sed`). The per-edit linters below are `PostToolUse`

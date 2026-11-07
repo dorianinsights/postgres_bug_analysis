@@ -5,9 +5,13 @@ models:
     description: >
       The size of each (subsystem, extension) slice of the tree at every commit
       int_branch_week_heads names (each stable branch's head at each week's
-      end), read verbatim from the postgres.git clone at build time: one
-      `git grep -I -c '^'` per distinct commit (binary files excluded), fanned
-      out across a process pool by sources.git.tree_size_records. subsystem is
+      end), read from the postgres.git clone at build time by
+      sources.git.tree_size_records through one `git cat-file --batch`, each
+      subtree and file version (blob) counted once however many commits share
+      it. A file's lines are counted as `git grep -I -c '^'` counts them, byte
+      for byte: newlines plus a last line with none; binary files (a NUL in the
+      first 8000 bytes, git's test), empty files, symlinks and submodules are
+      not counted. subsystem is
       the subsystem_rules bucket (classified in Python, since it needs the whole
       path); extension is the raw lower-cased file extension, mapped to a
       file_class in stg_tree_sizes. The one raw model with an upstream ref --

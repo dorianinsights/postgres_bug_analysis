@@ -2,22 +2,24 @@
 """Read postgres.git directly for the raw_git Python models.
 
 The git side of the pipeline has no CSV landing layer: the clone at
-../.cache/postgres.git IS the raw store (content-addressed and immutable),
+.cache/postgres.git IS the raw store (content-addressed and immutable),
 and the models/raw_git/ Python models call these readers at build time, so
 every git-derived table shares one consistent snapshot of the clone.
 
-Everything here is pure extraction — verbatim strings, full fidelity —
-exactly what scrape_git_commits.py used to write to CSVs. Typing and
-filtering stay in the SQL staging models. Every path (the clone, the dbt
+Everything here is extraction — verbatim strings, full fidelity. The one
+derivation is the tree sizes' line counts and subsystem buckets, which need
+each file's bytes and whole path, so they can't be done downstream. Typing
+and filtering stay in the SQL staging models. Every path (the clone, the dbt
 seeds) comes from pg_analysis.paths, so nothing here depends on the cwd.
 """
 
 import csv
-import functools
 import multiprocessing as mp
 import os
 import re
+import stat
 import subprocess
+from collections.abc import Callable, Iterator
 from typing import NamedTuple
 
 from pg_analysis.corpus import FIRST_MAJOR, HISTORY_FLOOR_TAG
@@ -221,7 +223,7 @@ class TreeSizeRecord(NamedTuple):
     carried verbatim; stg_tree_sizes maps it to a file_class (file_class_rules) so
     a size chart can filter the generated classes (translations, test_fixtures)
     like the churn charts do. subsystem is the only classification kept here -- it
-    needs the whole path, which the per-file grep output has and the aggregated
+    needs each file's whole path, which the tree walk has and the aggregated
     record does not."""
 
     commit_hash: str
@@ -279,58 +281,142 @@ def _extension_of(path: str) -> str:
     return name.rpartition(".")[2].lower() if "." in name else ""
 
 
-def _tree_size_by_area(rev: str, sub_rules: list[SubsystemRule]) -> dict[AreaKey, AreaSize]:
-    """Each (subsystem, extension) slice's size (text lines, files) for the tree at `rev`.
-    subsystem is classified here (it needs the whole path); the raw extension is
-    carried for stg_tree_sizes to map to a file_class in SQL. The whole
-    tree is measured -- NO extension filter -- so every file type flows through
-    the raw layer and the "what counts as codebase" decision lives downstream. One
-    `git grep -I -c '^'` emits `<rev>:<path>:<count>` per matched TEXT file; -I
-    keeps binary files out, so no binary size is ever counted.
-    """
-    out = git("grep", "-I", "-c", "^", rev)
-    sizes: dict[AreaKey, AreaSize] = {}
-    for line in out.splitlines():
-        if not line:
-            continue
-        prefix, _, count = line.rpartition(":")
-        path = prefix.partition(":")[2]  # strip the "<rev>:" prefix
-        key = AreaKey(subsystem=_subsystem_of(path, sub_rules), extension=_extension_of(path))
-        prev = sizes.get(key, AreaSize(code_lines=0, file_cnt=0))
-        sizes[key] = AreaSize(code_lines=prev.code_lines + int(count), file_cnt=prev.file_cnt + 1)
-    return sizes
+# git's own binary test (buffer_is_binary): a NUL in a blob's first 8000 bytes.
+_BINARY_PROBE_BYTES = 8000
+# A raw tree entry ends in its object's binary SHA-1.
+_OBJECT_ID_BYTES = 20
 
 
-def _tree_size_records_for_head(sub_rules: list[SubsystemRule], commit_hash: str) -> list[TreeSizeRecord]:
-    """One record per (subsystem, extension) slice of the tree at one commit.
-    Module-level so a worker process can run it."""
-    return [
-        TreeSizeRecord(
-            commit_hash=commit_hash,
-            subsystem=area.subsystem,
-            extension=area.extension,
-            code_lines=str(size.code_lines),
-            file_cnt=str(size.file_cnt),
+def _text_line_count(data: bytes) -> int:
+    """A blob's lines as `git grep -I -c '^'` counts them, byte for byte (the C
+    locale): its newlines, plus one for a last line with none. 0 for a binary
+    blob (git's test: a NUL in the first 8000 bytes) or an empty one -- grep
+    reports neither, so neither counts as a file."""
+    if not data or b"\0" in data[:_BINARY_PROBE_BYTES]:
+        return 0
+    return data.count(b"\n") + (0 if data.endswith(b"\n") else 1)
+
+
+def _tree_entries(data: bytes) -> Iterator[tuple[int, str, str]]:
+    """(mode, name, object id) for each entry of a raw tree object, which is a
+    run of `<octal mode> <name>\\0<binary object id>`."""
+    pos = 0
+    while pos < len(data):
+        space = data.index(b" ", pos)
+        nul = data.index(b"\0", space)
+        mode = int(data[pos:space], 8)
+        name = data[space + 1 : nul].decode("utf-8", "surrogateescape")
+        object_id = data[nul + 1 : nul + 1 + _OBJECT_ID_BYTES].hex()
+        yield mode, name, object_id
+        pos = nul + 1 + _OBJECT_ID_BYTES
+
+
+class _ObjectReader:
+    """One long-running `git cat-file --batch`: an object's raw bytes by id."""
+
+    def __init__(self) -> None:
+        if not CLONE.is_dir():
+            msg = f"postgres clone not found at {CLONE} — run pg-clone first"
+            raise RuntimeError(msg)
+        self._proc = subprocess.Popen(
+            ["git", "-C", str(CLONE), "cat-file", "--batch"], stdin=subprocess.PIPE, stdout=subprocess.PIPE
         )
-        for area, size in _tree_size_by_area(commit_hash, sub_rules).items()
-    ]
+
+    def read(self, object_id: str) -> bytes:
+        # request "<id>\n"; reply "<id> <type> <size>\n", the bytes, then "\n"
+        stdin, stdout = self._proc.stdin, self._proc.stdout
+        if stdin is None or stdout is None:
+            msg = "git cat-file has no pipes"
+            raise RuntimeError(msg)
+        stdin.write(object_id.encode() + b"\n")
+        stdin.flush()
+        header = stdout.readline().split()
+        if len(header) != len(("id", "type", "size")):
+            msg = f"git cat-file could not read {object_id}: {b' '.join(header)!r}"
+            raise RuntimeError(msg)
+        data = stdout.read(int(header[2]))
+        stdout.read(1)  # the trailing newline
+        return data
+
+    def close(self) -> None:
+        if self._proc.stdin is not None:
+            self._proc.stdin.close()
+        self._proc.wait()
+
+
+class _TreeSizer:
+    """Each (subsystem, extension) slice's size (text lines, files) of the tree at
+    a commit, read object by object and remembered: a subtree (by its path and
+    id) and a blob (by its id) are measured once however many commits share them,
+    which consecutive weekly heads mostly do. The whole tree is measured -- NO
+    extension filter -- so every file type flows through the raw layer and the
+    "what counts as codebase" decision lives downstream. Only regular files count
+    (as `git grep` sees a tree): not symlinks, not submodules."""
+
+    def __init__(self, read_object: Callable[[str], bytes], sub_rules: list[SubsystemRule]) -> None:
+        self._read = read_object
+        self._rules = sub_rules
+        self._trees: dict[tuple[str, str], dict[AreaKey, AreaSize]] = {}
+        self._blob_lines: dict[str, int] = {}
+
+    def commit_sizes(self, commit_hash: str) -> dict[AreaKey, AreaSize]:
+        # a commit object opens with "tree <id>"
+        first_line = self._read(commit_hash).split(b"\n", 1)[0]
+        return self._tree_sizes("", first_line.removeprefix(b"tree ").decode())
+
+    def _tree_sizes(self, prefix: str, tree_id: str) -> dict[AreaKey, AreaSize]:
+        cached = self._trees.get((prefix, tree_id))
+        if cached is not None:
+            return cached
+        sizes: dict[AreaKey, AreaSize] = {}
+        for mode, name, object_id in _tree_entries(self._read(tree_id)):
+            path = prefix + name
+            if stat.S_ISDIR(mode):
+                for area, size in self._tree_sizes(path + "/", object_id).items():
+                    _add_size(sizes, area, size)
+            elif stat.S_ISREG(mode):
+                lines = self._lines(object_id)
+                if lines:
+                    area = AreaKey(subsystem=_subsystem_of(path, self._rules), extension=_extension_of(path))
+                    _add_size(sizes, area, AreaSize(code_lines=lines, file_cnt=1))
+        self._trees[(prefix, tree_id)] = sizes
+        return sizes
+
+    def _lines(self, blob_id: str) -> int:
+        lines = self._blob_lines.get(blob_id)
+        if lines is None:
+            lines = self._blob_lines[blob_id] = _text_line_count(self._read(blob_id))
+        return lines
+
+
+def _add_size(sizes: dict[AreaKey, AreaSize], area: AreaKey, size: AreaSize) -> None:
+    prev = sizes.get(area, AreaSize(code_lines=0, file_cnt=0))
+    sizes[area] = AreaSize(code_lines=prev.code_lines + size.code_lines, file_cnt=prev.file_cnt + size.file_cnt)
 
 
 def tree_size_records(commit_hashes: list[str]) -> list[TreeSizeRecord]:
-    """The tree size, by (subsystem, extension) slice, at each of `commit_hashes`:
-    one `git grep` per commit, fanned out across a process Pool since each is an
-    independent, CPU-bound read of the clone (spawn -- the parent is multithreaded
-    via DuckDB, so fork is unsafe). `map` keeps the input order, so the output is
-    deterministic. Leave one core free for the user."""
+    """The tree size, by (subsystem, extension) slice, at each of `commit_hashes`,
+    read through one `git cat-file --batch` with every subtree and blob measured
+    once (_TreeSizer). Counts are git grep -I -c '^' byte for byte, with no
+    locale in play. Output follows the input order."""
     if not commit_hashes:
         return []
-    sub_rules = _subsystem_rules()
-    workers = min(len(commit_hashes), max((os.cpu_count() or 2) - 1, 1))
-    with mp.Pool(processes=workers) as pool:
-        per_commit: list[list[TreeSizeRecord]] = pool.map(
-            functools.partial(_tree_size_records_for_head, sub_rules), commit_hashes
-        )
-    return [record for commit_records_ in per_commit for record in commit_records_]
+    reader = _ObjectReader()
+    try:
+        sizer = _TreeSizer(reader.read, _subsystem_rules())
+        return [
+            TreeSizeRecord(
+                commit_hash=commit_hash,
+                subsystem=area.subsystem,
+                extension=area.extension,
+                code_lines=str(size.code_lines),
+                file_cnt=str(size.file_cnt),
+            )
+            for commit_hash in commit_hashes
+            for area, size in sizer.commit_sizes(commit_hash).items()
+        ]
+    finally:
+        reader.close()
 
 
 class CommitVersionRecord(NamedTuple):

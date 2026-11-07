@@ -123,39 +123,72 @@ def test_extension_of_reads_the_last_dot_and_lowercases() -> None:
     assert gitmod._extension_of("README") == ""
 
 
-def test_tree_size_by_area_buckets_by_subsystem_and_raw_extension(monkeypatch: pytest.MonkeyPatch) -> None:
-    # git grep -I -c '^' emits "<rev>:<path>:<count>" per file; the paths carry
-    # colons only in the rev/path split, which rpartition/partition handle.
-    # file_class is NOT decided here -- the raw extension is carried for SQL to map.
-    grep_out = (
-        "HEAD:src/backend/executor/a.c:100\n"
-        "HEAD:src/include/x.h:20\n"
-        "HEAD:src/test/regress/b.sql:40\n"
-        "HEAD:doc/src/sgml/c.sgml:5\n"
-        "HEAD:src/backend/po/fr.po:1000\n"  # a translation catalog — carried by extension
-    )
-    _patch_git(monkeypatch, grep_out)
-    sizes = gitmod._tree_size_by_area("HEAD", _RULES)
+def test_text_line_count_matches_git_grep_c() -> None:
+    # git grep -c '^' counts newlines, plus a last line that has none
+    assert gitmod._text_line_count(b"a\nb\n") == 2
+    assert gitmod._text_line_count(b"a\nb") == 2
+    assert gitmod._text_line_count(b"\n\n") == 2  # blank lines are lines
+    # grep reports neither an empty blob nor a binary one (git's test: a NUL
+    # in the first 8000 bytes), so they count 0 and are not files
+    assert gitmod._text_line_count(b"") == 0
+    assert gitmod._text_line_count(b"x\0y\n") == 0
+    # bytes are counted as bytes: invalid UTF-8 is still text (no locale)
+    assert gitmod._text_line_count(b"\xa4\xa2\n\xff\n") == 2
+    # a NUL past the first 8000 bytes does not make a blob binary
+    assert gitmod._text_line_count(b"a\n" * 5000 + b"\0") == 5001
+
+
+def _tree(*entries: tuple[str, str, str]) -> bytes:
+    "A raw tree object: `<mode> <name>\\0<binary id>` per (mode, name, hex id)."
+    return b"".join(f"{mode} {name}".encode() + b"\0" + bytes.fromhex(oid) for mode, name, oid in entries)
+
+
+def _oid(n: int) -> str:
+    return f"{n:040x}"
+
+
+def test_tree_sizer_measures_regular_files_once_by_subsystem_and_extension() -> None:
+    blob_c, blob_h, blob_bin, blob_empty, blob_sgml = _oid(1), _oid(2), _oid(3), _oid(4), _oid(5)
+    tree_backend, tree_src, tree_doc, root_1, root_2 = _oid(10), _oid(11), _oid(12), _oid(13), _oid(14)
+    objects = {
+        blob_c: b"int a;\nint b;\nint c;\n",
+        blob_h: b"#define X 1",  # no final newline: still one line
+        blob_bin: b"\x89PNG\0\0",
+        blob_empty: b"",
+        blob_sgml: b"<para>\n</para>\n",
+        tree_backend: _tree(("100644", "a.c", blob_c), ("100755", "b.c", blob_c), ("100644", "logo.png", blob_bin)),
+        tree_src: _tree(("40000", "backend", tree_backend), ("100644", "x.h", blob_h)),
+        tree_doc: _tree(("100644", "ref.sgml", blob_sgml), ("100644", "EMPTY", blob_empty)),
+        # a symlink (120000) and a submodule (160000) are not regular files
+        root_1: _tree(
+            ("40000", "doc", tree_doc),
+            ("120000", "link", blob_h),
+            ("160000", "sub", _oid(99)),
+            ("40000", "src", tree_src),
+        ),
+        root_2: _tree(("40000", "doc", tree_doc), ("40000", "src", tree_src)),
+        "c1": f"tree {root_1}\nauthor A <a@x> 0 +0000\n\nfirst\n".encode(),
+        "c2": f"tree {root_2}\nparent c1\n\nsecond\n".encode(),
+    }
+    reads: list[str] = []
+
+    def read(object_id: str) -> bytes:
+        reads.append(object_id)
+        return objects[object_id]
+
+    sizer = gitmod._TreeSizer(read, _RULES)
     area, size = gitmod.AreaKey, gitmod.AreaSize
-    assert sizes[area("core_server", "c")] == size(code_lines=100, file_cnt=1)  # a.c
-    # x.h -- distinct extension, same subsystem
-    assert sizes[area("core_server", "h")] == size(code_lines=20, file_cnt=1)
-    assert sizes[area("tests", "sql")] == size(code_lines=40, file_cnt=1)
-    assert sizes[area("docs", "sgml")] == size(code_lines=5, file_cnt=1)
-    # the .po, kept separate for SQL to classify
-    assert sizes[area("core_server", "po")] == size(code_lines=1000, file_cnt=1)
-    assert sum(s.code_lines for s in sizes.values()) == 1165  # slices sum to the tree
-
-
-def test_tree_size_records_for_head_emits_one_verbatim_row_per_slice(monkeypatch: pytest.MonkeyPatch) -> None:
-    # the pool worker: one record per slice, keyed by the commit, counts as strings
-    # (the raw layer is verbatim; stg_tree_sizes types them)
-    _patch_git(monkeypatch, "abc123:src/backend/a.c:7\nabc123:src/backend/b.c:3\nabc123:doc/c.sgml:2\n")
-    records = sorted(gitmod._tree_size_records_for_head(_RULES, "abc123"))
-    assert records == [
-        gitmod.TreeSizeRecord("abc123", "core_server", "c", code_lines="10", file_cnt="2"),
-        gitmod.TreeSizeRecord("abc123", "docs", "sgml", code_lines="2", file_cnt="1"),
-    ]
+    expected = {
+        area("core_server", "c"): size(code_lines=6, file_cnt=2),  # one blob at two paths counts twice
+        area("other", "h"): size(code_lines=1, file_cnt=1),  # src/x.h: no rule matches it
+        area("docs", "sgml"): size(code_lines=2, file_cnt=1),
+    }
+    assert sizer.commit_sizes("c1") == expected
+    assert sizer.commit_sizes("c2") == expected
+    # each subtree (by path and id) and each blob is read once across both commits
+    assert sorted(reads) == sorted(
+        ["c1", root_1, tree_doc, blob_sgml, blob_empty, tree_src, tree_backend, blob_c, blob_bin, blob_h, "c2", root_2]
+    )
 
 
 def test_tree_size_records_measures_nothing_for_no_commits() -> None:

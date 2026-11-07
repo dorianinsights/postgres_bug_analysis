@@ -59,15 +59,11 @@ Plan (additive; no change to `fct_fixes` or the projections):
 
 ## Parquet-cache the immutable raw parses (mbox + git)
 
-`raw_list_messages` (mbox), `raw_commit_files` and `raw_tree_sizes` (git)
-re-read the entire history on every build. All three are parallelized across
-a process `Pool`, but the work is still redone every run; the mbox parse and
-`raw_tree_sizes` are the dominant build costs, then `raw_commit_files`
-(bounded by `master`, the one branch a per-branch fan-out can't split).
-`raw_tree_sizes` has a cheaper exact form: list each measured commit's blobs
-(`git ls-tree -r`) and count each DISTINCT blob's lines once (`git cat-file
---batch`), since consecutive weekly heads share almost every file -- it must
-reproduce `git grep -I -c '^'`'s binary test and line count exactly.
+`raw_list_messages` (mbox) and `raw_commit_files` (git) re-parse the entire
+history on every build. Both are parallelized across a process `Pool`, but the
+work is still redone every run; the mbox parse is the dominant build cost and
+`raw_commit_files` is next (bounded by `master`, the one branch a per-branch
+fan-out can't split).
 
 Cache the immutable parses as Parquet and re-parse only what changed:
 - **mbox:** monthly files at `.cache/mbox/<list>/YYYYMM.mbox` are immutable once
